@@ -45,7 +45,7 @@ PYTHON_FILES := $(shell find $(APP_SRC_DIR) -type f -name "*.py" -print)
 
 # Docker variables?
 DOCKER_REGISTRY = 074597099015.dkr.ecr.eu-central-1.amazonaws.com
-DOCKER_IMG_LOCAL_TAG := $(DOCKER_REGISTRY)/$(SERVICE_NAME):local-$(USER)-$(GIT_HASH_SHORT)
+DOCKER_IMG_LOCAL_TAG := $(DOCKER_REGISTRY)/swissgeo/$(SERVICE_NAME):local-$(USER)-$(GIT_HASH_SHORT)
 
 # AWS variables
 AWS_DEFAULT_REGION = eu-central-1
@@ -97,7 +97,7 @@ serve-debug: ## Serve the application locally for debugging
 
 .PHONY: dockerlogin
 dockerlogin: ## Login to the AWS Docker Registry (ECR)
-	aws --profile swisstopo-bgdi-builder ecr get-login-password --region $(AWS_DEFAULT_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY)
+	aws --profile swisstopo-swissgeo-builder ecr get-login-password --region $(AWS_DEFAULT_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY)
 
 .PHONY: dockerbuild
 dockerbuild: ## Create a docker image
