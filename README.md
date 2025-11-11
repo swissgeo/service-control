@@ -49,13 +49,19 @@ To start the local postgres container, run this:
 make start-local-db
 ```
 
-You may want to do an initial sync of your database by applying the most recent Django migrations with
+To initialize the database, run this (at least once):
+
+```bash
+python app/init_db.py && app/manage.py migrate
+```
+
+Once your database has been initialized, you can later sync it with the latest Django migrations by running only:
 
 ```bash
 app/manage.py migrate
 ```
 
-You may also want to add a local superuser
+You may want to add a local superuser
 
 ```bash
 app/manage.py createsuperuser
