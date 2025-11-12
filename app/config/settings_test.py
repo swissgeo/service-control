@@ -5,6 +5,11 @@ import os
 # is evaluated with the import of settings_dev
 os.environ['ENABLE_OAUTH2_PROXY'] = 'True'
 
+# for tests, we want to always use the the postgres superuser from the docker container in order to
+# be able to create new test databases
+os.environ['DB_USER'] = 'postgres'
+os.environ['DB_PW'] = 'postgres'
+
 from .settings_dev import *  # pylint: disable=wildcard-import, unused-wildcard-import, wrong-import-position
 
 TESTING = True
