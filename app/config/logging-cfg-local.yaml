@@ -1,0 +1,26 @@
+version: 1
+disable_existing_loggers: False
+
+root:
+  handlers:
+    - console
+  level: INFO
+  propagate: True
+
+# configure loggers per app
+loggers:
+  django.request:
+    # setting this to ERROR prevents from logging too much
+    # we do the logging ourselves
+    level: ERROR
+
+formatters:
+  ecs:
+    (): ecs_logging.StdlibFormatter
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: ecs
+    stream: ext://sys.stdout
+

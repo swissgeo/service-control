@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      # - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - source: ${PWD}/.volumes/postgresql
+        target: /var/lib/postgresql
+        type: bind
+        bind:
+          create_host_path: true
+    ports:
+      - "${DB_PORT}:5432"
