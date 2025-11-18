@@ -61,11 +61,16 @@ Once your database has been initialized, you can later sync it with the latest D
 app/manage.py migrate
 ```
 
-You may want to add a local superuser
+### Using the Admin UI
 
-```bash
-app/manage.py createsuperuser
-```
+`service-control` authenticates using an OAuth2 proxy which simply sets some headers. To locally use
+the admin UI during development, make sure to pass these headers, for example with a browser plugin
+such as https://mybrowseraddon.com/modify-header-value.html:
+
+- `X-Auth-Request-User`: any user name or ID
+- `X-Auth-Request-Preferred-Username`: any user name
+- `X-Auth-Request-Email`: any e-mail address
+- `X-Auth-Request-Groups`: the value of OAUTH2_PROXY_DJANGO_ADMIN_GROUPS
 
 ### Updating Packages
 

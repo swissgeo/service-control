@@ -1,10 +1,5 @@
 import os
 
-# for the oath2_proxy tests ENABLE_OAUTH2_PROXY needs to be set during test start up so that
-# the middlewares and routes are loaded in settings_base, we set it here via os.environ because it
-# is evaluated with the import of settings_dev
-os.environ['ENABLE_OAUTH2_PROXY'] = 'True'
-
 # for tests, we want to always use the the postgres superuser from the docker container in order to
 # be able to create new test databases
 os.environ['DB_USER'] = 'postgres'
