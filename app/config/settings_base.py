@@ -237,4 +237,4 @@ LOG_ALLOWED_HEADERS = [
 
 # Path prefix for all paths (checker, admin, api, etc.). Useful if the service is deployed under a
 # specific path. Should end with a slash, for example  'service-control/'.
-ROOT_PATH_PREFIX = env.str('ROOT_PATH_PREFIXROOT_PATH_PREFIX', default='')
+ROOT_PATH_PREFIX = env.str('ROOT_PATH_PREFIX', default='')
