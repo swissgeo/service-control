@@ -162,7 +162,7 @@ OAUTH2_PROXY_COGNITO_URL = env.str('OAUTH2_PROXY_COGNITO_URL', None)
 OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str('OAUTH2_PROXY_COGNITO_APP_CLIENT_ID', 'local')
 OAUTH2_PROXY_EIAM_URL = env.str('OAUTH2_PROXY_EIAM_URL', None)
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
-    'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS', default=['ppbgdi-admin']
+    'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS', default=['swissgeo-admin']
 )
 
 # Testing
@@ -226,9 +226,8 @@ _DEFAULT_LOG_ALLOWED_HEADERS = [
 
   # PPBGDI headers
     "x-e2e-testing",
-    # API GW Headers
-    "geoadmin-authenticated"
-    "geoadmin-username",
+
+  # API GW Headers
     "apigw-requestid"
 ]
 LOG_ALLOWED_HEADERS = [
