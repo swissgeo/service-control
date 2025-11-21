@@ -30,12 +30,12 @@ def admin_logout(request: HttpRequest) -> HttpResponse:
     # logout the user from Django
     logout(request)
 
-    # Redirect to the django admin login page after logout
-    redirect_after_logout = f'{request.build_absolute_uri(reverse("admin:login"))}'
+    # Redirect to the base page after logout
+    redirect_after_logout = base_url(request)
 
     # We need to log out (chained with redirects) from eIAM, Cognito and OAuth2 Proxy
     eiam_logout_url = f'{settings.OAUTH2_PROXY_EIAM_URL}/logout?' + \
-            f'post_logout_redirect_uri={quote_plus(redirect_after_logout)}'
+            f'logout_uri={quote_plus(redirect_after_logout)}'
 
     cognito_logout_url = f'{settings.OAUTH2_PROXY_COGNITO_URL}/logout?' + \
         f'client_id={settings.OAUTH2_PROXY_COGNITO_APP_CLIENT_ID}&' + \

@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
 
 import environ
 import yaml
@@ -141,12 +143,26 @@ STATIC_URL = f'{STATIC_HOST}/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+def ensure_https(url: str | None) -> str | None:
+    if url is None:
+        return None
+    parsed = urlparse(url)
+    # If no scheme, assume http so it can be replaced with https
+    if not parsed.scheme:
+        parsed = urlparse("http://" + url)
+
+    # Replace scheme with https
+    secure_parsed = parsed._replace(scheme="https")
+    return urlunparse(secure_parsed)
+
+
 # oauth2-proxy
 # List of groups that are allowed in django admin interface
 OAUTH2_PROXY_URL_PREFIX = env.str("OAUTH2_PROXY_URL_PREFIX", "oauth2-proxy/")
-OAUTH2_PROXY_COGNITO_URL = env.str('OAUTH2_PROXY_COGNITO_URL', None)
+OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str('OAUTH2_PROXY_COGNITO_URL', None))
 OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str('OAUTH2_PROXY_COGNITO_APP_CLIENT_ID', 'local')
-OAUTH2_PROXY_EIAM_URL = env.str('OAUTH2_PROXY_EIAM_URL', None)
+OAUTH2_PROXY_EIAM_URL = ensure_https(env.str('OAUTH2_PROXY_EIAM_URL', None))
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS', default=['swissgeo-admin']
 )
