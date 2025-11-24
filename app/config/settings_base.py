@@ -36,16 +36,9 @@ DEBUG = False
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
-# Enabled OAuth2-proxy authentication instead django local user
-ENABLE_OAUTH2_PROXY = env.bool('ENABLE_OAUTH2_PROXY', True)
-
 # Application definition
-CUSTOM_ADMIN_APPS = []
-if ENABLE_OAUTH2_PROXY:
-    CUSTOM_ADMIN_APPS = ['oauth2_proxy']
-
 INSTALLED_APPS = [
-    *CUSTOM_ADMIN_APPS,
+    'oauth2_proxy',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,13 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
 ]
 
-AUTH_MIDDLEWARES = []
-if ENABLE_OAUTH2_PROXY:
-    AUTH_MIDDLEWARES = [
-        'oauth2_proxy.middleware.Oauth2ProxyRemoteUserMiddleware',
-        'oauth2_proxy.middleware.Oauth2ProxyRemoteMiddleware',
-    ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -68,15 +54,15 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    *AUTH_MIDDLEWARES,
+    'oauth2_proxy.middleware.Oauth2ProxyRemoteUserMiddleware',
+    'oauth2_proxy.middleware.Oauth2ProxyRemoteMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENABLE_OAUTH2_PROXY:
-    AUTHENTICATION_BACKENDS = [
-        "django.contrib.auth.backends.RemoteUserBackend",
-    ]
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.RemoteUserBackend',
+]
 
 ROOT_URLCONF = 'config.urls'
 
