@@ -19,6 +19,6 @@ def test_admin_logout(settings, client):
     assert response.url == (
         'http://testserver/oauth2-proxy/sign_out?rd='
         'https%3A%2F%2Fcognito%2Flogout%3Fclient_id%3Dclient_id%26logout_uri%3D'
-        'https%253A%252F%252Feiam%252Flogout%253Fpost_logout_redirect_uri%253D'
-        'http%25253A%25252F%25252Ftestserver%25252Fadmin%25252Flogin%25252F'
+        'https%253A%252F%252Feiam%252Flogout%253Flogout_uri%253D'
+        'http%25253A%25252F%25252Ftestserver%25252F'
     )

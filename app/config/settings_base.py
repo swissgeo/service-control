@@ -141,12 +141,25 @@ STATIC_URL = f'{STATIC_HOST}/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+class BadScheme(Exception):
+    """Exception that an URI scheme is not as expected."""
+
+
+def ensure_https(url: str | None) -> str | None:
+    if url is None:
+        return None
+    if not url.startswith("https://"):
+        raise BadScheme(f"'{url}' must start with 'https://'")
+    return url
+
+
 # oauth2-proxy
 # List of groups that are allowed in django admin interface
 OAUTH2_PROXY_URL_PREFIX = env.str("OAUTH2_PROXY_URL_PREFIX", "oauth2-proxy/")
-OAUTH2_PROXY_COGNITO_URL = env.str('OAUTH2_PROXY_COGNITO_URL', None)
+OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str('OAUTH2_PROXY_COGNITO_URL', None))
 OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str('OAUTH2_PROXY_COGNITO_APP_CLIENT_ID', 'local')
-OAUTH2_PROXY_EIAM_URL = env.str('OAUTH2_PROXY_EIAM_URL', None)
+OAUTH2_PROXY_EIAM_URL = ensure_https(env.str('OAUTH2_PROXY_EIAM_URL', None))
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS', default=['swissgeo-admin']
 )
