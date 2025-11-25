@@ -159,7 +159,7 @@ def ensure_https(url: str | None) -> str | None:
 OAUTH2_PROXY_URL_PREFIX = env.str("OAUTH2_PROXY_URL_PREFIX", "oauth2-proxy/")
 OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str('OAUTH2_PROXY_COGNITO_URL', None))
 OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str('OAUTH2_PROXY_COGNITO_APP_CLIENT_ID', 'local')
-OAUTH2_PROXY_EIAM_URL = ensure_https(env.str('OAUTH2_PROXY_EIAM_URL', None))
+OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str('OAUTH2_PROXY_EIAM_LOGOUT_URL', None))
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS', default=['swissgeo-admin']
 )

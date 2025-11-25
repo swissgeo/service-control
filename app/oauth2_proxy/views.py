@@ -34,7 +34,7 @@ def admin_logout(request: HttpRequest) -> HttpResponse:
     redirect_after_logout = base_url(request)
 
     # We need to log out (chained with redirects) from eIAM, Cognito and OAuth2 Proxy
-    eiam_logout_url = f'{settings.OAUTH2_PROXY_EIAM_URL}/logout?' + \
+    eiam_logout_url = f'{settings.OAUTH2_PROXY_EIAM_LOGOUT_URL}?' + \
             f'logout_uri={quote_plus(redirect_after_logout)}'
 
     cognito_logout_url = f'{settings.OAUTH2_PROXY_COGNITO_URL}/logout?' + \

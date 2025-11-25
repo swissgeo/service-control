@@ -11,7 +11,7 @@ def test_admin_login(client):
 def test_admin_logout(settings, client):
     settings.OAUTH2_PROXY_COGNITO_URL = 'https://cognito'
     settings.OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = 'client_id'
-    settings.OAUTH2_PROXY_EIAM_URL = 'https://eiam'
+    settings.OAUTH2_PROXY_EIAM_LOGOUT_URL = 'https://eiam/logout'
 
     response = client.get(reverse('oauth2_proxy_admin_logout'))
 
