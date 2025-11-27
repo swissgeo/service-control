@@ -6,12 +6,19 @@ Uses autocommit mode because PostgreSQL does not allow CREATE DATABASE to run in
 block.
 """
 
+from logging import getLogger
+from logging.config import dictConfig
 from os import environ
 
 from psycopg import connect
 from psycopg.sql import SQL
 from psycopg.sql import Identifier
 from psycopg.sql import Literal
+
+from django.conf import settings
+
+dictConfig(settings.LOGGING)
+logger = getLogger(__name__)
 
 
 def main() -> None:
@@ -54,6 +61,7 @@ def main() -> None:
                     )
                 )
             connection.commit()
+            logger.info("Created role '%s'", user_name)
 
             # create database
             result = cursor.execute(
@@ -65,7 +73,13 @@ def main() -> None:
                        ).format(Identifier(database_name), Identifier(user_name))
                 )
             connection.commit()
+            logger.info("Created database '%s'", database_name)
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        dictConfig(settings.LOGGING)
+        logger = getLogger(__name__)
+        logger.exception(e)
