@@ -52,7 +52,7 @@ make start-local-db
 To initialize the database, run this (at least once):
 
 ```bash
-python app/init_db.py && app/manage.py migrate
+app/manage.py init_db && app/manage.py migrate
 ```
 
 Once your database has been initialized, you can later sync it with the latest Django migrations by running only:
