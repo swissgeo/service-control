@@ -3,6 +3,7 @@ from ninja import NinjaAPI
 from ninja.errors import AuthenticationError
 from ninja.errors import HttpError
 from ninja.errors import ValidationError as NinjaValidationError
+from organization.api import router as organization_router
 from utils.exceptions import contains_error_code
 from utils.exceptions import extract_error_messages
 
@@ -13,6 +14,8 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 
 api = LoggedNinjaAPI()
+
+api.add_router("", organization_router)
 
 
 @api.exception_handler(DjangoValidationError)
