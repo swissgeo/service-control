@@ -1,9 +1,10 @@
+from io import StringIO
 from unittest.mock import MagicMock
 
-from init_db import main
+from django.core.management import call_command
 
 
-def test_init_db(monkeypatch):
+def test_command_creates(monkeypatch):
     monkeypatch.setenv('DB_HOST', 'localhost')
     monkeypatch.setenv('DB_PORT', '5432')
     monkeypatch.setenv('DB_ADMIN_USER', 'admin')
@@ -18,9 +19,15 @@ def test_init_db(monkeypatch):
     connection.cursor.return_value.__enter__.return_value = cursor
     connect = MagicMock(name='connect')
     connect.return_value.__enter__.return_value = connection
-    monkeypatch.setattr('init_db.connect', connect)
+    monkeypatch.setattr('support.management.commands.init_db.connect', connect)
 
-    main()
+    out = StringIO()
+    call_command('init_db', verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Created role 'user'" in out
+    assert "Created database 'database'" in out
+    assert "Done" in out
 
     assert 'host=localhost port=5432 user=admin password=pazzword dbname=postgres' in str(
         connect.mock_calls
@@ -32,7 +39,7 @@ def test_init_db(monkeypatch):
     assert 'database' in str(cursor.mock_calls)
 
 
-def test_init_db_skips_if_existing(monkeypatch):
+def test_command_skips(monkeypatch):
     monkeypatch.setenv('DB_HOST', 'localhost')
     monkeypatch.setenv('DB_PORT', '5432')
     monkeypatch.setenv('DB_ADMIN_USER', 'admin')
@@ -47,9 +54,14 @@ def test_init_db_skips_if_existing(monkeypatch):
     connection.cursor.return_value.__enter__.return_value = cursor
     connect = MagicMock(name='connect')
     connect.return_value.__enter__.return_value = connection
-    monkeypatch.setattr('init_db.connect', connect)
+    monkeypatch.setattr('support.management.commands.init_db.connect', connect)
 
-    main()
+    out = StringIO()
+    call_command('init_db', verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Created" not in out
+    assert "Done" in out
 
     assert 'host=localhost port=5432 user=admin password=pazzword dbname=postgres' in str(
         connect.mock_calls
