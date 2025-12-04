@@ -5,16 +5,17 @@ from psycopg import connect
 from psycopg.sql import SQL
 from psycopg.sql import Identifier
 from psycopg.sql import Literal
-from utils.command import CommandHandler
 from utils.command import CustomBaseCommand
 
 env = environ.Env()
 
 
-class Handler(CommandHandler):
+class Command(CustomBaseCommand):
     """Create the postgres role and database from information from the environment. """
 
-    def run(self) -> None:
+    help = "Database management"
+
+    def handle(self, *args: Any, **options: Any) -> None:
         host = env.str('DB_HOST', default='').strip()
         port = env.str('DB_PORT', default='').strip()
         admin_name = env.str('DB_ADMIN_USER', default='').strip()
@@ -74,10 +75,3 @@ class Handler(CommandHandler):
                     connection.commit()
 
             self.print('Done')
-
-
-class Command(CustomBaseCommand):
-    help = "Database management"
-
-    def handle(self, *args: Any, **options: Any) -> None:
-        Handler(self, options).run()

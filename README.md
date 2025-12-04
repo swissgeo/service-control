@@ -9,6 +9,7 @@
 
 - [Table of Content](#table-of-content)
 - [Summary Of The Project](#summary-of-the-project)
+- [Logging Standard Django Management Commands](#logging-standard-django-management-commands)
 - [Local Development](#local-development)
   - [Dependencies](#dependencies)
   - [Setup](#setup)
@@ -24,6 +25,15 @@
 ## Summary Of The Project
 
 `service-control` provides and manages the verified permissions.  TBC
+
+## Logging Standard Django Management Commands
+
+This project uses a modified `manage.py` that supports redirecting the output of the standard
+Django management commands to the logger. For this, simply add `--redirect-std-to-logger`, e.g.:
+
+```bash
+app/manage.py migrate --redirect-std-to-logger
+```
 
 ## Local Development
 
