@@ -12,3 +12,14 @@ class OrganizationSchema(Schema):
 
 class OrganizationListSchema(Schema):
     items: list[OrganizationSchema]
+
+
+class CreateOrganizationSchema(Schema):
+    id: str
+    name_translations: TranslationsSchema
+    acronym_translations: TranslationsSchema
+
+
+class UpdateOrganizationSchema(Schema):
+    name_translations: TranslationsSchema
+    acronym_translations: TranslationsSchema

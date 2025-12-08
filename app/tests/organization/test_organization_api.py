@@ -62,8 +62,6 @@ def test_organization_to_response_returns_response_with_default_language_if_unde
 
 
 def test_get_organization_returns_existing_organization_with_default_language(organization, client):
-    client.login(username='test', password='test')
-
     response = client.get(f"/api/v1/organizations/{organization.organization_id}")
 
     assert response.status_code == 200
@@ -89,8 +87,6 @@ def test_get_organization_returns_existing_organization_with_default_language(or
 
 
 def test_get_organization_returns_organization_with_language_from_query(organization, client):
-    client.login(username='test', password='test')
-
     response = client.get(f"/api/v1/organizations/{organization.organization_id}?lang=de")
 
     assert response.status_code == 200
@@ -461,3 +457,321 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
             },
         ]
     }
+
+
+def test_create_organization(client, db):
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+            'it': "UFAM",
+            'rm': "UFAM",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+            'it': "Ufficio federale dell'ambiente",
+            'rm': "Uffizi federal per l'ambient",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": "ch.bafu",
+        "name": "Federal Office for the Environment",
+        "name_translations": {
+            "de": "Bundesamt für Umwelt",
+            "fr": "Office fédéral de l'environnement",
+            "en": "Federal Office for the Environment",
+            "it": "Ufficio federale dell'ambiente",
+            "rm": "Uffizi federal per l'ambient",
+        },
+        "acronym": "FOEN",
+        "acronym_translations": {
+            "de": "BAFU",
+            "fr": "OFEV",
+            "en": "FOEN",
+            "it": "UFAM",
+            "rm": "UFAM",
+        }
+    }
+    actual = Organization.objects.last()
+    assert actual.organization_id == data["id"]
+    assert actual.name_de == data["name_translations"]["de"]
+    assert actual.name_fr == data["name_translations"]["fr"]
+    assert actual.name_en == data["name_translations"]["en"]
+    assert actual.name_it == data["name_translations"]["it"]
+    assert actual.name_rm == data["name_translations"]["rm"]
+
+    assert actual.acronym_de == data["acronym_translations"]["de"]
+    assert actual.acronym_fr == data["acronym_translations"]["fr"]
+    assert actual.acronym_en == data["acronym_translations"]["en"]
+    assert actual.acronym_it == data["acronym_translations"]["it"]
+    assert actual.acronym_rm == data["acronym_translations"]["rm"]
+
+
+def test_create_organization_required_only(client, db):
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": "ch.bafu",
+        "name": "Federal Office for the Environment",
+        "name_translations": {
+            "de": "Bundesamt für Umwelt",
+            "fr": "Office fédéral de l'environnement",
+            "en": "Federal Office for the Environment",
+        },
+        "acronym": "FOEN",
+        "acronym_translations": {
+            "de": "BAFU",
+            "fr": "OFEV",
+            "en": "FOEN",
+        }
+    }
+
+
+def test_create_organization_missing_required(client, db):
+    data = {
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'en': "Federal Office for the Environment",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 422
+
+
+def test_create_organization_already_exists(client, db):
+    data = {
+        'id': "ch.bafu",
+        'acronym_translations': {
+            'de': "BAFU",
+            'fr': "OFEV",
+            'en': "FOEN",
+            'it': "UFAM",
+            'rm': "UFAM",
+        },
+        'name_translations': {
+            'de': "Bundesamt für Umwelt",
+            'fr': "Office fédéral de l'environnement",
+            'en': "Federal Office for the Environment",
+            'it': "Ufficio federale dell'ambiente",
+            'rm': "Uffizi federal per l'ambient",
+        },
+    }
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 201
+
+    # Try to create the same organization a second time
+    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    assert response.status_code == 409
+    assert response.json() == {
+        "code": 409, "description": ["Organization with this External ID already exists."]
+    }
+
+
+def test_update_organization(client, organization):
+    data = {
+        'acronym_translations': {
+            'de': "New DE",
+            'fr': "New FR",
+            'en': "New EN",
+            'it': "New IT",
+            'rm': "New RM",
+        },
+        'name_translations': {
+            'de': "Name DE",
+            'fr': "Name FR",
+            'en': "Name EN",
+            'it': "Name IT",
+            'rm': "Name RM",
+        },
+    }
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}",
+        content_type="application/json",
+        data=data
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": "ch.bafu",
+        "name": "Name EN",
+        "name_translations": {
+            "de": "Name DE",
+            "fr": "Name FR",
+            "en": "Name EN",
+            "it": "Name IT",
+            "rm": "Name RM",
+        },
+        "acronym": "New EN",
+        "acronym_translations": {
+            "de": "New DE",
+            "fr": "New FR",
+            "en": "New EN",
+            "it": "New IT",
+            "rm": "New RM",
+        }
+    }
+    actual = Organization.objects.last()
+    assert actual.name_de == data["name_translations"]["de"]
+    assert actual.name_fr == data["name_translations"]["fr"]
+    assert actual.name_en == data["name_translations"]["en"]
+    assert actual.name_it == data["name_translations"]["it"]
+    assert actual.name_rm == data["name_translations"]["rm"]
+
+    assert actual.acronym_de == data["acronym_translations"]["de"]
+    assert actual.acronym_fr == data["acronym_translations"]["fr"]
+    assert actual.acronym_en == data["acronym_translations"]["en"]
+    assert actual.acronym_it == data["acronym_translations"]["it"]
+    assert actual.acronym_rm == data["acronym_translations"]["rm"]
+
+
+def test_update_organization_not_found(client, organization):
+    data = {
+        'acronym_translations': {
+            'de': "New DE",
+            'fr': "New FR",
+            'en': "New EN",
+            'it': "New IT",
+            'rm': "New RM",
+        },
+        'name_translations': {
+            'de': "Name DE",
+            'fr': "Name FR",
+            'en': "Name EN",
+            'it': "Name IT",
+            'rm': "Name RM",
+        },
+    }
+    response = client.put(
+        "/api/v1/organizations/new.id", content_type="application/json", data=data
+    )
+    assert response.status_code == 404
