@@ -24,9 +24,10 @@ from .api import root
 
 urlpatterns = [
     path(settings.ROOT_PATH_PREFIX + '', root.urls),
-    path(settings.ROOT_PATH_PREFIX + 'api/v1/', api.urls),
-    path(settings.ROOT_PATH_PREFIX + '', include('oauth2_proxy.urls')),
+    path(settings.ROOT_PATH_PREFIX + settings.API_PATH_PREFIX + 'v1/', api.urls),
+    # oauth2 urls are only for admin ui login
+    path(settings.ROOT_PATH_PREFIX + settings.ADMIN_PATH_PREFIX + '', include('oauth2_proxy.urls')),
     # NOTE: the oauth_proxy endpoints needs to be registered before the admin interface endpoints
     # because they overwrite the default django admin/logout endpoints
-    path(settings.ROOT_PATH_PREFIX + 'admin/', admin.site.urls)
+    path(settings.ROOT_PATH_PREFIX + settings.ADMIN_PATH_PREFIX + 'admin/', admin.site.urls)
 ]
