@@ -242,14 +242,12 @@ LOG_ALLOWED_HEADERS = [
     for header in env.list('LOG_ALLOWED_HEADERS', default=_DEFAULT_LOG_ALLOWED_HEADERS)
 ]
 
-# Path prefix for all paths (checker, admin, api, etc.). Useful if the service is deployed under a
+# Path prefix for root (checker). Useful if the service is deployed under a
 # specific path. Should end with a slash, for example  'service-control/'.
 ROOT_PATH_PREFIX = env.str('ROOT_PATH_PREFIX', default='')
 
-# Path prefix for admin ui. Should end with a slash, for example  'service-control/'.
-# This is added in addition to the ROOT_PATH_PREFIX.
+# Path prefix for admin ui. Should end with a slash, for example 'service-control/'.
 ADMIN_PATH_PREFIX = env.str('ADMIN_PATH_PREFIX', default='')
 
-# Path prefix for api endpoints. Should end with a slash, for example  'service-control/'.
-# This is added in addition to the ROOT_PATH_PREFIX.
+# Path prefix for api endpoints. Should end with a slash, for example 'service-control/'.
 API_PATH_PREFIX = env.str('API_PATH_PREFIX', default='api/')
