@@ -140,7 +140,7 @@ type-check: ## Run the type-checker mypy
 	$(MYPY) app/
 
 .PHONY: start-local-db
-start-local-db: ## Run the local db as docker container
+start-local-db: ## Run the local db and cognito as docker container
 	docker compose up -d
 
 .PHONY: test-ci

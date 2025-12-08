@@ -1,7 +1,16 @@
+import logging
+from typing import Any
+from typing import Iterable
+
+from cognito.utils.client import Client
+from ninja.errors import ValidationError
 from utils.fields import CustomSlugField
 
 from django.db import models
+from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
+
+logger = logging.getLogger(__name__)
 
 
 class Organization(models.Model):
@@ -32,3 +41,42 @@ class Organization(models.Model):
     acronym_en = models.CharField(_(_context, "Acronym (English)"))
     acronym_it = models.CharField(_(_context, "Acronym (Italian)"), null=True, blank=True)
     acronym_rm = models.CharField(_(_context, "Acronym (Romansh)"), null=True, blank=True)
+
+    def save(
+        self,
+        *args: Any,
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None
+    ) -> None:
+        """Validates the model before writing it to the database and create in cognito."""
+
+        self.full_clean()
+        client = Client()
+        if self._state.adding:
+            if not client.create_group(self.organization_id):
+                logger.warning(
+                    "cognito user group '%s' already exists, not created", self.organization_id
+                )
+        else:
+            existing_org_id = Organization.objects.get(pk=self.pk).organization_id
+            if self.organization_id != existing_org_id:
+                raise ValidationError(errors=[{"organization_id": "cannot be updated"}])
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields
+        )
+
+    def delete(self,
+               using: str | None = None,
+               keep_parents: bool = False) -> tuple[int, dict[str, int]]:
+        """Deletes from the database and cognito."""
+
+        client = Client()
+        result = super().delete(using=using, keep_parents=keep_parents)
+        if not client.delete_group(self.organization_id):
+            logger.warning("cognito user group '%s' not found, not deleted", self.organization_id)
+        return result

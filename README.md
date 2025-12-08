@@ -13,11 +13,14 @@
 - [Local Development](#local-development)
   - [Dependencies](#dependencies)
   - [Setup](#setup)
+  - [Using the Admin UI](#using-the-admin-ui)
   - [Updating Packages](#updating-packages)
   - [Running Tests In Parallel](#running-tests-in-parallel)
   - [Visual Studio Code Integration](#visual-studio-code-integration)
     - [Debug from Visual Studio Code](#debug-from-visual-studio-code)
     - [Run Tests From Within Visual Studio Code](#run-tests-from-within-visual-studio-code)
+- [Cognito](#cognito)
+  - [Local Cognito](#local-cognito)
 - [Type Checking](#type-checking)
   - [Mypy](#mypy)
   - [Library Types](#library-types)
@@ -174,6 +177,21 @@ For the automatic test discovery to work, make sure that vs code has the Python
 interpreter of your venv selected (`.venv/bin/python`).
 You can change the Python interpreter via menu "Python: Select Interpreter"
 in the Command Palette.
+
+## Cognito
+
+This project uses Amazon Cognito user identity and access management.
+
+### Local Cognito
+
+For local testing the connection to cognito, [cognito-local](https://github.com/jagregory/cognito-local) is used.
+`cognito-local` stores all of its data as simple JSON files in its volume (`.volumes/cognito/db/`).
+
+You can also use the AWS CLI together with `cognito-local` by specifying the local endpoint, for example:
+
+```bash
+aws --endpoint $COGNITO_ENDPOINT_URL cognito-idp list-users --user-pool-id $COGNITO_POOL_ID
+```
 
 ## Type Checking
 
