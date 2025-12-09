@@ -52,7 +52,6 @@ def create_organization(
 
     TODO: Authorization should only be available to swissgeo-admin users.
     """
-    print(organization_in)
     lang_to_use = get_language(lang, request.headers)
     org = Organization.objects.create(
         organization_id=organization_in.id,
