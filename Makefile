@@ -25,6 +25,8 @@ AUTHOR = $(USER)
 # export
 # endif
 
+# Different change
+
 # Django specific
 APP_SRC_DIR := app
 DJANGO_MANAGER := $(CURRENT_DIR)/$(APP_SRC_DIR)/manage.py
