@@ -187,7 +187,7 @@ def get_logging_config() -> dict[str, object]:
     LOGGING_CFG and return it as dictionary
     Note: LOGGING_CFG is relative to the root of the repo
     '''
-    log_config_file = env('LOGGING_CFG', default='config/logging-cfg-local.yaml')
+    log_config_file = env.str('LOGGING_CFG', 'config/logging-cfg-local.yaml')
     if log_config_file.lower() in ['none', '0', '', 'false', 'no']:
         return {}
     log_config = {}
