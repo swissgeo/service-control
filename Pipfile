@@ -33,7 +33,7 @@ pytest-xdist = "*"
 types-gevent = "~=25.4"
 types-gunicorn = "~=23.0"
 yapf = "*"
-boto3-stubs = {extras = ["cognito-idp"], version = "*"}
+boto3-stubs = {extras = ["cognito-idp"], version = "~=1.42"}
 
 [requires]
 python_version = "3.13"
