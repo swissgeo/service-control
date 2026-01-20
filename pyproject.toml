@@ -11,11 +11,18 @@ dependencies = [
     "ecs-logging~=2.2",
     "gevent~=25.4",
     "gunicorn~=23.0",
-    "logging-utilities~=5.1",
+    "logging-utilities~=5.3",
     "psycopg[binary]~=3.2",
     "pyyaml~=6.0",
     "whitenoise~=6.11",
     "boto3~=1.42",
+    "opentelemetry-sdk~=1.39",
+    "opentelemetry-exporter-otlp~=1.39",
+    "opentelemetry-instrumentation==0.60b1",
+    "opentelemetry-instrumentation-botocore==0.60b1",
+    "opentelemetry-instrumentation-django==0.60b1",
+    "opentelemetry-instrumentation-logging==0.60b1",
+    "opentelemetry-instrumentation-psycopg==0.60b1",
 ]
 
 [dependency-groups]

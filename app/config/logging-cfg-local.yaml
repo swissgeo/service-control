@@ -17,6 +17,8 @@ loggers:
 formatters:
   ecs:
     (): ecs_logging.StdlibFormatter
+    # use this logger to pretty print the json output
+    # (): config.logging.PrettyStdlibFormatter
 
 handlers:
   console:
