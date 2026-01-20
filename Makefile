@@ -14,16 +14,6 @@ GIT_DIRTY = `git status --porcelain`
 GIT_TAG = `git describe --tags || echo "no version info"`
 AUTHOR = $(USER)
 
-# Imports the environment variables
-## TODO if we call the file .env, then it'll be read by pipenv too
-## which is good for running migrate
-# ifneq ("$(wildcard .env)","")
-# include .env
-# export
-# else
-# include .env
-# export
-# endif
 
 # Django specific
 APP_SRC_DIR := app
@@ -31,14 +21,14 @@ DJANGO_MANAGER := $(CURRENT_DIR)/$(APP_SRC_DIR)/manage.py
 DJANGO_MANAGER_DEBUG := -m debugpy --listen localhost:5678 --wait-for-client $(CURRENT_DIR)/$(APP_SRC_DIR)/manage.py
 
 # Commands
-PIPENV_RUN := pipenv run
-PYTHON := $(PIPENV_RUN) python3
-TEST := $(PIPENV_RUN) pytest
-YAPF := $(PIPENV_RUN) yapf
-ISORT := $(PIPENV_RUN) isort
-PYLINT := $(PIPENV_RUN) pylint
-MYPY := $(PIPENV_RUN) mypy
-BANDIT := $(PIPENV_RUN) bandit
+UV_RUN := uv run
+PYTHON := $(UV_RUN) python3
+TEST := $(UV_RUN) pytest
+YAPF := $(UV_RUN) yapf
+ISORT := $(UV_RUN) isort
+PYLINT := $(UV_RUN) pylint
+MYPY := $(UV_RUN) mypy
+BANDIT := $(UV_RUN) bandit
 
 # Find all python files that are not inside a hidden directory (directory starting with .)
 PYTHON_FILES := $(shell find $(APP_SRC_DIR) -type f -name "*.py" -print)
@@ -56,13 +46,12 @@ ENV_FILE ?= $(if $(wildcard .env.local),.env.local,.env)
 .PHONY: ci
 ci:
 	# Create virtual env with all packages for development using the Pipfile.lock
-	pipenv sync --dev
+	uv sync --frozen
 
 .PHONY: setup
 setup: $(SETTINGS_TIMESTAMP) ## Create virtualenv with all packages for development
-	pipenv install --dev
+	uv sync
 	cp .env.default .env
-	pipenv shell
 
 .PHONY: format
 format: ## Call yapf to make sure your code is easier to read and respects some conventions.
