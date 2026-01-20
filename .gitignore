@@ -180,3 +180,5 @@ cython_debug/
 *.sublime-*
 
 .ruff_cache
+# Local database files for TinyDB
+app/harvest/*

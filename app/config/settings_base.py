@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "cognito",
     "support",
     "organization",
+    "dataset",
 ]
 
 MIDDLEWARE = [
@@ -113,16 +114,20 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -167,9 +172,13 @@ def ensure_https(url: str | None) -> str | None:
 # oauth2-proxy
 # List of groups that are allowed in django admin interface
 OAUTH2_PROXY_URL_PREFIX = env.str("OAUTH2_PROXY_URL_PREFIX", "oauth2-proxy/")
-OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str("OAUTH2_PROXY_COGNITO_URL", None))
-OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str("OAUTH2_PROXY_COGNITO_APP_CLIENT_ID", "local")
-OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str("OAUTH2_PROXY_EIAM_LOGOUT_URL", None))
+OAUTH2_PROXY_COGNITO_URL = ensure_https(
+    env.str("OAUTH2_PROXY_COGNITO_URL", None))
+OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str(
+    "OAUTH2_PROXY_COGNITO_APP_CLIENT_ID", "local")
+OAUTH2_PROXY_EIAM_LOGOUT_UR            print(layer_id)
+L = ensure_https(
+    env.str("OAUTH2_PROXY_EIAM_LOGOUT_URL", None))
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     "OAUTH2_PROXY_DJANGO_ADMIN_GROUPS",
     default=["swissgeo-admin"],
@@ -178,7 +187,8 @@ OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
 # Cognito
 COGNITO_ENDPOINT_URL = env.str("COGNITO_ENDPOINT_URL", "http://localhost:9229")
 COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
-COGNITO_MANAGED_FLAG_NAME = env.str("COGNITO_MANAGED_FLAG_NAME", "dev:custom:managed_by_service")
+COGNITO_MANAGED_FLAG_NAME = env.str("COGNITO_MANAGED_FLAG_NAME",
+                                    "dev:custom:managed_by_service")
 
 # Testing
 TESTING = False
@@ -201,8 +211,10 @@ def get_logging_config() -> dict[str, object]:
 
 
 LOGGING = get_logging_config()
-LOGGING_MAX_REQUEST_PAYLOAD_SIZE = env.int("LOGGING_MAX_REQUEST_PAYLOAD_SIZE", default=200)
-LOGGING_MAX_RESPONSE_PAYLOAD_SIZE = env.int("LOGGING_MAX_RESPONSE_PAYLOAD_SIZE", default=200)
+LOGGING_MAX_REQUEST_PAYLOAD_SIZE = env.int("LOGGING_MAX_REQUEST_PAYLOAD_SIZE",
+                                           default=200)
+LOGGING_MAX_RESPONSE_PAYLOAD_SIZE = env.int(
+    "LOGGING_MAX_RESPONSE_PAYLOAD_SIZE", default=200)
 
 # list of headers that are allowed to be logged
 _DEFAULT_LOG_ALLOWED_HEADERS = [
@@ -245,7 +257,8 @@ _DEFAULT_LOG_ALLOWED_HEADERS = [
 ]
 LOG_ALLOWED_HEADERS = [
     str(header).lower()
-    for header in env.list("LOG_ALLOWED_HEADERS", default=_DEFAULT_LOG_ALLOWED_HEADERS)
+    for header in env.list("LOG_ALLOWED_HEADERS",
+                           default=_DEFAULT_LOG_ALLOWED_HEADERS)
 ]
 
 # Path prefix for root (checker). Useful if the service is deployed under a
