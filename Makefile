@@ -7,12 +7,12 @@ SERVICE_NAME := service-control
 CURRENT_DIR := $(shell pwd)
 
 # Docker metadata
-GIT_HASH = `git rev-parse HEAD`
-GIT_HASH_SHORT = `git rev-parse --short HEAD`
-GIT_BRANCH = `git symbolic-ref HEAD --short 2>/dev/null`
-GIT_DIRTY = `git status --porcelain`
-GIT_TAG = `git describe --tags || echo "no version info"`
-AUTHOR = $(USER)
+GIT_HASH := $(shell git rev-parse HEAD)
+GIT_HASH_SHORT := $(shell git rev-parse --short HEAD)
+GIT_BRANCH := $(shell git symbolic-ref HEAD --short 2>/dev/null)
+GIT_DIRTY := $(shell git status --porcelain)
+GIT_TAG := $(shell git describe --tags || echo "no version info")
+AUTHOR := $(USER)
 
 
 # Django specific
@@ -42,6 +42,16 @@ AWS_DEFAULT_REGION = eu-central-1
 
 # Env file for dockerrun, defaults to .env.local / .env
 ENV_FILE ?= $(if $(wildcard .env.local),.env.local,.env)
+
+.PHONY: git-info
+git-info:
+	@echo "GIT_HASH=$(GIT_HASH)"
+	@echo "GIT_HASH_SHORT=$(GIT_HASH_SHORT)"
+	@echo "GIT_BRANCH=$(GIT_BRANCH)"
+	@echo "GIT_DIRTY=$(GIT_DIRTY)"
+	@echo "GIT_TAG=$(GIT_TAG)"
+	@echo "AUTHOR=$(AUTHOR)"
+	@echo "DOCKER_IMG_LOCAL_TAG=$(DOCKER_IMG_LOCAL_TAG)"
 
 .PHONY: ci
 ci:
