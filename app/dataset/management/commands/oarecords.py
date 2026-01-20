@@ -1,3 +1,5 @@
+# pylint: disable=W,C,R
+# type: ignore
 import json
 from typing import Any
 
@@ -22,6 +24,9 @@ class Command(CustomBaseCommand):
     help = "OAR management"
 
     def add_arguments(self, parser):
+        # Call the base class method to get default arguments defined in the base class
+        # (mainly 'logger')
+        super().add_arguments(parser)
 
         # Sub-commands
         sub = parser.add_subparsers(dest="command", required=False, help="Sub-commands")
@@ -87,7 +92,7 @@ class Command(CustomBaseCommand):
 
         # Show parsed arguments (useful for debugging)
         if options.get('verbosity', 0) >= 2:
-            print("Debug: parsed args =", args)
+            self.print("Debug: parsed args =", args)
 
         # Handle sub-commands
         if options['command'] == "harvest":
@@ -133,8 +138,6 @@ class Command(CustomBaseCommand):
         if "mapserverlayers" in options['sources'] or "all" in options['sources']:
             harvest_mapserverlayers()
 
-        return 0
-
         #endregion
 
     # ##########################################################################
@@ -143,7 +146,7 @@ class Command(CustomBaseCommand):
         self.print_success(f"Importing from sources: {options['sources']}")
 
         def import_layersconfig(args) -> int:
-            print("Importing layersConfig...")
+            self.print("Importing layersConfig...")
 
             with open("harvest/layersConfig_en.json", "r", encoding="utf-8") as f:
                 layers = json.loads(f.read())
@@ -154,7 +157,7 @@ class Command(CustomBaseCommand):
 
         def import_mapserverlayers(args) -> int:
 
-            print("Importing MapServer layers...")
+            self.print("Importing MapServer layers...")
 
             with open("harvest/mapserverlayers_en.json", "r", encoding="utf-8") as f:
                 mapserverlayers = json.loads(f.read())
@@ -194,16 +197,16 @@ class Command(CustomBaseCommand):
         # Loop over all layers in layersconfig
         for _idx, layersconfig_entry in enumerate(self.table_layersconfig.all()):
             if options['limit'] and _idx >= options['limit']:
-                print(f"++++ Limiting to {options['limit']} records for testing purposes")
+                self.print(f"++++ Limiting to {options['limit']} records for testing purposes")
                 break
             layer_id = layersconfig_entry.get('serverLayerName', None)
-            print(layer_id)
+            self.print(f" - {layer_id}")
 
             dataset = Dataset(_id=layer_id)
 
             mapserver_entry = self.table_mapserverlayers.get(Query().id == layer_id)
             if not mapserver_entry:
-                print(f"++++ WARNING: layer {layer_id} not found in mapserverlayers")
+                self.print_warning(f"++++ WARNING: layer {layer_id} not found in mapserverlayers")
                 mapserver_entry = {'attributes': {}}
 
             # Language
@@ -213,7 +216,7 @@ class Command(CustomBaseCommand):
             # Contact
             contact_name = mapserver_entry['attributes'].get('dataOwner', None)
             if not contact_name:
-                print(f"++++ WARNING: layer {layer_id} has no contact info")
+                self.print_warning(f"++++ WARNING: layer {layer_id} has no contact info")
             else:
                 contact = {"organisation": contact_name}
                 contact['country'] = 'CH'
@@ -244,7 +247,7 @@ class Command(CustomBaseCommand):
 
             # Title
             if 'name' in mapserver_entry and mapserver_entry['name'] != layersconfig_entry['label']:
-                print(
+                self.print_warning(
                     f"++++ WARNING: layer {layer_id} name mismatch: {mapserver_entry['name']} != {layersconfig_entry['label']}"
                 )
             dataset.properties['title'] = layersconfig_entry.get('label', 'ERR:NO_TITLE')
