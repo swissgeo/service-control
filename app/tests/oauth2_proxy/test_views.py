@@ -4,7 +4,7 @@ from django.urls import reverse
 def test_admin_login(client):
     response = client.get(reverse('oauth2_proxy_admin_login'))
 
-    assert response.status_code == 302
+    assert response.status_code == 302  # noqa: PLR2004
     assert response.url == 'http://testserver/oauth2-proxy/start?rd=http%3A//testserver/admin/'
 
 
@@ -15,7 +15,7 @@ def test_admin_logout(settings, client):
 
     response = client.get(reverse('oauth2_proxy_admin_logout'))
 
-    assert response.status_code == 302
+    assert response.status_code == 302  # noqa: PLR2004
     assert response.url == (
         'http://testserver/oauth2-proxy/sign_out?rd='
         'https%3A%2F%2Fcognito%2Flogout%3Fclient_id%3Dclient_id%26logout_uri%3D'

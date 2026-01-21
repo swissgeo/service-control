@@ -1,14 +1,14 @@
-from config.settings_base import BadScheme
+import pytest
+from config.settings_base import BadSchemeError
 from config.settings_base import ensure_https
-from pytest import raises
 
 
 def test_ensure_https():
 
-    with raises(BadScheme):
+    with pytest.raises(BadSchemeError):
         ensure_https("my-domain.tech/logout")
 
-    with raises(BadScheme):
+    with pytest.raises(BadSchemeError):
         ensure_https("http://my-domain.tech/logout")
 
     got = ensure_https("https://my-domain.tech/logout")

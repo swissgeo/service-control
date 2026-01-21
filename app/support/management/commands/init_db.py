@@ -15,7 +15,7 @@ class Command(CustomBaseCommand):
 
     help = "Database management"
 
-    def handle(self, *args: Any, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         host = env.str('DB_HOST', default='').strip()
         port = env.str('DB_PORT', default='').strip()
         admin_name = env.str('DB_ADMIN_USER', default='').strip()
@@ -57,19 +57,20 @@ class Command(CustomBaseCommand):
                         SQL("CREATE ROLE {} WITH LOGIN ENCRYPTED PASSWORD {}").format(
                             Identifier(user_name),
                             Literal(user_password),
-                        )
+                        ),
                     )
                     self.print_success("Created role '%s'", user_name)
                     connection.commit()
 
                 # create database
                 result = cursor.execute(
-                    "SELECT 1 FROM pg_catalog.pg_database WHERE datname=%s", (database_name,)
+                    "SELECT 1 FROM pg_catalog.pg_database WHERE datname=%s",
+                    (database_name,),
                 ).fetchone()
                 if result is None:
                     cursor.execute(
-                        SQL("CREATE DATABASE {} OWNER {}"
-                           ).format(Identifier(database_name), Identifier(user_name))
+                        SQL("CREATE DATABASE {} OWNER {}",
+                           ).format(Identifier(database_name), Identifier(user_name)),
                     )
                     self.print_success("Created database '%s'", database_name)
                     connection.commit()

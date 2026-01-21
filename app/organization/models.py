@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Iterable
 from typing import Any
-from typing import Iterable
 
 from cognito.utils.client import Client
 from ninja.errors import ValidationError
@@ -11,6 +11,9 @@ from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
 
 logger = logging.getLogger(__name__)
+
+# TODO check if we can fix the DJ001, DJ012 warnings
+# ruff: noqa: DJ001, DJ012
 
 
 class Organization(models.Model):
@@ -25,7 +28,7 @@ class Organization(models.Model):
           It only has an effect on form validation.
     '''
     organization_id = CustomSlugField(
-        _(_context, "External ID"), max_length=100, unique=True, db_index=True
+        _(_context, "External ID"), max_length=100, unique=True, db_index=True,
     )
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
@@ -44,11 +47,11 @@ class Organization(models.Model):
 
     def save(
         self,
-        *args: Any,
+        *args: Any,  # noqa: ARG002 unused arguments
         force_insert: bool | tuple[ModelBase, ...] = False,
         force_update: bool = False,
         using: str | None = None,
-        update_fields: Iterable[str] | None = None
+        update_fields: Iterable[str] | None = None,
     ) -> None:
         """Validates the model before writing it to the database and create in cognito."""
 
@@ -57,7 +60,8 @@ class Organization(models.Model):
         if self._state.adding:
             if not client.create_group(self.organization_id):
                 logger.warning(
-                    "cognito user group '%s' already exists, not created", self.organization_id
+                    "cognito user group '%s' already exists, not created",
+                    self.organization_id,
                 )
         else:
             existing_org_id = Organization.objects.get(pk=self.pk).organization_id
@@ -67,12 +71,12 @@ class Organization(models.Model):
             force_insert=force_insert,
             force_update=force_update,
             using=using,
-            update_fields=update_fields
+            update_fields=update_fields,
         )
 
     def delete(self,
                using: str | None = None,
-               keep_parents: bool = False) -> tuple[int, dict[str, int]]:
+               keep_parents: bool = False) -> tuple[int, dict[str, int]]:  #noqa: FBT001, FBT002
         """Deletes from the database and cognito."""
 
         client = Client()

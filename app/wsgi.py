@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-# ruff: noqa: E402 module-import-not-at-top-of-file
-
 """
 WSGI config for project project.
 
@@ -10,6 +7,8 @@ It exposes the WSGI callable as a module-level variable named ``application``.
 For more information on this file, see
 https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 """
+
+# ruff: noqa: E402 module-import-not-at-top-of-file
 
 # isort:skip_file
 
@@ -88,7 +87,7 @@ if __name__ == '__main__':
     HTTP_PORT = str(environ.get('HTTP_PORT', "8000"))
     # Bind to 0.0.0.0 to let your app listen to all network interfaces.
     options = {
-        'bind': f"{'0.0.0.0'}:{HTTP_PORT}",  # nosec B104
+        'bind': f"{'0.0.0.0'}:{HTTP_PORT}",  # noqa: S104
         'worker_class': 'gevent',
         'workers': int(environ.get('GUNICORN_WORKERS',
                                    '2')),  # scaling horizontally is left to Kubernetes

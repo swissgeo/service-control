@@ -30,7 +30,7 @@ def test_command_creates(monkeypatch):
     assert "Done" in out
 
     assert 'host=localhost port=5432 user=admin password=pazzword dbname=postgres' in str(
-        connect.mock_calls
+        connect.mock_calls,
     )
     assert 'CREATE ROLE' in str(cursor.mock_calls)
     assert 'user' in str(cursor.mock_calls)
@@ -64,7 +64,7 @@ def test_command_skips(monkeypatch):
     assert "Done" in out
 
     assert 'host=localhost port=5432 user=admin password=pazzword dbname=postgres' in str(
-        connect.mock_calls
+        connect.mock_calls,
     )
     assert 'CREATE ROLE' not in str(cursor.mock_calls)
     assert 'CREATE DATABASE' not in str(cursor.mock_calls)

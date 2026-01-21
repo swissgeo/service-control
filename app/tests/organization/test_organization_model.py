@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
+import pytest
 from organization.models import Organization
-from pytest import raises
 
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
@@ -84,7 +84,7 @@ def test_object_created_in_db_with_optional_fields_null(client, db):
 
 
 def test_raises_exception_when_creating_db_object_with_mandatory_field_null(db):
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Organization.objects.create(name_de=None)
 
 
@@ -94,7 +94,7 @@ def test_form_valid_for_blank_optional_field(db):
 
         class Meta:
             model = Organization
-            fields = "__all__"
+            fields = "__all__"  # noqa: DJ007
 
     data = {
         "organization_id": "ch.bafu",
@@ -116,7 +116,7 @@ def test_form_invalid_for_blank_mandatory_field(db):
 
         class Meta:
             model = Organization
-            fields = "__all__"
+            fields = "__all__"  # noqa: DJ007
 
     data = {
         "organization_id": "ch.bafu",
@@ -143,7 +143,7 @@ def test_raises_exception_for_existing_slug(client, db):
         acronym_fr="OFEV",
         acronym_en="FOEN",
     )
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Organization.objects.create(
             organization_id="ch.bafu",
             name_de="XXX",
@@ -181,7 +181,7 @@ def test_save_updates_records(client, db):
     assert updated.name_de == 'Bundesamt für Umwelt'
     assert client.return_value.mock_calls == []
 
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Organization.objects.create(
             organization_id="ch.bafu",
             name_de="XXX",

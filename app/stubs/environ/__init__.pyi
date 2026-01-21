@@ -3,7 +3,6 @@
 # nature, API wise, it intentionally contains the minimum needed to satisfy
 # the type checker
 import builtins
-from typing import Dict, List
 from _typeshed import Incomplete  # pylint: disable=import-error
 
 
@@ -13,7 +12,7 @@ class Env:
         ...
 
     def __call__(
-        self, var: builtins.str, cast=..., default=..., parse_default: builtins.bool = False
+        self, var: builtins.str, cast=..., default=..., parse_default: builtins.bool = False,
     ):
         ...
 
@@ -29,8 +28,8 @@ class Env:
     def list(self,
              var,
              cast: Incomplete | None = None,
-             default=...) -> List[builtins.str | builtins.int]:
+             default=...) -> list[builtins.str | builtins.int]:
         ...
 
-    def dict(self, var, cast=..., default=...) -> Dict[builtins.str, builtins.str | builtins.int]:
+    def dict(self, var, cast=..., default=...) -> dict[builtins.str, builtins.str | builtins.int]:
         ...

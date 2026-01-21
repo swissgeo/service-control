@@ -11,6 +11,13 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
+class InvalidBooleanStringError(ValueError):
+    """Exception raised when a string cannot be converted to a boolean."""
+
+    def __init__(self, value: str) -> None:
+        super().__init__(f"invalid truth value '{value}'")
+
+
 def strtobool(value: str) -> bool:
     """Convert a string representation of truth to true (1) or false (0).
     True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
@@ -22,7 +29,7 @@ def strtobool(value: str) -> bool:
         return True
     if value in ('n', 'no', 'f', 'false', 'off', '0'):
         return False
-    raise ValueError(f"invalid truth value \'{value}\'")
+    raise InvalidBooleanStringError(value)
 
 
 def initialize_tracing() -> bool:
@@ -48,8 +55,8 @@ def setup_trace_provider() -> None:
             OTLPSpanExporter(
                 endpoint=getenv('OTEL_EXPORTER_OTLP_ENDPOINT', "http://localhost:4317"),
                 headers=getenv('OTEL_EXPORTER_OTLP_HEADERS'),
-                insecure=strtobool(getenv('OTEL_EXPORTER_OTLP_INSECURE', "false"))
-            )
+                insecure=strtobool(getenv('OTEL_EXPORTER_OTLP_INSECURE', "false")),
+            ),
         )
 
         provider = TracerProvider(resource=Resource.create())

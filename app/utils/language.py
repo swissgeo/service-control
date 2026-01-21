@@ -44,7 +44,7 @@ def get_translation(
     obj: Any,
     field_name: str,
     lang: LanguageCode,
-    default_lang: LanguageCode = DEFAULT_LANGUAGE
+    default_lang: LanguageCode = DEFAULT_LANGUAGE,
 ) -> str:
     """
     Return the field `obj.{field_name}_{lang}` as a string if it has a value.
@@ -65,11 +65,11 @@ def get_translation(
     try:
         translation = getattr(obj, f"{field_name}_{lang}")
         if not translation:
-            raise AttributeError
+            raise AttributeError  # noqa: TRY301
         return str(translation)
-    except AttributeError as exception:
+    except AttributeError:
         default_name = f"{field_name}_{default_lang}"
         default = getattr(obj, default_name)
         if not default:
-            raise exception
+            raise
         return str(default)

@@ -3,9 +3,8 @@ from django.core.exceptions import ValidationError
 
 def contains_error_code(exception: ValidationError, code: str) -> bool:
     """Return True if the given exception contains an error with the given error code."""
-    if hasattr(exception, "code"):
-        if exception.code == code:
-            return True
+    if hasattr(exception, "code") and exception.code == code:
+        return True
 
     # Iterating over the messages does not work here because the messages do not
     # contain the error codes of the validation.
@@ -28,7 +27,6 @@ def extract_error_messages(exception: ValidationError) -> list[str]:
         if isinstance(message, tuple):
             non_empty = [m for m in message[1] if m != "None"]
             messages.extend(non_empty)
-        else:
-            if message != "None":
-                messages.append(message)
+        elif message != "None":
+            messages.append(message)
     return messages

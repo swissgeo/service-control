@@ -1,5 +1,5 @@
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 from django.conf import settings
 from django.contrib.auth import get_user
@@ -24,7 +24,7 @@ class Oauth2ProxyRemoteMiddleware:
         self.get_response = get_response
         # One-time configuration and initialization.
 
-    def __call__(self, request: HttpRequest) -> HttpResponse:
+    def __call__(self, request: HttpRequest) -> HttpResponse:  # noqa: C901
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 

@@ -2,7 +2,7 @@ from io import StringIO
 from unittest.mock import MagicMock
 from unittest.mock import call
 
-from pytest import raises
+import pytest
 from utils.command import CustomBaseCommand
 
 from django.core.management import call_command
@@ -10,13 +10,13 @@ from django.core.management import call_command
 
 class Command(CustomBaseCommand):
 
-    def __init__(self, raise_exception=False):
+    def __init__(self, raise_exception: bool = False) -> None:  # noqa: FBT001, FBT002
         super().__init__()
         self.logger = MagicMock()
         self.exception = RuntimeError("RuntimeError")
         self.raise_exception = raise_exception
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:  # noqa: ARG002 unused arguments
         if self.raise_exception:
             raise self.exception
 
@@ -55,7 +55,7 @@ class Command(CustomBaseCommand):
 def test_exception_stdout():
     out = StringIO()
     err = StringIO()
-    with raises(RuntimeError):
+    with pytest.raises(RuntimeError):
         call_command(Command(raise_exception=True), stdout=out, stderr=err)
 
 

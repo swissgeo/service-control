@@ -1,5 +1,5 @@
-from .settings_base import *  # noqa: F401, F403
 from .settings_base import BASE_DIR
+from .settings_base import *  # noqa: F403
 
 DEBUG = False
 
