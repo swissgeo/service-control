@@ -1,15 +1,12 @@
 from io import StringIO
-from unittest.mock import MagicMock
-from unittest.mock import call
+from unittest.mock import MagicMock, call
 
 import pytest
-from utils.command import CustomBaseCommand
-
 from django.core.management import call_command
+from utils.command import CustomBaseCommand
 
 
 class Command(CustomBaseCommand):
-
     def __init__(self, raise_exception: bool = False) -> None:
         super().__init__()
         self.logger = MagicMock()
@@ -199,17 +196,17 @@ def test_print_to_log_args_kwargs():
     command = Command()
     call_command(command, verbosity=3, logger=True)
     calls = command.logger.mock_calls
-    assert call.info('Print %s', 'JohnDoe') in calls
-    assert call.info('Print', extra={'n': 'JohnDoe'}) in calls
-    assert call.info('Print %s', 'John', extra={'n': 'Doe'}) in calls
-    assert call.info('Success %s', 'JohnDoe') in calls
-    assert call.info('Success', extra={'n': 'JohnDoe'}) in calls
-    assert call.info('Success %s', 'John', extra={'n': 'Doe'}) in calls
-    assert call.warning('Warning %s', 'JohnDoe') in calls
-    assert call.warning('Warning', extra={'n': 'JohnDoe'}) in calls
-    assert call.warning('Warning %s', 'John', extra={'n': 'Doe'}) in calls
-    assert call.error('Error %s', 'JohnDoe') in calls
-    assert call.error('Error', extra={'n': 'JohnDoe'}) in calls
-    assert call.error('Error %s', 'John', extra={'n': 'Doe'}) in calls
+    assert call.info("Print %s", "JohnDoe") in calls
+    assert call.info("Print", extra={"n": "JohnDoe"}) in calls
+    assert call.info("Print %s", "John", extra={"n": "Doe"}) in calls
+    assert call.info("Success %s", "JohnDoe") in calls
+    assert call.info("Success", extra={"n": "JohnDoe"}) in calls
+    assert call.info("Success %s", "John", extra={"n": "Doe"}) in calls
+    assert call.warning("Warning %s", "JohnDoe") in calls
+    assert call.warning("Warning", extra={"n": "JohnDoe"}) in calls
+    assert call.warning("Warning %s", "John", extra={"n": "Doe"}) in calls
+    assert call.error("Error %s", "JohnDoe") in calls
+    assert call.error("Error", extra={"n": "JohnDoe"}) in calls
+    assert call.error("Error %s", "John", extra={"n": "Doe"}) in calls
     assert call.error(command.exception) in calls
-    assert call.error(command.exception, extra={'n': 'Doe'}) in calls
+    assert call.error(command.exception, extra={"n": "Doe"}) in calls

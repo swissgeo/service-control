@@ -8,206 +8,201 @@ from unittest.mock import patch
 
 import mock_api  # noqa: F401 unused-import
 import pytest
-from config.logging import RequestResponseLoggingMiddleware
-from config.logging import generate_log_extra
+from config.logging import RequestResponseLoggingMiddleware, generate_log_extra
+from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
+from django.test.utils import override_settings
 from ecs_logging import StdlibFormatter
 
-from django.http import FileResponse
-from django.http import HttpRequest
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.test.utils import override_settings
 
-
-@pytest.fixture(name='configure_logger')
+@pytest.fixture(name="configure_logger")
 def fixture_configure_logger(caplog):
     caplog.handler.setFormatter(StdlibFormatter())
 
 
 def test_api_generate_log_extra(settings):
-    settings.LOG_ALLOWED_HEADERS = [h.lower() for h in ['Content-Type', 'Lebowski', 'x-apigw-id']]
+    settings.LOG_ALLOWED_HEADERS = [h.lower() for h in ["Content-Type", "Lebowski", "x-apigw-id"]]
 
     request = HttpRequest()
     # overwrite the headers
     request.headers = {
-        'opinion': 'just like yours',
-        'content-type': 'bowling',
-        'secret-header': 'remove this',
-        'Lebowski': 'Jeffrey',
+        "opinion": "just like yours",
+        "content-type": "bowling",
+        "secret-header": "remove this",
+        "Lebowski": "Jeffrey",
     }
 
     response = HttpResponse()
-    response['Content-type'] = "Nihilism"
-    response['Set-Cookie'] = "Rug"
+    response["Content-type"] = "Nihilism"
+    response["Set-Cookie"] = "Rug"
 
     out = generate_log_extra(request, response)
 
-    request_headers = out['http']['request']['header'].keys()
-    response_headers = out['http']['response']['header'].keys()
+    request_headers = out["http"]["request"]["header"].keys()
+    response_headers = out["http"]["response"]["header"].keys()
 
-    assert 'content-type' in request_headers
-    assert 'lebowski' in request_headers
-    assert 'secret-header' not in request_headers
-    assert 'opinion' not in request_headers
+    assert "content-type" in request_headers
+    assert "lebowski" in request_headers
+    assert "secret-header" not in request_headers
+    assert "opinion" not in request_headers
 
-    assert 'content-type' in response_headers
-    assert 'set-cookie' not in response_headers
+    assert "content-type" in response_headers
+    assert "set-cookie" not in response_headers
 
 
 def test_api_404_logging(client, caplog, configure_logger):
-    path = '/api/v1/trigger-not-found'
+    path = "/api/v1/trigger-not-found"
     client.get(path)
 
     log_entry = json.loads(caplog.text)
 
-    assert log_entry['log.level'] == 'warning'
-    assert log_entry['message'] == f'Response 404 on {path}'
-    assert log_entry['http']['request']['method'] == 'GET'
-    assert log_entry['http']['response']['status_code'] == 404
-    assert log_entry['url']['path'] == path
+    assert log_entry["log.level"] == "warning"
+    assert log_entry["message"] == f"Response 404 on {path}"
+    assert log_entry["http"]["request"]["method"] == "GET"
+    assert log_entry["http"]["response"]["status_code"] == 404
+    assert log_entry["url"]["path"] == path
 
 
 def test_api_404_logging_with_query(client, caplog, configure_logger):
-    path = '/api/v1/trigger-not-found'
-    client.get(path + '?foo=bar')
+    path = "/api/v1/trigger-not-found"
+    client.get(path + "?foo=bar")
 
     log_entry = json.loads(caplog.text)
 
-    assert log_entry['log.level'] == 'warning'
-    assert log_entry['message'] == f'Response 404 on {path}'
-    assert log_entry['http']['request']['method'] == 'GET'
-    assert log_entry['http']['response']['status_code'] == 404
-    assert log_entry['url']['path'] == path
+    assert log_entry["log.level"] == "warning"
+    assert log_entry["message"] == f"Response 404 on {path}"
+    assert log_entry["http"]["request"]["method"] == "GET"
+    assert log_entry["http"]["response"]["status_code"] == 404
+    assert log_entry["url"]["path"] == path
 
 
 def test_api_404_logging_post(client, caplog, configure_logger):
-    path = '/api/v1/trigger-not-found-post'
+    path = "/api/v1/trigger-not-found-post"
     client.post(path)
 
     log_entry = json.loads(caplog.text)
 
-    assert log_entry['log.level'] == 'warning'
-    assert log_entry['message'] == f'Response 404 on {path}'
-    assert log_entry['http']['request']['method'] == 'POST'
-    assert log_entry['http']['response']['status_code'] == 404
-    assert log_entry['url']['path'] == path
+    assert log_entry["log.level"] == "warning"
+    assert log_entry["message"] == f"Response 404 on {path}"
+    assert log_entry["http"]["request"]["method"] == "POST"
+    assert log_entry["http"]["response"]["status_code"] == 404
+    assert log_entry["url"]["path"] == path
 
 
 def test_api_ninja_validation_logging(client, caplog, configure_logger):
-    path = '/api/v1/trigger-ninja-validation-error'
+    path = "/api/v1/trigger-ninja-validation-error"
     client.get(path)
 
     log_entry = json.loads(caplog.text)
 
-    assert log_entry['log.level'] == 'warning'
-    assert log_entry['message'] == f'Response 422 on {path}'
-    assert log_entry['http']['request']['method'] == 'GET'
-    assert log_entry['http']['response']['status_code'] == 422
-    assert log_entry['url']['path'] == path
+    assert log_entry["log.level"] == "warning"
+    assert log_entry["message"] == f"Response 422 on {path}"
+    assert log_entry["http"]["request"]["method"] == "GET"
+    assert log_entry["http"]["response"]["status_code"] == 422
+    assert log_entry["url"]["path"] == path
 
 
 def test_api_500_server_error_logging(client, caplog, configure_logger):
-    path = '/api/v1/trigger-internal-server-error'
+    path = "/api/v1/trigger-internal-server-error"
     client.get(path)
 
     # we need to split the caplog, since I can't get rid of the bloody
     # django.log which also logs the request
-    log_entry = json.loads(caplog.text.split('\n')[0])
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
-    assert log_entry['log.level'] == 'error'
-    assert log_entry['message'] == 'RuntimeError()'
-    assert log_entry['http']['response']['status_code'] == 500
-    assert 'error' in log_entry
-    assert 'stack_trace' in log_entry['error']
-    assert 'raise RuntimeError' in log_entry['error']['stack_trace']
-    assert log_entry['url']['path'] == path
+    assert log_entry["log.level"] == "error"
+    assert log_entry["message"] == "RuntimeError()"
+    assert log_entry["http"]["response"]["status_code"] == 500
+    assert "error" in log_entry
+    assert "stack_trace" in log_entry["error"]
+    assert "raise RuntimeError" in log_entry["error"]["stack_trace"]
+    assert log_entry["url"]["path"] == path
 
 
 def test_api_http_error_logging(client, caplog, configure_logger):
-    path = '/api/v1/trigger-http-error'
+    path = "/api/v1/trigger-http-error"
     client.get(path)
 
     # we need to split the caplog, since I can't get rid of the bloody
     # django.log which also logs the request
-    log_entry = json.loads(caplog.text.split('\n')[0])
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
-    assert log_entry['log.level'] == 'info'
-    assert log_entry['http']['response']['status_code'] == 303
-    assert log_entry['message'] == f"Response 303 on {path}"
-    assert log_entry['url']['path'] == path
+    assert log_entry["log.level"] == "info"
+    assert log_entry["http"]["response"]["status_code"] == 303
+    assert log_entry["message"] == f"Response 303 on {path}"
+    assert log_entry["url"]["path"] == path
 
 
 def test_api_positive_request_log(client, caplog, configure_logger):
-    path = '/api/v1/trigger-200-response'
+    path = "/api/v1/trigger-200-response"
     client.get(path)
 
     # we need to split the caplog, since I can't get rid of the bloody
     # django.log which also logs the request
-    log_entry = json.loads(caplog.text.split('\n')[0])
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
-    assert log_entry['message'] == f'Response 200 on {path}'
-    assert log_entry['http']['request']['method'] == "GET"
-    assert log_entry['http']['response']['status_code'] == 200
-    assert log_entry['url']['path'] == path
+    assert log_entry["message"] == f"Response 200 on {path}"
+    assert log_entry["http"]["request"]["method"] == "GET"
+    assert log_entry["http"]["response"]["status_code"] == 200
+    assert log_entry["url"]["path"] == path
 
 
 @override_settings(LOGGING_MAX_REQUEST_PAYLOAD_SIZE=5)
 @override_settings(LOGGING_MAX_RESPONSE_PAYLOAD_SIZE=6)
-@patch('config.logging.time')
-@patch('config.logging.logger')
+@patch("config.logging.time")
+@patch("config.logging.logger")
 def test_logging_middleware_logs(logger, time, rf):
     request = rf.post(
-        path='/some-url/?query=café&location=New York&path=/:foo,/:bar',
-        data={'foo': 'bar'},
-        content_type='application/json',
+        path="/some-url/?query=café&location=New York&path=/:foo,/:bar",
+        data={"foo": "bar"},
+        content_type="application/json",
     )
-    response = JsonResponse(data={'bar': 'baz'}, status=204, headers={'X-Foo': 'Bar'})
+    response = JsonResponse(data={"bar": "baz"}, status=204, headers={"X-Foo": "Bar"})
 
     time.side_effect = [1, 2]
     middleware = RequestResponseLoggingMiddleware(lambda r: response)
     middleware(request)
 
     logger.debug.assert_called_once()
-    encoded = 'query=caf%C3%A9&location=New%20York&path=/:foo,/:bar'
+    encoded = "query=caf%C3%A9&location=New%20York&path=/:foo,/:bar"
     logger.debug.assert_called_with(
-        'Request %s %s?%s',
-        'POST',
-        '/some-url/',
+        "Request %s %s?%s",
+        "POST",
+        "/some-url/",
         encoded,
         extra={
-            'request.request': request,
-            'request.query': encoded,
-            'request.payload': '{"foo',
+            "request.request": request,
+            "request.query": encoded,
+            "request.payload": '{"foo',
         },
     )
 
     logger.info.assert_called_once()
     logger.info.assert_called_with(
-        'Response %s %s %s?%s',
+        "Response %s %s %s?%s",
         204,
-        'POST',
-        '/some-url/',
+        "POST",
+        "/some-url/",
         encoded,
         extra={
-            'request': request,
-            'response': {
-                'code': 204,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Foo': 'Bar',
+            "request": request,
+            "response": {
+                "code": 204,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "X-Foo": "Bar",
                 },
-                'duration': 1,
-                'payload': '{"bar"',
+                "duration": 1,
+                "payload": '{"bar"',
             },
         },
     )
 
 
-@patch('config.logging.time')
-@patch('config.logging.logger')
+@patch("config.logging.time")
+@patch("config.logging.logger")
 def test_logging_middleware_skips_content_types(logger, time, rf):
-    request = rf.post('/some-url/', data={'foo': 'bar'})  # multipart
-    response = FileResponse(content_type='application/octet-stream')
+    request = rf.post("/some-url/", data={"foo": "bar"})  # multipart
+    response = FileResponse(content_type="application/octet-stream")
 
     time.side_effect = [1, 2]
     middleware = RequestResponseLoggingMiddleware(lambda r: response)
@@ -215,31 +210,31 @@ def test_logging_middleware_skips_content_types(logger, time, rf):
 
     logger.debug.assert_called_once()
     logger.debug.assert_called_with(
-        'Request %s %s?%s',
-        'POST',
-        '/some-url/',
-        '',
+        "Request %s %s?%s",
+        "POST",
+        "/some-url/",
+        "",
         extra={
-            'request.request': request,
-            'request.query': '',
+            "request.request": request,
+            "request.query": "",
         },
     )
 
     logger.info.assert_called_once()
     logger.info.assert_called_with(
-        'Response %s %s %s?%s',
+        "Response %s %s %s?%s",
         200,
-        'POST',
-        '/some-url/',
-        '',
+        "POST",
+        "/some-url/",
+        "",
         extra={
-            'request': request,
-            'response': {
-                'code': 200,
-                'headers': {
-                    'Content-Type': 'application/octet-stream',
+            "request": request,
+            "response": {
+                "code": 200,
+                "headers": {
+                    "Content-Type": "application/octet-stream",
                 },
-                'duration': 1,
+                "duration": 1,
             },
         },
     )

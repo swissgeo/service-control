@@ -1,17 +1,13 @@
-from config.logging import LoggedNinjaAPI
-from ninja import NinjaAPI
-from ninja.errors import AuthenticationError
-from ninja.errors import HttpError
-from ninja.errors import ValidationError as NinjaValidationError
-from organization.api import router as organization_router
-from utils.exceptions import contains_error_code
-from utils.exceptions import extract_error_messages
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.http import Http404
-from django.http import HttpRequest
-from django.http import HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
+from ninja import NinjaAPI
+from ninja.errors import AuthenticationError, HttpError
+from ninja.errors import ValidationError as NinjaValidationError
+from organization.api import router as organization_router
+from utils.exceptions import contains_error_code, extract_error_messages
+
+from config.logging import LoggedNinjaAPI
 
 api = LoggedNinjaAPI()
 
@@ -43,7 +39,7 @@ def handle_django_validation_error(
 @api.exception_handler(ObjectDoesNotExist)
 def handle_404_not_found(
     request: HttpRequest,
-    exception: Http404  # noqa: ARG001 unused argument
+    exception: Http404,  # noqa: ARG001 unused argument
 ) -> HttpResponse:
     return api.create_response(
         request,
@@ -58,7 +54,7 @@ def handle_404_not_found(
 @api.exception_handler(Exception)
 def handle_exception(
     request: HttpRequest,
-    exception: Exception  # noqa: ARG001 unused argument
+    exception: Exception,  # noqa: ARG001 unused argument
 ) -> HttpResponse:
     return api.create_response(
         request,
@@ -85,7 +81,7 @@ def handle_http_error(request: HttpRequest, exception: HttpError) -> HttpRespons
 @api.exception_handler(AuthenticationError)
 def handle_unauthorized(
     request: HttpRequest,
-    exception: AuthenticationError  # noqa: ARG001 unused argument
+    exception: AuthenticationError,  # noqa: ARG001 unused argument
 ) -> HttpResponse:
     return api.create_response(
         request,

@@ -1,6 +1,5 @@
 from enum import StrEnum
-from typing import Any
-from typing import Final
+from typing import Any, Final
 
 from django.http.request import HttpHeaders
 
@@ -11,6 +10,7 @@ class LanguageCode(StrEnum):
     """
     Two-letter language codes
     """
+
     GERMAN = "de"
     FRENCH = "fr"
     ITALIAN = "it"

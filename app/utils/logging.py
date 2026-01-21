@@ -1,11 +1,7 @@
 from collections.abc import Generator
-from contextlib import contextmanager
-from contextlib import redirect_stderr
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from io import StringIO
-from logging import ERROR
-from logging import INFO
-from logging import getLogger
+from logging import ERROR, INFO, getLogger
 from logging.config import dictConfig
 from time import time
 
@@ -13,7 +9,7 @@ from django.conf import settings
 
 
 class TimestampedStringIO(StringIO):
-    """ A StringIO-like in-memory text buffer that logs each write and stores a timestamp for when
+    """A StringIO-like in-memory text buffer that logs each write and stores a timestamp for when
     the content was appended.
 
     """
@@ -31,10 +27,10 @@ class TimestampedStringIO(StringIO):
 
 
 @contextmanager
-def redirect_std_to_logger(logger_name: str,
-                           stderr_level: int = ERROR,
-                           stdout_level: int = INFO) -> Generator[None]:
-    """ A context manager that redirects sys.stdout and sys.stderr to the logger using the given
+def redirect_std_to_logger(
+    logger_name: str, stderr_level: int = ERROR, stdout_level: int = INFO
+) -> Generator[None]:
+    """A context manager that redirects sys.stdout and sys.stderr to the logger using the given
     levels.
 
     Use it like this:

@@ -1,20 +1,14 @@
 import sys
 from collections.abc import Callable
-from json import dumps
-from json import loads
-from logging import LogRecord
-from logging import getLogger
+from json import dumps, loads
+from logging import LogRecord, getLogger
 from time import time
-from typing import Any
-from typing import TypedDict
-
-from ecs_logging import StdlibFormatter
-from ninja import NinjaAPI
+from typing import Any, TypedDict
 
 from django.conf import settings
-from django.http import HttpRequest
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from ecs_logging import StdlibFormatter
+from ninja import NinjaAPI
 
 logger = getLogger(__name__)
 
@@ -70,27 +64,27 @@ def generate_log_extra(request: HttpRequest, response: HttpResponse) -> LogExtra
         dict: dict of extras
     """
     return {
-        'http': {
-            'request': {
-                'method': request.method or 'UNKNOWN',
-                'header': {
+        "http": {
+            "request": {
+                "method": request.method or "UNKNOWN",
+                "header": {
                     k.lower(): v
                     for k, v in request.headers.items()
                     if k.lower() in settings.LOG_ALLOWED_HEADERS
                 },
             },
-            'response': {
-                'status_code': response.status_code,
-                'header': {
+            "response": {
+                "status_code": response.status_code,
+                "header": {
                     k.lower(): v
                     for k, v in response.headers.items()
                     if k.lower() in settings.LOG_ALLOWED_HEADERS
                 },
             },
         },
-        'url': {
-            'path': request.path or 'UNKNOWN',
-            'scheme': request.scheme or 'UNKNOWN',
+        "url": {
+            "path": request.path or "UNKNOWN",
+            "scheme": request.scheme or "UNKNOWN",
         },
     }
 
@@ -139,18 +133,18 @@ class LoggedNinjaAPI(NinjaAPI):
 
 
 class RequestResponseLoggingMiddleware:
-    url_safe = ',:/'  # characters that should not be urlencoded in the log statements
+    url_safe = ",:/"  # characters that should not be urlencoded in the log statements
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         # Do not log API calls, they are logged with the LoggedNinjaAPI above
-        if request.path.startswith('/api/'):
+        if request.path.startswith("/api/"):
             return self.get_response(request)
 
         # Code to be executed for each request before the view (and later middlewares) are called.
-        method = (request.method or '').upper()
+        method = (request.method or "").upper()
         extra: dict[str, Any] = {
             "request.request": request,
             "request.query": request.GET.urlencode(self.url_safe),
@@ -159,7 +153,7 @@ class RequestResponseLoggingMiddleware:
             method in ("PATCH", "POST", "PUT") and request.content_type == "application/json"
         )
         if add_payload:
-            payload = request.body.decode()[:int(settings.LOGGING_MAX_REQUEST_PAYLOAD_SIZE)]
+            payload = request.body.decode()[: int(settings.LOGGING_MAX_REQUEST_PAYLOAD_SIZE)]
             extra["request.payload"] = payload
 
         logger.debug(
@@ -186,7 +180,7 @@ class RequestResponseLoggingMiddleware:
         # Not all response types have a 'content' attribute, HttpResponse and JSONResponse sure have
         # (e.g. WhiteNoiseFileResponse doesn't)
         if isinstance(response, (HttpResponse, JsonResponse)):
-            payload = response.content.decode()[:int(settings.LOGGING_MAX_RESPONSE_PAYLOAD_SIZE)]
+            payload = response.content.decode()[: int(settings.LOGGING_MAX_RESPONSE_PAYLOAD_SIZE)]
             extra["response"]["payload"] = payload
 
         logger.info(
@@ -202,6 +196,5 @@ class RequestResponseLoggingMiddleware:
 
 
 class PrettyStdlibFormatter(StdlibFormatter):
-
     def format(self, record: LogRecord) -> str:
         return dumps(loads(super().format(record)), indent=2, sort_keys=True)

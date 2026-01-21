@@ -1,13 +1,12 @@
 from unittest.mock import patch
 
 import pytest
-from organization.models import Organization
-
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
+from organization.models import Organization
 
 
-@patch('organization.models.Client')
+@patch("organization.models.Client")
 def test_object_stored_as_expected_for_valid_input(client, db):
     organization_in = {
         "organization_id": "ch.bafu",
@@ -44,7 +43,7 @@ def test_object_stored_as_expected_for_valid_input(client, db):
     assert client.return_value.create_group.called
 
 
-@patch('organization.models.Client')
+@patch("organization.models.Client")
 def test_object_created_in_db_with_optional_fields_null(client, db):
     organization_in = {
         "organization_id": "ch.bafu",
@@ -89,9 +88,7 @@ def test_raises_exception_when_creating_db_object_with_mandatory_field_null(db):
 
 
 def test_form_valid_for_blank_optional_field(db):
-
     class OrganizationForm(ModelForm):
-
         class Meta:
             model = Organization
             fields = "__all__"  # noqa: DJ007
@@ -111,9 +108,7 @@ def test_form_valid_for_blank_optional_field(db):
 
 
 def test_form_invalid_for_blank_mandatory_field(db):
-
     class OrganizationForm(ModelForm):
-
         class Meta:
             model = Organization
             fields = "__all__"  # noqa: DJ007
@@ -132,7 +127,7 @@ def test_form_invalid_for_blank_mandatory_field(db):
     assert form.is_valid() is False
 
 
-@patch('organization.models.Client')
+@patch("organization.models.Client")
 def test_raises_exception_for_existing_slug(client, db):
     Organization.objects.create(
         organization_id="ch.bafu",
@@ -158,7 +153,7 @@ def test_raises_exception_for_existing_slug(client, db):
     assert client.return_value.create_group.call_count == 1
 
 
-@patch('organization.models.Client')
+@patch("organization.models.Client")
 def test_save_updates_records(client, db):
     model_fields = {
         "organization_id": "ch.bafu",
@@ -178,7 +173,7 @@ def test_save_updates_records(client, db):
     actual.name_de = "Bundesamt für Umwelt"
     actual.save()
     updated = Organization.objects.first()
-    assert updated.name_de == 'Bundesamt für Umwelt'
+    assert updated.name_de == "Bundesamt für Umwelt"
     assert client.return_value.mock_calls == []
 
     with pytest.raises(ValidationError):
@@ -196,7 +191,7 @@ def test_save_updates_records(client, db):
     assert client.return_value.mock_calls == []
 
 
-@patch('organization.models.Client')
+@patch("organization.models.Client")
 def test_delete_deletes_records(client, db):
     model_fields = {
         "organization_id": "ch.bafu",

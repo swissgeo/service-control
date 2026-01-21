@@ -1,9 +1,7 @@
 import logging
-from typing import Any
-from typing import TextIO
+from typing import Any, TextIO
 
-from django.core.management.base import BaseCommand
-from django.core.management.base import CommandParser
+from django.core.management.base import BaseCommand, CommandParser
 
 
 class CustomBaseCommand(BaseCommand):
@@ -44,9 +42,9 @@ class CustomBaseCommand(BaseCommand):
         Subclasses may want to extend this method.
         """
 
-        parser.add_argument('--logger', action='store_true', help='use logger configuration')
+        parser.add_argument("--logger", action="store_true", help="use logger configuration")
 
-    def handle(self, *args: Any, **options: dict['str', Any]) -> None:
+    def handle(self, *args: Any, **options: dict["str", Any]) -> None:
         """
         The actual logic of the command.
 
@@ -55,11 +53,11 @@ class CustomBaseCommand(BaseCommand):
 
         raise NotImplementedError("subclasses of CustomBaseCommand must provide a handle() method")
 
-    def execute(self, *args: Any, **options: dict['str', Any]) -> None:
-        """ Try to execute the command and log any exceptions if the logger is configured. """
+    def execute(self, *args: Any, **options: dict["str", Any]) -> None:
+        """Try to execute the command and log any exceptions if the logger is configured."""
 
         self.options = options
-        if self.options['logger']:
+        if self.options["logger"]:
             try:
                 super().execute(*args, **options)
             except Exception as e:  # noqa: BLE001
@@ -68,45 +66,45 @@ class CustomBaseCommand(BaseCommand):
             super().execute(*args, **options)
 
     def print(self, message: str, *args: Any, level: int = 2, **kwargs: Any) -> None:
-        if self.options['verbosity'] >= level:
-            if self.options['logger']:
+        if self.options["verbosity"] >= level:
+            if self.options["logger"]:
                 self.logger.info(message, *args, **kwargs)
             else:
                 if len(kwargs) > 0:
-                    message = message + " " + ", ".join(
-                        f"{key}={value}" for key, value in kwargs.items()
+                    message = (
+                        message + " " + ", ".join(f"{key}={value}" for key, value in kwargs.items())
                     )
                 self.stdout.write(message % (args))
 
     def print_warning(self, message: str, *args: Any, level: int = 1, **kwargs: Any) -> None:
-        if self.options['verbosity'] >= level:
-            if self.options['logger']:
+        if self.options["verbosity"] >= level:
+            if self.options["logger"]:
                 self.logger.warning(message, *args, **kwargs)
             else:
                 if len(kwargs) > 0:
-                    message = message + " " + ", ".join(
-                        f"{key}={value}" for key, value in kwargs.items()
+                    message = (
+                        message + " " + ", ".join(f"{key}={value}" for key, value in kwargs.items())
                     )
                 self.stdout.write(self.style.WARNING(message % (args)))
 
     def print_success(self, message: str, *args: Any, level: int = 1, **kwargs: Any) -> None:
-        if self.options['verbosity'] >= level:
-            if self.options['logger']:
+        if self.options["verbosity"] >= level:
+            if self.options["logger"]:
                 self.logger.info(message, *args, **kwargs)
             else:
                 if len(kwargs) > 0:
-                    message = message + " " + ", ".join(
-                        f"{key}={value}" for key, value in kwargs.items()
+                    message = (
+                        message + " " + ", ".join(f"{key}={value}" for key, value in kwargs.items())
                     )
                 self.stdout.write(self.style.SUCCESS(message % (args)))
 
     def print_error(self, message: str | Exception, *args: Any, **kwargs: Any) -> None:
-        if self.options['logger']:
+        if self.options["logger"]:
             self.logger.error(message, *args, **kwargs)
         else:
             message = str(message)
             if len(kwargs) > 0:
-                message = message + "\n" + ", ".join(
-                    f"{key}={value}" for key, value in kwargs.items()
+                message = (
+                    message + "\n" + ", ".join(f"{key}={value}" for key, value in kwargs.items())
                 )
             self.stderr.write(self.style.ERROR(message % (args)))

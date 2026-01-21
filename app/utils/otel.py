@@ -18,11 +18,11 @@ def strtobool(value: str) -> bool:
     'val' is anything else.
     """
     value = value.lower()
-    if value in ('y', 'yes', 't', 'true', 'on', '1'):
+    if value in ("y", "yes", "t", "true", "on", "1"):
         return True
-    if value in ('n', 'no', 'f', 'false', 'off', '0'):
+    if value in ("n", "no", "f", "false", "off", "0"):
         return False
-    raise ValueError(f"invalid truth value \'{value}\'")  # noqa: TRY003
+    raise ValueError(f"invalid truth value '{value}'")  # noqa: TRY003
 
 
 def initialize_tracing() -> bool:
@@ -46,9 +46,9 @@ def setup_trace_provider() -> None:
         # create a new one using the default OTEL env variables and ad it to the tracer.
         span_processor = BatchSpanProcessor(
             OTLPSpanExporter(
-                endpoint=getenv('OTEL_EXPORTER_OTLP_ENDPOINT', "http://localhost:4317"),
-                headers=getenv('OTEL_EXPORTER_OTLP_HEADERS'),
-                insecure=strtobool(getenv('OTEL_EXPORTER_OTLP_INSECURE', "false")),
+                endpoint=getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
+                headers=getenv("OTEL_EXPORTER_OTLP_HEADERS"),
+                insecure=strtobool(getenv("OTEL_EXPORTER_OTLP_INSECURE", "false")),
             ),
         )
 

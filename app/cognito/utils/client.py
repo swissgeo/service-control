@@ -1,11 +1,9 @@
 from boto3 import client
-
 from django.conf import settings
 
 
 class Client:
-    """ A low level client for managing cognito users and groups.
-    """
+    """A low level client for managing cognito users and groups."""
 
     def __init__(self) -> None:
         self.endpoint_url = settings.COGNITO_ENDPOINT_URL

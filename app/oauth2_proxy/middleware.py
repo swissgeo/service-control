@@ -5,8 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.contrib.auth.models import Group
-from django.http import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
 
