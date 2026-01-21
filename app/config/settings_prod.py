@@ -1,4 +1,5 @@
-from .settings_base import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from .settings_base import *  # noqa: F401, F403
+from .settings_base import BASE_DIR
 
 DEBUG = False
 

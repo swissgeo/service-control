@@ -6,7 +6,7 @@
 import json
 from unittest.mock import patch
 
-import mock_api  # pylint: disable=unused-import
+import mock_api  # noqa: F401 unused-import
 import pytest
 from config.logging import RequestResponseLoggingMiddleware
 from config.logging import generate_log_extra
@@ -125,7 +125,7 @@ def test_api_500_server_error_logging(client, caplog, configure_logger):
 
 def test_api_http_error_logging(client, caplog, configure_logger):
     path = '/api/v1/trigger-http-error'
-    response = client.get(path)
+    client.get(path)
 
     # we need to split the caplog, since I can't get rid of the bloody
     # django.log which also logs the request
@@ -139,7 +139,7 @@ def test_api_http_error_logging(client, caplog, configure_logger):
 
 def test_api_positive_request_log(client, caplog, configure_logger):
     path = '/api/v1/trigger-200-response'
-    response = client.get(path)
+    client.get(path)
 
     # we need to split the caplog, since I can't get rid of the bloody
     # django.log which also logs the request

@@ -5,7 +5,7 @@ import os
 os.environ['DB_USER'] = 'postgres'
 os.environ['DB_PW'] = 'postgres'
 
-from .settings_dev import *  # pylint: disable=wildcard-import, unused-wildcard-import, wrong-import-position
+from .settings_dev import * # noqa: F401, F403
 
 TESTING = True
 SECRET_KEY = 'django-insecure-6-72r#zx=sv6v@-4k@uf1gv32me@%yr*oqa*fu8&5l&a!ws)5#'  # nosec B105

@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+# ruff: noqa: E402 module-import-not-at-top-of-file
+
 """
 WSGI config for project project.
 
@@ -9,7 +12,6 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 """
 
 # isort:skip_file
-# pylint: disable=wrong-import-position,wrong-import-order
 
 # The gevent monkey import and patch suppress a warning, and a potential problem.
 # Gunicorn would call it anyway, but if it tries to call it after the ssl module

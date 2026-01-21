@@ -6,7 +6,7 @@ from pytest import fixture
 
 @fixture(name='organization')
 def fixture_organization(db):
-    with patch('organization.models.Client') as client:
+    with patch('organization.models.Client'):
         yield Organization.objects.create(
             organization_id="ch.bafu",
             acronym_de="BAFU",
