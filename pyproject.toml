@@ -31,7 +31,6 @@ dev = [
     "django_debug_toolbar",
     "django-extensions",
     "django-stubs~=5.2",
-    "isort",
     "mypy",
     "pytest",
     "pytest-cov",
@@ -39,7 +38,6 @@ dev = [
     "pytest-xdist",
     "types-gevent~=25.4",
     "types-gunicorn~=23.0",
-    "yapf",
     "boto3-stubs[cognito-idp]~=1.42",
     "ruff>=0.14.13",
 ]
