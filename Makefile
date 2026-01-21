@@ -45,6 +45,9 @@ ENV_FILE ?= $(if $(wildcard .env.local),.env.local,.env)
 # export the env file so that uv picks it up in all recipes below
 export UV_ENV_FILE := $(ENV_FILE)
 
+.env:
+	cp .env.default .env
+
 .PHONY: git-info
 git-info:
 	@echo "GIT_HASH=$(GIT_HASH)"
@@ -57,15 +60,14 @@ git-info:
 
 
 .PHONY: ci
-ci:
+ci: .env
 	# Create virtual env with all packages for development using the Pipfile.lock
 	uv sync --frozen
 
 
 .PHONY: setup
-setup: $(SETTINGS_TIMESTAMP) ## Create virtualenv with all packages for development
+setup:.env ## Create virtualenv with all packages for development
 	uv sync
-	cp .env.default .env
 	# Start a new zsh shell with the virtualenv activated and the .env file loaded into the environment
 	# variables. The later is required for django which reads the settings from the environment variables
 	uv run zsh
