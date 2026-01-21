@@ -66,6 +66,9 @@ ci:
 setup: $(SETTINGS_TIMESTAMP) ## Create virtualenv with all packages for development
 	uv sync
 	cp .env.default .env
+	# Start a new zsh shell with the virtualenv activated and the .env file loaded into the environment
+	# variables. The later is required for django which reads the settings from the environment variables
+	uv run zsh
 
 
 .PHONY: init-db
