@@ -175,8 +175,8 @@ cython_debug/
 .local
 .timestamps
 
-# visual studio code
-.vscode
 
 # Sublime Text
 *.sublime-*
+
+.ruff_cache
