@@ -45,7 +45,7 @@ app/manage.py migrate --redirect-std-to-logger
 Prerequisites on host for development and build:
 
 - python version 3.13
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- [pipenv](https://pipenv-fork.readthedocs.io/en/latest/install.html)
 - `docker` and `docker compose`
 
 ### Setup
@@ -95,19 +95,19 @@ hand, are not pinned unless they need to be used with a specific version of a pr
 To update the packages to the latest minor/compatible versions, run:
 
 ```bash
-uv sync --upgrade
+pipenv update --dev
 ```
 
 To see what major/incompatible releases would be available, run:
 
 ```bash
-uv pip list --outdated
+pipenv update --dev --outdated
 ```
 
 To update packages to a new major release, run:
 
 ```bash
-uv add logging-utilities~=5.0
+pipenv install logging-utilities~=5.0
 ```
 
 ### Running Tests In Parallel
