@@ -20,22 +20,29 @@ from django.http import JsonResponse
 
 logger = getLogger(__name__)
 
-LogExtra = TypedDict(
-    'LogExtra',
-    {
-        'http': {
-            'request': {
-                'method': str, 'header': dict[str, str]
-            },
-            'response': {
-                'status_code': int, 'header': dict[str, str]
-            }
-        },
-        'url': {
-            'path': str, 'scheme': str
-        }
-    }
-)
+class LogExtraHttpRequest(TypedDict):
+    method: str
+    header: dict[str, str]
+
+
+class LogExtraHttpResponse(TypedDict):
+    status_code: int
+    header: dict[str, str]
+
+
+class LogExtraHttp(TypedDict):
+    request: LogExtraHttpRequest
+    response: LogExtraHttpResponse
+
+
+class LogExtraUrl(TypedDict):
+    path: str
+    scheme: str
+
+
+class LogExtra(TypedDict):
+    http: LogExtraHttp
+    url: LogExtraUrl
 
 
 def generate_log_extra(request: HttpRequest, response: HttpResponse) -> LogExtra:
