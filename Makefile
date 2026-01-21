@@ -26,9 +26,8 @@ PYTHON := $(UV_RUN) python3
 TEST := $(UV_RUN) pytest
 YAPF := $(UV_RUN) yapf
 ISORT := $(UV_RUN) isort
-PYLINT := $(UV_RUN) pylint
+RUFF := $(UV_RUN) ruff
 MYPY := $(UV_RUN) mypy
-BANDIT := $(UV_RUN) bandit
 
 # Find all python files that are not inside a hidden directory (directory starting with .)
 PYTHON_FILES := $(shell find $(APP_SRC_DIR) -type f -name "*.py" -print)
@@ -162,8 +161,8 @@ dockerrun: dockerbuild ## Run the locally built docker image
 #   (which is not available)
 .PHONY: lint
 lint: ## Run the linter on the code base
-	@echo "Run pylint..."
-	LOGGING_CFG=0 $(PYLINT) $(PYTHON_FILES)
+	@echo "Run ruff..."
+	LOGGING_CFG=0 $(RUFF) check
 
 
 .PHONY: type-check
@@ -184,11 +183,6 @@ test-ci: ## Run tests in the CI
 .PHONY: test
 test: ## Run tests locally
 	$(TEST) --cov --cov-branch --cov-report=html
-
-
-.PHONY: security-check
-security-check: ## Run bandit security checker locally
-	$(BANDIT) --recursive --ini .bandit app
 
 
 .PHONY: help
