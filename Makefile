@@ -24,13 +24,8 @@ DJANGO_MANAGER_DEBUG := -m debugpy --listen localhost:5678 --wait-for-client $(C
 UV_RUN := uv run
 PYTHON := $(UV_RUN) python3
 TEST := $(UV_RUN) pytest
-YAPF := $(UV_RUN) yapf
-ISORT := $(UV_RUN) isort
 RUFF := $(UV_RUN) ruff
 MYPY := $(UV_RUN) mypy
-
-# Find all python files that are not inside a hidden directory (directory starting with .)
-PYTHON_FILES := $(shell find $(APP_SRC_DIR) -type f -name "*.py" -print)
 
 # Docker variables?
 DOCKER_REGISTRY = 074597099015.dkr.ecr.eu-central-1.amazonaws.com
@@ -79,9 +74,9 @@ init-db: ## Initialize the local database
 
 
 .PHONY: format
-format: ## Call yapf to make sure your code is easier to read and respects some conventions.
-	$(YAPF) -p -i --style .style.yapf $(PYTHON_FILES)
-	$(ISORT) $(PYTHON_FILES)
+format: ## Call ruff format to make sure your code is easier to read and respects some conventions.
+	$(RUFF) format
+	$(RUFF) check --select I --fix
 
 
 .PHONY: django-checks
@@ -154,8 +149,7 @@ dockerrun: dockerbuild ## Run the locally built docker image
 
 .PHONY: lint
 lint: ## Run the linter on the code base
-	@echo "Run ruff..."
-	LOGGING_CFG=0 $(RUFF) check
+	$(RUFF) check
 
 
 .PHONY: type-check

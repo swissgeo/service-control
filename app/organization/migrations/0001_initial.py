@@ -7,50 +7,49 @@ from django.db import models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Organization',
+            name="Organization",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name='ID',
+                        verbose_name="ID",
                     ),
                 ),
                 (
-                    'organization_id',
+                    "organization_id",
                     utils.fields.CustomSlugField(
                         db_index=True,
                         max_length=100,
                         unique=True,
-                        verbose_name='External ID',
+                        verbose_name="External ID",
                     ),
                 ),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='Created')),
-                ('updated', models.DateTimeField(auto_now=True, verbose_name='Updated')),
-                ('name_de', models.CharField(verbose_name='Name (German)')),
-                ('name_fr', models.CharField(verbose_name='Name (French)')),
-                ('name_en', models.CharField(verbose_name='Name (English)')),
-                ('name_it', models.CharField(blank=True, null=True, verbose_name='Name (Italian)')),
-                ('name_rm', models.CharField(blank=True, null=True, verbose_name='Name (Romansh)')),
-                ('acronym_de', models.CharField(verbose_name='Acronym (German)')),
-                ('acronym_fr', models.CharField(verbose_name='Acronym (French)')),
-                ('acronym_en', models.CharField(verbose_name='Acronym (English)')),
+                ("created", models.DateTimeField(auto_now_add=True, verbose_name="Created")),
+                ("updated", models.DateTimeField(auto_now=True, verbose_name="Updated")),
+                ("name_de", models.CharField(verbose_name="Name (German)")),
+                ("name_fr", models.CharField(verbose_name="Name (French)")),
+                ("name_en", models.CharField(verbose_name="Name (English)")),
+                ("name_it", models.CharField(blank=True, null=True, verbose_name="Name (Italian)")),
+                ("name_rm", models.CharField(blank=True, null=True, verbose_name="Name (Romansh)")),
+                ("acronym_de", models.CharField(verbose_name="Acronym (German)")),
+                ("acronym_fr", models.CharField(verbose_name="Acronym (French)")),
+                ("acronym_en", models.CharField(verbose_name="Acronym (English)")),
                 (
-                    'acronym_it',
-                    models.CharField(blank=True, null=True, verbose_name='Acronym (Italian)'),
+                    "acronym_it",
+                    models.CharField(blank=True, null=True, verbose_name="Acronym (Italian)"),
                 ),
                 (
-                    'acronym_rm',
-                    models.CharField(blank=True, null=True, verbose_name='Acronym (Romansh)'),
+                    "acronym_rm",
+                    models.CharField(blank=True, null=True, verbose_name="Acronym (Romansh)"),
                 ),
             ],
         ),

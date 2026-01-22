@@ -1,17 +1,16 @@
-from ninja import Router
-from utils.language import LanguageCode
-from utils.language import get_language
-from utils.language import get_translation
-
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from ninja import Router
+from utils.language import LanguageCode, get_language, get_translation
 
 from .models import Organization
-from .schemas import CreateOrganizationSchema
-from .schemas import OrganizationListSchema
-from .schemas import OrganizationSchema
-from .schemas import TranslationsSchema
-from .schemas import UpdateOrganizationSchema
+from .schemas import (
+    CreateOrganizationSchema,
+    OrganizationListSchema,
+    OrganizationSchema,
+    TranslationsSchema,
+    UpdateOrganizationSchema,
+)
 
 router = Router()
 

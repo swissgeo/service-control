@@ -22,14 +22,15 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 # NOTE: We do this only if wsgi.py is the main program, when running django runserver
 # for local development, monkey patching creates the following error:
 #     `RuntimeError: cannot release un-acquired lock`
-if __name__ == '__main__':
+if __name__ == "__main__":
     import gevent.monkey
+
     gevent.monkey.patch_all()
 
 # default to the setting that's being created in DOCKERFILE
 from os import environ
 
-environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 # Initialize OTEL.
 # Initialize should be called as early as possible, but at least before the app is imported
@@ -53,7 +54,6 @@ application = get_wsgi_application()
 
 
 class StandaloneApplication(BaseApplication):
-
     cfg: Config
 
     def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:
@@ -83,18 +83,19 @@ def post_fork(server: Arbiter, worker: Worker) -> None:
 
 
 # We use the port 5000 as default, otherwise we set the HTTP_PORT env variable within the container.
-if __name__ == '__main__':
-    HTTP_PORT = str(environ.get('HTTP_PORT', "8000"))
+if __name__ == "__main__":
+    HTTP_PORT = str(environ.get("HTTP_PORT", "8000"))
     # Bind to 0.0.0.0 to let your app listen to all network interfaces.
     options = {
-        'bind': f"{'0.0.0.0'}:{HTTP_PORT}",  # noqa: S104
-        'worker_class': 'gevent',
-        'workers': int(environ.get('GUNICORN_WORKERS',
-                                   '2')),  # scaling horizontally is left to Kubernetes
-        'worker_tmp_dir': environ.get('GUNICORN_WORKER_TMP_DIR', None),
-        'keepalive': int(environ.get('GUNICORN_KEEPALIVE', '2')),
-        'timeout': 60,
-        'logconfig_dict': get_logging_config(),
-        'post_fork': post_fork,
+        "bind": f"{'0.0.0.0'}:{HTTP_PORT}",  # noqa: S104
+        "worker_class": "gevent",
+        "workers": int(
+            environ.get("GUNICORN_WORKERS", "2")
+        ),  # scaling horizontally is left to Kubernetes
+        "worker_tmp_dir": environ.get("GUNICORN_WORKER_TMP_DIR", None),
+        "keepalive": int(environ.get("GUNICORN_KEEPALIVE", "2")),
+        "timeout": 60,
+        "logconfig_dict": get_logging_config(),
+        "post_fork": post_fork,
     }
     StandaloneApplication(application, options).run()

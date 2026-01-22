@@ -25,85 +25,85 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('SECRET_KEY', default=None)
+SECRET_KEY = env.str("SECRET_KEY", default=None)
 
 # SECURITY:
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
-SECURE_PROXY_SSL_HEADER = ('HTTP_CLOUDFRONT_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_CLOUDFRONT_FORWARDED_PROTO", "https")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 # Application definition
 INSTALLED_APPS = [
-    'oauth2_proxy',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.staticfiles',
-    'django.contrib.messages',
-    'cognito',
-    'support',
-    'organization',
+    "oauth2_proxy",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.staticfiles",
+    "django.contrib.messages",
+    "cognito",
+    "support",
+    "organization",
 ]
 
 MIDDLEWARE = [
     # Middleware to add request to thread variables, this should be far up in the chain so request
     # information can be added to as many logs as possible.
-    'logging_utilities.django_middlewares.add_request_context.AddToThreadContextMiddleware',
-    'config.logging.RequestResponseLoggingMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'oauth2_proxy.middleware.Oauth2ProxyRemoteUserMiddleware',
-    'oauth2_proxy.middleware.Oauth2ProxyRemoteMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "logging_utilities.django_middlewares.add_request_context.AddToThreadContextMiddleware",
+    "config.logging.RequestResponseLoggingMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "oauth2_proxy.middleware.Oauth2ProxyRemoteUserMiddleware",
+    "oauth2_proxy.middleware.Oauth2ProxyRemoteMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.RemoteUserBackend',
+    "django.contrib.auth.backends.RemoteUserBackend",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.application'
+WSGI_APPLICATION = "wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env.str('DB_NAME', 'service_control'),
-        'USER': env.str('DB_USER', 'service_control'),
-        'PASSWORD': env.str('DB_PW', 'service_control'),
-        'HOST': env.str('DB_HOST', 'service_control'),
-        'PORT': env.str('DB_PORT', "5432"),
-        'TEST': {
-            'NAME': env.str('DB_NAME_TEST', 'test_service_control'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env.str("DB_NAME", "service_control"),
+        "USER": env.str("DB_USER", "service_control"),
+        "PASSWORD": env.str("DB_PW", "service_control"),
+        "HOST": env.str("DB_HOST", "service_control"),
+        "PORT": env.str("DB_PORT", "5432"),
+        "TEST": {
+            "NAME": env.str("DB_NAME_TEST", "test_service_control"),
         },
     },
 }
@@ -113,25 +113,25 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -140,13 +140,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_HOST = env.str('DJANGO_STATIC_HOST', '')
-STATIC_URL = f'{STATIC_HOST}/static/'
+STATIC_HOST = env.str("DJANGO_STATIC_HOST", "")
+STATIC_URL = f"{STATIC_HOST}/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 class BadSchemeError(Exception):
@@ -167,18 +167,18 @@ def ensure_https(url: str | None) -> str | None:
 # oauth2-proxy
 # List of groups that are allowed in django admin interface
 OAUTH2_PROXY_URL_PREFIX = env.str("OAUTH2_PROXY_URL_PREFIX", "oauth2-proxy/")
-OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str('OAUTH2_PROXY_COGNITO_URL', None))
-OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str('OAUTH2_PROXY_COGNITO_APP_CLIENT_ID', 'local')
-OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str('OAUTH2_PROXY_EIAM_LOGOUT_URL', None))
+OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str("OAUTH2_PROXY_COGNITO_URL", None))
+OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str("OAUTH2_PROXY_COGNITO_APP_CLIENT_ID", "local")
+OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str("OAUTH2_PROXY_EIAM_LOGOUT_URL", None))
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
-    'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS',
-    default=['swissgeo-admin'],
+    "OAUTH2_PROXY_DJANGO_ADMIN_GROUPS",
+    default=["swissgeo-admin"],
 )
 
 # Cognito
-COGNITO_ENDPOINT_URL = env.str('COGNITO_ENDPOINT_URL', 'http://localhost:9229')
-COGNITO_POOL_ID = env.str('COGNITO_POOL_ID', 'local')
-COGNITO_MANAGED_FLAG_NAME = env.str('COGNITO_MANAGED_FLAG_NAME', 'dev:custom:managed_by_service')
+COGNITO_ENDPOINT_URL = env.str("COGNITO_ENDPOINT_URL", "http://localhost:9229")
+COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
+COGNITO_MANAGED_FLAG_NAME = env.str("COGNITO_MANAGED_FLAG_NAME", "dev:custom:managed_by_service")
 
 # Testing
 TESTING = False
@@ -186,13 +186,13 @@ TESTING = False
 
 # Read configuration from file
 def get_logging_config() -> dict[str, object]:
-    '''Read logging configuration
+    """Read logging configuration
     Read and parse the yaml logging configuration file passed in the environment variable
     LOGGING_CFG and return it as dictionary
     Note: LOGGING_CFG is relative to the root of the repo
-    '''
-    log_config_file = env.str('LOGGING_CFG', 'config/logging-cfg-local.yaml')
-    if log_config_file.lower() in ['none', '0', '', 'false', 'no']:
+    """
+    log_config_file = env.str("LOGGING_CFG", "config/logging-cfg-local.yaml")
+    if log_config_file.lower() in ["none", "0", "", "false", "no"]:
         return {}
     log_config = {}
     with open(BASE_DIR / log_config_file, encoding="utf-8") as fd:
@@ -201,12 +201,11 @@ def get_logging_config() -> dict[str, object]:
 
 
 LOGGING = get_logging_config()
-LOGGING_MAX_REQUEST_PAYLOAD_SIZE = env.int('LOGGING_MAX_REQUEST_PAYLOAD_SIZE', default=200)
-LOGGING_MAX_RESPONSE_PAYLOAD_SIZE = env.int('LOGGING_MAX_RESPONSE_PAYLOAD_SIZE', default=200)
+LOGGING_MAX_REQUEST_PAYLOAD_SIZE = env.int("LOGGING_MAX_REQUEST_PAYLOAD_SIZE", default=200)
+LOGGING_MAX_RESPONSE_PAYLOAD_SIZE = env.int("LOGGING_MAX_RESPONSE_PAYLOAD_SIZE", default=200)
 
 # list of headers that are allowed to be logged
 _DEFAULT_LOG_ALLOWED_HEADERS = [
-
     # Standard headers
     "accept",
     "accept-encoding",
@@ -232,32 +231,29 @@ _DEFAULT_LOG_ALLOWED_HEADERS = [
     "x-forwarded-host",
     "x-forwarded-port",
     "x-forwarded-proto",
-
-  # Cloudfront headers
+    # Cloudfront headers
     "cloudfront-is-android-viewer",
     "cloudfront-is-desktop-viewer",
     "cloudfront-is-ios-viewer",
     "cloudfront-is-mobile-viewer",
     "cloudfront-is-smarttv-viewer",
     "cloudfront-is-tablet-viewer",
-
-  # PPBGDI headers
+    # PPBGDI headers
     "x-e2e-testing",
-
-  # API GW Headers
+    # API GW Headers
     "apigw-requestid",
 ]
 LOG_ALLOWED_HEADERS = [
     str(header).lower()
-    for header in env.list('LOG_ALLOWED_HEADERS', default=_DEFAULT_LOG_ALLOWED_HEADERS)
+    for header in env.list("LOG_ALLOWED_HEADERS", default=_DEFAULT_LOG_ALLOWED_HEADERS)
 ]
 
 # Path prefix for root (checker). Useful if the service is deployed under a
 # specific path. Should end with a slash, for example  'service-control/'.
-ROOT_PATH_PREFIX = env.str('ROOT_PATH_PREFIX', default='')
+ROOT_PATH_PREFIX = env.str("ROOT_PATH_PREFIX", default="")
 
 # Path prefix for admin ui. Should end with a slash, for example 'service-control/'.
-ADMIN_PATH_PREFIX = env.str('ADMIN_PATH_PREFIX', default='')
+ADMIN_PATH_PREFIX = env.str("ADMIN_PATH_PREFIX", default="")
 
 # Path prefix for api endpoints. Should end with a slash, for example 'service-control/'.
-API_PATH_PREFIX = env.str('API_PATH_PREFIX', default='api/')
+API_PATH_PREFIX = env.str("API_PATH_PREFIX", default="api/")

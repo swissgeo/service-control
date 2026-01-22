@@ -3,12 +3,11 @@ from collections.abc import Iterable
 from typing import Any
 
 from cognito.utils.client import Client
-from ninja.errors import ValidationError
-from utils.fields import CustomSlugField
-
 from django.db import models
 from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
+from ninja.errors import ValidationError
+from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +16,20 @@ logger = logging.getLogger(__name__)
 
 
 class Organization(models.Model):
-
     _context = "Organization model"
 
     def __str__(self) -> str:
         return str(self.organization_id)
 
-    '''
+    """
     Note: The "blank=False" for a model field doesn't prevent DB changes.
           It only has an effect on form validation.
-    '''
+    """
     organization_id = CustomSlugField(
-        _(_context, "External ID"), max_length=100, unique=True, db_index=True,
+        _(_context, "External ID"),
+        max_length=100,
+        unique=True,
+        db_index=True,
     )
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
@@ -74,9 +75,11 @@ class Organization(models.Model):
             update_fields=update_fields,
         )
 
-    def delete(self,
-               using: str | None = None,
-               keep_parents: bool = False) -> tuple[int, dict[str, int]]:
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+    ) -> tuple[int, dict[str, int]]:
         """Deletes from the database and cognito."""
 
         client = Client()

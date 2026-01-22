@@ -4,9 +4,9 @@ import pytest
 from organization.models import Organization
 
 
-@pytest.fixture(name='organization')
+@pytest.fixture(name="organization")
 def fixture_organization(db):
-    with patch('organization.models.Client'):
+    with patch("organization.models.Client"):
         yield Organization.objects.create(
             organization_id="ch.bafu",
             acronym_de="BAFU",

@@ -2,27 +2,25 @@ from typing import Any
 
 import environ
 from psycopg import connect
-from psycopg.sql import SQL
-from psycopg.sql import Identifier
-from psycopg.sql import Literal
+from psycopg.sql import SQL, Identifier, Literal
 from utils.command import CustomBaseCommand
 
 env = environ.Env()
 
 
 class Command(CustomBaseCommand):
-    """Create the postgres role and database from information from the environment. """
+    """Create the postgres role and database from information from the environment."""
 
     help = "Database management"
 
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
-        host = env.str('DB_HOST', default='').strip()
-        port = env.str('DB_PORT', default='').strip()
-        admin_name = env.str('DB_ADMIN_USER', default='').strip()
-        admin_password = env.str('DB_ADMIN_PW', default='').strip()
-        user_name = env.str('DB_USER', default='').strip()
-        user_password = env.str('DB_PW', default='').strip()
-        database_name = env.str('DB_NAME', default='').strip()
+        host = env.str("DB_HOST", default="").strip()
+        port = env.str("DB_PORT", default="").strip()
+        admin_name = env.str("DB_ADMIN_USER", default="").strip()
+        admin_password = env.str("DB_ADMIN_PW", default="").strip()
+        user_name = env.str("DB_USER", default="").strip()
+        user_password = env.str("DB_PW", default="").strip()
+        database_name = env.str("DB_NAME", default="").strip()
 
         if not host:
             self.print_error("no DB_HOST provided")
@@ -40,18 +38,15 @@ class Command(CustomBaseCommand):
             self.print_error("no DB_NAME provided")
 
         connection_string = (
-            f"host={host} "
-            f"port={port} "
-            f"user={admin_name} "
-            f"password={admin_password} "
-            "dbname=postgres"
+            f"host={host} port={port} user={admin_name} password={admin_password} dbname=postgres"
         )
 
         with connect(connection_string, autocommit=True) as connection:
             with connection.cursor() as cursor:
                 # create role
-                result = cursor.execute("SELECT 1 FROM pg_roles WHERE rolname=%s",
-                                        (user_name,)).fetchone()
+                result = cursor.execute(
+                    "SELECT 1 FROM pg_roles WHERE rolname=%s", (user_name,)
+                ).fetchone()
                 if result is None:
                     cursor.execute(
                         SQL("CREATE ROLE {} WITH LOGIN ENCRYPTED PASSWORD {}").format(
@@ -69,10 +64,11 @@ class Command(CustomBaseCommand):
                 ).fetchone()
                 if result is None:
                     cursor.execute(
-                        SQL("CREATE DATABASE {} OWNER {}",
-                           ).format(Identifier(database_name), Identifier(user_name)),
+                        SQL(
+                            "CREATE DATABASE {} OWNER {}",
+                        ).format(Identifier(database_name), Identifier(user_name)),
                     )
                     self.print_success("Created database '%s'", database_name)
                     connection.commit()
 
-            self.print('Done')
+            self.print("Done")
