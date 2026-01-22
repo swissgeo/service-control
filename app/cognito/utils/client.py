@@ -1,5 +1,21 @@
+# from typing import TYPE_CHECKING
 from boto3 import client
 from django.conf import settings
+
+# if TYPE_CHECKING:
+#     from mypy_boto3_cognito_idp.type_defs import CreateUserPoolClientRequestTypeDef
+#     from mypy_boto3_cognito_idp.type_defs import CreateUserPoolClientResponseTypeDef
+
+
+class CreateClientResponse:
+    name: str
+    client_id: str
+    client_secret: str
+
+    def __init__(self, name: str, client_id: str, client_secret: str) -> None:
+        self.name = name
+        self.client_id = client_id
+        self.client_secret = client_secret
 
 
 class Client:
@@ -36,3 +52,18 @@ class Client:
         except self.client.exceptions.ResourceNotFoundException:
             return False
         return True
+
+    def create_app_client(self, name: str) -> CreateClientResponse:
+        """Create cognito app client"""
+        resp = self.client.create_user_pool_client(
+            UserPoolId=self.user_pool_id,
+            ClientName=name,
+            GenerateSecret=True,
+            AccessTokenValidity=1,  # hours
+            AllowedOAuthFlows=["client_credentials"],
+        )
+        return CreateClientResponse(
+            name=resp["UserPoolClient"]["ClientName"],
+            client_id=resp["UserPoolClient"]["ClientId"],
+            client_secret=resp["UserPoolClient"]["ClientSecret"],
+        )

@@ -1,6 +1,3 @@
-import mock_api  # noqa: F401 unused-import
-
-
 def test_handle_404_not_found(client):
     response = client.get("/api/v1/trigger-not-found")
     assert response.status_code == 404

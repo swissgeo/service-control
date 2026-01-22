@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "support",
     "organization",
     "dataset",
+    "user",
 ]
 
 MIDDLEWARE = [

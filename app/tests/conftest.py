@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from organization.models import Organization
+from user.models import MachineUser
 
 
 @pytest.fixture(name="organization")
@@ -20,3 +21,10 @@ def fixture_organization(db):
             name_it="Ufficio federale dell'ambiente",
             name_rm="Uffizi federal per l'ambient",
         )
+
+
+@pytest.fixture(name="machine_user")
+def fixture_machine_user(organization):
+    return MachineUser.objects.create(
+        machine_user_id="abc", name="Machine 1", created_by_user="user1", organization=organization
+    )
