@@ -1,4 +1,5 @@
 # pylint: disable=W,C,R
+# ruff: noqa
 # type: ignore
 import json
 from typing import Any
@@ -36,9 +37,9 @@ class Command(CustomBaseCommand):
             "-s",
             "--sources",
             choices=["layersconfig", "mapserverlayers", "all"],
-            nargs='+',
+            nargs="+",
             required=True,
-            help="Source to harvest from"
+            help="Source to harvest from",
         )
 
         imp = sub.add_parser("import", help="Import the source APIs into a local database (TinyDB)")
@@ -46,9 +47,9 @@ class Command(CustomBaseCommand):
             "-s",
             "--sources",
             choices=["layersconfig", "mapserverlayers", "all"],
-            nargs='+',
+            nargs="+",
             required=True,
-            help="Source to harvest from"
+            help="Source to harvest from",
         )
 
         merge = sub.add_parser(
@@ -59,7 +60,7 @@ class Command(CustomBaseCommand):
             "--limit",
             type=int,
             default=None,
-            help="Limit number of records to merge (for testing)"
+            help="Limit number of records to merge (for testing)",
         )
 
         export = sub.add_parser(
@@ -72,34 +73,34 @@ class Command(CustomBaseCommand):
         # It will likely be replaced by either directly populating Models in service-control and/or
         # have some kind of generic harvesting mechanism that detects changes and updates only changed records.
         self.harvest_db = TinyDB(
-            BASE_DIR / 'harvest' / 'db_harvest_db.json', sort_keys=True, indent=4
+            BASE_DIR / "harvest" / "db_harvest_db.json", sort_keys=True, indent=4
         )
-        self.table_layersconfig = self.harvest_db.table('layersconfig')
-        self.table_mapserverlayers = self.harvest_db.table('mapserverlayers')
+        self.table_layersconfig = self.harvest_db.table("layersconfig")
+        self.table_mapserverlayers = self.harvest_db.table("mapserverlayers")
 
         self.records_db = TinyDB(
-            BASE_DIR / 'harvest' / 'db_records_swissgeo.json', sort_keys=True, indent=4
+            BASE_DIR / "harvest" / "db_records_swissgeo.json", sort_keys=True, indent=4
         )
-        self.table_records = self.records_db.table('records')
+        self.table_records = self.records_db.table("records")
 
         self.distributions_db = TinyDB(
-            BASE_DIR / 'harvest' / 'db_records_distributions.json', sort_keys=True, indent=4
+            BASE_DIR / "harvest" / "db_records_distributions.json", sort_keys=True, indent=4
         )
-        self.distribution_collections = self.distributions_db.table('collections')
+        self.distribution_collections = self.distributions_db.table("collections")
 
-        self.styles_db = TinyDB(BASE_DIR / 'harvest' / 'db_styles.json', sort_keys=True, indent=4)
-        self.table_styles = self.styles_db.table('styles')
+        self.styles_db = TinyDB(BASE_DIR / "harvest" / "db_styles.json", sort_keys=True, indent=4)
+        self.table_styles = self.styles_db.table("styles")
 
         # Show parsed arguments (useful for debugging)
-        if options.get('verbosity', 0) >= 2:
+        if options.get("verbosity", 0) >= 2:
             self.print("Debug: parsed args =", args)
 
         # Handle sub-commands
-        if options['command'] == "harvest":
+        if options["command"] == "harvest":
             self.do_harvest(*args, **options)
-        if options['command'] == "import":
+        if options["command"] == "import":
             self.do_import(*args, **options)
-        if options['command'] == "merge":
+        if options["command"] == "merge":
             self.do_merge(*args, **options)
         # TODO: the export command is not yet transferred since it likely will get major changes
         # anyway with writing files to S3 instead of local filesystem
@@ -108,7 +109,7 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def do_harvest(self, *args: Any, **options: Any) -> None:
-        #region Harvesting
+        # region Harvesting
         self.print_success(f"Harvesting from sources: {options['sources']}")
 
         def harvest_layersconfig():
@@ -116,7 +117,7 @@ class Command(CustomBaseCommand):
 
             response = requests.get(
                 "https://api3.geo.admin.ch/rest/services/all/MapServer/layersConfig?lang=en",
-                timeout=30
+                timeout=30,
             )
             layers = response.json()
             with open(BASE_DIR / "harvest" / "layersConfig_en.json", "w", encoding="utf-8") as f:
@@ -133,16 +134,16 @@ class Command(CustomBaseCommand):
             with open(BASE_DIR / "harvest" / "mapserverlayers_en.json", "w", encoding="utf-8") as f:
                 f.write(json.dumps(mapserverlayers, indent=2, ensure_ascii=False))
 
-        if "layersconfig" in options['sources'] or "all" in options['sources']:
+        if "layersconfig" in options["sources"] or "all" in options["sources"]:
             harvest_layersconfig()
-        if "mapserverlayers" in options['sources'] or "all" in options['sources']:
+        if "mapserverlayers" in options["sources"] or "all" in options["sources"]:
             harvest_mapserverlayers()
 
-        #endregion
+        # endregion
 
     # ##########################################################################
     def do_import(self, *args: Any, **options: Any) -> None:
-        #region Importing
+        # region Importing
         self.print_success(f"Importing from sources: {options['sources']}")
 
         def import_layersconfig(args) -> int:
@@ -152,31 +153,30 @@ class Command(CustomBaseCommand):
                 layers = json.loads(f.read())
 
             for layername, layer in layers.items():
-                layer['id'] = layername
+                layer["id"] = layername
                 self.table_layersconfig.upsert(layer, Query().id == layername)
 
         def import_mapserverlayers(args) -> int:
-
             self.print("Importing MapServer layers...")
 
             with open("harvest/mapserverlayers_en.json", "r", encoding="utf-8") as f:
                 mapserverlayers = json.loads(f.read())
 
             for layer in mapserverlayers["layers"]:
-                layer_id = layer.get('layerBodId', None)
-                layer['id'] = layer_id
+                layer_id = layer.get("layerBodId", None)
+                layer["id"] = layer_id
                 self.table_mapserverlayers.upsert(layer, Query().id == layer_id)
 
-        if "layersconfig" in options['sources'] or "all" in options['sources']:
+        if "layersconfig" in options["sources"] or "all" in options["sources"]:
             import_layersconfig(args)
-        if "mapserverlayers" in options['sources'] or "all" in options['sources']:
+        if "mapserverlayers" in options["sources"] or "all" in options["sources"]:
             import_mapserverlayers(args)
 
-        #endregion
+        # endregion
 
     # ##########################################################################
     def do_merge(self, *args: Any, **options: Any) -> None:
-        #region Merging
+        # region Merging
         """Merge and convert data in the database to OGC API Records format
 
         Merges data from the layersconfig and mapserverlayers tables in the harvest_db
@@ -196,10 +196,10 @@ class Command(CustomBaseCommand):
 
         # Loop over all layers in layersconfig
         for _idx, layersconfig_entry in enumerate(self.table_layersconfig.all()):
-            if options['limit'] and _idx >= options['limit']:
+            if options["limit"] and _idx >= options["limit"]:
                 self.print(f"++++ Limiting to {options['limit']} records for testing purposes")
                 break
-            layer_id = layersconfig_entry.get('serverLayerName', None)
+            layer_id = layersconfig_entry.get("serverLayerName", None)
             self.print(f" - {layer_id}")
 
             dataset = Dataset(_id=layer_id)
@@ -207,61 +207,61 @@ class Command(CustomBaseCommand):
             mapserver_entry = self.table_mapserverlayers.get(Query().id == layer_id)
             if not mapserver_entry:
                 self.print_warning(f"++++ WARNING: layer {layer_id} not found in mapserverlayers")
-                mapserver_entry = {'attributes': {}}
+                mapserver_entry = {"attributes": {}}
 
             # Language
             # TODO: generalize to support multiple languages
-            dataset.properties['language'] = {"code": "en", "name": "English", "dir": "ltr"}
+            dataset.properties["language"] = {"code": "en", "name": "English", "dir": "ltr"}
 
             # Contact
-            contact_name = mapserver_entry['attributes'].get('dataOwner', None)
+            contact_name = mapserver_entry["attributes"].get("dataOwner", None)
             if not contact_name:
                 self.print_warning(f"++++ WARNING: layer {layer_id} has no contact info")
             else:
                 contact = {"organisation": contact_name}
-                contact['country'] = 'CH'
-                contact['role'] = 'dataOwner'
-                dataset.properties['contacts'] = [contact]
+                contact["country"] = "CH"
+                contact["role"] = "dataOwner"
+                dataset.properties["contacts"] = [contact]
 
             # Attribution is not part of OGC API Records standard
             # but exists as stac extension
             # https://github.com/stac-extensions/attribution
-            dataset.properties['attribution'] = mapserver_entry['attributes'].get(
-                'dataOwner', "ERR:NO_ATTRIBUTION"
+            dataset.properties["attribution"] = mapserver_entry["attributes"].get(
+                "dataOwner", "ERR:NO_ATTRIBUTION"
             )
             # We add also an attribution link if available
-            if 'attributionUrl' in layersconfig_entry:
+            if "attributionUrl" in layersconfig_entry:
                 dataset.add_link(
                     Link(
-                        href=layersconfig_entry['attributionUrl'],
+                        href=layersconfig_entry["attributionUrl"],
                         rel="attribution",
                         typ="text/html",
-                        title="Attribution"
+                        title="Attribution",
                     )
                 )
 
             # Description
-            dataset.properties['description'] = mapserver_entry['attributes'].get(
-                'abstract', 'ERR:NO_DESCRIPTION'
+            dataset.properties["description"] = mapserver_entry["attributes"].get(
+                "abstract", "ERR:NO_DESCRIPTION"
             )
 
             # Title
-            if 'name' in mapserver_entry and mapserver_entry['name'] != layersconfig_entry['label']:
+            if "name" in mapserver_entry and mapserver_entry["name"] != layersconfig_entry["label"]:
                 self.print_warning(
                     f"++++ WARNING: layer {layer_id} name mismatch: {mapserver_entry['name']} != {layersconfig_entry['label']}"
                 )
-            dataset.properties['title'] = layersconfig_entry.get('label', 'ERR:NO_TITLE')
+            dataset.properties["title"] = layersconfig_entry.get("label", "ERR:NO_TITLE")
 
             # Keywords
 
             # ----------------------------------------------------------------
             # Links
-            #region
+            # region
             dataset.add_link(
                 Link(
                     href=f"collections/swissgeo.catalog/items/{layer_id}",
                     rel="self",
-                    typ="application/json"
+                    typ="application/json",
                 )
             )
 
@@ -271,50 +271,49 @@ class Command(CustomBaseCommand):
 
             dataset.add_link(
                 Link(
-                    href=f'collections/{layer_id}',
+                    href=f"collections/{layer_id}",
                     rel="distributions",
                     typ="application/json",
-                    title="Distributions"
+                    title="Distributions",
                 )
             )
 
             # Link to description page
-            if 'urldetails' in mapserver_entry['attributes']:
+            if "urldetails" in mapserver_entry["attributes"]:
                 dataset.add_link(
                     Link(
-                        href=mapserver_entry['attributes']['urlDetails'],
+                        href=mapserver_entry["attributes"]["urlDetails"],
                         rel="describedby",
                         typ="text/html",
-                        title="Details"
+                        title="Details",
                     )
                 )
 
             # Link to geocat metadata
-            if 'idGeoCat' in mapserver_entry:
+            if "idGeoCat" in mapserver_entry:
                 dataset.add_link(
                     Link(
-                        href=
-                        f"https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/{mapserver_entry.get('idGeoCat')}",
+                        href=f"https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/{mapserver_entry.get('idGeoCat')}",
                         rel="alternate",
                         title="GeoCat Metadata",
-                        typ="text/html"
+                        typ="text/html",
                     )
                 )
 
-            #endregion
+            # endregion
 
             self.table_records.upsert(dataset.as_dict(), Query().id == layer_id)
 
             # ----------------------------------------------------------------
-            #region Merging: Distributions
+            # region Merging: Distributions
             dataset_link = Link(f"collections/swissgeo.catalog/items/{layer_id}", rel="dataset")
 
-            distribution_id = layersconfig_entry.get('serverLayerName', None) or layer_id
+            distribution_id = layersconfig_entry.get("serverLayerName", None) or layer_id
 
             distributionCollection = Collection(_id=layer_id, title=f"Distributions for {layer_id}")
 
-            if layersconfig_entry['type'].lower() == 'wmts':
-                wmts_distribution_id = distribution_id + ':wmts'
+            if layersconfig_entry["type"].lower() == "wmts":
+                wmts_distribution_id = distribution_id + ":wmts"
                 distribution = WMTSDistribution(
                     _id=wmts_distribution_id, dataset_id=layer_id, external_id=layer_id
                 )
@@ -325,17 +324,17 @@ class Command(CustomBaseCommand):
                 # Those files are following the Maplibre style specification (as far as
                 # possible, e.g. 'gutter' is not part of the spec).
                 # see https://maplibre.org/maplibre-style-spec/layers/#raster
-                if 'opacity' in layersconfig_entry and layersconfig_entry['opacity'] < 1.0:
+                if "opacity" in layersconfig_entry and layersconfig_entry["opacity"] < 1.0:
                     style_id = f"{wmts_distribution_id}.style"
                     style = {
-                        "layers": [{
-                            "id": style_id,
-                            "source": "wmts.geo.admin.ch",
-                            "type": "raster",
-                            "paint": {
-                                "raster-opacity": layersconfig_entry['opacity']
+                        "layers": [
+                            {
+                                "id": style_id,
+                                "source": "wmts.geo.admin.ch",
+                                "type": "raster",
+                                "paint": {"raster-opacity": layersconfig_entry["opacity"]},
                             }
-                        }]
+                        ]
                     }
                     # don't write style files directly for the moment
                     # with open(f"styles/{style_id}", "w", encoding="utf-8") as f:
@@ -348,7 +347,7 @@ class Command(CustomBaseCommand):
                             href=f"styles/{style_id}",
                             rel="styledby",
                             typ="application/json",
-                            title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)"
+                            title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                         )
                     )
 
@@ -359,37 +358,41 @@ class Command(CustomBaseCommand):
                 distributionCollection.add_record(distribution)
 
             # if type is wms or wmts, we create a WMS distribution as well
-            if layersconfig_entry['type'].lower() in ['wms', 'wmts']:
-                wms_distribution_id = distribution_id + ':wms'
+            if layersconfig_entry["type"].lower() in ["wms", "wmts"]:
+                wms_distribution_id = distribution_id + ":wms"
                 wms_distribution = WMSDistribution(
                     _id=wms_distribution_id, dataset_id=layer_id, external_id=layer_id
                 )
                 wms_distribution.add_link(dataset_link)
 
-                if layersconfig_entry['type'].lower() == 'wms':
+                if layersconfig_entry["type"].lower() == "wms":
                     # If the layer type is 'wms', then the wms distribution is the preferred
                     # one to use in the application.
                     distributionCollection.portal["preferredDistributionId"] = wms_distribution_id
 
                     # Create style file if gutter or opacity are defined
-                    if 'gutter' in layersconfig_entry or 'opacity' in layersconfig_entry:
+                    if "gutter" in layersconfig_entry or "opacity" in layersconfig_entry:
                         style_id = f"{wms_distribution_id}.style"
                         style = {
-                            "layers": [{
-                                "id": style_id,
-                                "source": "wms.geo.admin.ch",
-                                "type": "raster",
-                                "paint": {}
-                            }]
+                            "layers": [
+                                {
+                                    "id": style_id,
+                                    "source": "wms.geo.admin.ch",
+                                    "type": "raster",
+                                    "paint": {},
+                                }
+                            ]
                         }
 
                         # Note that `raster-gutter` is not part of the Maplibre style spec
-                        if 'gutter' in layersconfig_entry:
-                            style['layers'][0]['paint']['raster-gutter'] = layersconfig_entry[
-                                'gutter']
-                        if 'opacity' in layersconfig_entry:
-                            style['layers'][0]['paint']['raster-opacity'] = layersconfig_entry[
-                                'opacity']
+                        if "gutter" in layersconfig_entry:
+                            style["layers"][0]["paint"]["raster-gutter"] = layersconfig_entry[
+                                "gutter"
+                            ]
+                        if "opacity" in layersconfig_entry:
+                            style["layers"][0]["paint"]["raster-opacity"] = layersconfig_entry[
+                                "opacity"
+                            ]
 
                         with open(f"styles/{style_id}", "w", encoding="utf-8") as f:
                             f.write(json.dumps(style, indent=2, ensure_ascii=False))
@@ -398,49 +401,49 @@ class Command(CustomBaseCommand):
                                 href=f"styles/{style_id}",
                                 rel="styledby",
                                 typ="application/json",
-                                title="Style Hints for WMS Raster Layer (Maplibre Style Spec)"
+                                title="Style Hints for WMS Raster Layer (Maplibre Style Spec)",
                             )
                         )
 
                 distributionCollection.add_record(wms_distribution)
 
-            if layersconfig_entry['type'].lower() == 'geojson':
-                geojson_distribution_id = distribution_id + ':geojson'
+            if layersconfig_entry["type"].lower() == "geojson":
+                geojson_distribution_id = distribution_id + ":geojson"
                 geojson_distribution = GeoJSONDistribution(
                     _id=geojson_distribution_id,
-                    geojson_url=layersconfig_entry['geojsonUrl'],
+                    geojson_url=layersconfig_entry["geojsonUrl"],
                     dataset_id=layer_id,
                     external_id=layer_id,
-                    title="GeoJSON Feature Service"
+                    title="GeoJSON Feature Service",
                 )
-                geojson_distribution.properties['protocol'] = "OGC:GeoJSON"
+                geojson_distribution.properties["protocol"] = "OGC:GeoJSON"
                 geojson_distribution.add_link(dataset_link)
 
                 # Add style link
                 # Note: for some reason the styleUrl doesn't contain the protocol
                 # (https:// or http://), so we add it here
-                if not layersconfig_entry['styleUrl'].startswith('http'):
-                    style_url = 'https:' + layersconfig_entry['styleUrl']
+                if not layersconfig_entry["styleUrl"].startswith("http"):
+                    style_url = "https:" + layersconfig_entry["styleUrl"]
                 else:
-                    style_url = layersconfig_entry['styleUrl']
+                    style_url = layersconfig_entry["styleUrl"]
                 geojson_distribution.add_link(
                     Link(
                         href=style_url,
                         rel="styledby",
                         typ="application/json",
-                        title="GeoJSON Style Definition"
+                        title="GeoJSON Style Definition",
                     )
                 )
                 distributionCollection.add_record(geojson_distribution)
 
-            if 'downloadUrl' in mapserver_entry['attributes']:
-                stac_distribution_id = distribution_id + ':stac'
+            if "downloadUrl" in mapserver_entry["attributes"]:
+                stac_distribution_id = distribution_id + ":stac"
                 stac_distribution = STACDistribution(
                     _id=stac_distribution_id, dataset_id=layer_id, external_id=layer_id
                 )
                 stac_distribution.add_link(dataset_link)
                 distributionCollection.add_record(stac_distribution)
-            #endregion
+            # endregion
 
             self.distribution_collections.upsert(
                 distributionCollection.as_dict(), Query().id == layer_id
@@ -448,16 +451,15 @@ class Command(CustomBaseCommand):
 
         return 0
 
-    #endregion
+    # endregion
 
 
 # ##########################################################################
-#region Class Definitions
+# region Class Definitions
 # ##########################################################################
 
 
 class Link:
-
     def __init__(self, href: str, rel: str, title: str = None, typ: str = None):
         self.href = href
         self.rel = rel
@@ -467,9 +469,9 @@ class Link:
     def as_dict(self) -> dict:
         dct = {"href": self.href, "rel": self.rel}
         if self.title:
-            dct['title'] = self.title
+            dct["title"] = self.title
         if self.type:
-            dct['type'] = self.type
+            dct["type"] = self.type
         return dct
 
 
@@ -518,20 +520,20 @@ class Collection:
         self.records = []
         self.portal = {}
 
-    def add_record(self, record: 'Record'):
+    def add_record(self, record: "Record"):
         self.records.append(record)
 
     def as_dict(self) -> dict:
         dct = {
             "id": self.id,
             "title": self.title,
-            'type': 'Collection',
-            'itemType': 'record',
+            "type": "Collection",
+            "itemType": "record",
             "recordsArrayName": "records",
-            "records": [record.as_dict() for record in self.records]
+            "records": [record.as_dict() for record in self.records],
         }
         if self.portal:
-            dct['portal'] = self.portal
+            dct["portal"] = self.portal
 
         return dct
 
@@ -563,6 +565,7 @@ class Dataset(Record):
     A Dataset is a Record with type="Dataset"
 
     """
+
     typ = "Dataset"
 
 
@@ -582,11 +585,12 @@ class Distribution(Record):
     query and filter distributions based on their protocol.
 
     """
+
     typ = "Distribution"
     protocol = None
 
     def __init__(self, _id: str, dataset_id: str, external_id: str, title: str):
-        """ initialize a Distribution
+        """initialize a Distribution
 
         Args:
             _id (str): internal identifier of the distribution
@@ -605,7 +609,7 @@ class Distribution(Record):
             Link(
                 href=f"collections/{self.dataset_id}/items/{self.id}",
                 rel="self",
-                typ="application/json"
+                typ="application/json",
             )
         )
 
@@ -649,4 +653,4 @@ class GeoJSONDistribution(Distribution):
         self.add_link(Link(href=self.geojson_url, rel="data", typ="application/geo+json"))
 
 
-#endregion
+# endregion
