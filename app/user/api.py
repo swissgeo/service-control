@@ -5,6 +5,7 @@ from ninja import Router
 from ninja.errors import ValidationError
 from organization.models import Organization
 
+from user.extra_audience import add_extra_audience
 from user.models import MachineUser
 from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
 
@@ -33,7 +34,7 @@ def create_machine_user(
     policy in verified permissions.
     """
 
-    _ = request
+    _ = request  # Not sure how else to handle issue that request parameter is not used
 
     org = get_object_or_404(Organization, organization_id=organization_id)
 
@@ -57,6 +58,9 @@ def create_machine_user(
         organization=org,
     )
 
+    # Add client id for Oauth2-Proxy
+    add_extra_audience(app_client.client_id)
+
     return MachineUserSchema(
         name=app_client.name, client_id=app_client.client_id, client_secret=app_client.client_secret
     )
@@ -73,7 +77,7 @@ def machine_users(request: HttpRequest, organization_id: str) -> MachineUserList
     TODO: Authorization should only be available to organization admins.
     """
 
-    _ = request
+    _ = request  # Not sure how else to handle issue that request parameter is not used
 
     models = (
         MachineUser.objects.filter(organization__organization_id=organization_id)

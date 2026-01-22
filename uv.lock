@@ -51,6 +51,9 @@ wheels = [
 cognito-idp = [
     { name = "mypy-boto3-cognito-idp" },
 ]
+ssm = [
+    { name = "mypy-boto3-ssm" },
+]
 
 [[package]]
 name = "botocore"
@@ -581,6 +584,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/31/78/ab057b13e2ed974a63b26aa06fa6dbef1d436d0bea4ce8e7e3306155c93d/mypy_boto3_cognito_idp-1.42.3.tar.gz", hash = "sha256:28255acd36fc8088c9a2457e8f28e9073717b7a720dc1f22e6882dde21589729", size = 51731, upload-time = "2025-12-04T20:58:44.015Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ca/7a/3bbc9d7620f6f61b4b69148a9e2aa40ab85d206baf1a935849ab125f42a7/mypy_boto3_cognito_idp-1.42.3-py3-none-any.whl", hash = "sha256:fe2b4a511a89da289045a9c635460341d1ea5f46ec6a3db63136970bb9970bf8", size = 57721, upload-time = "2025-12-04T20:58:42.565Z" },
+]
+
+[[package]]
+name = "mypy-boto3-ssm"
+version = "1.42.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/ba/96fe6b876918fb1d61c1ee82ac8e2b23393f23e2c3d67da9f95f57d3f925/mypy_boto3_ssm-1.42.3.tar.gz", hash = "sha256:d8831e8f4f2946616ea461b75d985c8498f0050ca7a5c3c2e8b4c3df02a99237", size = 94314, upload-time = "2025-12-04T21:13:39.27Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/7b/521847f0ca41a6d892361b12999ecea069f7631cfc3804b024ca97b6f2c1/mypy_boto3_ssm-1.42.3-py3-none-any.whl", hash = "sha256:23b9fa94a832ec4ebe498e0d90fc508581bea80b5a6fed9c8aba441db01cc260", size = 95950, upload-time = "2025-12-04T21:13:37.157Z" },
 ]
 
 [[package]]
@@ -1187,7 +1199,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["cognito-idp"] },
+    { name = "boto3-stubs", extra = ["cognito-idp", "ssm"] },
     { name = "debugpy" },
     { name = "django-debug-toolbar" },
     { name = "django-extensions" },
@@ -1228,7 +1240,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["cognito-idp"], specifier = "~=1.42" },
+    { name = "boto3-stubs", extras = ["cognito-idp", "ssm"], specifier = "~=1.42" },
     { name = "debugpy" },
     { name = "django-debug-toolbar" },
     { name = "django-extensions" },

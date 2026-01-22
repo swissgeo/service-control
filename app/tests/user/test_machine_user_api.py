@@ -20,7 +20,8 @@ def test_get_machine_users_returns_expected(machine_user, client):
 
 
 @patch("user.api.Client")
-def test_create_machine_user(boto_client, machine_user, client):
+@patch("user.extra_audience.Client")
+def test_create_machine_user(ssm_client, boto_client, machine_user, client):
     mock_client = CreateClientResponse(name="machine name", client_id="xyz", client_secret="asdf")  # noqa: S106
     boto_client.return_value.create_app_client.return_value = mock_client
     data = {
@@ -42,7 +43,8 @@ def test_create_machine_user(boto_client, machine_user, client):
 
 
 @patch("user.api.Client")
-def test_create_machine_user_fails_if_already_exists(boto_client, machine_user, client):
+@patch("user.extra_audience.Client")
+def test_create_machine_user_fails_if_already_exists(ssm_client, boto_client, machine_user, client):
     mock_client = CreateClientResponse(name="Machine 1", client_id="xyz", client_secret="asdf")  # noqa: S106
     boto_client.return_value.create_app_client.return_value = mock_client
     data = {
@@ -60,3 +62,4 @@ def test_create_machine_user_fails_if_already_exists(boto_client, machine_user, 
         "description": ["machine user with this name already exists"],
     }
     assert boto_client.return_value.mock_calls == []
+    assert ssm_client.return_value.mock_calls == []

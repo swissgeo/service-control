@@ -1,10 +1,5 @@
-# from typing import TYPE_CHECKING
 from boto3 import client
 from django.conf import settings
-
-# if TYPE_CHECKING:
-#     from mypy_boto3_cognito_idp.type_defs import CreateUserPoolClientRequestTypeDef
-#     from mypy_boto3_cognito_idp.type_defs import CreateUserPoolClientResponseTypeDef
 
 
 class CreateClientResponse:

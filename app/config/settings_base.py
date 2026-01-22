@@ -176,6 +176,10 @@ OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     "OAUTH2_PROXY_DJANGO_ADMIN_GROUPS",
     default=["swissgeo-admin"],
 )
+OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME = env.str("OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME", None)
+
+# Only when running server locally to not connect to ssm parameter store
+USE_LOCAL_SSM_STORE = env.bool("USE_LOCAL_SSM_STORE", False)
 
 # Cognito
 COGNITO_ENDPOINT_URL = env.str("COGNITO_ENDPOINT_URL", "http://localhost:9229")
