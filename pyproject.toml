@@ -109,3 +109,22 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "app/*.py" = [
     "INP001", # Ignore implicit namespace packages in root app files
 ]
+
+#===============================================================================
+# Pytest configuration
+[tool.pytest]
+pythonpath = ["app"]
+python_files = ["test_*.py"]
+addopts = [
+    # do not use DJANGO_SETTINGS_MODULE as this will be overwritten by the env variable
+    # https://pytest-django.readthedocs.io/en/latest/configuring_django.html
+    "--ds=config.settings_test",
+]
+
+#==============================================================================
+# Coverage configuration
+[tool.coverage.run]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["if TYPE_CHECKING:"]

@@ -1,0 +1,7 @@
+{
+    "ruff.enable": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.experiments.enabled": false,
+    "python.testing.pytestPath": ".venv/bin/pytest",
+}
