@@ -27,15 +27,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "bandit",
     "debugpy",
     "django_debug_toolbar",
     "django-extensions",
     "django-stubs~=5.2",
     "isort",
     "mypy",
-    "pylint",
-    "pylint-django",
     "pytest",
     "pytest-cov",
     "pytest-django",
@@ -44,7 +41,73 @@ dev = [
     "types-gunicorn~=23.0",
     "yapf",
     "boto3-stubs[cognito-idp]~=1.42",
+    "ruff>=0.14.13",
 ]
 
 [tool.uv]
 package = false # Do not install as a package
+
+
+#===============================================================================
+# Ruff configuration
+[tool.ruff]
+
+# Same as Black.
+line-length = 100
+indent-width = 4
+
+# Assume Python 3.13
+target-version = "py313"
+
+#------------------------------------------------------------------------------
+# Linting configuration
+[tool.ruff.lint]
+exclude = [
+    "app/*/migrations/**", # Exclude django generated migrations files from linting
+]
+select = ["ALL"]
+ignore = [
+    "ANN401", # Ignore Any typehint
+    "ANN002", # Ignore typehint for *args
+    "ANN003", # Ignore typehint for **kwargs
+    "D",      # Ignore pydocstyle
+    "EM",     # Ignore flake8-errmsg
+    "FBT001", # Ignore boolean-type-hint-positional-argument
+    "FBT002", # Ignore boolean-default-value-positional-argument
+    "PTH123", # Ignore builtin-open
+    "TD",     # Ignore flake8-todos
+    "FIX",    # Ignore fixme comments
+    "ERA001", # TODO remove this for production, ignore commented code
+    "I",      # isort TODO remove once isort is not used anymore
+    "Q",      # flake8-quotes TODO reactivate once we use also ruff for formatting
+    "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+unfixable = []
+
+fixable = ["ALL"]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+#------------------------------------------------------------------------------
+# ruff ignore per files
+[tool.ruff.lint.per-file-ignores]
+
+"app/tests/**" = [
+    "S101",    # Ignore usage of assert statements in tests
+    "ANN201",  # Ignore missing return type hints in tests
+    "INP001",  # Ignore implicit namespace packages in tests
+    "ANN001",  # Ignore missing type hints in tests
+    "ARG001",  # Ignore unused function arguments in tests
+    "ARG005",  # Ignore unused lambda argument in tests
+    "PLR2004", # Ignore magic number in tests
+]
+
+"app/stubs/**" = [
+    "ANN", # Ignore flake8-annotations stubs
+]
+
+"app/*.py" = [
+    "INP001", # Ignore implicit namespace packages in root app files
+]

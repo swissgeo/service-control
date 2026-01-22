@@ -30,11 +30,11 @@ class CustomBaseCommand(BaseCommand):
         stdout: TextIO | None = None,
         stderr: TextIO | None = None,
         no_color: bool = False,
-        force_color: bool = False
-    ):
+        force_color: bool = False,
+    ) -> None:
         super().__init__(stdout, stderr, no_color, force_color)
         self.logger = logging.getLogger(self.__module__)
-        self.options: dict['str', Any] = {}
+        self.options: dict[str, Any] = {}
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -62,7 +62,7 @@ class CustomBaseCommand(BaseCommand):
         if self.options['logger']:
             try:
                 super().execute(*args, **options)
-            except Exception as e:  # pylint: disable=broad-exception-caught
+            except Exception as e:  # noqa: BLE001
                 self.print_error(e, exc_info=True)
         else:
             super().execute(*args, **options)

@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextlib import redirect_stderr
 from contextlib import redirect_stdout
@@ -7,7 +8,6 @@ from logging import INFO
 from logging import getLogger
 from logging.config import dictConfig
 from time import time
-from typing import Generator
 
 from django.conf import settings
 
@@ -33,7 +33,7 @@ class TimestampedStringIO(StringIO):
 @contextmanager
 def redirect_std_to_logger(logger_name: str,
                            stderr_level: int = ERROR,
-                           stdout_level: int = INFO) -> Generator[None, None, None]:
+                           stdout_level: int = INFO) -> Generator[None]:
     """ A context manager that redirects sys.stdout and sys.stderr to the logger using the given
     levels.
 
@@ -54,7 +54,7 @@ def redirect_std_to_logger(logger_name: str,
     with redirect_stderr(stderr), redirect_stdout(stdout):
         try:
             yield
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except Exception as e:  # noqa: BLE001
             exception = e
 
     logger = getLogger(logger_name)

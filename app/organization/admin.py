@@ -13,10 +13,12 @@ class OrganizationAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
     list_display = ('organization_id', 'acronym_en', 'name_en')
     readonly_fields = ('created', 'updated')
 
-    def get_readonly_fields(self,
-                            request: HttpRequest,
-                            obj: Any | None = None) -> list[str] | tuple[Any, ...]:
+    def get_readonly_fields(
+        self,
+        request: HttpRequest,  # noqa: ARG002 unused argument
+        obj: Any | None = None
+    ) -> list[str] | tuple[Any, ...]:
         if obj:
             # Organization id cannot be updated
-            return self.readonly_fields + ('organization_id',)
+            return (*self.readonly_fields, 'organization_id')
         return self.readonly_fields

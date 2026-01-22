@@ -22,7 +22,7 @@ def strtobool(value: str) -> bool:
         return True
     if value in ('n', 'no', 'f', 'false', 'off', '0'):
         return False
-    raise ValueError(f"invalid truth value \'{value}\'")
+    raise ValueError(f"invalid truth value \'{value}\'")  # noqa: TRY003
 
 
 def initialize_tracing() -> bool:
@@ -48,8 +48,8 @@ def setup_trace_provider() -> None:
             OTLPSpanExporter(
                 endpoint=getenv('OTEL_EXPORTER_OTLP_ENDPOINT', "http://localhost:4317"),
                 headers=getenv('OTEL_EXPORTER_OTLP_HEADERS'),
-                insecure=strtobool(getenv('OTEL_EXPORTER_OTLP_INSECURE', "false"))
-            )
+                insecure=strtobool(getenv('OTEL_EXPORTER_OTLP_INSECURE', "false")),
+            ),
         )
 
         provider = TracerProvider(resource=Resource.create())

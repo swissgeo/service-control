@@ -104,8 +104,8 @@ DATABASES = {
         'PORT': env.str('DB_PORT', "5432"),
         'TEST': {
             'NAME': env.str('DB_NAME_TEST', 'test_service_control'),
-        }
-    }
+        },
+    },
 }
 
 # Password validation
@@ -149,15 +149,18 @@ STATIC_URL = f'{STATIC_HOST}/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-class BadScheme(Exception):
+class BadSchemeError(Exception):
     """Exception that an URI scheme is not as expected."""
+
+    def __init__(self, url: str) -> None:
+        super().__init__(f"'{url}' must start with 'https://'")
 
 
 def ensure_https(url: str | None) -> str | None:
     if url is None:
         return None
     if not url.startswith("https://"):
-        raise BadScheme(f"'{url}' must start with 'https://'")
+        raise BadSchemeError(url)
     return url
 
 
@@ -168,7 +171,8 @@ OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str('OAUTH2_PROXY_COGNITO_URL', None
 OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str('OAUTH2_PROXY_COGNITO_APP_CLIENT_ID', 'local')
 OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str('OAUTH2_PROXY_EIAM_LOGOUT_URL', None))
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
-    'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS', default=['swissgeo-admin']
+    'OAUTH2_PROXY_DJANGO_ADMIN_GROUPS',
+    default=['swissgeo-admin'],
 )
 
 # Cognito
@@ -191,7 +195,7 @@ def get_logging_config() -> dict[str, object]:
     if log_config_file.lower() in ['none', '0', '', 'false', 'no']:
         return {}
     log_config = {}
-    with open(BASE_DIR / log_config_file, 'rt', encoding="utf-8") as fd:
+    with open(BASE_DIR / log_config_file, encoding="utf-8") as fd:
         log_config = yaml.safe_load(os.path.expandvars(fd.read()))
     return log_config or {}
 
@@ -241,7 +245,7 @@ _DEFAULT_LOG_ALLOWED_HEADERS = [
     "x-e2e-testing",
 
   # API GW Headers
-    "apigw-requestid"
+    "apigw-requestid",
 ]
 LOG_ALLOWED_HEADERS = [
     str(header).lower()

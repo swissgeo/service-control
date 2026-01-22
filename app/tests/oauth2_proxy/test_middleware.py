@@ -27,7 +27,10 @@ def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
 
     group = Group.objects.create(name='admin')
 
-    user = django_user_model.objects.create_user(username='joseph.quimby', password='pass')
+    user = django_user_model.objects.create_user(
+        username='joseph.quimby',
+        password='pass'  # noqa: S106
+    )
     user.first_name = 'Joe Quimby'
     user.email = 'joe.quimby@example.com'
     user.is_superuser = True

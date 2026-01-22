@@ -39,7 +39,7 @@ def test_contains_error_code_returns_true_for_multiple_errors_per_field():
     exception = ValidationError({
         "field1": [
             ValidationError(message=None, code="code1"),
-            ValidationError(message=None, code="code2")
+            ValidationError(message=None, code="code2"),
         ],
         "field2": [ValidationError(message=None, code="code3")],
     })
@@ -51,7 +51,7 @@ def test_contains_error_code_returns_false_for_multiple_errors_per_field_without
     exception = ValidationError({
         "field1": [
             ValidationError(message=None, code="code1"),
-            ValidationError(message=None, code="code2")
+            ValidationError(message=None, code="code2"),
         ],
         "field2": [ValidationError(message=None, code="code3")],
     })
@@ -61,7 +61,8 @@ def test_contains_error_code_returns_false_for_multiple_errors_per_field_without
 def test_contains_error_code_returns_true_for_list_of_errors():
 
     exception = ValidationError([
-        ValidationError(message=None, code="code1"), ValidationError(message=None, code="code2")
+        ValidationError(message=None, code="code1"),
+        ValidationError(message=None, code="code2"),
     ])
     assert contains_error_code(exception, "code2")
 
@@ -69,7 +70,8 @@ def test_contains_error_code_returns_true_for_list_of_errors():
 def test_contains_error_code_returns_false_for_list_of_errors_without_matching():
 
     exception = ValidationError([
-        ValidationError(message=None, code="code1"), ValidationError(message=None, code="code2")
+        ValidationError(message=None, code="code1"),
+        ValidationError(message=None, code="code2"),
     ])
     assert not contains_error_code(exception, "code3")
 

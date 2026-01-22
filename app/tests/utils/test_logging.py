@@ -19,12 +19,11 @@ def test_timestamped_string_io():
 
 
 def test_redirect_std_to_logger():
-    with patch('utils.logging.getLogger') as logger:
-        with redirect_std_to_logger('test'):
-            sys.stdout.write('stdout 1')
-            sys.stderr.write('stderr 1')
-            sys.stderr.write('stderr 2\n')
-            sys.stdout.write(' stdout 2')
+    with patch('utils.logging.getLogger') as logger, redirect_std_to_logger('test'):
+        sys.stdout.write('stdout 1')
+        sys.stderr.write('stderr 1')
+        sys.stderr.write('stderr 2\n')
+        sys.stdout.write(' stdout 2')
 
     assert logger.mock_calls == [
         call('test'),
@@ -36,12 +35,14 @@ def test_redirect_std_to_logger():
 
 
 def test_redirect_std_to_logger_custom_level():
-    with patch('utils.logging.getLogger') as logger:
-        with redirect_std_to_logger('test', stderr_level=FATAL, stdout_level=DEBUG):
-            sys.stdout.write('stdout 1')
-            sys.stderr.write('stderr 1')
-            sys.stderr.write('stderr 2\n')
-            sys.stdout.write(' stdout 2')
+    with (
+        patch('utils.logging.getLogger') as logger,
+        redirect_std_to_logger('test', stderr_level=FATAL, stdout_level=DEBUG)
+    ):
+        sys.stdout.write('stdout 1')
+        sys.stderr.write('stderr 1')
+        sys.stderr.write('stderr 2\n')
+        sys.stdout.write(' stdout 2')
 
     assert logger.mock_calls == [
         call('test'),
@@ -54,11 +55,10 @@ def test_redirect_std_to_logger_custom_level():
 
 def test_redirect_std_to_logger_exception():
     exception = RuntimeError('abort')
-    with patch('utils.logging.getLogger') as logger:
-        with redirect_std_to_logger('test'):
-            sys.stdout.write('stdout 1')
-            sys.stderr.write(' stderr 1\n')
-            raise exception
+    with patch('utils.logging.getLogger') as logger, redirect_std_to_logger('test'):
+        sys.stdout.write('stdout 1')
+        sys.stderr.write(' stderr 1\n')
+        raise exception
 
     assert logger.mock_calls == [
         call('test'),

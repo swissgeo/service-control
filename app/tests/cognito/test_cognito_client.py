@@ -13,7 +13,7 @@ def test_create_user_group(mock_boto3):
     assert call().create_group(
         GroupName='test group name',
         UserPoolId=client.user_pool_id,
-        Description='Managed by service-control'
+        Description='Managed by service-control',
     ) in mock_boto3.mock_calls
 
 
@@ -24,7 +24,8 @@ def test_create_user_group_already_exists(mock_boto3):
     # Inject *real* exception class into the mock
     mock_boto3.return_value.exceptions.GroupExistsException = group_exists_exception
     mock_boto3.return_value.create_group.side_effect = group_exists_exception(
-        error_response={}, operation_name=""
+        error_response={},
+        operation_name="",
     )
 
     client = Client()
@@ -33,7 +34,7 @@ def test_create_user_group_already_exists(mock_boto3):
     assert call().create_group(
         GroupName='group already exists',
         UserPoolId=client.user_pool_id,
-        Description='Managed by service-control'
+        Description='Managed by service-control',
     ) in mock_boto3.mock_calls
 
 
@@ -43,7 +44,8 @@ def test_delete_user_group(mock_boto3):
     response = client.delete_group(name='test group name')
     assert response is True
     assert call().delete_group(
-        GroupName='test group name', UserPoolId=client.user_pool_id
+        GroupName='test group name',
+        UserPoolId=client.user_pool_id,
     ) in mock_boto3.mock_calls
 
 
@@ -54,12 +56,14 @@ def test_delete_user_group_not_found(mock_boto3):
     # Inject *real* exception class into the mock
     mock_boto3.return_value.exceptions.ResourceNotFoundException = group_exists_exception
     mock_boto3.return_value.delete_group.side_effect = group_exists_exception(
-        error_response={}, operation_name=""
+        error_response={},
+        operation_name="",
     )
 
     client = Client()
     response = client.delete_group(name='group not found')
     assert response is False
     assert call().delete_group(
-        GroupName='group not found', UserPoolId=client.user_pool_id
+        GroupName='group not found',
+        UserPoolId=client.user_pool_id,
     ) in mock_boto3.mock_calls

@@ -15,12 +15,12 @@ api.add_router("", router)
 
 @router.get("trigger-not-found")
 def trigger_not_found(request: HttpRequest) -> dict[str, bool | str]:
-    raise Http404()
+    raise Http404
 
 
 @router.post("trigger-not-found-post")
 def trigger_not_found_post(request: HttpRequest) -> dict[str, bool | str]:
-    raise Http404()
+    raise Http404
 
 
 @router.get("trigger-does-not-exist")
@@ -40,12 +40,12 @@ def trigger_ninja_validation_error(request: HttpRequest) -> dict[str, bool | str
 
 @router.get("/trigger-authentication-error")
 def trigger_authentication_error(request: HttpRequest) -> dict[str, bool | str]:
-    raise AuthenticationError()
+    raise AuthenticationError
 
 
 @router.get("/trigger-internal-server-error")
 def trigger_internal_server_error(request: HttpRequest) -> dict[str, bool | str]:
-    raise RuntimeError()
+    raise RuntimeError
 
 
 @router.get("/trigger-django-validation-error")

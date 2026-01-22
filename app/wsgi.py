@@ -8,8 +8,9 @@ For more information on this file, see
 https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 """
 
+# ruff: noqa: E402 module-import-not-at-top-of-file
+
 # isort:skip_file
-# pylint: disable=wrong-import-position,wrong-import-order
 
 # The gevent monkey import and patch suppress a warning, and a potential problem.
 # Gunicorn would call it anyway, but if it tries to call it after the ssl module
@@ -51,11 +52,11 @@ from config.settings_prod import get_logging_config
 application = get_wsgi_application()
 
 
-class StandaloneApplication(BaseApplication):  # pylint: disable=abstract-method
+class StandaloneApplication(BaseApplication):
 
     cfg: Config
 
-    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:  # pylint: disable=redefined-outer-name
+    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:
         self.options = options or {}
         self.application = app
         super().__init__()
@@ -86,7 +87,7 @@ if __name__ == '__main__':
     HTTP_PORT = str(environ.get('HTTP_PORT', "8000"))
     # Bind to 0.0.0.0 to let your app listen to all network interfaces.
     options = {
-        'bind': f"{'0.0.0.0'}:{HTTP_PORT}",  # nosec B104
+        'bind': f"{'0.0.0.0'}:{HTTP_PORT}",  # noqa: S104
         'worker_class': 'gevent',
         'workers': int(environ.get('GUNICORN_WORKERS',
                                    '2')),  # scaling horizontally is left to Kubernetes

@@ -24,7 +24,7 @@ class Client:
                 UserPoolId=self.user_pool_id,
                 Description="Managed by service-control",
             )
-        except self.client.exceptions.GroupExistsException as e:
+        except self.client.exceptions.GroupExistsException:
             return False
         return True
 

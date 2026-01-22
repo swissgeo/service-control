@@ -29,5 +29,5 @@ urlpatterns = [
     path(settings.ADMIN_PATH_PREFIX + '', include('oauth2_proxy.urls')),
     # NOTE: the oauth_proxy endpoints needs to be registered before the admin interface endpoints
     # because they overwrite the default django admin/logout endpoints
-    path(settings.ADMIN_PATH_PREFIX + 'admin/', admin.site.urls)
+    path(settings.ADMIN_PATH_PREFIX + 'admin/', admin.site.urls),
 ]

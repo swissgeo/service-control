@@ -19,14 +19,20 @@ class Migration(migrations.Migration):
                 (
                     'id',
                     models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
-                    )
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
                 ),
                 (
                     'organization_id',
                     utils.fields.CustomSlugField(
-                        db_index=True, max_length=100, unique=True, verbose_name='External ID'
-                    )
+                        db_index=True,
+                        max_length=100,
+                        unique=True,
+                        verbose_name='External ID',
+                    ),
                 ),
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='Created')),
                 ('updated', models.DateTimeField(auto_now=True, verbose_name='Updated')),
@@ -40,11 +46,11 @@ class Migration(migrations.Migration):
                 ('acronym_en', models.CharField(verbose_name='Acronym (English)')),
                 (
                     'acronym_it',
-                    models.CharField(blank=True, null=True, verbose_name='Acronym (Italian)')
+                    models.CharField(blank=True, null=True, verbose_name='Acronym (Italian)'),
                 ),
                 (
                     'acronym_rm',
-                    models.CharField(blank=True, null=True, verbose_name='Acronym (Romansh)')
+                    models.CharField(blank=True, null=True, verbose_name='Acronym (Romansh)'),
                 ),
             ],
         ),

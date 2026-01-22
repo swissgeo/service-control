@@ -20,7 +20,7 @@ def organization_to_response(model: Organization, lang: LanguageCode) -> Organiz
     """
     Transforms the given model using the given language into a response object.
     """
-    response = OrganizationSchema(
+    return OrganizationSchema(
         id=model.organization_id,
         name=get_translation(model, "name", lang),
         name_translations=TranslationsSchema(
@@ -37,16 +37,15 @@ def organization_to_response(model: Organization, lang: LanguageCode) -> Organiz
             en=model.acronym_en,
             it=model.acronym_it,
             rm=model.acronym_rm,
-        )
+        ),
     )
-    return response
 
 
 @router.post("/organizations", response={201: OrganizationSchema}, exclude_none=True)
 def create_organization(
     request: HttpRequest,
     organization_in: CreateOrganizationSchema,
-    lang: LanguageCode | None = None
+    lang: LanguageCode | None = None,
 ) -> OrganizationSchema:
     """Create an organization.
 
@@ -70,13 +69,15 @@ def create_organization(
 
 
 @router.put(
-    "/organizations/{organization_id}", response={200: OrganizationSchema}, exclude_none=True
+    "/organizations/{organization_id}",
+    response={200: OrganizationSchema},
+    exclude_none=True,
 )
 def update_organization(
     request: HttpRequest,
     organization_id: str,
     organization_in: UpdateOrganizationSchema,
-    lang: LanguageCode | None = None
+    lang: LanguageCode | None = None,
 ) -> OrganizationSchema:
     """Update an organization.
 
@@ -125,7 +126,7 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
 def organization(
     request: HttpRequest,
     organization_id: str,
-    lang: LanguageCode | None = None
+    lang: LanguageCode | None = None,
 ) -> OrganizationSchema:
     """
     Get details of an organization.
@@ -134,5 +135,4 @@ def organization(
     """
     model = get_object_or_404(Organization, organization_id=organization_id)
     lang_to_use = get_language(lang, request.headers)
-    response = organization_to_response(model, lang_to_use)
-    return response
+    return organization_to_response(model, lang_to_use)

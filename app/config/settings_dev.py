@@ -1,6 +1,9 @@
 import environ
 
-from .settings_base import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from .settings_base import DEBUG
+from .settings_base import INSTALLED_APPS
+from .settings_base import MIDDLEWARE
+from .settings_base import *  # noqa: F403
 
 env = environ.Env()
 
@@ -12,6 +15,4 @@ if DEBUG:
     INSTALLED_APPS += ['django_extensions', 'debug_toolbar']
 
 if DEBUG:
-    MIDDLEWARE = [
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    ] + MIDDLEWARE
+    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware', *MIDDLEWARE]

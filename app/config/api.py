@@ -20,21 +20,20 @@ api.add_router("", organization_router)
 
 @api.exception_handler(DjangoValidationError)
 def handle_django_validation_error(
-    request: HttpRequest, exception: DjangoValidationError
+    request: HttpRequest,
+    exception: DjangoValidationError,
 ) -> HttpResponse:
     """Convert the given validation error to a response with corresponding status."""
     error_code_unique_constraint_violated = "unique"
 
-    if contains_error_code(exception, error_code_unique_constraint_violated):
-        status = 409
-    else:
-        status = 422
+    status = 409 if contains_error_code(exception, error_code_unique_constraint_violated) else 422
 
     messages = extract_error_messages(exception)
     return api.create_response(
         request,
         {
-            "code": status, "description": messages
+            "code": status,
+            "description": messages,
         },
         status=status,
     )
@@ -42,22 +41,30 @@ def handle_django_validation_error(
 
 @api.exception_handler(Http404)
 @api.exception_handler(ObjectDoesNotExist)
-def handle_404_not_found(request: HttpRequest, exception: Http404) -> HttpResponse:
+def handle_404_not_found(
+    request: HttpRequest,
+    exception: Http404  # noqa: ARG001 unused argument
+) -> HttpResponse:
     return api.create_response(
         request,
         {
-            "code": 404, "description": "Resource not found"
+            "code": 404,
+            "description": "Resource not found",
         },
         status=404,
     )
 
 
 @api.exception_handler(Exception)
-def handle_exception(request: HttpRequest, exception: Exception) -> HttpResponse:
+def handle_exception(
+    request: HttpRequest,
+    exception: Exception  # noqa: ARG001 unused argument
+) -> HttpResponse:
     return api.create_response(
         request,
         {
-            "code": 500, "description": "Internal Server Error"
+            "code": 500,
+            "description": "Internal Server Error",
         },
         status=500,
     )
@@ -68,18 +75,23 @@ def handle_http_error(request: HttpRequest, exception: HttpError) -> HttpRespons
     return api.create_response(
         request,
         {
-            "code": exception.status_code, "description": exception.message
+            "code": exception.status_code,
+            "description": exception.message,
         },
         status=exception.status_code,
     )
 
 
 @api.exception_handler(AuthenticationError)
-def handle_unauthorized(request: HttpRequest, exception: AuthenticationError) -> HttpResponse:
+def handle_unauthorized(
+    request: HttpRequest,
+    exception: AuthenticationError  # noqa: ARG001 unused argument
+) -> HttpResponse:
     return api.create_response(
         request,
         {
-            "code": 401, "description": "Unauthorized"
+            "code": 401,
+            "description": "Unauthorized",
         },
         status=401,
     )
@@ -87,7 +99,8 @@ def handle_unauthorized(request: HttpRequest, exception: AuthenticationError) ->
 
 @api.exception_handler(NinjaValidationError)
 def handle_ninja_validation_error(
-    request: HttpRequest, exception: NinjaValidationError
+    request: HttpRequest,
+    exception: NinjaValidationError,
 ) -> HttpResponse:
     messages: list[str] = []
     for error in exception.errors:
@@ -96,7 +109,8 @@ def handle_ninja_validation_error(
     return api.create_response(
         request,
         {
-            "code": 422, "description": messages
+            "code": 422,
+            "description": messages,
         },
         status=422,
     )
@@ -106,5 +120,5 @@ root = NinjaAPI(urls_namespace="root")
 
 
 @root.get("/checker")
-def checker(request: HttpRequest) -> dict[str, bool | str]:
+def checker(request: HttpRequest) -> dict[str, bool | str]:  # noqa: ARG001 unused argument
     return {"success": True, "message": "OK"}
