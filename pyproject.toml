@@ -33,7 +33,6 @@ dev = [
     "django-stubs~=5.2",
     "isort",
     "mypy",
-    "pylint-django",
     "pytest",
     "pytest-cov",
     "pytest-django",
@@ -71,11 +70,13 @@ ignore = [
     "ANN401", # Ignore Any typehint
     "ANN002", # Ignore typehint for *args
     "ANN003", # Ignore typehint for **kwargs
-    "D",      # pydocstyle
-    "EM",     # flake8-errmsg
-    # "TRY",    # tryceratops
-    "TD",     #  ignore flake8-todos
-    "FIX",    # ignore fixme comments
+    "D",      # Ignore pydocstyle
+    "EM",     # Ignore flake8-errmsg
+    "FBT001", # Ignore boolean-type-hint-positional-argument
+    "FBT002", # Ignore boolean-default-value-positional-argument
+    "PTH123", # Ignore builtin-open
+    "TD",     # Ignore flake8-todos
+    "FIX",    # Ignore fixme comments
     "ERA001", # TODO remove this for production, ignore commented code
     "I",      # isort TODO remove once isort is not used anymore
     "Q",      # flake8-quotes TODO reactivate once we use also ruff for formatting
@@ -94,12 +95,13 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 [tool.ruff.lint.per-file-ignores]
 
 "app/tests/**" = [
-    "S101",   # Ignore usage of assert statements in tests
-    "ANN201", # Ignore missing return type hints in tests
-    "INP001", # Ignore implicit namespace packages in tests
-    "ANN001", # Ignore missing type hints in tests
-    "ARG001", # Ignore unused function arguments in tests
-    "ARG005", # Ignore unused lambda argument in tests
+    "S101",    # Ignore usage of assert statements in tests
+    "ANN201",  # Ignore missing return type hints in tests
+    "INP001",  # Ignore implicit namespace packages in tests
+    "ANN001",  # Ignore missing type hints in tests
+    "ARG001",  # Ignore unused function arguments in tests
+    "ARG005",  # Ignore unused lambda argument in tests
+    "PLR2004", # Ignore magic number in tests
 ]
 
 "app/stubs/**" = [

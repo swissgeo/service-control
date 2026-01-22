@@ -3,7 +3,7 @@
 # nature, API wise, it intentionally contains the minimum needed to satisfy
 # the type checker
 import builtins
-from _typeshed import Incomplete  # pylint: disable=import-error
+from _typeshed import Incomplete
 
 
 class Env:

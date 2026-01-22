@@ -29,8 +29,8 @@ class CustomBaseCommand(BaseCommand):
         self,
         stdout: TextIO | None = None,
         stderr: TextIO | None = None,
-        no_color: bool = False,  # noqa: FBT001, FBT002
-        force_color: bool = False,  # noqa: FBT001, FBT002
+        no_color: bool = False,
+        force_color: bool = False,
     ) -> None:
         super().__init__(stdout, stderr, no_color, force_color)
         self.logger = logging.getLogger(self.__module__)

@@ -63,7 +63,7 @@ def test_api_404_logging(client, caplog, configure_logger):
     assert log_entry['log.level'] == 'warning'
     assert log_entry['message'] == f'Response 404 on {path}'
     assert log_entry['http']['request']['method'] == 'GET'
-    assert log_entry['http']['response']['status_code'] == 404  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 404
     assert log_entry['url']['path'] == path
 
 
@@ -76,7 +76,7 @@ def test_api_404_logging_with_query(client, caplog, configure_logger):
     assert log_entry['log.level'] == 'warning'
     assert log_entry['message'] == f'Response 404 on {path}'
     assert log_entry['http']['request']['method'] == 'GET'
-    assert log_entry['http']['response']['status_code'] == 404  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 404
     assert log_entry['url']['path'] == path
 
 
@@ -89,7 +89,7 @@ def test_api_404_logging_post(client, caplog, configure_logger):
     assert log_entry['log.level'] == 'warning'
     assert log_entry['message'] == f'Response 404 on {path}'
     assert log_entry['http']['request']['method'] == 'POST'
-    assert log_entry['http']['response']['status_code'] == 404  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 404
     assert log_entry['url']['path'] == path
 
 
@@ -102,7 +102,7 @@ def test_api_ninja_validation_logging(client, caplog, configure_logger):
     assert log_entry['log.level'] == 'warning'
     assert log_entry['message'] == f'Response 422 on {path}'
     assert log_entry['http']['request']['method'] == 'GET'
-    assert log_entry['http']['response']['status_code'] == 422  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 422
     assert log_entry['url']['path'] == path
 
 
@@ -116,7 +116,7 @@ def test_api_500_server_error_logging(client, caplog, configure_logger):
 
     assert log_entry['log.level'] == 'error'
     assert log_entry['message'] == 'RuntimeError()'
-    assert log_entry['http']['response']['status_code'] == 500  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 500
     assert 'error' in log_entry
     assert 'stack_trace' in log_entry['error']
     assert 'raise RuntimeError' in log_entry['error']['stack_trace']
@@ -132,7 +132,7 @@ def test_api_http_error_logging(client, caplog, configure_logger):
     log_entry = json.loads(caplog.text.split('\n')[0])
 
     assert log_entry['log.level'] == 'info'
-    assert log_entry['http']['response']['status_code'] == 303  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 303
     assert log_entry['message'] == f"Response 303 on {path}"
     assert log_entry['url']['path'] == path
 
@@ -147,7 +147,7 @@ def test_api_positive_request_log(client, caplog, configure_logger):
 
     assert log_entry['message'] == f'Response 200 on {path}'
     assert log_entry['http']['request']['method'] == "GET"
-    assert log_entry['http']['response']['status_code'] == 200  # noqa: PLR2004
+    assert log_entry['http']['response']['status_code'] == 200
     assert log_entry['url']['path'] == path
 
 

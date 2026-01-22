@@ -52,11 +52,11 @@ from config.settings_prod import get_logging_config
 application = get_wsgi_application()
 
 
-class StandaloneApplication(BaseApplication):  # pylint: disable=abstract-method
+class StandaloneApplication(BaseApplication):
 
     cfg: Config
 
-    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:  # pylint: disable=redefined-outer-name
+    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:
         self.options = options or {}
         self.application = app
         super().__init__()

@@ -152,13 +152,6 @@ dockerrun: dockerbuild ## Run the locally built docker image
 		$(DOCKER_IMG_LOCAL_TAG) ./wsgi.py
 
 
-# make sure that the code conforms to the style guide. Note that
-# - the DJANGO_SETTINGS module must be made available to pylint
-#   to support e.g. string model referencec (see
-#   https://github.com/PyCQA/pylint-django#usage)
-# - export of migrations for prometheus stats must be disabled,
-#   otherwise it's attempted to connect to the db during linting
-#   (which is not available)
 .PHONY: lint
 lint: ## Run the linter on the code base
 	@echo "Run ruff..."

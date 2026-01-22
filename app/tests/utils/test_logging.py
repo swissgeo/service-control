@@ -14,7 +14,7 @@ def test_timestamped_string_io():
     out = TimestampedStringIO(level=1)
 
     with patch('utils.logging.time', return_value=100):
-        assert out.write('test') == 4  # noqa: PLR2004 magic number
+        assert out.write('test') == 4
         assert out.messages == [(100, 1, 'test')]
 
 

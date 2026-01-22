@@ -11,13 +11,6 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
-class InvalidBooleanStringError(ValueError):
-    """Exception raised when a string cannot be converted to a boolean."""
-
-    def __init__(self, value: str) -> None:
-        super().__init__(f"invalid truth value '{value}'")
-
-
 def strtobool(value: str) -> bool:
     """Convert a string representation of truth to true (1) or false (0).
     True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
@@ -29,7 +22,7 @@ def strtobool(value: str) -> bool:
         return True
     if value in ('n', 'no', 'f', 'false', 'off', '0'):
         return False
-    raise InvalidBooleanStringError(value)
+    raise ValueError(f"invalid truth value \'{value}\'")  # noqa: TRY003
 
 
 def initialize_tracing() -> bool:

@@ -10,7 +10,7 @@ from django.core.management import call_command
 
 class Command(CustomBaseCommand):
 
-    def __init__(self, raise_exception: bool = False) -> None:  # noqa: FBT001, FBT002
+    def __init__(self, raise_exception: bool = False) -> None:
         super().__init__()
         self.logger = MagicMock()
         self.exception = RuntimeError("RuntimeError")

@@ -66,7 +66,7 @@ def test_organization_to_response_returns_response_with_default_language_if_unde
 def test_get_organization_returns_existing_organization_with_default_language(organization, client):
     response = client.get(f"/api/v1/organizations/{organization.organization_id}")
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
@@ -91,7 +91,7 @@ def test_get_organization_returns_existing_organization_with_default_language(or
 def test_get_organization_returns_organization_with_language_from_query(organization, client):
     response = client.get(f"/api/v1/organizations/{organization.organization_id}?lang=de")
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Bundesamt für Umwelt",
@@ -117,7 +117,7 @@ def test_get_organization_returns_404_for_nonexisting_organization(client, db):
 
     response = client.get("/api/v1/organizations/2")
 
-    assert response.status_code == 404  # noqa: PLR2004
+    assert response.status_code == 404
     assert response.json() == {"code": 404, "description": "Resource not found"}
 
 
@@ -132,7 +132,7 @@ def test_get_organization_skips_translations_that_are_not_available(organization
 
     response = client.get(f"/api/v1/organizations/{organization.organization_id}")
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
@@ -157,7 +157,7 @@ def test_get_organization_returns_organization_with_language_from_header(organiz
         headers={"Accept-Language": "de"},
     )
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Bundesamt für Umwelt",
@@ -188,7 +188,7 @@ def test_get_organization_returns_organization_with_language_from_query_param_ev
         headers={"Accept-Language": "de"},
     )
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Office fédéral de l'environnement",
@@ -219,7 +219,7 @@ def test_get_organization_returns_organization_with_default_language_if_header_e
         headers={"Accept-Language": ""},
     )
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
@@ -250,7 +250,7 @@ def test_get_organization_returns_organization_with_first_known_language_from_he
         headers={"Accept-Language": "cn, *, de-DE, en"},
     )
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Bundesamt für Umwelt",
@@ -281,7 +281,7 @@ def test_get_organization_returns_with_first_known_language_from_header_ignoring
         headers={"Accept-Language": "fr;q=0.9, de;q=0.8"},
     )
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Office fédéral de l'environnement",
@@ -321,7 +321,7 @@ def test_get_organization_returns_with_first_known_language_from_header_ignoring
 def test_get_organizations_returns_single_organization_with_given_language(organization, client):
     response = client.get("/api/v1/organizations?lang=fr")
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "items": [{
             "id": "ch.bafu",
@@ -355,7 +355,7 @@ def test_get_organizations_skips_translations_that_are_not_available(organizatio
 
     response = client.get("/api/v1/organizations")
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "items": [{
             "id": "ch.bafu",
@@ -378,7 +378,7 @@ def test_get_organizations_skips_translations_that_are_not_available(organizatio
 def test_get_organizations_returns_organization_with_language_from_header(organization, client):
     response = client.get("/api/v1/organizations", headers={"Accept-Language": "de"})
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "items": [{
             "id": "ch.bafu",
@@ -423,7 +423,7 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
 
     response = client.get("/api/v1/organizations?lang=fr")
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "items": [
             {
@@ -489,7 +489,7 @@ def test_create_organization(boto_client, client, db):
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
 
-    assert response.status_code == 201  # noqa: PLR2004
+    assert response.status_code == 201
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
@@ -541,7 +541,7 @@ def test_create_organization_required_only(boto_client, client, db):
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
 
-    assert response.status_code == 201  # noqa: PLR2004
+    assert response.status_code == 201
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
@@ -573,7 +573,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'name_translations': {
@@ -583,7 +583,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -593,7 +593,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -607,7 +607,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -621,7 +621,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -635,7 +635,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -649,7 +649,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -663,7 +663,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
     data = {
         'id': "ch.bafu",
         'acronym_translations': {
@@ -677,7 +677,7 @@ def test_create_organization_missing_required(client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 422  # noqa: PLR2004
+    assert response.status_code == 422
 
 
 @patch('organization.models.Client')
@@ -700,11 +700,11 @@ def test_create_organization_already_exists(boto_client, client, db):
         },
     }
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 201  # noqa: PLR2004
+    assert response.status_code == 201
 
     # Try to create the same organization a second time
     response = client.post("/api/v1/organizations", content_type="application/json", data=data)
-    assert response.status_code == 409  # noqa: PLR2004
+    assert response.status_code == 409
     assert response.json() == {
         "code": 409,
         "description": ["Organization with this External ID already exists."],
@@ -733,7 +733,7 @@ def test_update_organization(client, organization):
         content_type="application/json",
         data=data,
     )
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 200
     assert response.json() == {
         "id": "ch.bafu",
         "name": "Name EN",
@@ -789,4 +789,4 @@ def test_update_organization_not_found(client, organization):
         content_type="application/json",
         data=data,
     )
-    assert response.status_code == 404  # noqa: PLR2004
+    assert response.status_code == 404

@@ -76,7 +76,7 @@ class Organization(models.Model):
 
     def delete(self,
                using: str | None = None,
-               keep_parents: bool = False) -> tuple[int, dict[str, int]]:  #noqa: FBT001, FBT002
+               keep_parents: bool = False) -> tuple[int, dict[str, int]]:
         """Deletes from the database and cognito."""
 
         client = Client()
