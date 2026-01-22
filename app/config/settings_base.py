@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "cognito",
     "support",
     "organization",
+    "dataset",
 ]
 
 MIDDLEWARE = [
