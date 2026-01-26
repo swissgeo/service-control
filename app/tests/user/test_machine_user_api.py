@@ -40,6 +40,8 @@ def test_create_machine_user(ssm_client, boto_client, machine_user, client):
         "client_secret": mock_client.client_secret,
     }
     assert boto_client.return_value.create_app_client.call_count == 1
+    assert ssm_client.return_value.get_parameter.call_count == 1
+    assert ssm_client.return_value.put_parameter.call_count == 1
 
 
 @patch("user.api.Client")
@@ -64,3 +66,16 @@ def test_create_machine_user_fails_if_already_exists(ssm_client, boto_client, ma
     assert boto_client.return_value.create_app_client.call_count == 1
     assert boto_client.return_value.delete_app_client.call_count == 1
     assert ssm_client.return_value.mock_calls == []
+
+
+@patch("user.api.Client")
+@patch("user.extra_audience.Client")
+def test_delete_machine_user(ssm_client, boto_client, machine_user, client):
+    response = client.delete(
+        f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers/{machine_user.machine_user_id}",
+    )
+
+    assert response.status_code == 204
+    assert boto_client.return_value.delete_app_client.call_count == 1
+    assert ssm_client.return_value.get_parameter.call_count == 1
+    assert ssm_client.return_value.put_parameter.call_count == 1

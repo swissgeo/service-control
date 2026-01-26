@@ -1,10 +1,10 @@
 from cognito.utils.client import Client
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import Router
 from organization.models import Organization
 
-from user.extra_audience import add_extra_audience
+from user.extra_audience import add_extra_audience, remove_extra_audience
 from user.models import MachineUser
 from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
 
@@ -89,3 +89,24 @@ def machine_users(
     )
     response = [machine_user_to_response(model) for model in models]
     return MachineUserListSchema(items=response)
+
+
+@router.delete(
+    "/organizations/{organization_id}/machineusers/{machine_user_id}",
+    exclude_none=True,
+)
+def delete_machine_users(
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    organization_id: str,  # noqa: ARG001  not used but in path
+    machine_user_id: str,
+) -> HttpResponse:
+    machine_user_to_delete = get_object_or_404(MachineUser, machine_user_id=machine_user_id)
+    cognito_client = Client()
+
+    # No exception handling on purpose, as if something fails, at least the
+    # client may no longer have access.
+    cognito_client.delete_app_client(machine_user_to_delete.machine_user_id)
+    remove_extra_audience(machine_user_to_delete.machine_user_id)
+    machine_user_to_delete.delete()
+
+    return HttpResponse(status=204)
