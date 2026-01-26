@@ -4,4 +4,5 @@
     "python.testing.unittestEnabled": false,
     "python.experiments.enabled": false,
     "python.testing.pytestPath": ".venv/bin/pytest",
+    "python.pipenvPath": "" // Avoid pipenv to create an empty Pipfile when opening the project, this project is managed by uv
 }
