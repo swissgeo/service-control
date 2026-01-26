@@ -16,6 +16,7 @@ dependencies = [
     "pyyaml~=6.0",
     "whitenoise~=6.11",
     "boto3~=1.42",
+    "tinydb~=4.8",
     "opentelemetry-sdk~=1.39",
     "opentelemetry-exporter-otlp~=1.39",
     "opentelemetry-instrumentation==0.60b1",
