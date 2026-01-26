@@ -29,14 +29,19 @@ class LocalClient:
     def __init__(self) -> None:
         pass
 
-    def get_parameter(self, name: str) -> str:
+    def get_parameter(
+        self,
+        name: str,  # noqa: ARG002 ..
+    ) -> str:
         """Get SSM parameter value"""
-        _ = name
         return "local,list,of,values"
 
-    def put_parameter(self, name: str, value: str) -> None:
+    def put_parameter(
+        self,
+        name: str,
+        value: str,
+    ) -> None:
         """Update SSM parameter value"""
-        _, _ = name, value
 
 
 Client = LocalClient if settings.USE_LOCAL_SSM_STORE else SSMClient

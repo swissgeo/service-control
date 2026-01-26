@@ -61,5 +61,6 @@ def test_create_machine_user_fails_if_already_exists(ssm_client, boto_client, ma
         "code": 422,
         "description": ["machine user with this name already exists"],
     }
-    assert boto_client.return_value.mock_calls == []
+    assert boto_client.return_value.create_app_client.call_count == 1
+    assert boto_client.return_value.delete_app_client.call_count == 1
     assert ssm_client.return_value.mock_calls == []

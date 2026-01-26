@@ -2,7 +2,6 @@ from cognito.utils.client import Client
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
-from ninja.errors import ValidationError
 from organization.models import Organization
 
 from user.extra_audience import add_extra_audience
@@ -25,7 +24,9 @@ def machine_user_to_response(model: MachineUser) -> MachineUserSchema:
     exclude_none=True,
 )
 def create_machine_user(
-    request: HttpRequest, organization_id: str, machine_user_in: CreateMachineUserSchema
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    organization_id: str,
+    machine_user_in: CreateMachineUserSchema,
 ) -> MachineUserSchema:
     """Create a Machine User.
 
@@ -34,32 +35,33 @@ def create_machine_user(
     policy in verified permissions.
     """
 
-    _ = request  # Not sure how else to handle issue that request parameter is not used
-
     org = get_object_or_404(Organization, organization_id=organization_id)
-
-    # Check that no machine user already exists with same name
-    try:
-        # If user with same name already exists for this org, return error
-        MachineUser.objects.get(organization=org, name=machine_user_in.name)
-        raise ValidationError(errors=[{"name": "machine user with this name already exists"}])
-    except MachineUser.DoesNotExist:
-        pass
 
     # Create cognito app client
     cognito_client = Client()
-    app_client = cognito_client.create_app_client(machine_user_in.name)
-
-    # Save app client info in database
-    MachineUser.objects.create(
-        machine_user_id=app_client.client_id,
-        name=app_client.name,
-        created_by_user="Get user from header",
-        organization=org,
+    app_client = cognito_client.create_app_client(
+        machine_user_in.name, machine_user_in.token_duration_min
     )
 
-    # Add client id for Oauth2-Proxy
-    add_extra_audience(app_client.client_id)
+    try:
+        # Save app client info in database
+        new_machine_user = MachineUser.objects.create(
+            machine_user_id=app_client.client_id,
+            name=app_client.name,
+            created_by_user="TODO: Get user from header",
+            organization=org,
+        )
+    except:
+        cognito_client.delete_app_client(app_client.client_id)
+        raise
+
+    try:
+        # Add client id for Oauth2-Proxy
+        add_extra_audience(app_client.client_id)
+    except:
+        new_machine_user.delete()
+        cognito_client.delete_app_client(app_client.client_id)
+        raise
 
     return MachineUserSchema(
         name=app_client.name, client_id=app_client.client_id, client_secret=app_client.client_secret
@@ -71,13 +73,14 @@ def create_machine_user(
     response={200: MachineUserListSchema},
     exclude_none=True,
 )
-def machine_users(request: HttpRequest, organization_id: str) -> MachineUserListSchema:
+def machine_users(
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    organization_id: str,
+) -> MachineUserListSchema:
     """List machine users of organization.
 
     TODO: Authorization should only be available to organization admins.
     """
-
-    _ = request  # Not sure how else to handle issue that request parameter is not used
 
     models = (
         MachineUser.objects.filter(organization__organization_id=organization_id)

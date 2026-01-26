@@ -17,6 +17,7 @@ def remove_extra_audience(aud: str) -> None:
     ssm_client = Client()
     param_value = ssm_client.get_parameter(param_name)
     list_value = param_value.split(",")
-    list_value.remove(aud)
+    while aud in list_value:
+        list_value.remove(aud)
     new_value = ",".join(list_value)
     ssm_client.put_parameter(param_name, new_value)

@@ -48,17 +48,27 @@ class Client:
             return False
         return True
 
-    def create_app_client(self, name: str) -> CreateClientResponse:
+    def create_app_client(self, name: str, token_duration_mins: int | None) -> CreateClientResponse:
         """Create cognito app client"""
+        if not token_duration_mins:
+            token_duration_mins = int(settings.DEFAULT_M2M_TOKEN_DURATION_MINS)
         resp = self.client.create_user_pool_client(
             UserPoolId=self.user_pool_id,
             ClientName=name,
             GenerateSecret=True,
-            AccessTokenValidity=1,  # hours
+            AccessTokenValidity=token_duration_mins,
+            TokenValidityUnits={"AccessToken": "minutes"},
             AllowedOAuthFlows=["client_credentials"],
         )
         return CreateClientResponse(
             name=resp["UserPoolClient"]["ClientName"],
             client_id=resp["UserPoolClient"]["ClientId"],
             client_secret=resp["UserPoolClient"]["ClientSecret"],
+        )
+
+    def delete_app_client(self, client_id: str) -> None:
+        """Delete cognito app client"""
+        self.client.delete_user_pool_client(
+            UserPoolId=self.user_pool_id,
+            ClientId=client_id,
         )

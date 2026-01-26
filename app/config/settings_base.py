@@ -186,6 +186,9 @@ COGNITO_ENDPOINT_URL = env.str("COGNITO_ENDPOINT_URL", "http://localhost:9229")
 COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
 COGNITO_MANAGED_FLAG_NAME = env.str("COGNITO_MANAGED_FLAG_NAME", "dev:custom:managed_by_service")
 
+# M2M
+DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
+
 # Testing
 TESTING = False
 

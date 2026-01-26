@@ -1,10 +1,9 @@
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, ClassVar
 
 from django.db import models
 from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
-from ninja.errors import ValidationError
 
 
 class MachineUser(models.Model):
@@ -17,10 +16,18 @@ class MachineUser(models.Model):
 
     organization = models.ForeignKey("organization.Organization", on_delete=models.CASCADE)
     name = models.CharField(_(_context, "Name"))
+    # created_by_user is the username as provided by cognito. If/Once we introduce a user model in
+    # the database we can change this to a foreign key.
     created_by_user = models.CharField(_(_context, "Create By User"))
 
     class Meta:
-        unique_together = ("organization", "name")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                name="user_machineuser_organization_name_uniq",
+                fields=["organization", "name"],
+                violation_error_message="machine user with this name already exists",
+            )
+        ]
 
     def __str__(self) -> str:
         return str(self.name)
@@ -35,16 +42,11 @@ class MachineUser(models.Model):
     ) -> None:
         """Validates the model before writing it to the database and create in cognito."""
 
+        # full clean required for contrain validation to run properly
         self.full_clean()
-
-        try:
-            # If user with same name already exists for this org, return error
-            MachineUser.objects.get(organization=self.organization, name=self.name)
-            raise ValidationError(errors=[{"name": "machine user with this name already exists"}])
-        except MachineUser.DoesNotExist:
-            super().save(
-                force_insert=force_insert,
-                force_update=force_update,
-                using=using,
-                update_fields=update_fields,
-            )
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
