@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from organization.models import Organization
 from user.models import MachineUser
 

@@ -5,9 +5,10 @@ from logging import LogRecord, getLogger
 from time import time
 from typing import Any, TypedDict
 
+from ecs_logging import StdlibFormatter
+
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from ecs_logging import StdlibFormatter
 from ninja import NinjaAPI
 
 logger = getLogger(__name__)

@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from boto3 import client
+
 from django.conf import settings
 
 if TYPE_CHECKING:

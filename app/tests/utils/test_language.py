@@ -1,4 +1,5 @@
 import pytest
+
 from utils.language import LanguageCode, get_language, get_translation
 
 

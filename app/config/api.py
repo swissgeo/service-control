@@ -4,11 +4,11 @@ from django.http import Http404, HttpRequest, HttpResponse
 from ninja import NinjaAPI
 from ninja.errors import AuthenticationError, HttpError
 from ninja.errors import ValidationError as NinjaValidationError
+
+from config.logging import LoggedNinjaAPI
 from organization.api import router as organization_router
 from user.api import router as user_router
 from utils.exceptions import contains_error_code, extract_error_messages
-
-from config.logging import LoggedNinjaAPI
 
 api = LoggedNinjaAPI()
 

@@ -1,9 +1,9 @@
-from cognito.utils.client import Client
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import Router
-from organization.models import Organization
 
+from cognito.utils.client import Client
+from organization.models import Organization
 from user.extra_audience import add_extra_audience, remove_extra_audience
 from user.models import MachineUser
 from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema

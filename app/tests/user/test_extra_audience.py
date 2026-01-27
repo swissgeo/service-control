@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from django.conf import settings
+
 from user.extra_audience import add_extra_audience, remove_extra_audience
 
 

@@ -2,11 +2,12 @@ import logging
 from collections.abc import Iterable
 from typing import Any
 
-from cognito.utils.client import Client
 from django.db import models
 from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
+
+from cognito.utils.client import Client
 from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 from unittest.mock import call, patch
 
 from boto3 import client as real_client
+
 from cognito.utils.client import Client
 
 

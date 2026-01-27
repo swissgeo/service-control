@@ -1,4 +1,5 @@
 from ninja import Schema
+
 from schemas import TranslationsSchema
 
 

@@ -1,4 +1,5 @@
 import pytest
+
 from config.settings_base import BadSchemeError, ensure_https
 
 

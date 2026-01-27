@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
+
 from utils.language import LanguageCode, get_language, get_translation
 
 from .models import Organization
