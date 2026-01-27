@@ -24,6 +24,7 @@ dependencies = [
     "opentelemetry-instrumentation-django==0.60b1",
     "opentelemetry-instrumentation-logging==0.60b1",
     "opentelemetry-instrumentation-psycopg==0.60b1",
+    "django-cors-headers~=4.9",
 ]
 
 [dependency-groups]
