@@ -21,7 +21,7 @@ class SSMClient:
 
     def put_parameter(self, name: str, value: str) -> None:
         """Update SSM parameter value"""
-        self.client.put_parameter(Name=name, Value=value)
+        self.client.put_parameter(Name=name, Value=value, Overwrite=True)
 
 
 class LocalClient:
