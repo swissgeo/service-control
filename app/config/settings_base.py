@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "support",
     "organization",
     "dataset",
+    "user",
 ]
 
 MIDDLEWARE = [
@@ -175,11 +176,18 @@ OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     "OAUTH2_PROXY_DJANGO_ADMIN_GROUPS",
     default=["swissgeo-admin"],
 )
+OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME = env.str("OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME", None)
+
+# Only when running server locally to not connect to ssm parameter store
+USE_LOCAL_SSM_STORE = env.bool("USE_LOCAL_SSM_STORE", False)
 
 # Cognito
 COGNITO_ENDPOINT_URL = env.str("COGNITO_ENDPOINT_URL", "http://localhost:9229")
 COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
 COGNITO_MANAGED_FLAG_NAME = env.str("COGNITO_MANAGED_FLAG_NAME", "dev:custom:managed_by_service")
+
+# M2M
+DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
 
 # Testing
 TESTING = False

@@ -2,6 +2,17 @@ from boto3 import client
 from django.conf import settings
 
 
+class CreateClientResponse:
+    name: str
+    client_id: str
+    client_secret: str
+
+    def __init__(self, name: str, client_id: str, client_secret: str) -> None:
+        self.name = name
+        self.client_id = client_id
+        self.client_secret = client_secret
+
+
 class Client:
     """A low level client for managing cognito users and groups."""
 
@@ -36,3 +47,28 @@ class Client:
         except self.client.exceptions.ResourceNotFoundException:
             return False
         return True
+
+    def create_app_client(self, name: str, token_duration_mins: int | None) -> CreateClientResponse:
+        """Create cognito app client"""
+        if not token_duration_mins:
+            token_duration_mins = int(settings.DEFAULT_M2M_TOKEN_DURATION_MINS)
+        resp = self.client.create_user_pool_client(
+            UserPoolId=self.user_pool_id,
+            ClientName=name,
+            GenerateSecret=True,
+            AccessTokenValidity=token_duration_mins,
+            TokenValidityUnits={"AccessToken": "minutes"},
+            AllowedOAuthFlows=["client_credentials"],
+        )
+        return CreateClientResponse(
+            name=resp["UserPoolClient"]["ClientName"],
+            client_id=resp["UserPoolClient"]["ClientId"],
+            client_secret=resp["UserPoolClient"]["ClientSecret"],
+        )
+
+    def delete_app_client(self, client_id: str) -> None:
+        """Delete cognito app client"""
+        self.client.delete_user_pool_client(
+            UserPoolId=self.user_pool_id,
+            ClientId=client_id,
+        )
