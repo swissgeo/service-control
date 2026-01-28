@@ -3,6 +3,7 @@ from typing import Any
 import environ
 from psycopg import connect
 from psycopg.sql import SQL, Identifier, Literal
+
 from utils.command import CustomBaseCommand
 
 env = environ.Env()

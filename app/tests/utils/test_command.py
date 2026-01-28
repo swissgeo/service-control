@@ -1,8 +1,10 @@
 from io import StringIO
 from unittest.mock import MagicMock, call
 
-import pytest
 from django.core.management import call_command
+
+import pytest
+
 from utils.command import CustomBaseCommand
 
 

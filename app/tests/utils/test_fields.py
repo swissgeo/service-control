@@ -1,5 +1,7 @@
-import pytest
 from django.core.exceptions import ValidationError
+
+import pytest
+
 from utils.fields import CustomSlugField
 
 

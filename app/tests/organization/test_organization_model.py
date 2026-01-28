@@ -1,8 +1,10 @@
 from unittest.mock import patch
 
-import pytest
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
+
+import pytest
+
 from organization.models import Organization
 
 

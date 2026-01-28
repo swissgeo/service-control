@@ -7,11 +7,14 @@ import json
 from unittest.mock import patch
 
 import mock_api  # noqa: F401 unused-import
-import pytest
-from config.logging import RequestResponseLoggingMiddleware, generate_log_extra
+from ecs_logging import StdlibFormatter
+
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.test.utils import override_settings
-from ecs_logging import StdlibFormatter
+
+import pytest
+
+from config.logging import RequestResponseLoggingMiddleware, generate_log_extra
 
 
 @pytest.fixture(name="configure_logger")

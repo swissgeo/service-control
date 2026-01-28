@@ -1,10 +1,11 @@
-from config.api import api
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404, HttpRequest
 from ninja import Router
 from ninja.errors import AuthenticationError, HttpError
 from ninja.errors import ValidationError as NinjaValidationError
+
+from config.api import api
 
 router = Router()
 api.add_router("", router)

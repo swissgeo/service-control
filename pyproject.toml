@@ -52,6 +52,7 @@ package = false # Do not install as a package
 #===============================================================================
 # Ruff configuration
 [tool.ruff]
+src = ["app"]
 
 # Same as Black.
 line-length = 100
@@ -113,6 +114,23 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "app/*.py" = [
     "INP001", # Ignore implicit namespace packages in root app files
 ]
+
+#------------------------------------------------------------------------------
+# Isort configuration
+[tool.ruff.lint.isort]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "django-ninja",
+    "test",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+test = ["pytest"]
+django-ninja = ["django", "ninja"]
 
 #===============================================================================
 # Pytest configuration

@@ -5,6 +5,7 @@ import os
 import sys
 
 from opentelemetry import trace
+
 from utils.logging import redirect_std_to_logger
 from utils.otel import initialize_tracing, setup_trace_provider
 
