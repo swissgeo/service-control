@@ -532,6 +532,21 @@ class Command(CustomBaseCommand):
             ContentType="application/json",
         )
 
+        # Export single dataset collections
+        for record in self.table_records.all():
+            recordCollection = Collection(
+                _id=record["id"], title=record["properties"]["title"]
+            ).as_dict()
+            recordCollection["records"].append(record)
+            self.print(f"Record dataset: {record['id']}")
+
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/collections/swissgeo.catalog/items/{record['id']}",
+                Body=json.dumps(recordCollection, indent=2, ensure_ascii=False).encode("utf-8"),
+                ContentType="application/json",
+            )
+
         # Export distribution collections
         self.print(f"Generate Distributions Collections")
         for distribution in self.distributions_db.table("collections").all():
