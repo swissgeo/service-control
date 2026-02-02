@@ -2,16 +2,19 @@
 # ruff: noqa
 # type: ignore
 import json
+import pathlib
 from typing import Any
 
+import boto3
 import environ
 import requests
-import boto3
 from botocore.client import Config
 from config.settings_base import BASE_DIR
-from tinydb import Query
-from tinydb import TinyDB
+from tinydb import Query, TinyDB
 from utils.command import CustomBaseCommand
+
+harvest_dir = BASE_DIR / "harvest"
+harvest_dir.mkdir(exist_ok=True)
 
 env = environ.Env()
 
@@ -110,23 +113,19 @@ class Command(CustomBaseCommand):
         # Note: usage of TinyDB is just for prototyping purposes and current state of initial development.
         # It will likely be replaced by either directly populating Models in service-control and/or
         # have some kind of generic harvesting mechanism that detects changes and updates only changed records.
-        self.harvest_db = TinyDB(
-            BASE_DIR / "harvest" / "db_harvest_db.json", sort_keys=True, indent=4
-        )
+        self.harvest_db = TinyDB(harvest_dir / "db_harvest_db.json", sort_keys=True, indent=4)
         self.table_layersconfig = self.harvest_db.table("layersconfig")
         self.table_mapserverlayers = self.harvest_db.table("mapserverlayers")
 
-        self.records_db = TinyDB(
-            BASE_DIR / "harvest" / "db_records_swissgeo.json", sort_keys=True, indent=4
-        )
+        self.records_db = TinyDB(harvest_dir / "db_records_swissgeo.json", sort_keys=True, indent=4)
         self.table_records = self.records_db.table("records")
 
         self.distributions_db = TinyDB(
-            BASE_DIR / "harvest" / "db_records_distributions.json", sort_keys=True, indent=4
+            harvest_dir / "db_records_distributions.json", sort_keys=True, indent=4
         )
         self.distribution_collections = self.distributions_db.table("collections")
 
-        self.styles_db = TinyDB(BASE_DIR / "harvest" / "db_styles.json", sort_keys=True, indent=4)
+        self.styles_db = TinyDB(harvest_dir / "db_styles.json", sort_keys=True, indent=4)
         self.table_styles = self.styles_db.table("styles")
 
         # basic S3 access configuration
@@ -166,7 +165,7 @@ class Command(CustomBaseCommand):
                 timeout=30,
             )
             layers = response.json()
-            with open(BASE_DIR / "harvest" / "layersConfig_en.json", "w", encoding="utf-8") as f:
+            with open(harvest_dir / "layersConfig_en.json", "w", encoding="utf-8") as f:
                 f.write(json.dumps(layers, indent=2, ensure_ascii=False))
 
         def harvest_mapserverlayers():
@@ -177,7 +176,7 @@ class Command(CustomBaseCommand):
                 "https://api3.geo.admin.ch/rest/services/api/MapServer?lang=en", timeout=30
             )
             mapserverlayers = response.json()
-            with open(BASE_DIR / "harvest" / "mapserverlayers_en.json", "w", encoding="utf-8") as f:
+            with open(harvest_dir / "mapserverlayers_en.json", "w", encoding="utf-8") as f:
                 f.write(json.dumps(mapserverlayers, indent=2, ensure_ascii=False))
 
         if "layersconfig" in options["sources"] or "all" in options["sources"]:
@@ -195,7 +194,7 @@ class Command(CustomBaseCommand):
         def import_layersconfig(args) -> int:
             self.print("Importing layersConfig...")
 
-            with open("harvest/layersConfig_en.json", "r", encoding="utf-8") as f:
+            with open(harvest_dir / "layersConfig_en.json", "r", encoding="utf-8") as f:
                 layers = json.loads(f.read())
 
             for layername, layer in layers.items():
@@ -205,7 +204,7 @@ class Command(CustomBaseCommand):
         def import_mapserverlayers(args) -> int:
             self.print("Importing MapServer layers...")
 
-            with open("harvest/mapserverlayers_en.json", "r", encoding="utf-8") as f:
+            with open(harvest_dir / "mapserverlayers_en.json", "r", encoding="utf-8") as f:
                 mapserverlayers = json.loads(f.read())
 
             for layer in mapserverlayers["layers"]:
@@ -532,6 +531,21 @@ class Command(CustomBaseCommand):
             Body=json.dumps(catalogCollection, indent=2, ensure_ascii=False).encode("utf-8"),
             ContentType="application/json",
         )
+
+        # Export single dataset collections
+        for record in self.table_records.all():
+            recordCollection = Collection(
+                _id=record["id"], title=record["properties"]["title"]
+            ).as_dict()
+            recordCollection["records"].append(record)
+            self.print(f"Record dataset: {record['id']}")
+
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/collections/swissgeo.catalog/items/{record['id']}",
+                Body=json.dumps(recordCollection, indent=2, ensure_ascii=False).encode("utf-8"),
+                ContentType="application/json",
+            )
 
         # Export distribution collections
         self.print(f"Generate Distributions Collections")
