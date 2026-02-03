@@ -58,6 +58,7 @@ class Client:
             GenerateSecret=True,
             AccessTokenValidity=token_duration_mins,
             TokenValidityUnits={"AccessToken": "minutes"},
+            AllowedOAuthFlowsUserPoolClient=True,
             AllowedOAuthFlows=["client_credentials"],
             ExplicitAuthFlows=["ALLOW_REFRESH_TOKEN_AUTH"],
             AllowedOAuthScopes=[settings.DEFAULT_M2M_SCOPE],
