@@ -59,6 +59,8 @@ class Client:
             AccessTokenValidity=token_duration_mins,
             TokenValidityUnits={"AccessToken": "minutes"},
             AllowedOAuthFlows=["client_credentials"],
+            ExplicitAuthFlows=["ALLOW_REFRESH_TOKEN_AUTH"],
+            AllowedOAuthScopes=[settings.DEFAULT_M2M_SCOPE],
         )
         return CreateClientResponse(
             name=resp["UserPoolClient"]["ClientName"],
