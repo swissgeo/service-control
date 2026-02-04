@@ -26,15 +26,16 @@ OAR_BASE_URL = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAR_PREFIX}"
 OAS_BASE_URL = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAS_PREFIX}"
 
 SAMPLE_IDS = [
-"ch.bafu.schutzgebiete-luftfahrt",
-"ch.swisstopo.lubis-luftbilder-dritte-kantone",
-"ch.bav.sachplan-infrastruktur-schiene_anhorung",
-"ch.agroscope.korridore-feuchtgebietsarten_qualitaet",
-"ch.meteoschweiz.messwerte-pollen-buche-1h"
+    "ch.bafu.schutzgebiete-luftfahrt",
+    "ch.swisstopo.lubis-luftbilder-dritte-kantone",
+    "ch.bav.sachplan-infrastruktur-schiene_anhorung",
+    "ch.agroscope.korridore-feuchtgebietsarten_qualitaet",
+    "ch.meteoschweiz.messwerte-pollen-buche-1h",
 ]
 
 # use SSO session to start since this will be executed locally for the moment
 boto3.setup_default_session(profile_name="swisstopo-swissgeo-dev")
+
 
 class Lang(BaseModel):
     code: str
@@ -84,7 +85,6 @@ class Command(CustomBaseCommand):
             help="Select the languages to use for the records (default: [de, fr, it, en])",
         )
 
-
         # Sub-commands
         sub = parser.add_subparsers(dest="command", required=False, help="Sub-commands")
 
@@ -98,7 +98,9 @@ class Command(CustomBaseCommand):
             help="Source to harvest from",
         )
 
-        convert = sub.add_parser("convert", help="Convert harvested data to internal json-db format")
+        convert = sub.add_parser(
+            "convert", help="Convert harvested data to internal json-db format"
+        )
         convert.add_argument(
             "-s",
             "--sources",
@@ -122,7 +124,6 @@ class Command(CustomBaseCommand):
             action="store_true",
             help="Import only sample records (for testing)",
         )
-
 
         merge = sub.add_parser(
             "merge", help="Merge and convert data in the database to OGC API Records format"
@@ -154,6 +155,11 @@ class Command(CustomBaseCommand):
             default="oa-styles-static-dev-swissgeo",
             help="S3 Bucket to upload exported OARecords styles to",
         )
+        upload.add_argument(
+            "--fixtures",
+            action="store_true",
+            help="Upload fixtures only",
+        )
 
         clean = sub.add_parser("clean", help="Delete static files from S3 buckets")
         clean.add_argument(
@@ -181,9 +187,7 @@ class Command(CustomBaseCommand):
         self.table_layersconfig = self.harvest_db.table("layersconfig")
         self.table_mapserverlayers = self.harvest_db.table("mapserverlayers")
 
-        self.db_datasets = TinyDB(
-            harvest_dir / "db_datasets.json", sort_keys=True, indent=4
-        )
+        self.db_datasets = TinyDB(harvest_dir / "db_datasets.json", sort_keys=True, indent=4)
         self.tbl_datasets = self.db_datasets.table("datasets")
 
         self.db_distributions = TinyDB(
@@ -191,9 +195,7 @@ class Command(CustomBaseCommand):
         )
         self.tbl_distributions = self.db_distributions.table("distributions")
 
-        self.records_db = TinyDB(
-            harvest_dir / "db_records_datasets.json", sort_keys=True, indent=4
-        )
+        self.records_db = TinyDB(harvest_dir / "db_records_datasets.json", sort_keys=True, indent=4)
         self.oar_dataset_de = self.records_db.table("datasets_de")
         self.oar_dataset_fr = self.records_db.table("datasets_fr")
         self.oar_dataset_it = self.records_db.table("datasets_it")
@@ -235,14 +237,19 @@ class Command(CustomBaseCommand):
         if options["command"] == "export":
             self.do_export(*args, **options)
         if options["command"] == "upload":
-            self.do_upload(*args, **options)
+            if options["fixtures"]:
+                self.do_upload_fixtures(*args, **options)
+            else:
+                self.do_upload(*args, **options)
         if options["command"] == "clean":
             self.do_clean(*args, **options)
 
     # ##########################################################################
     def do_harvest(self, *args: Any, **options: Any) -> None:
         # region Harvesting
-        self.print_success(f"Harvesting from sources: {options['sources']} for languages {options['lang']}")
+        self.print_success(
+            f"Harvesting from sources: {options['sources']} for languages {options['lang']}"
+        )
 
         def harvest_layersconfig():
             self.print("Harvesting from layersConfig source...")
@@ -264,7 +271,8 @@ class Command(CustomBaseCommand):
             for lang in options["lang"]:
                 self.print(f" - Language: {lang}")
                 response = requests.get(
-                    f"https://api3.geo.admin.ch/rest/services/api/MapServer?language={lang}", timeout=30
+                    f"https://api3.geo.admin.ch/rest/services/api/MapServer?language={lang}",
+                    timeout=30,
                 )
                 mapserverlayers = response.json()
                 with open(harvest_dir / f"mapserverlayers_{lang}.json", "w", encoding="utf-8") as f:
@@ -280,7 +288,9 @@ class Command(CustomBaseCommand):
     # ##########################################################################
     def do_convert(self, *args: Any, **options: Any) -> None:
         # region Converting
-        self.print_success(f"Converting from sources: {options['sources']} for languages {options['lang']}")
+        self.print_success(
+            f"Converting from sources: {options['sources']} for languages {options['lang']}"
+        )
 
         def convert_layersconfig(args) -> int:
             self.print("Truncating existing entries...")
@@ -289,18 +299,13 @@ class Command(CustomBaseCommand):
 
             for lang in options["lang"]:
                 self.print(f" - Language: {lang}")
-                with open(
-                    harvest_dir / f"layersConfig_{lang}.json", "r", encoding="utf-8"
-                ) as f:
+                with open(harvest_dir / f"layersConfig_{lang}.json", "r", encoding="utf-8") as f:
                     layers = json.loads(f.read())
 
                 for layername, layer in layers.items():
                     layer["language"] = lang
                     layer["id"] = layername
-                    self.table_layersconfig.insert(
-                        layer
-                    )
-
+                    self.table_layersconfig.insert(layer)
 
         def convert_mapserverlayers(args) -> int:
             self.print("Truncating existing entries...")
@@ -330,13 +335,11 @@ class Command(CustomBaseCommand):
     # ##########################################################################
     def do_import_datasets(self, *args: Any, **options: Any) -> None:
         # region Importing Datasets
-        """Import data from various harvested files into local data structures
-
-
-        """
-        self.print_success(f"Importing from sources: {options['sources']} for languages {options['lang']}")
+        """Import data from various harvested files into local data structures"""
+        self.print_success(
+            f"Importing from sources: {options['sources']} for languages {options['lang']}"
+        )
         self.tbl_datasets.truncate()
-
 
         # Loop over a sample or all layers in layersconfig
         # construct queryset
@@ -345,10 +348,9 @@ class Command(CustomBaseCommand):
         else:
             layersconfig_qs = self.table_layersconfig.all()
 
-
         for layersconfig_entry in layersconfig_qs:
             layer_id = layersconfig_entry.get("id")
-            lang = layersconfig_entry.get("language") # having no language would be an error here
+            lang = layersconfig_entry.get("language")  # having no language would be an error here
 
             qs = self.tbl_datasets.search(Query().id == layersconfig_entry.get("id"))
             if qs:
@@ -359,11 +361,12 @@ class Command(CustomBaseCommand):
                 ds = Dataset(id=layersconfig_entry.get("id"))
 
             # Get corresponding mapserverlayers entry
-            mapserver_entry = self.table_mapserverlayers.get((Query().id == layer_id) & (Query().language == layersconfig_entry.get("language")))
+            mapserver_entry = self.table_mapserverlayers.get(
+                (Query().id == layer_id) & (Query().language == layersconfig_entry.get("language"))
+            )
             if not mapserver_entry:
                 self.print_warning(f"++++ WARNING: layer {layer_id} not found in mapserverlayers")
                 mapserver_entry = {"attributes": {}}
-
 
             # Title
             if "name" in mapserver_entry and mapserver_entry["name"] != layersconfig_entry["label"]:
@@ -373,9 +376,11 @@ class Command(CustomBaseCommand):
             setattr(ds, f"title_{lang}", layersconfig_entry.get("label", "ERR:NO_TITLE"))
 
             # Description
-            setattr(ds, f"description_{lang}", mapserver_entry["attributes"].get(
-                "abstract", "ERR:NO_DESCRIPTION"
-            ))
+            setattr(
+                ds,
+                f"description_{lang}",
+                mapserver_entry["attributes"].get("abstract", "ERR:NO_DESCRIPTION"),
+            )
 
             # Contact
             contact_name = mapserver_entry["attributes"].get("dataOwner", None)
@@ -383,64 +388,87 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"++++ WARNING: layer {layer_id} has no contact info")
             else:
                 contacts = getattr(ds, f"contacts_{lang}")
-                contacts.append(Contact(
-                    organisation=contact_name,
-                    country="CH",
-                    role="dataOwner"
-                ))
-
+                contacts.append(Contact(organisation=contact_name, country="CH", role="dataOwner"))
 
             # Geocat ID
             if "idGeoCat" in mapserver_entry:
                 ds.geocat_id = mapserver_entry.get("idGeoCat")
-
 
             # ----------------------------------------------------------------
             # Links
             links = getattr(ds, f"links_{lang}")
 
             # Self link is only added during export for specific language
-            links.append(Link(href=f"{OAR_BASE_URL}/collections/swissgeo.catalog/items/{layer_id}?language={lang}", rel="self", typ="application/json", title="This Record"))
+            links.append(
+                Link(
+                    href=f"{OAR_BASE_URL}/collections/swissgeo.catalog/items/{layer_id}?language={lang}",
+                    rel="self",
+                    typ="application/json",
+                    title="This Record",
+                )
+            )
 
             # Catalog
-            links.append(Link(href=f"{OAR_BASE_URL}/collections/swissgeo.catalog?language={lang}", rel="collection", typ="application/json", title="Swissgeo Catalog"))
+            links.append(
+                Link(
+                    href=f"{OAR_BASE_URL}/collections/swissgeo.catalog?language={lang}",
+                    rel="collection",
+                    typ="application/json",
+                    title="Swissgeo Catalog",
+                )
+            )
 
             # Distributions
-            links.append(Link(href=f"{OAR_BASE_URL}/collections/{layer_id}?language={lang}", rel="distributions", typ="application/json", title="Distributions"))
+            links.append(
+                Link(
+                    href=f"{OAR_BASE_URL}/collections/{layer_id}?language={lang}",
+                    rel="distributions",
+                    typ="application/json",
+                    title="Distributions",
+                )
+            )
 
             # Details
             if "urlDetails" in mapserver_entry["attributes"]:
-                links.append(Link(href=mapserver_entry["attributes"]["urlDetails"], rel="describedby", typ="text/html", title="Details"))
+                links.append(
+                    Link(
+                        href=mapserver_entry["attributes"]["urlDetails"],
+                        rel="describedby",
+                        typ="text/html",
+                        title="Details",
+                    )
+                )
 
             # GeoCat Alternate
             if "idGeoCat" in mapserver_entry:
-                links.append(Link(
-                    href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_GEOCAT[lang]}/catalog.search#/metadata/{mapserver_entry.get('idGeoCat')}",
-                    rel="alternate",
-                    title="GeoCat Metadata",
-                    typ="text/html",
-                ))
+                links.append(
+                    Link(
+                        href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_GEOCAT[lang]}/catalog.search#/metadata/{mapserver_entry.get('idGeoCat')}",
+                        rel="alternate",
+                        title="GeoCat Metadata",
+                        typ="text/html",
+                    )
+                )
 
             # If the layer type is 'wmts', then the wmts distribution is the preferred
             # one to use in the application.
             distribution_id = layersconfig_entry.get("serverLayerName", None) or layer_id
             if layersconfig_entry["type"].lower() in ["wmts", "wms"]:
-                ds.preferred_distribution_id = distribution_id + ":" + layersconfig_entry["type"].lower()
+                ds.preferred_distribution_id = (
+                    distribution_id + ":" + layersconfig_entry["type"].lower()
+                )
 
             self.tbl_datasets.upsert(ds.model_dump(), Query().id == layersconfig_entry.get("id"))
         # endregion
 
-
     # ##########################################################################
     def do_import_distributions(self, *args: Any, **options: Any) -> None:
         # region Importing Distributions
-        """Import data from various harvested files into local data structures
-
-
-        """
-        self.print_success(f"Importing distributions data from sources: {options['sources']} for languages {options['lang']}")
+        """Import data from various harvested files into local data structures"""
+        self.print_success(
+            f"Importing distributions data from sources: {options['sources']} for languages {options['lang']}"
+        )
         self.tbl_distributions.truncate()
-
 
         # Loop over a sample or all layers in layersconfig
         # construct queryset
@@ -452,9 +480,15 @@ class Command(CustomBaseCommand):
         for layersconfig_entry in layersconfig_qs:
             layer_id = layersconfig_entry.get("id")
             distribution_id = layersconfig_entry.get("serverLayerName", None) or layer_id
-            lang = layersconfig_entry.get("language") # having no language would be an error here
+            lang = layersconfig_entry.get("language")  # having no language would be an error here
 
-            dataset_link = Link(href=f"{OAR_BASE_URL}/collections/swissgeo.catalog/items/{layer_id}?language={lang}", rel="dataset", hreflang=lang, typ="application/json", title="Dataset Record")
+            dataset_link = Link(
+                href=f"{OAR_BASE_URL}/collections/swissgeo.catalog/items/{layer_id}?language={lang}",
+                rel="dataset",
+                hreflang=lang,
+                typ="application/json",
+                title="Dataset Record",
+            )
 
             # region WMTS Distribution
             if layersconfig_entry["type"].lower() == "wmts":
@@ -469,14 +503,24 @@ class Command(CustomBaseCommand):
                     dtb = Distribution(**qs[0])
                 else:
                     self.print(f" - Creating new distribution: {wmts_distribution_id}")
-                    dtb = Distribution(id=wmts_distribution_id, dataset_id=layer_id, external_id=distribution_id, protocol="OGC:WMTS")
+                    dtb = Distribution(
+                        id=wmts_distribution_id,
+                        dataset_id=layer_id,
+                        external_id=distribution_id,
+                        protocol="OGC:WMTS",
+                    )
 
                 setattr(dtb, f"title_{lang}", f"OGC Web Map Tile Service (WMTS)")
 
                 links = getattr(dtb, f"links_{lang}")
                 # Link to dataset
                 links.append(dataset_link)
-                links.append(Link(href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.wmts", rel="service"))
+                links.append(
+                    Link(
+                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.wmts",
+                        rel="service",
+                    )
+                )
 
                 # Opacity can be seen as a styling hint. We create separate 'style'
                 # files for layers with non-default opacity (or gutters for WMS layers).
@@ -523,7 +567,12 @@ class Command(CustomBaseCommand):
                     dtb = Distribution(**qs[0])
                 else:
                     self.print(f" - Creating new distribution: {wms_distribution_id}")
-                    dtb = Distribution(id=wms_distribution_id, dataset_id=layer_id, external_id=layer_id, protocol="OGC:WMS")
+                    dtb = Distribution(
+                        id=wms_distribution_id,
+                        dataset_id=layer_id,
+                        external_id=layer_id,
+                        protocol="OGC:WMS",
+                    )
 
                 # Set Title
                 setattr(dtb, f"title_{lang}", f"OGC Web Map Service (WMS)")
@@ -531,10 +580,14 @@ class Command(CustomBaseCommand):
                 links = getattr(dtb, f"links_{lang}")
                 # Link to dataset
                 links.append(dataset_link)
-                links.append(Link(href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.wms", rel="service"))
+                links.append(
+                    Link(
+                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.wms",
+                        rel="service",
+                    )
+                )
 
                 if layersconfig_entry["type"].lower() == "wms":
-
                     # Create style file if gutter or opacity are defined
                     if "gutter" in layersconfig_entry or "opacity" in layersconfig_entry:
                         style_id = f"{wms_distribution_id}:style"
@@ -585,7 +638,12 @@ class Command(CustomBaseCommand):
                     dtb = Distribution(**qs[0])
                 else:
                     self.print(f" - Creating new distribution: {geojson_distribution_id}")
-                    dtb = Distribution(id=geojson_distribution_id, dataset_id=layer_id, external_id=layer_id, protocol="OGC:GeoJSON")
+                    dtb = Distribution(
+                        id=geojson_distribution_id,
+                        dataset_id=layer_id,
+                        external_id=layer_id,
+                        protocol="OGC:GeoJSON",
+                    )
 
                 # Set Title
                 setattr(dtb, f"title_{lang}", f"GeoJSON Feature Service")
@@ -618,12 +676,16 @@ class Command(CustomBaseCommand):
                     )
                 )
 
-                self.tbl_distributions.upsert(dtb.model_dump(), Query().id == geojson_distribution_id)
+                self.tbl_distributions.upsert(
+                    dtb.model_dump(), Query().id == geojson_distribution_id
+                )
             # endregion
 
             # region STAC Distribution
             # Get corresponding mapserverlayers entry
-            mapserver_entry = self.table_mapserverlayers.get((Query().id == layer_id) & (Query().language == layersconfig_entry.get("language")))
+            mapserver_entry = self.table_mapserverlayers.get(
+                (Query().id == layer_id) & (Query().language == layersconfig_entry.get("language"))
+            )
             if not mapserver_entry:
                 self.print_warning(f"++++ WARNING: layer {layer_id} not found in mapserverlayers")
                 mapserver_entry = {"attributes": {}}
@@ -638,20 +700,29 @@ class Command(CustomBaseCommand):
                     dtb = Distribution(**qs[0])
                 else:
                     self.print(f" - Creating new distribution: {stac_distribution_id}")
-                    dtb = Distribution(id=stac_distribution_id, dataset_id=layer_id, external_id=layer_id, protocol="OGC:STAC")
+                    dtb = Distribution(
+                        id=stac_distribution_id,
+                        dataset_id=layer_id,
+                        external_id=layer_id,
+                        protocol="OGC:STAC",
+                    )
 
                 # Set Title
                 setattr(dtb, f"title_{lang}", f"STAC Download Service")
 
                 links = getattr(dtb, f"links_{lang}")
                 links.append(dataset_link)
-                links.append(Link(href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.data", rel="service"))
+                links.append(
+                    Link(
+                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.data",
+                        rel="service",
+                    )
+                )
 
                 self.tbl_distributions.upsert(dtb.model_dump(), Query().id == stac_distribution_id)
             # endregion
 
-        #endregion
-
+        # endregion
 
     # ##########################################################################
     def do_merge_legacy(self, *args: Any, **options: Any) -> None:
@@ -966,14 +1037,14 @@ class Command(CustomBaseCommand):
                 # create a distribution collection for them
                 oar_distribution_table = getattr(self, f"oar_distributions_{lang}")
                 distribution_collection = OARCollection(
-                    id=ds.id,
-                    title=f"Distributions for {ds.id}")
+                    id=ds.id, title=f"Distributions for {ds.id}"
+                )
                 for _dist in self.tbl_distributions.search(Query().dataset_id == ds.id):
                     dist = Distribution(**_dist).as_oar_record(lang=lang)
 
-
                     distribution_collection.records.append(dist)
                 oar_distribution_table.insert(distribution_collection.model_dump(exclude_none=True))
+
     # endregion
 
     # ##########################################################################
@@ -1001,19 +1072,21 @@ class Command(CustomBaseCommand):
                 self.s3_client.put_object(
                     Bucket=oarecords_s3_bucket,
                     Key=f"{OAR_PREFIX}/collections/swissgeo.catalog/items/{record.id}.{lang}",
-                    Body=json.dumps(record.model_dump(exclude_none=True), indent=2, ensure_ascii=False).encode("utf-8"),
+                    Body=json.dumps(
+                        record.model_dump(exclude_none=True), indent=2, ensure_ascii=False
+                    ).encode("utf-8"),
                     ContentType="application/json",
                 )
             self.print("Uploading dataset collection record...")
             self.s3_client.put_object(
                 Bucket=oarecords_s3_bucket,
                 Key=f"{OAR_PREFIX}/collections/swissgeo.catalog.{lang}",
-                Body=json.dumps(catalogCollection.model_dump(exclude_none=True), indent=2, ensure_ascii=False).encode("utf-8"),
+                Body=json.dumps(
+                    catalogCollection.model_dump(exclude_none=True), indent=2, ensure_ascii=False
+                ).encode("utf-8"),
                 ContentType="application/json",
             )
         self.print_success("Dataset records upload completed.")
-
-
 
         # Upload distribution collections
         self.print_success(f"Upload Distributions Collections")
@@ -1040,6 +1113,15 @@ class Command(CustomBaseCommand):
                 Body=json.dumps(style, indent=2, ensure_ascii=False).encode("utf-8"),
                 ContentType="application/json",
             )
+
+    # ##########################################################################
+    def do_upload_fixtures(self, *args: Any, **options: Any) -> None:
+        # region Upload
+        self.print_success("Starting to upload local OGC API Records to S3...")
+
+        # setup boto3 s3 client
+        oarecords_s3_bucket = options["records_bucket"]
+        styles_s3_bucket = options["styles_bucket"]
 
         # # Write service files
         self.print("Writing service files...")
@@ -1129,6 +1211,111 @@ class Command(CustomBaseCommand):
             ContentType="application/json",
         )
 
+        # Landing page
+        self.print("Uploading landing page...")
+        landing_page = {
+            "title": "OGC API Records - swissgeo",
+            "description": "OGC API Records implementation for swissgeo datasets and services.",
+            "links": [
+                {
+                    "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog",
+                    "rel": "service-desc",
+                    "type": "application/json",
+                    "title": "OGC API Records - swissgeo - OpenAPI Description",
+                },
+                {
+                    "href": f"{OAR_BASE_URL}/collections",
+                    "rel": "data",
+                    "type": "application/json",
+                    "title": "Swissgeo Catalog Collection",
+                },
+                {
+                    "href": f"{OAR_BASE_URL}/conformance",
+                    "rel": "conformance",
+                    "type": "application/json",
+                    "title": "Conformance Declaration",
+                },
+            ],
+        }
+        self.s3_client.put_object(
+            Bucket=oarecords_s3_bucket,
+            Key=f"{OAR_PREFIX}/landingpage",
+            Body=json.dumps(landing_page, indent=2, ensure_ascii=False).encode("utf-8"),
+            ContentType="application/json",
+        )
+
+        # conformance declaration
+        self.print("Uploading conformance declaration...")
+        conformance_declaration = {
+            "conformsTo": [
+                "http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/core",
+                "http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/collections",
+                "http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/json",
+            ]
+        }
+        for lang in LANGS.keys():
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/conformance.{lang}",
+                Body=json.dumps(conformance_declaration, indent=2, ensure_ascii=False).encode(
+                    "utf-8"
+                ),
+                ContentType="application/json",
+            )
+
+        # /collections endpoint
+        self.print("Uploading collections endpoint...")
+        collections = {
+            "collections": [
+                {
+                    "id": "swissgeo.catalog",
+                    "title": "Swissgeo Catalog",
+                    "description": "Collection of all swissgeo datasets",
+                    "itemType": "record",
+                    "links": [
+                        {
+                            "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog",
+                            "rel": "self",
+                            "type": "application/json",
+                        },
+                        {
+                            "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog/items",
+                            "rel": "items",
+                            "type": "application/json",
+                        },
+                    ],
+                },
+                {
+                    "id": "geoadmin.services",
+                    "title": "Geoadmin Services",
+                    "description": "Collection of geoadmin services",
+                    "itemType": "record",
+                    "links": [
+                        {
+                            "href": f"{OAR_BASE_URL}/collections/geoadmin.services",
+                            "rel": "self",
+                            "type": "application/json",
+                        }
+                    ],
+                },
+            ],
+            "links": [
+                {
+                    "href": f"{OAR_BASE_URL}/collections",
+                    "rel": "self",
+                    "description": "This document",
+                    "type": "application/json",
+                }
+            ],
+        }
+        for lang in LANGS.keys():
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/collections.{lang}",
+                Body=json.dumps(collections, indent=2, ensure_ascii=False).encode("utf-8"),
+                ContentType="application/json",
+            )
+
         self.print_success("Export completed.")
         # endregion
 
@@ -1168,11 +1355,11 @@ class Command(CustomBaseCommand):
 # region Class Definitions
 # ##########################################################################
 
+
 def is_url(url: str) -> str:
     if not url.startswith("http"):
-        raise ValueError(f'{url} is not a valid URL')
+        raise ValueError(f"{url} is not a valid URL")
     return url
-
 
 
 class Link(BaseModel):
@@ -1184,11 +1371,8 @@ class Link(BaseModel):
 
 
 class OARRecord(BaseModel):
-
     id: str
     links: list[Link] = Field(default_factory=list)
-
-
 
     # def __init__(self, _id: str):
     #     super().__init__()
@@ -1215,7 +1399,7 @@ class OARDataset(OARRecord):
 
     """
 
-    properties: dict = {"type": "Dataset"}
+    properties: dict = Field(default_factory=lambda: {"type": "Dataset"})
 
 
 class OARDistribution(OARRecord):
@@ -1236,7 +1420,6 @@ class OARDistribution(OARRecord):
     """
 
     properties: dict = Field(default_factory=lambda: {"type": "Distribution"})
-
 
     # def __init__(self, _id: str, dataset_id: str, external_id: str, title: str):
     #     """initialize a Distribution
@@ -1261,6 +1444,7 @@ class OARDistribution(OARRecord):
     #             typ="application/json",
     #         )
     #     )
+
 
 class OARCollection(BaseModel):
     """Record Collection
@@ -1299,6 +1483,7 @@ class OARCollection(BaseModel):
     point to the /items endpoint.
 
     """
+
     id: str
     title: str
     type: str = "Collection"
@@ -1331,7 +1516,6 @@ class OARCollection(BaseModel):
     #     return dct
 
 
-
 class Contact(BaseModel):
     organisation: str
     country: str
@@ -1344,10 +1528,11 @@ class Contact(BaseModel):
     # city: Optional[str] = None
     # postal_code: Optional[str] = None
 
-class Dataset(BaseModel):
-    model_config = ConfigDict(extra='forbid')  # forbid extra fields not defined in the model
 
-    id: str = Field(frozen=True) # make id field immutable
+class Dataset(BaseModel):
+    model_config = ConfigDict(extra="forbid")  # forbid extra fields not defined in the model
+
+    id: str = Field(frozen=True)  # make id field immutable
     # note: this could be UUID but gives troubles when serializing to dict
     # hence we use str for the moment
     # geocat_id: Optional[uuid.UUID] = None
@@ -1393,6 +1578,7 @@ class Dataset(BaseModel):
 
         return record
 
+
 class Distribution(BaseModel):
     """Distribution record
 
@@ -1409,6 +1595,7 @@ class Distribution(BaseModel):
     query and filter distributions based on their protocol.
 
     """
+
     id: str
     dataset_id: str
     external_id: str
@@ -1481,8 +1668,6 @@ class OASLink(LegacyLink):
     def __init__(self, href: str, **kwargs):
         full_href = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAS_PREFIX}/{href}"
         super().__init__(full_href, **kwargs)
-
-
 
 
 # class WMTSDistribution(OARDistribution):
