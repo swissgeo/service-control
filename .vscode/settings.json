@@ -1,11 +1,12 @@
 {
     "ruff.enable": true,
+    "pylint.enabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.experiments.enabled": false,
     "python.testing.pytestPath": ".venv/bin/pytest",
     "[python]": {
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": false,
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
