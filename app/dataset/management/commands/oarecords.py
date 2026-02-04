@@ -3,20 +3,15 @@
 # type: ignore
 import json
 import pathlib
-import pprint
-import uuid
 from typing import Annotated, Any, Optional
 
 import boto3
 import environ
-import pydantic
 import requests
 from botocore.client import Config
 from config.settings_base import BASE_DIR
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from tinydb import Query, TinyDB
-from tinydb.middlewares import CachingMiddleware
-from tinydb.storages import JSONStorage
 from utils.command import CustomBaseCommand
 
 harvest_dir = BASE_DIR / "harvest"
@@ -36,7 +31,6 @@ SAMPLE_IDS = [
 "ch.bav.sachplan-infrastruktur-schiene_anhorung",
 "ch.agroscope.korridore-feuchtgebietsarten_qualitaet",
 "ch.meteoschweiz.messwerte-pollen-buche-1h"
-
 ]
 
 # use SSO session to start since this will be executed locally for the moment
@@ -122,13 +116,6 @@ class Command(CustomBaseCommand):
             nargs="+",
             default=["all"],
             help="Source to harvest from",
-        )
-        imp.add_argument(
-            "-l",
-            "--limit",
-            type=int,
-            default=None,
-            help="Limit number of records to merge (for testing)",
         )
         imp.add_argument(
             "--samples-only",
@@ -1031,7 +1018,7 @@ class Command(CustomBaseCommand):
         # Upload distribution collections
         self.print_success(f"Upload Distributions Collections")
         for lang in options["lang"]:
-            table = getattr(self, f"oar_dataset_{lang}")
+            table = getattr(self, f"oar_distributions_{lang}")
             for distribution in table.all():
                 self.print(f" - {OAR_PREFIX}/collections/{distribution['id']}.{lang}")
 
@@ -1192,14 +1179,14 @@ class Link(BaseModel):
     href: Annotated[str, AfterValidator(is_url)]
     rel: str
     title: Optional[str] = None
-    typ: Optional[str] = None
+    typ: Optional[str] = Field(default=None, serialization_alias="type")
     hreflang: Optional[str] = None
 
 
 class OARRecord(BaseModel):
 
     id: str
-    links: list[Link] = []
+    links: list[Link] = Field(default_factory=list)
 
 
 
@@ -1248,7 +1235,7 @@ class OARDistribution(OARRecord):
 
     """
 
-    properties: dict = {"type": "Distribution"}
+    properties: dict = Field(default_factory=lambda: {"type": "Distribution"})
 
 
     # def __init__(self, _id: str, dataset_id: str, external_id: str, title: str):
@@ -1317,7 +1304,7 @@ class OARCollection(BaseModel):
     type: str = "Collection"
     itemType: str = "record"
     recordsArrayName: str = "records"
-    records: list[Any] = []
+    records: list[Any] = Field(default_factory=list)
 
     # def __init__(self, _id: str, title: str):
     #     super().__init__()
@@ -1376,17 +1363,17 @@ class Dataset(BaseModel):
     description_it: Optional[str] = None
     description_en: Optional[str] = None
 
-    links_de: list[Link] = []
-    links_fr: list[Link] = []
-    links_it: list[Link] = []
-    links_en: list[Link] = []
+    links_de: list[Link] = Field(default_factory=list)
+    links_fr: list[Link] = Field(default_factory=list)
+    links_it: list[Link] = Field(default_factory=list)
+    links_en: list[Link] = Field(default_factory=list)
 
     preferred_distribution_id: Optional[str] = None
 
-    contacts_de: list[Contact] = []
-    contacts_fr: list[Contact] = []
-    contacts_it: list[Contact] = []
-    contacts_en: list[Contact] = []
+    contacts_de: list[Contact] = Field(default_factory=list)
+    contacts_fr: list[Contact] = Field(default_factory=list)
+    contacts_it: list[Contact] = Field(default_factory=list)
+    contacts_en: list[Contact] = Field(default_factory=list)
 
     def as_oar_record(self, lang: str) -> OARDataset:
         record = OARDataset(id=self.id)
@@ -1432,10 +1419,10 @@ class Distribution(BaseModel):
     title_it: Optional[str] = None
     title_en: Optional[str] = None
 
-    links_de: list[Link] = []
-    links_fr: list[Link] = []
-    links_it: list[Link] = []
-    links_en: list[Link] = []
+    links_de: list[Link] = Field(default_factory=list)
+    links_fr: list[Link] = Field(default_factory=list)
+    links_it: list[Link] = Field(default_factory=list)
+    links_en: list[Link] = Field(default_factory=list)
 
     def as_oar_record(self, lang: str) -> OARDistribution:
         record = OARDistribution(id=self.id)
