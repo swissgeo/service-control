@@ -10,9 +10,8 @@ root:
 # configure loggers per app
 loggers:
   django.request:
-    # setting this to ERROR prevents from logging too much
-    # we do the logging ourselves
-    level: ERROR
+    # We want to look out for "Asynchronous handler adapted for middleware"
+    level: DEBUG
 
 formatters:
   ecs:

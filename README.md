@@ -124,37 +124,8 @@ There are some possibilities to debug this codebase from within visual studio co
 
 #### Debug from Visual Studio Code
 
-In order to debug the service from within vs code, you need to create a launch-configuration. Create
-a folder `.vscode` in the root folder if it doesn't exist and put a file `launch.json` with this content
-in it:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Python Debugger: Attach",
-      "type": "debugpy",
-      "request": "attach",
-      "justMyCode": false,
-      "connect": {
-        "host": "localhost",
-        "port": 5678
-      }
-    }
-  ]
-}
-```
-
-Alternatively, create the file via menu "Run" > "Add Configuration" by choosing
-
-- Debugger: Python Debugger
-- Debug Configration: Remote Attach
-- Hostname: `localhost`
-- Port number: `5678`
-
-Now you can start the server with `make serve-debug`.
-The bootup will wait with the execution until the debugger is attached, which can most easily done by hitting F5.
+Start the server with `make serve-debug`. The bootup will wait with the execution until the debugger
+is attached, which can most easily done by hitting F5.
 
 #### Run Tests From Within Visual Studio Code
 
@@ -219,8 +190,8 @@ The following env variables can be used to configure OTEL
 | Env Variable                                              | Default                    | Description                                                                                                                                          |
 | --------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OTEL_SDK_DISABLED                                         | false                      | If set to "true", OTEL is disabled. See: https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#general-sdk-configuration |
-| OTEL_ENABLE_BOTO                                          | false                      | If opentelemetry-instrumentation-botocore should be enabled or not.                                                                                  |
-| OTEL_ENABLE_DJANGO                                        | false                      | If opentelemetry-instrumentation-django should be enabled or not.                                                                                    |
+| OTEL_ENABLE_BOTO                                          | false                      | If aiobotocore-otel should be enabled or not.                                                                                                        |
+| OTEL_ENABLE_DJANGO                                        | false                      | If opentelemetry-instrumentation-asgi should be enabled or not.                                                                                      |
 | OTEL_ENABLE_PSYCOPG                                       | false                      | If opentelemetry-instrumentation-psycopg should be enabled or not.                                                                                   |
 | OTEL_ENABLE_LOGGING                                       | false                      | If opentelemetry-instrumentation-logging should be enabled or not.                                                                                   |
 | OTEL_EXPERIMENTAL_RESOURCE_DETECTORS                      |                            | OTEL resource detectors, adding resource attributes to the OTEL output. e.g. `os,process`                                                            |

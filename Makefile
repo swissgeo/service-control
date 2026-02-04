@@ -18,15 +18,17 @@ AUTHOR := $(USER)
 # Django specific
 APP_SRC_DIR := app
 DJANGO_MANAGER := $(CURRENT_DIR)/$(APP_SRC_DIR)/manage.py
-DJANGO_MANAGER_DEBUG := -m debugpy --listen localhost:5678 --wait-for-client $(CURRENT_DIR)/$(APP_SRC_DIR)/manage.py
 
 # Commands
 UV_RUN := uv run
+UV_RUN_APP = cd $(APP_SRC_DIR) && $(UV_RUN) --env-file=../.env
 PYTHON := $(UV_RUN) python3
 TEST := $(UV_RUN) pytest
 RUFF := $(UV_RUN) ruff
 TY := $(UV_RUN) ty
 PRE_COMMIT := $(UV_RUN) pre-commit
+HYPERCORN := $(UV_RUN_APP) hypercorn --config file:config/hypercorn.py asgi:application
+HYPERCORN_DEBUG := $(UV_RUN_APP) debugpy --listen localhost:5678 --wait-for-client -m hypercorn asgi:application --reload
 
 # Docker variables?
 DOCKER_REGISTRY = 074597099015.dkr.ecr.eu-central-1.amazonaws.com
@@ -99,18 +101,13 @@ ci-check-format: format ## Check the format (CI)
 
 
 .PHONY: serve
-serve: start-local-db ## Serve the application locally
-	$(PYTHON) $(DJANGO_MANAGER) runserver
+serve: start-local-db ## Serve the application locally with hypercorn
+	$(HYPERCORN) --reload
 
 
 .PHONY: serve-debug
 serve-debug: start-local-db ## Serve the application locally for debugging
-	$(PYTHON) $(DJANGO_MANAGER_DEBUG) runserver
-
-
-.PHONY: gunicornserve
-gunicornserve: start-local-db ## Serve the application locally with gunicorn
-	$(PYTHON) $(APP_SRC_DIR)/wsgi.py
+	$(HYPERCORN_DEBUG) --reload
 
 
 .PHONY: dockerlogin
@@ -140,9 +137,8 @@ dockerrun: start-local-db dockerbuild ## Run the locally built docker image
 		-it -p $(HTTP_PORT):8080 \
 		--env-file=${ENV_FILE} \
 		--env DJANGO_SETTINGS_MODULE=config.settings_prod \
-		--env ALLOWED_HOSTS=127.0.0.1 \
 		--net=host \
-		$(DOCKER_IMG_LOCAL_TAG) ./wsgi.py
+		$(DOCKER_IMG_LOCAL_TAG) -m hypercorn --config file:config/hypercorn.py asgi:application
 
 
 .PHONY: lint

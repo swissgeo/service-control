@@ -5,7 +5,7 @@ def test_oauth_middleware_creates_user(settings, db, client, django_user_model):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
 
     headers = {
-        "HTTP_X_AUTH_REQUEST_USER": "hans.maulwurf",
+        "X_AUTH_REQUEST_USER": "hans.maulwurf",
         "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Hans Maulwurf",
         "HTTP_X_AUTH_REQUEST_EMAIL": "hans.maulwurf@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "admin",
@@ -39,7 +39,7 @@ def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
     user.save()
 
     headers = {
-        "HTTP_X_AUTH_REQUEST_USER": "joseph.quimby",
+        "X_AUTH_REQUEST_USER": "joseph.quimby",
         "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Joseph Quimby",
         "HTTP_X_AUTH_REQUEST_EMAIL": "joseph.quimby@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "staff",

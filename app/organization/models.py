@@ -1,5 +1,6 @@
 import logging
-from typing import TYPE_CHECKING, Any
+
+from asgiref.sync import sync_to_async
 
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
@@ -7,11 +8,6 @@ from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
 from utils.fields import CustomSlugField
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from django.db.models.base import ModelBase
 
 logger = logging.getLogger(__name__)
 
@@ -47,46 +43,42 @@ class Organization(models.Model):
     def __str__(self) -> str:
         return str(self.organization_id)
 
-    def save(
-        self,
-        *args: Any,  # noqa: ARG002 unused arguments
-        force_insert: bool | tuple[ModelBase, ...] = False,
-        force_update: bool = False,
-        using: str | None = None,
-        update_fields: Iterable[str] | None = None,
-    ) -> None:
+    async def save_and_sync(self) -> None:
         """Validates the model before writing it to the database and create in cognito."""
 
-        self.full_clean()
-        client = Client()
+        await sync_to_async(self.full_clean, thread_sensitive=True)()
+
         if self._state.adding:
-            if not client.create_group(self.organization_id):
+            client = Client()
+            if not await client.create_group(self.organization_id):
                 logger.warning(
                     "cognito user group '%s' already exists, not created",
                     self.organization_id,
                 )
         else:
-            existing_org_id = Organization.objects.get(pk=self.pk).organization_id
+            existing_org_id = (await Organization.objects.aget(pk=self.pk)).organization_id
             if self.organization_id != existing_org_id:
                 raise ValidationError(errors=[{"organization_id": "cannot be updated"}])
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
 
-    def delete(
-        self,
-        using: str | None = None,
-        keep_parents: bool = False,
-    ) -> tuple[int, dict[str, int]]:
-        """Deletes from the database and cognito."""
+        await super().asave()
+
+    async def delete_and_sync(self) -> tuple[int, dict[str, int]]:
+        """Deletes from the database and cognito.
+
+        Also calls delete_and_sync of related units and machine users.
+        """
+
+        async for machine_user in self.machineuser_set.all():  # type:ignore[unresolved-attribute]
+            await machine_user.delete_and_sync()
+        async for unit in self.unit_set.all():  # type:ignore[unresolved-attribute]
+            await unit.delete_and_sync()
+
+        result = await super().adelete()
 
         client = Client()
-        result = super().delete(using=using, keep_parents=keep_parents)
-        if not client.delete_group(self.organization_id):
+        if not await client.delete_group(self.organization_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.organization_id)
+
         return result
 
 
@@ -115,42 +107,31 @@ class Unit(models.Model):
     def __str__(self) -> str:
         return str(self.unit_id)
 
-    def save(
-        self,
-        *args: Any,  # noqa: ARG002 unused arguments
-        force_insert: bool | tuple[ModelBase, ...] = False,
-        force_update: bool = False,
-        using: str | None = None,
-        update_fields: Iterable[str] | None = None,
-    ) -> None:
+    async def save_and_sync(self) -> None:
         """Validates the model before writing it to the database and create in cognito."""
-        self.full_clean()
-        client = Client()
+
+        await sync_to_async(self.full_clean, thread_sensitive=True)()
+
         if self._state.adding:
-            if not client.create_group(self.unit_id):
+            client = Client()
+            if not await client.create_group(self.unit_id):
                 logger.warning(
                     "cognito user group '%s' already exists, not created",
                     self.unit_id,
                 )
         else:
-            existing_unit_id = Unit.objects.get(pk=self.pk).unit_id
+            existing_unit_id = (await Unit.objects.aget(pk=self.pk)).unit_id
             if self.unit_id != existing_unit_id:
                 raise ValidationError(errors=[{"unit_id": "cannot be updated"}])
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
 
-    def delete(
-        self,
-        using: str | None = None,
-        keep_parents: bool = False,
-    ) -> tuple[int, dict[str, int]]:
+        await super().asave()
+
+    async def delete_and_sync(self) -> tuple[int, dict[str, int]]:
         """Deletes from the database and cognito."""
+
+        result = await super().adelete()
+
         client = Client()
-        result = super().delete(using=using, keep_parents=keep_parents)
-        if not client.delete_group(self.unit_id):
+        if not await client.delete_group(self.unit_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.unit_id)
         return result

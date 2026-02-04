@@ -1,7 +1,11 @@
-from django.http import HttpRequest  # noqa:TC002
-from django.shortcuts import get_object_or_404
+from django.http import (
+    Http404,
+    HttpRequest,
+)
+from django.shortcuts import aget_object_or_404
 from ninja import Router
 
+from schemas import TranslationsSchema
 from utils.language import LanguageCode, get_language, get_translation
 
 from .models import Organization, Unit
@@ -10,7 +14,6 @@ from .schemas import (
     CreateUnitSchema,
     OrganizationListSchema,
     OrganizationSchema,
-    TranslationsSchema,
     UnitListSchema,
     UnitSchema,
     UpdateOrganizationSchema,
@@ -46,7 +49,7 @@ def organization_to_response(model: Organization, lang: LanguageCode) -> Organiz
 
 
 @router.post("/organizations", response={201: OrganizationSchema}, exclude_none=True)
-def create_organization(
+async def create_organization(
     request: HttpRequest,
     organization_in: CreateOrganizationSchema,
     lang: LanguageCode | None = None,
@@ -56,7 +59,8 @@ def create_organization(
     TODO: Authorization should only be available to swissgeo-admin users.
     """
     lang_to_use = get_language(lang, request.headers)
-    org = Organization.objects.create(
+
+    org = Organization(
         organization_id=organization_in.id,
         name_de=organization_in.name_translations.de,
         name_fr=organization_in.name_translations.fr,
@@ -69,6 +73,9 @@ def create_organization(
         acronym_it=organization_in.acronym_translations.it,
         acronym_rm=organization_in.acronym_translations.rm,
     )
+
+    await org.save_and_sync()
+
     return organization_to_response(org, lang_to_use)
 
 
@@ -77,7 +84,7 @@ def create_organization(
     response={200: OrganizationSchema},
     exclude_none=True,
 )
-def update_organization(
+async def update_organization(
     request: HttpRequest,
     organization_id: str,
     organization_in: UpdateOrganizationSchema,
@@ -89,7 +96,7 @@ def update_organization(
     """
     lang_to_use = get_language(lang, request.headers)
 
-    org = get_object_or_404(Organization, organization_id=organization_id)
+    org = await aget_object_or_404(Organization, organization_id=organization_id)
     org.name_de = organization_in.name_translations.de
     org.name_fr = organization_in.name_translations.fr
     org.name_en = organization_in.name_translations.en
@@ -100,7 +107,8 @@ def update_organization(
     org.acronym_en = organization_in.acronym_translations.en
     org.acronym_it = organization_in.acronym_translations.it
     org.acronym_rm = organization_in.acronym_translations.rm
-    org.save()
+
+    await org.save_and_sync()
 
     return organization_to_response(org, lang_to_use)
 
@@ -110,15 +118,17 @@ def update_organization(
     response={200: OrganizationListSchema},
     exclude_none=True,
 )
-def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> OrganizationListSchema:
+async def organizations(
+    request: HttpRequest, lang: LanguageCode | None = None
+) -> OrganizationListSchema:
     """
     List all organizations.
 
     TODO: Authorization should only be available to swissgeo-admin users.
     """
-    models = Organization.objects.order_by("id").all()
+    models = Organization.objects.order_by("id")
     lang_to_use = get_language(lang, request.headers)
-    response = [organization_to_response(model, lang_to_use) for model in models]
+    response = [organization_to_response(model, lang_to_use) async for model in models]
     return OrganizationListSchema(items=response)
 
 
@@ -127,7 +137,7 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
     response={200: OrganizationSchema},
     exclude_none=True,
 )
-def organization(
+async def organization(
     request: HttpRequest,
     organization_id: str,
     lang: LanguageCode | None = None,
@@ -137,7 +147,7 @@ def organization(
 
     TODO: Authorization, should only be available to organization admin.
     """
-    model = get_object_or_404(Organization, organization_id=organization_id)
+    model = await aget_object_or_404(Organization, organization_id=organization_id)
     lang_to_use = get_language(lang, request.headers)
     return organization_to_response(model, lang_to_use)
 
@@ -160,12 +170,23 @@ def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
     )
 
 
+async def aget_unit_or_404(organization_id: str, unit_id: str) -> Unit:
+    # aget_object_or_404 does not support lookups that span relationships
+    model = await Unit.objects.select_related("organization").aget(
+        organization__organization_id=organization_id,
+        unit_id=unit_id,
+    )
+    if not model:
+        raise Http404("No Unit matches the given query.")  # noqa: TRY003
+    return model
+
+
 @router.post(
     "/organizations/{organization_id}/units",
     response={201: UnitSchema},
     exclude_none=True,
 )
-def create_unit(
+async def create_unit(
     request: HttpRequest,
     organization_id: str,
     unit_in: CreateUnitSchema,
@@ -175,8 +196,8 @@ def create_unit(
     TODO: Authorization should only be available to organization admin.
     """
     lang_to_use = get_language(lang, request.headers)
-    org = get_object_or_404(Organization, organization_id=organization_id)
-    unit = Unit.objects.create(
+    org = await aget_object_or_404(Organization, organization_id=organization_id)
+    unit = Unit(
         organization=org,
         unit_id=unit_in.id,
         name_de=unit_in.name_translations.de,
@@ -185,6 +206,8 @@ def create_unit(
         name_it=unit_in.name_translations.it,
         name_rm=unit_in.name_translations.rm,
     )
+    await unit.save_and_sync()
+
     return unit_to_response(unit, lang_to_use)
 
 
@@ -193,7 +216,7 @@ def create_unit(
     response={200: UnitSchema},
     exclude_none=True,
 )
-def update_unit(
+async def update_unit(
     request: HttpRequest,
     organization_id: str,
     unit_id: str,
@@ -206,9 +229,8 @@ def update_unit(
     """
     lang_to_use = get_language(lang, request.headers)
 
-    unit = get_object_or_404(
-        Unit,
-        organization__organization_id=organization_id,
+    unit = await aget_unit_or_404(
+        organization_id=organization_id,
         unit_id=unit_id,
     )
     unit.name_de = unit_in.name_translations.de
@@ -216,7 +238,7 @@ def update_unit(
     unit.name_en = unit_in.name_translations.en
     unit.name_it = unit_in.name_translations.it
     unit.name_rm = unit_in.name_translations.rm
-    unit.save()
+    await unit.save_and_sync()
 
     return unit_to_response(unit, lang_to_use)
 
@@ -226,7 +248,7 @@ def update_unit(
     response={200: UnitListSchema},
     exclude_none=True,
 )
-def units(
+async def units(
     request: HttpRequest, organization_id: str, lang: LanguageCode | None = None
 ) -> UnitListSchema:
     """
@@ -234,9 +256,13 @@ def units(
 
     TODO: Authorization should only be available to organization admin ??
     """
-    models = Unit.objects.filter(organization__organization_id=organization_id).order_by("id")
+    models = (
+        Unit.objects.select_related("organization")
+        .filter(organization__organization_id=organization_id)
+        .order_by("id")
+    )
     lang_to_use = get_language(lang, request.headers)
-    response = [unit_to_response(model, lang_to_use) for model in models]
+    response = [unit_to_response(model, lang_to_use) async for model in models]
     return UnitListSchema(items=response)
 
 
@@ -245,7 +271,7 @@ def units(
     response={200: UnitSchema},
     exclude_none=True,
 )
-def unit(
+async def unit(
     request: HttpRequest,
     organization_id: str,
     unit_id: str,
@@ -256,9 +282,8 @@ def unit(
 
     TODO: Authorization should only be available to organization admin.
     """
-    model = get_object_or_404(
-        Unit,
-        organization__organization_id=organization_id,
+    model = await aget_unit_or_404(
+        organization_id=organization_id,
         unit_id=unit_id,
     )
     lang_to_use = get_language(lang, request.headers)
@@ -269,7 +294,7 @@ def unit(
     "/organizations/{organization_id}/units/{unit_id}",
     response={204: None},
 )
-def delete_unit(
+async def delete_unit(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     unit_id: str,
@@ -278,9 +303,8 @@ def delete_unit(
 
     TODO: Authorization should only be available to organization admin.
     """
-    unit = get_object_or_404(
-        Unit,
-        organization__organization_id=organization_id,
+    unit = await aget_unit_or_404(
+        organization_id=organization_id,
         unit_id=unit_id,
     )
-    unit.delete()
+    await unit.delete_and_sync()

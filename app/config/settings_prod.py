@@ -9,6 +9,6 @@ DEBUG = False
 STATIC_ROOT = BASE_DIR / "var" / "www" / "service_control" / "static_files"
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "servestatic.storage.CompressedManifestStaticFilesStorage",
     },
 }

@@ -1,12 +1,16 @@
-from typing import TYPE_CHECKING, Any, ClassVar
+import logging
+from typing import ClassVar
+
+from asgiref.sync import sync_to_async
 
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
+from ninja.errors import ValidationError
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable
+from cognito.utils.client import Client, CreateClientResponse
+from user.extra_audience import add_extra_audience, remove_extra_audience
 
-    from django.db.models.base import ModelBase
+logger = logging.getLogger(__name__)
 
 
 class User(models.Model):
@@ -62,21 +66,50 @@ class MachineUser(models.Model):
     def __str__(self) -> str:
         return str(self.name)
 
-    def save(
-        self,
-        *_: Any,  # args
-        force_insert: bool | tuple[ModelBase, ...] = False,
-        force_update: bool = False,
-        using: str | None = None,
-        update_fields: Iterable[str] | None = None,
-    ) -> None:
+    async def save_and_sync(self, token_duration_mins: int | None = None) -> CreateClientResponse:
         """Validates the model before writing it to the database and create in cognito."""
 
-        # full clean required for contrain validation to run properly
-        self.full_clean()
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
+        # Create cognito app client
+        if self._state.adding:
+            cognito_client = Client()
+            app_client = await cognito_client.create_app_client(self.name, token_duration_mins)
+
+            try:
+                # Save app client info in database
+                self.machine_user_id = app_client.client_id
+                await sync_to_async(self.full_clean, thread_sensitive=True)()
+                await self.asave()
+            except:
+                await cognito_client.delete_app_client(app_client.client_id)
+                raise
+
+            try:
+                # Add client id for Oauth2-Proxy
+                await add_extra_audience(app_client.client_id)
+            except Exception:
+                await self.adelete()
+                await cognito_client.delete_app_client(app_client.client_id)
+                raise
+
+        else:
+            existing_machine_user_id = (await MachineUser.objects.aget(pk=self.pk)).machine_user_id
+            if self.machine_user_id != existing_machine_user_id:
+                raise ValidationError(errors=[{"machine_user_id": "cannot be updated"}])
+
+            await self.asave()
+
+            app_client = CreateClientResponse(
+                name=self.name, client_id=self.machine_user_id, client_secret=""
+            )
+
+        return app_client
+
+    async def delete_and_sync(self) -> tuple[int, dict[str, int]]:
+        """Deletes from the database and cognito."""
+
+        cognito_client = Client()
+        if not await cognito_client.delete_app_client(self.machine_user_id):
+            logger.warning("cognito app client '%s' not found, not deleted", self.machine_user_id)
+        await remove_extra_audience(self.machine_user_id)
+
+        return await self.adelete()

@@ -1,14 +1,16 @@
 from os import getenv
+from typing import Any, Protocol
 
-from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
-from opentelemetry.instrumentation.django import DjangoInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
-from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+Scope = dict[str, Any]
+
+
+class AsgiApplication(Protocol):
+    async def __call__(
+        self,
+        scope: Scope,
+        receive: Any,
+        send: Any,
+    ) -> None: ...
 
 
 def strtobool(value: str) -> bool:
@@ -25,25 +27,22 @@ def strtobool(value: str) -> bool:
     raise ValueError(f"invalid truth value '{value}'")  # noqa: TRY003
 
 
-def initialize_tracing() -> bool:
-    tracing_enabled = not strtobool(getenv("OTEL_SDK_DISABLED", "false"))
-    if tracing_enabled:
-        if strtobool(getenv("OTEL_ENABLE_DJANGO", "false")):
-            DjangoInstrumentor().instrument()
-        if strtobool(getenv("OTEL_ENABLE_BOTO", "false")):
-            BotocoreInstrumentor().instrument()
-        if strtobool(getenv("OTEL_ENABLE_PSYCOPG", "false")):
-            PsycopgInstrumentor().instrument()
-        if strtobool(getenv("OTEL_ENABLE_LOGGING", "false")):
-            LoggingInstrumentor().instrument()
-    return tracing_enabled
+def tracing_enabled() -> bool:
+    return not strtobool(getenv("OTEL_SDK_DISABLED", "false"))
 
 
-def setup_trace_provider() -> None:
-    tracing_enabled = not strtobool(getenv("OTEL_SDK_DISABLED", "false"))
-    if tracing_enabled:
+def initialize_tracing(application: AsgiApplication | None = None) -> AsgiApplication | None:
+    if tracing_enabled():
         # Since we created a new tracer, the default span processor is gone. We need to
         # create a new one using the default OTEL env variables and ad it to the tracer.
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # noqa: PLC0415
+            OTLPSpanExporter,
+        )
+        from opentelemetry.sdk.resources import Resource  # noqa: PLC0415
+        from opentelemetry.sdk.trace import TracerProvider  # noqa: PLC0415
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor  # noqa: PLC0415
+        from opentelemetry.trace import set_tracer_provider  # noqa: PLC0415
+
         span_processor = BatchSpanProcessor(
             OTLPSpanExporter(
                 endpoint=getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
@@ -51,7 +50,32 @@ def setup_trace_provider() -> None:
                 insecure=strtobool(getenv("OTEL_EXPORTER_OTLP_INSECURE", "false")),
             ),
         )
-
         provider = TracerProvider(resource=Resource.create())
         provider.add_span_processor(span_processor)
-        trace.set_tracer_provider(provider)
+        set_tracer_provider(provider)
+
+        if strtobool(getenv("OTEL_ENABLE_DJANGO", "false")) and application:
+            from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware  # noqa: PLC0415
+
+            application = OpenTelemetryMiddleware(application)
+
+        if strtobool(getenv("OTEL_ENABLE_BOTO", "false")):
+            from opentelemetry.instrumentation.aiobotocore import (  # noqa: PLC0415
+                AioBotocoreInstrumentor,
+            )
+            from opentelemetry.instrumentation.botocore import BotocoreInstrumentor  # noqa: PLC0415
+
+            BotocoreInstrumentor().instrument()
+            AioBotocoreInstrumentor().instrument()
+
+        if strtobool(getenv("OTEL_ENABLE_PSYCOPG", "false")):
+            from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor  # noqa: PLC0415
+
+            PsycopgInstrumentor().instrument()
+
+        if strtobool(getenv("OTEL_ENABLE_LOGGING", "false")):
+            from opentelemetry.instrumentation.logging import LoggingInstrumentor  # noqa: PLC0415
+
+            LoggingInstrumentor().instrument()
+
+    return application

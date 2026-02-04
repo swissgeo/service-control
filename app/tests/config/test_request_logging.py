@@ -56,7 +56,9 @@ def test_api_404_logging(client, caplog, configure_logger):
     path = "/api/v1/trigger-not-found"
     client.get(path)
 
-    log_entry = json.loads(caplog.text)
+    # we need to split the caplog, since I can't get rid of the bloody
+    # django.log which also logs the request
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
     assert log_entry["log.level"] == "warning"
     assert log_entry["message"] == f"Response 404 on {path}"
@@ -69,7 +71,9 @@ def test_api_404_logging_with_query(client, caplog, configure_logger):
     path = "/api/v1/trigger-not-found"
     client.get(path + "?foo=bar")
 
-    log_entry = json.loads(caplog.text)
+    # we need to split the caplog, since I can't get rid of the bloody
+    # django.log which also logs the request
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
     assert log_entry["log.level"] == "warning"
     assert log_entry["message"] == f"Response 404 on {path}"
@@ -82,7 +86,9 @@ def test_api_404_logging_post(client, caplog, configure_logger):
     path = "/api/v1/trigger-not-found-post"
     client.post(path)
 
-    log_entry = json.loads(caplog.text)
+    # we need to split the caplog, since I can't get rid of the bloody
+    # django.log which also logs the request
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
     assert log_entry["log.level"] == "warning"
     assert log_entry["message"] == f"Response 404 on {path}"
@@ -95,7 +101,9 @@ def test_api_ninja_validation_logging(client, caplog, configure_logger):
     path = "/api/v1/trigger-ninja-validation-error"
     client.get(path)
 
-    log_entry = json.loads(caplog.text)
+    # we need to split the caplog, since I can't get rid of the bloody
+    # django.log which also logs the request
+    log_entry = json.loads(caplog.text.split("\n")[0])
 
     assert log_entry["log.level"] == "warning"
     assert log_entry["message"] == f"Response 422 on {path}"

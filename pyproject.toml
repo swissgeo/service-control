@@ -5,26 +5,27 @@ description = "Swissgeo control service"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "aiobotocore-otel~=1.2",
+    "aiobotocore~=3.1",
     "boto3~=1.42",
     "django-cors-headers~=4.9",
     "django-environ~=0.12",
     "django-ninja~=1.4",
     "django~=6.0",
     "ecs-logging~=2.2",
-    "gevent~=25.4",
-    "gunicorn~=25.1",
+    "hypercorn~=0.18.0",
     "logging-utilities~=5.3",
     "opentelemetry-exporter-otlp~=1.39",
+    "opentelemetry-instrumentation-asgi==0.60b1",
     "opentelemetry-instrumentation-botocore==0.60b1",
-    "opentelemetry-instrumentation-django==0.60b1",
     "opentelemetry-instrumentation-logging==0.60b1",
     "opentelemetry-instrumentation-psycopg==0.60b1",
     "opentelemetry-instrumentation==0.60b1",
     "opentelemetry-sdk~=1.39",
-    "psycopg[binary]~=3.2",
+    "psycopg[binary,pool]~=3.2",
     "pyyaml~=6.0",
+    "servestatic~=3.1",
     "tinydb~=4.8",
-    "whitenoise~=6.11",
 ]
 
 [dependency-groups]
@@ -36,14 +37,15 @@ dev = [
     "django-stubs~=5.2",  # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
     "pre-commit",
     "pytest-cov",
+    "pytest-asyncio",
     "pytest-django",
     "pytest-xdist",
     "pytest",
     "ruff",
     "ty",
-    "types-gevent~=25.4",
-    "types-gunicorn~=25.1",
+    "types-aiobotocore[full]~=3.1",
     "types-requests~=2.32",
+    "ruff~=0.14",
 ]
 
 [tool.uv]

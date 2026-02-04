@@ -1,5 +1,7 @@
 from typing import Any
 
+from asgiref.sync import async_to_sync
+
 from cognito.utils.client import Client
 from user.models import User
 from utils.command import CustomBaseCommand
@@ -16,7 +18,7 @@ class Command(CustomBaseCommand):
         pagination_token = None
 
         while True:
-            user_respone = client.list_users(pagination_token=pagination_token)
+            user_respone = async_to_sync(client.list_users)(pagination_token=pagination_token)
             for u in user_respone["Users"]:
                 if not User.objects.filter(username=u["Username"]).exists():
                     User.objects.create(username=u["Username"])
