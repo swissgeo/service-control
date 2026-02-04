@@ -7,7 +7,7 @@ import sys
 from opentelemetry import trace
 
 from utils.logging import redirect_std_to_logger
-from utils.otel import initialize_tracing, setup_trace_provider
+from utils.otel import initialize_tracing, tracing_enabled
 
 
 def main() -> None:
@@ -23,10 +23,9 @@ def main() -> None:
             "forget to activate a virtual environment?",
         ) from exc
 
-    tracing_enabled = initialize_tracing()
-    if tracing_enabled:
+    if tracing_enabled():
+        initialize_tracing()
         name = sys.argv[1] if len(sys.argv) > 1 else sys.argv[0]
-        setup_trace_provider()
         tracer = trace.get_tracer(name)
         with tracer.start_as_current_span(name=name):
             execute_from_command_line(sys.argv)

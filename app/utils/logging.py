@@ -2,6 +2,7 @@ from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from io import StringIO
 from logging import ERROR, INFO, getLogger
 from logging.config import dictConfig
+from logging.handlers import QueueListener
 from time import time
 from typing import TYPE_CHECKING
 
@@ -9,6 +10,7 @@ from django.conf import settings
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from queue import Queue
 
 
 class TimestampedStringIO(StringIO):
@@ -62,3 +64,28 @@ def redirect_std_to_logger(
         logger.log(level, message)
     if exception:
         logger.exception(exception)
+
+
+class AutoStartQueueListener(QueueListener):
+    """
+    A queue listener which automatically starts when created.
+
+    Use this handler in conjunction with a queue handler before your existing handlers:
+
+        handlers:
+        existing_handler:
+            ...
+        queue_listener:
+            class: logging.handlers.QueueHandler
+            listener: utils.logging.AutoStartQueueListener
+            queue:
+            (): queue.Queue
+            maxsize: 1000
+            handlers:
+            - existing_handler
+
+    """
+
+    def __init__(self, queue: Queue, *handlers, respect_handler_level: bool = False) -> None:
+        super().__init__(queue, *handlers, respect_handler_level=respect_handler_level)
+        self.start()

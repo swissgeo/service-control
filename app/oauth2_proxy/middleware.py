@@ -5,29 +5,24 @@ from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.contrib.auth.models import Group, User
+from django.utils.deprecation import MiddlewareMixin
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from django.http import HttpRequest, HttpResponse
+    from django.http import HttpRequest
 
 logger = logging.getLogger(__name__)
 
 
 class Oauth2ProxyRemoteUserMiddleware(RemoteUserMiddleware):
-    header = "HTTP_X_AUTH_REQUEST_USER"
+    header = "X_AUTH_REQUEST_USER"  # https://code.djangoproject.com/ticket/36300
 
 
-class Oauth2ProxyRemoteMiddleware:
+class Oauth2ProxyRemoteMiddleware(MiddlewareMixin):
     group_header = "HTTP_X_AUTH_REQUEST_GROUPS"
     preferred_username_header = "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME"
     email_header = "HTTP_X_AUTH_REQUEST_EMAIL"
 
-    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
-        self.get_response = get_response
-        # One-time configuration and initialization.
-
-    def __call__(self, request: HttpRequest) -> HttpResponse:  # noqa: C901
+    def process_request(self, request: HttpRequest) -> None:  # noqa: C901
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
@@ -35,7 +30,7 @@ class Oauth2ProxyRemoteMiddleware:
         if not user.is_authenticated:
             # If the user is not authenticated then do nothing and let django
             # refuse the request
-            return self.get_response(request)
+            return
         user = cast("User", user)
 
         # If the user is authenticated then we need to update it with the following oauth2-proxy
@@ -92,5 +87,3 @@ class Oauth2ProxyRemoteMiddleware:
 
         if changed:
             user.save()
-
-        return self.get_response(request)

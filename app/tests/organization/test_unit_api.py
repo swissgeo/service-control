@@ -4,6 +4,7 @@ from organization.api import unit_to_response
 from organization.models import Unit
 from organization.schemas import UnitSchema
 from schemas import TranslationsSchema
+from utils.testing import AsyncMagicMock
 
 
 def test_unit_to_response_returns_response_with_language_as_defined(unit):
@@ -332,7 +333,7 @@ def test_get_units_returns_with_language_from_header(unit, client):
     }
 
 
-@patch("organization.models.Client")
+@patch("organization.models.Client", new_callable=AsyncMagicMock)
 def test_create_unit(boto_client, client, organization):
     data = {
         "id": "ch.bafu.fauna",
@@ -372,7 +373,7 @@ def test_create_unit(boto_client, client, organization):
     assert actual.name_rm == data["name_translations"]["rm"]
 
 
-@patch("organization.models.Client")
+@patch("organization.models.Client", new_callable=AsyncMagicMock)
 def test_create_unit_already_exists(boto_client, client, organization):
     data = {
         "id": "ch.bafu.fauna",

@@ -2,16 +2,14 @@ import sys
 from json import dumps, loads
 from logging import LogRecord, getLogger
 from time import time
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import Any, TypedDict
 
 from ecs_logging import StdlibFormatter
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.utils.deprecation import MiddlewareMixin
 from ninja import NinjaAPI
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
 logger = getLogger(__name__)
 
@@ -135,18 +133,14 @@ class LoggedNinjaAPI(NinjaAPI):
         return response
 
 
-class RequestResponseLoggingMiddleware:
+class RequestResponseLoggingMiddleware(MiddlewareMixin):
     url_safe = ",:/"  # characters that should not be urlencoded in the log statements
 
-    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
-        self.get_response = get_response
-
-    def __call__(self, request: HttpRequest) -> HttpResponse:
+    def process_request(self, request: HttpRequest) -> None:
         # Do not log API calls, they are logged with the LoggedNinjaAPI above
         if request.path.startswith("/api/"):
-            return self.get_response(request)
+            return
 
-        # Code to be executed for each request before the view (and later middlewares) are called.
         method = (request.method or "").upper()
         extra: dict[str, Any] = {
             "request.request": request,
@@ -166,17 +160,15 @@ class RequestResponseLoggingMiddleware:
             request.GET.urlencode(self.url_safe),
             extra=extra,
         )
-        start = time()
+        request._start_time = time()  # type: ignore[attr-defined]  # noqa: SLF001
 
-        response = self.get_response(request)
-
-        # Code to be executed for each request/response after the view is called.
-        extra = {
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        extra: dict[str, Any] = {
             "request": request,
             "response": {
                 "code": response.status_code,
                 "headers": dict(response.items()),
-                "duration": time() - start,
+                "duration": time() - getattr(request, "_start_time", 0),
             },
         }
 
@@ -186,6 +178,7 @@ class RequestResponseLoggingMiddleware:
             payload = response.content.decode()[: int(settings.LOGGING_MAX_RESPONSE_PAYLOAD_SIZE)]
             extra["response"]["payload"] = payload
 
+        method = (request.method or "").upper()
         logger.info(
             "Response %s %s %s?%s",
             response.status_code,

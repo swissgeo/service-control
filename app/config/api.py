@@ -118,5 +118,5 @@ root = NinjaAPI(urls_namespace="root")
 
 
 @root.get("/checker")
-def checker(request: HttpRequest) -> dict[str, bool | str]:  # noqa: ARG001 unused argument
+async def checker(request: HttpRequest) -> dict[str, bool | str]:  # noqa: ARG001 unused argument
     return {"success": True, "message": "OK"}
