@@ -6,6 +6,33 @@ from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
 
 
+class User(models.Model):
+    """Represents a user.
+
+    Users are stored in cognito. User attributes are taken from cognito:
+    +----------------------------
+    | Cognito -> User model
+    +----------------------------
+    | User Name -> username
+    +----------------------------
+    """
+
+    _context = "User model"
+
+    username = models.CharField(_(_context, "Username"), unique=True, db_index=True)
+    created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
+    updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
+    deleted_at = models.DateTimeField(_(_context, "deleted at"), null=True, blank=True)
+
+    # User can exist without an organization -> nullable
+    organization = models.ForeignKey(
+        "organization.Organization", null=True, on_delete=models.SET_NULL
+    )
+
+    def __str__(self) -> str:
+        return str(self.username)
+
+
 class MachineUser(models.Model):
     _context = "Machine User model"
 
