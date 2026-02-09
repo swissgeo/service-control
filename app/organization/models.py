@@ -88,3 +88,71 @@ class Organization(models.Model):
         if not client.delete_group(self.organization_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.organization_id)
         return result
+
+
+class OrganizationUnit(models.Model):
+    _context = "Organization Unit model"
+
+    def __str__(self) -> str:
+        return str(self.organization_unit_id)
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+    )
+    organization_unit_id = CustomSlugField(
+        _(_context, "External ID"),
+        max_length=100,
+        unique=True,
+        db_index=True,
+    )
+    created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
+    updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
+
+    name_de = models.CharField(_(_context, "Name (German)"))
+    name_fr = models.CharField(_(_context, "Name (French)"))
+    name_en = models.CharField(_(_context, "Name (English)"))
+    name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
+    name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
+
+    def save(
+        self,
+        *args: Any,  # noqa: ARG002 unused arguments
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
+        """Validates the model before writing it to the database and create in cognito."""
+        self.full_clean()
+        client = Client()
+        if self._state.adding:
+            if not client.create_group(self.organization_unit_id):
+                logger.warning(
+                    "cognito user group '%s' already exists, not created",
+                    self.organization_unit_id,
+                )
+        else:
+            existing_org_unit_id = OrganizationUnit.objects.get(pk=self.pk).organization_unit_id
+            if self.organization_unit_id != existing_org_unit_id:
+                raise ValidationError(errors=[{"organization_unit_id": "cannot be updated"}])
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
+
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+    ) -> tuple[int, dict[str, int]]:
+        """Deletes from the database and cognito."""
+        client = Client()
+        result = super().delete(using=using, keep_parents=keep_parents)
+        if not client.delete_group(self.organization_unit_id):
+            logger.warning(
+                "cognito user group '%s' not found, not deleted", self.organization_unit_id
+            )
+        return result

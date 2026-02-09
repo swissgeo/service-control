@@ -24,3 +24,24 @@ class CreateOrganizationSchema(Schema):
 class UpdateOrganizationSchema(Schema):
     name_translations: TranslationsSchema
     acronym_translations: TranslationsSchema
+
+
+class OrganizationUnitSchema(Schema):
+    id: str
+    name: str
+    name_translations: TranslationsSchema
+    organization_id: str
+
+
+class OrganizationUnitListSchema(Schema):
+    items: list[OrganizationUnitSchema]
+
+
+class CreateOrganizationUnitSchema(Schema):
+    id: str
+    name_translations: TranslationsSchema
+    organization_id: str
+
+
+class UpdateOrganizationUnitSchema(Schema):
+    name_translations: TranslationsSchema
