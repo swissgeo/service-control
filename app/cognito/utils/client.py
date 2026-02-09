@@ -1,20 +1,17 @@
-from dataclasses import dataclass
-
 from boto3 import client
 from mypy_boto3_cognito_idp.type_defs import AttributeTypeTypeDef, ListUsersResponseTypeDef
+from pydantic import BaseModel
 
 from django.conf import settings
 
 
-@dataclass
-class CreateClientResponse:
+class CreateClientResponse(BaseModel):
     name: str
     client_id: str
     client_secret: str
 
 
-@dataclass
-class CognitoUser:
+class CognitoUser(BaseModel):
     username: str
     first_name: str
     last_name: str
