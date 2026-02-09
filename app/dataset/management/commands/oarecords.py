@@ -3,7 +3,7 @@
 # type: ignore
 import json
 import pathlib
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Literal, Optional
 
 import boto3
 import environ
@@ -458,7 +458,9 @@ class Command(CustomBaseCommand):
                     distribution_id + ":" + layersconfig_entry["type"].lower()
                 )
 
-            self.tbl_datasets.upsert(ds.model_dump(), Query().id == layersconfig_entry.get("id"))
+            self.tbl_datasets.upsert(
+                ds.model_dump(by_alias=True), Query().id == layersconfig_entry.get("id")
+            )
         # endregion
 
     # ##########################################################################
@@ -552,7 +554,9 @@ class Command(CustomBaseCommand):
                         )
                     )
 
-                self.tbl_distributions.upsert(dtb.model_dump(), Query().id == wmts_distribution_id)
+                self.tbl_distributions.upsert(
+                    dtb.model_dump(by_alias=True), Query().id == wmts_distribution_id
+                )
             # endregion
 
             # region WMS Distribution
@@ -624,7 +628,9 @@ class Command(CustomBaseCommand):
                             )
                         )
 
-                self.tbl_distributions.upsert(dtb.model_dump(), Query().id == wms_distribution_id)
+                self.tbl_distributions.upsert(
+                    dtb.model_dump(by_alias=True), Query().id == wms_distribution_id
+                )
             # endregion
 
             # region GeoJSON Distribution
@@ -677,7 +683,7 @@ class Command(CustomBaseCommand):
                 )
 
                 self.tbl_distributions.upsert(
-                    dtb.model_dump(), Query().id == geojson_distribution_id
+                    dtb.model_dump(by_alias=True), Query().id == geojson_distribution_id
                 )
             # endregion
 
@@ -719,7 +725,9 @@ class Command(CustomBaseCommand):
                     )
                 )
 
-                self.tbl_distributions.upsert(dtb.model_dump(), Query().id == stac_distribution_id)
+                self.tbl_distributions.upsert(
+                    dtb.model_dump(by_alias=True), Query().id == stac_distribution_id
+                )
             # endregion
 
         # endregion
@@ -1031,7 +1039,7 @@ class Command(CustomBaseCommand):
             for lang in options["lang"]:
                 table = getattr(self, f"oar_dataset_{lang}")
                 oar_record = ds.as_oar_record(lang=lang)
-                table.insert(oar_record.model_dump(exclude_none=True))
+                table.insert(oar_record.model_dump(exclude_none=True, by_alias=True))
 
                 # Find all distributions for this dataset and this language and
                 # create a distribution collection for them
@@ -1043,7 +1051,9 @@ class Command(CustomBaseCommand):
                     dist = Distribution(**_dist).as_oar_record(lang=lang)
 
                     distribution_collection.records.append(dist)
-                oar_distribution_table.insert(distribution_collection.model_dump(exclude_none=True))
+                oar_distribution_table.insert(
+                    distribution_collection.model_dump(exclude_none=True, by_alias=True)
+                )
 
     # endregion
 
@@ -1061,6 +1071,17 @@ class Command(CustomBaseCommand):
         for lang in options["lang"]:
             table = getattr(self, f"oar_dataset_{lang}")
             catalogCollection = OARCollection(id="swissgeo.catalog", title="Swissgeo Catalog")
+            # Add links
+            catalogCollection.links.append(
+                Link(
+                    href=f"{OAR_BASE_URL}/collections/swissgeo.catalog?language={lang}",
+                    rel="self",
+                    typ="application/json",
+                    title="Swissgeo Catalog",
+                )
+            )
+
+            # Add records
             for _record in table.all():
                 self.print(f"Record ID: {_record['id']}, Title: {_record['properties']['title']}")
                 record = OARDataset(**_record)
@@ -1073,7 +1094,9 @@ class Command(CustomBaseCommand):
                     Bucket=oarecords_s3_bucket,
                     Key=f"{OAR_PREFIX}/collections/swissgeo.catalog/items/{record.id}.{lang}",
                     Body=json.dumps(
-                        record.model_dump(exclude_none=True), indent=2, ensure_ascii=False
+                        record.model_dump(exclude_none=True, by_alias=True),
+                        indent=2,
+                        ensure_ascii=False,
                     ).encode("utf-8"),
                     ContentType="application/json",
                 )
@@ -1082,7 +1105,9 @@ class Command(CustomBaseCommand):
                 Bucket=oarecords_s3_bucket,
                 Key=f"{OAR_PREFIX}/collections/swissgeo.catalog.{lang}",
                 Body=json.dumps(
-                    catalogCollection.model_dump(exclude_none=True), indent=2, ensure_ascii=False
+                    catalogCollection.model_dump(exclude_none=True, by_alias=True),
+                    indent=2,
+                    ensure_ascii=False,
                 ).encode("utf-8"),
                 ContentType="application/json",
             )
@@ -1123,7 +1148,9 @@ class Command(CustomBaseCommand):
         oarecords_s3_bucket = options["records_bucket"]
         styles_s3_bucket = options["styles_bucket"]
 
-        # # Write service files
+        # Write service files
+        # Note: these snippets are not localised (yet), but we still need to upload
+        # 4 lang versions to please the CF function language hack
         self.print("Writing service files...")
         geadmin_data_service = {
             "id": "ch.admin.geo.data",
@@ -1137,12 +1164,13 @@ class Command(CustomBaseCommand):
             ],
             "properties": {"title": "Geoadmin Stac Service", "type": "ogcapi:stac"},
         }
-        self.s3_client.put_object(
-            Bucket=oarecords_s3_bucket,
-            Key=f"{OAR_PREFIX}/collections/geoadmin.services/items/ch.admin.geo.data",
-            Body=json.dumps(geadmin_data_service, indent=2, ensure_ascii=False).encode("utf-8"),
-            ContentType="application/json",
-        )
+        for lang in LANGS.keys():
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/collections/geoadmin.services/items/ch.admin.geo.data.{lang}",
+                Body=json.dumps(geadmin_data_service, indent=2, ensure_ascii=False).encode("utf-8"),
+                ContentType="application/json",
+            )
 
         geoadmin_wms_service = {
             "id": "wms.geo.admin.ch",
@@ -1164,12 +1192,13 @@ class Command(CustomBaseCommand):
             ],
             "properties": {"title": "WMS geo.admin.ch", "type": "ogc:wms"},
         }
-        self.s3_client.put_object(
-            Bucket=oarecords_s3_bucket,
-            Key=f"{OAR_PREFIX}/collections/geoadmin.services/items/ch.admin.geo.wms",
-            Body=json.dumps(geoadmin_wms_service, indent=2, ensure_ascii=False).encode("utf-8"),
-            ContentType="application/json",
-        )
+        for lang in LANGS.keys():
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/collections/geoadmin.services/items/ch.admin.geo.wms.{lang}",
+                Body=json.dumps(geoadmin_wms_service, indent=2, ensure_ascii=False).encode("utf-8"),
+                ContentType="application/json",
+            )
 
         geoadmin_wmts_service = {
             "id": "wmts.geo.admin.ch",
@@ -1204,12 +1233,15 @@ class Command(CustomBaseCommand):
             ],
             "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wmts"},
         }
-        self.s3_client.put_object(
-            Bucket=oarecords_s3_bucket,
-            Key=f"{OAR_PREFIX}/collections/geoadmin.services/items/ch.admin.geo.wmts",
-            Body=json.dumps(geoadmin_wmts_service, indent=2, ensure_ascii=False).encode("utf-8"),
-            ContentType="application/json",
-        )
+        for lang in LANGS.keys():
+            self.s3_client.put_object(
+                Bucket=oarecords_s3_bucket,
+                Key=f"{OAR_PREFIX}/collections/geoadmin.services/items/ch.admin.geo.wmts.{lang}",
+                Body=json.dumps(geoadmin_wmts_service, indent=2, ensure_ascii=False).encode(
+                    "utf-8"
+                ),
+                ContentType="application/json",
+            )
 
         # Landing page
         self.print("Uploading landing page...")
@@ -1373,6 +1405,8 @@ class Link(BaseModel):
 class OARRecord(BaseModel):
     id: str
     links: list[Link] = Field(default_factory=list)
+    type: Literal["Feature"] = "Feature"
+    geometry: Optional[dict] = None
 
     # def __init__(self, _id: str):
     #     super().__init__()
@@ -1400,6 +1434,12 @@ class OARDataset(OARRecord):
     """
 
     properties: dict = Field(default_factory=lambda: {"type": "Dataset"})
+    geometry: Optional[dict] = {
+        "type": "Polygon",
+        "coordinates": [
+            [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+        ],
+    }
 
 
 class OARDistribution(OARRecord):
@@ -1490,6 +1530,7 @@ class OARCollection(BaseModel):
     itemType: str = "record"
     recordsArrayName: str = "records"
     records: list[Any] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list)
 
     # def __init__(self, _id: str, title: str):
     #     super().__init__()
