@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from organization.models import Organization
+from organization.models import Organization, Unit
 from user.models import MachineUser
 
 
@@ -21,6 +21,20 @@ def fixture_organization(db):
             name_en="Federal Office for the Environment",
             name_it="Ufficio federale dell'ambiente",
             name_rm="Uffizi federal per l'ambient",
+        )
+
+
+@pytest.fixture(name="unit")
+def fixture_unit(db, organization):
+    with patch("organization.models.Client"):
+        yield Unit.objects.create(
+            organization=organization,
+            unit_id="ch.bafu.fauna",
+            name_de="Fauna",
+            name_fr="Faune",
+            name_en="Fauna",
+            name_it="Fauna",
+            name_rm="Fauna",
         )
 
 
