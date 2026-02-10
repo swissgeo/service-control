@@ -82,8 +82,6 @@ ignore = [
     "TD",     # Ignore flake8-todos
     "FIX",    # Ignore fixme comments
     "ERA001", # TODO remove this for production, ignore commented code
-    "I",      # isort TODO remove once isort is not used anymore
-    "Q",      # flake8-quotes TODO reactivate once we use also ruff for formatting
     "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
 ]
 

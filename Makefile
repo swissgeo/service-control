@@ -148,12 +148,8 @@ dockerrun: dockerbuild ## Run the locally built docker image
 
 
 .PHONY: lint
-lint: ## Run the linter on the code base
+lint: ## Run the linter and mypy on the code base
 	$(RUFF) check
-
-
-.PHONY: type-check
-type-check: ## Run the type-checker mypy
 	$(MYPY) app/
 
 
