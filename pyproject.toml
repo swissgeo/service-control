@@ -25,7 +25,6 @@ dependencies = [
     "opentelemetry-instrumentation-logging==0.60b1",
     "opentelemetry-instrumentation-psycopg==0.60b1",
     "django-cors-headers~=4.9",
-    "boto3-stubs[cognito-idp]~=1.42.34",
 ]
 
 [dependency-groups]
@@ -43,7 +42,7 @@ dev = [
     "types-gunicorn~=23.0",
     "types-requests~=2.32",
     "ruff~=0.14",
-    "boto3-stubs[ssm]~=1.42",
+    "boto3-stubs[cognito-idp,ssm]~=1.42",
 ]
 
 [tool.uv]
