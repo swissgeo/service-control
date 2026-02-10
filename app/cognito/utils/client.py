@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
+
 from boto3 import client
-from mypy_boto3_cognito_idp.type_defs import AttributeTypeTypeDef, ListUsersResponseTypeDef
 from pydantic import BaseModel
 
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from mypy_boto3_cognito_idp.type_defs import AttributeTypeTypeDef, ListUsersResponseTypeDef
 
 
 class CreateClientResponse(BaseModel):
@@ -29,12 +33,6 @@ class Client:
         self.endpoint_url = settings.COGNITO_ENDPOINT_URL
         self.user_pool_id = settings.COGNITO_POOL_ID
         self.client = client("cognito-idp", endpoint_url=self.endpoint_url)
-
-        # Connect from local (with aws sso)
-        # from boto3 import Session
-        # session = Session(profile_name="", region_name="")
-        # self.user_pool_id = ""  # User pool id for dev
-        # self.client = session.client("cognito-idp")
 
     def create_group(self, name: str) -> bool:
         """Create a new cognito user group.
@@ -90,7 +88,7 @@ class Client:
             ClientId=client_id,
         )
 
-    def list_users(self, pagination_token: str | None) -> ListUsersResponseTypeDef:
+    def list_users(self, pagination_token: str | None) -> "ListUsersResponseTypeDef":
         """List all users in user pool"""
         if pagination_token is not None:
             # Setting PaginationToken to None is not accepted
@@ -99,7 +97,7 @@ class Client:
             )
         return self.client.list_users(UserPoolId=self.user_pool_id)
 
-    def get_user_attribute(self, attrs: list[AttributeTypeTypeDef], name: str) -> str | None:
+    def get_user_attribute(self, attrs: list["AttributeTypeTypeDef"], name: str) -> str | None:
         """Get a user attribute value from a list of attributes"""
         for attr in attrs:
             if attr["Name"] == name:

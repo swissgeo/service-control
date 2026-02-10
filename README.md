@@ -199,6 +199,20 @@ You can also use the AWS CLI together with `cognito-local` by specifying the loc
 aws --endpoint $COGNITO_ENDPOINT_URL cognito-idp list-users --user-pool-id $COGNITO_POOL_ID
 ```
 
+To connect to a cognito instance running on AWS using your SSO User modify the client `__init__` to use the local session:
+
+```python
+# app/cognito/utils/client.py
+class Client:
+    """A low level client for managing cognito users and groups."""
+
+    def __init__(self) -> None:
+        from boto3 import Session
+        session = Session(profile_name="<AWS_PROFILE_NAME>", region_name="<AWS_REGION_NAME>")
+        self.user_pool_id = "<USER_POOL_ID>"
+        self.client = session.client("cognito-idp")
+```
+
 ## OTEL
 
 [OpenTelemetry instrumentation](https://opentelemetry.io/docs/concepts/instrumentation/) can be done in many different ways, from fully automated zero-code instrumentation (otel-operator) to purely manual instrumentation.

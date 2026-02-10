@@ -12,26 +12,19 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         client = Client()
-        user_response = client.list_users(pagination_token=None)
         none_imported = True
-        for u in user_response["Users"]:
-            db_user = User.objects.filter(username=u["Username"]).first()
-            if db_user is None:
-                self.print(f"Imported user '{u['Username']}'")
-                # Create the user
-                User.objects.create(username=u["Username"])
-                none_imported = False
+        pagination_token = None
 
-        pagination_token = user_response.get("PaginationToken", None)
-        while pagination_token is not None:
-            user_response = client.list_users(pagination_token=pagination_token)
-            for u in user_response["Users"]:
-                db_user = User.objects.filter(username=u["Username"]).first()
-                if db_user is None:
-                    self.print(f"Imported user '{u['Username']}'")
-                    # Create the user
+        while True:
+            user_respone = client.list_users(pagination_token=pagination_token)
+            for u in user_respone["Users"]:
+                if not User.objects.filter(username=u["Username"]).exists():
                     User.objects.create(username=u["Username"])
-            pagination_token = user_response.get("PaginationToken", None)
+                    self.print(f"Imported user '{u['Username']}'")
+                    none_imported = False
+            pagination_token = user_respone.get("PaginationToken", None)
+            if pagination_token is None:
+                break
 
         if none_imported:
             self.print("no new users to import")
