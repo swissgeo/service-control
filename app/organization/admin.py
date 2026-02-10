@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib import admin
 from django.http.request import HttpRequest
 
-from .models import Organization, OrganizationUnit
+from .models import Organization, Unit
 
 
 @admin.register(Organization)
@@ -24,11 +24,11 @@ class OrganizationAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
         return self.readonly_fields
 
 
-@admin.register(OrganizationUnit)
-class OrganizationUnitAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
+@admin.register(Unit)
+class UnitAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
     """Admin View for Organization Unit"""
 
-    list_display = ("organization_unit_id", "name_en", "get_organization_name")
+    list_display = ("unit_id", "name_en", "get_organization_name")
     readonly_fields = ("created", "updated")
 
     def get_readonly_fields(
@@ -38,9 +38,9 @@ class OrganizationUnitAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
     ) -> list[str] | tuple[Any, ...]:
         if obj:
             # Organization id cannot be updated
-            return (*self.readonly_fields, "organization_unit_id", "organization")
+            return (*self.readonly_fields, "unit_id", "organization")
         return self.readonly_fields
 
     @admin.display(description="Organization", ordering="organization__name_en")
-    def get_organization_name(self, obj: OrganizationUnit) -> str:
+    def get_organization_name(self, obj: Unit) -> str:
         return obj.organization.name_en

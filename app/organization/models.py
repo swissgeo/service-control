@@ -90,17 +90,17 @@ class Organization(models.Model):
         return result
 
 
-class OrganizationUnit(models.Model):
+class Unit(models.Model):
     _context = "Organization Unit model"
 
     def __str__(self) -> str:
-        return str(self.organization_unit_id)
+        return str(self.unit_id)
 
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
     )
-    organization_unit_id = CustomSlugField(
+    unit_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
         unique=True,
@@ -127,15 +127,15 @@ class OrganizationUnit(models.Model):
         self.full_clean()
         client = Client()
         if self._state.adding:
-            if not client.create_group(self.organization_unit_id):
+            if not client.create_group(self.unit_id):
                 logger.warning(
                     "cognito user group '%s' already exists, not created",
-                    self.organization_unit_id,
+                    self.unit_id,
                 )
         else:
-            existing_org_unit_id = OrganizationUnit.objects.get(pk=self.pk).organization_unit_id
-            if self.organization_unit_id != existing_org_unit_id:
-                raise ValidationError(errors=[{"organization_unit_id": "cannot be updated"}])
+            existing_unit_id = Unit.objects.get(pk=self.pk).unit_id
+            if self.unit_id != existing_unit_id:
+                raise ValidationError(errors=[{"unit_id": "cannot be updated"}])
         super().save(
             force_insert=force_insert,
             force_update=force_update,
@@ -151,8 +151,6 @@ class OrganizationUnit(models.Model):
         """Deletes from the database and cognito."""
         client = Client()
         result = super().delete(using=using, keep_parents=keep_parents)
-        if not client.delete_group(self.organization_unit_id):
-            logger.warning(
-                "cognito user group '%s' not found, not deleted", self.organization_unit_id
-            )
+        if not client.delete_group(self.unit_id):
+            logger.warning("cognito user group '%s' not found, not deleted", self.unit_id)
         return result

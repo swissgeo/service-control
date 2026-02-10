@@ -4,17 +4,17 @@ from ninja import Router
 
 from utils.language import LanguageCode, get_language, get_translation
 
-from .models import Organization, OrganizationUnit
+from .models import Organization, Unit
 from .schemas import (
     CreateOrganizationSchema,
-    CreateOrganizationUnitSchema,
+    CreateUnitSchema,
     OrganizationListSchema,
     OrganizationSchema,
-    OrganizationUnitListSchema,
-    OrganizationUnitSchema,
     TranslationsSchema,
+    UnitListSchema,
+    UnitSchema,
     UpdateOrganizationSchema,
-    UpdateOrganizationUnitSchema,
+    UpdateUnitSchema,
 )
 
 router = Router()
@@ -142,14 +142,12 @@ def organization(
     return organization_to_response(model, lang_to_use)
 
 
-def organization_unit_to_response(
-    model: OrganizationUnit, lang: LanguageCode
-) -> OrganizationUnitSchema:
+def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
     """
     Transforms the given model using the given language into a response object.
     """
-    return OrganizationUnitSchema(
-        id=model.organization_unit_id,
+    return UnitSchema(
+        id=model.unit_id,
         organization_id=model.organization.organization_id,
         name=get_translation(model, "name", lang),
         name_translations=TranslationsSchema(
@@ -163,128 +161,126 @@ def organization_unit_to_response(
 
 
 @router.post(
-    "/organizations/{organization_id}/orgunits",
-    response={201: OrganizationUnitSchema},
+    "/organizations/{organization_id}/units",
+    response={201: UnitSchema},
     exclude_none=True,
 )
-def create_organization_unit(
+def create_unit(
     request: HttpRequest,
     organization_id: str,
-    organization_unit_in: CreateOrganizationUnitSchema,
+    unit_in: CreateUnitSchema,
     lang: LanguageCode | None = None,
-) -> OrganizationUnitSchema:
+) -> UnitSchema:
     """Create an organization unit.
     TODO: Authorization should only be available to organization admin.
     """
     lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
-    org_unit = OrganizationUnit.objects.create(
+    unit = Unit.objects.create(
         organization=org,
-        organization_unit_id=organization_unit_in.id,
-        name_de=organization_unit_in.name_translations.de,
-        name_fr=organization_unit_in.name_translations.fr,
-        name_en=organization_unit_in.name_translations.en,
-        name_it=organization_unit_in.name_translations.it,
-        name_rm=organization_unit_in.name_translations.rm,
+        unit_id=unit_in.id,
+        name_de=unit_in.name_translations.de,
+        name_fr=unit_in.name_translations.fr,
+        name_en=unit_in.name_translations.en,
+        name_it=unit_in.name_translations.it,
+        name_rm=unit_in.name_translations.rm,
     )
-    return organization_unit_to_response(org_unit, lang_to_use)
+    return unit_to_response(unit, lang_to_use)
 
 
 @router.put(
-    "/organizations/{organization_id}/orgunits/{organization_unit_id}",
-    response={200: OrganizationUnitSchema},
+    "/organizations/{organization_id}/units/{unit_id}",
+    response={200: UnitSchema},
     exclude_none=True,
 )
-def update_organization_unit(
+def update_unit(
     request: HttpRequest,
     organization_id: str,
-    organization_unit_id: str,
-    organization_unit_in: UpdateOrganizationUnitSchema,
+    unit_id: str,
+    unit_in: UpdateUnitSchema,
     lang: LanguageCode | None = None,
-) -> OrganizationUnitSchema:
+) -> UnitSchema:
     """Update an organization unit.
 
     TODO: Authorization should only be available to organization admin.
     """
     lang_to_use = get_language(lang, request.headers)
 
-    org_unit = get_object_or_404(
-        OrganizationUnit,
+    unit = get_object_or_404(
+        Unit,
         organization__organization_id=organization_id,
-        organization_unit_id=organization_unit_id,
+        unit_id=unit_id,
     )
-    org_unit.name_de = organization_unit_in.name_translations.de
-    org_unit.name_fr = organization_unit_in.name_translations.fr
-    org_unit.name_en = organization_unit_in.name_translations.en
-    org_unit.name_it = organization_unit_in.name_translations.it
-    org_unit.name_rm = organization_unit_in.name_translations.rm
-    org_unit.save()
+    unit.name_de = unit_in.name_translations.de
+    unit.name_fr = unit_in.name_translations.fr
+    unit.name_en = unit_in.name_translations.en
+    unit.name_it = unit_in.name_translations.it
+    unit.name_rm = unit_in.name_translations.rm
+    unit.save()
 
-    return organization_unit_to_response(org_unit, lang_to_use)
+    return unit_to_response(unit, lang_to_use)
 
 
 @router.get(
-    "/organizations/{organization_id}/orgunits",
-    response={200: OrganizationUnitListSchema},
+    "/organizations/{organization_id}/units",
+    response={200: UnitListSchema},
     exclude_none=True,
 )
-def organization_units(
+def units(
     request: HttpRequest, organization_id: str, lang: LanguageCode | None = None
-) -> OrganizationUnitListSchema:
+) -> UnitListSchema:
     """
     List all organization units for a given organization.
 
     TODO: Authorization should only be available to organization admin ??
     """
-    models = OrganizationUnit.objects.filter(
-        organization__organization_id=organization_id
-    ).order_by("id")
+    models = Unit.objects.filter(organization__organization_id=organization_id).order_by("id")
     lang_to_use = get_language(lang, request.headers)
-    response = [organization_unit_to_response(model, lang_to_use) for model in models]
-    return OrganizationUnitListSchema(items=response)
+    response = [unit_to_response(model, lang_to_use) for model in models]
+    return UnitListSchema(items=response)
 
 
 @router.get(
-    "/organizations/{organization_id}/orgunits/{organization_unit_id}",
-    response={200: OrganizationUnitSchema},
+    "/organizations/{organization_id}/units/{unit_id}",
+    response={200: UnitSchema},
     exclude_none=True,
 )
-def organization_unit(
+def unit(
     request: HttpRequest,
     organization_id: str,
-    organization_unit_id: str,
+    unit_id: str,
     lang: LanguageCode | None = None,
-) -> OrganizationUnitSchema:
+) -> UnitSchema:
     """
     Get details of an organization unit.
 
     TODO: Authorization should only be available to organization admin.
     """
     model = get_object_or_404(
-        OrganizationUnit,
+        Unit,
         organization__organization_id=organization_id,
-        organization_unit_id=organization_unit_id,
+        unit_id=unit_id,
     )
     lang_to_use = get_language(lang, request.headers)
-    return organization_unit_to_response(model, lang_to_use)
+    return unit_to_response(model, lang_to_use)
 
 
 @router.delete(
-    "/organizations/{organization_id}/orgunits/{organization_unit_id}",
+    "/organizations/{organization_id}/units/{unit_id}",
     response={204: None},
 )
-def delete_organization_unit(
+def delete_unit(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
-    organization_unit_id: str,
+    unit_id: str,
 ) -> None:
     """Delete an organization unit.
 
     TODO: Authorization should only be available to organization admin.
     """
-    org_unit = get_object_or_404(
-        OrganizationUnit,
+    unit = get_object_or_404(
+        Unit,
         organization__organization_id=organization_id,
-        organization_unit_id=organization_unit_id,
+        unit_id=unit_id,
     )
-    org_unit.delete()
+    unit.delete()

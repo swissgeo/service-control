@@ -26,22 +26,22 @@ class UpdateOrganizationSchema(Schema):
     acronym_translations: TranslationsSchema
 
 
-class OrganizationUnitSchema(Schema):
+class UnitSchema(Schema):
     id: str
     name: str
     name_translations: TranslationsSchema
     organization_id: str
 
 
-class OrganizationUnitListSchema(Schema):
-    items: list[OrganizationUnitSchema]
+class UnitListSchema(Schema):
+    items: list[UnitSchema]
 
 
-class CreateOrganizationUnitSchema(Schema):
+class CreateUnitSchema(Schema):
     id: str
     name_translations: TranslationsSchema
     organization_id: str
 
 
-class UpdateOrganizationUnitSchema(Schema):
+class UpdateUnitSchema(Schema):
     name_translations: TranslationsSchema

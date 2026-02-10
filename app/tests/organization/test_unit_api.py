@@ -1,15 +1,15 @@
 from unittest.mock import patch
 
-from organization.api import organization_unit_to_response
-from organization.models import OrganizationUnit
-from organization.schemas import OrganizationUnitSchema
+from organization.api import unit_to_response
+from organization.models import Unit
+from organization.schemas import UnitSchema
 from schemas import TranslationsSchema
 
 
-def test_organization_unit_to_response_returns_response_with_language_as_defined(organization_unit):
-    actual = organization_unit_to_response(organization_unit, lang="de")
+def test_unit_to_response_returns_response_with_language_as_defined(unit):
+    actual = unit_to_response(unit, lang="de")
 
-    expected = OrganizationUnitSchema(
+    expected = UnitSchema(
         id="ch.bafu.fauna",
         organization_id="ch.bafu",
         name="Fauna",
@@ -25,15 +25,15 @@ def test_organization_unit_to_response_returns_response_with_language_as_defined
     assert actual == expected
 
 
-def test_organization_unit_to_response_returns_response_with_default_language_if_undefined(
-    organization_unit,
+def test_unit_to_response_returns_response_with_default_language_if_undefined(
+    unit,
 ):
-    organization_unit.name_it = None
-    organization_unit.name_rm = None
+    unit.name_it = None
+    unit.name_rm = None
 
-    actual = organization_unit_to_response(organization_unit, lang="it")
+    actual = unit_to_response(unit, lang="it")
 
-    expected = OrganizationUnitSchema(
+    expected = UnitSchema(
         id="ch.bafu.fauna",
         organization_id="ch.bafu",
         name="Fauna",
@@ -49,9 +49,9 @@ def test_organization_unit_to_response_returns_response_with_default_language_if
     assert actual == expected
 
 
-def test_get_organization_unit_returns_existing_with_default_language(organization_unit, client):
+def test_get_unit_returns_existing_with_default_language(unit, client):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}"
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}"
     )
 
     assert response.status_code == 200
@@ -69,9 +69,9 @@ def test_get_organization_unit_returns_existing_with_default_language(organizati
     }
 
 
-def test_get_organization_unit_returns_with_language_from_query(organization_unit, client):
+def test_get_unit_returns_with_language_from_query(unit, client):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}?lang=fr"
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}?lang=fr"
     )
 
     assert response.status_code == 200
@@ -89,32 +89,28 @@ def test_get_organization_unit_returns_with_language_from_query(organization_uni
     }
 
 
-def test_get_organization_unit_returns_404_for_nonexisting_organization(client, organization_unit):
-    response = client.get(
-        f"/api/v1/organizations/non_existant/orgunits/{organization_unit.organization_unit_id}"
-    )
+def test_get_unit_returns_404_for_nonexisting_organization(client, unit):
+    response = client.get(f"/api/v1/organizations/non_existant/units/{unit.unit_id}")
 
     assert response.status_code == 404
     assert response.json() == {"code": 404, "description": "Resource not found"}
 
-    response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization_id}/orgunits/non_existant"
-    )
+    response = client.get(f"/api/v1/organizations/{unit.organization_id}/units/non_existant")
 
     assert response.status_code == 404
     assert response.json() == {"code": 404, "description": "Resource not found"}
 
 
-def test_get_organization_unit_skips_translations_that_are_not_available(organization_unit, client):
-    org_unit = OrganizationUnit.objects.last()
-    org_unit.name_it = None
-    org_unit.name_rm = None
-    org_unit.acronym_it = None
-    org_unit.acronym_rm = None
-    org_unit.save()
+def test_get_unit_skips_translations_that_are_not_available(unit, client):
+    unit = Unit.objects.last()
+    unit.name_it = None
+    unit.name_rm = None
+    unit.acronym_it = None
+    unit.acronym_rm = None
+    unit.save()
 
     response = client.get(
-        f"/api/v1/organizations/{org_unit.organization.organization_id}/orgunits/{org_unit.organization_unit_id}"
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}"
     )
 
     assert response.status_code == 200
@@ -130,9 +126,9 @@ def test_get_organization_unit_skips_translations_that_are_not_available(organiz
     }
 
 
-def test_get_organization_unit_returns_with_language_from_header(organization_unit, client):
+def test_get_unit_returns_with_language_from_header(unit, client):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         headers={"Accept-Language": "de"},
     )
 
@@ -151,12 +147,12 @@ def test_get_organization_unit_returns_with_language_from_header(organization_un
     }
 
 
-def test_get_organization_unit_returns_with_language_from_query_param_even_if_header_set(
-    organization_unit,
+def test_get_unit_returns_with_language_from_query_param_even_if_header_set(
+    unit,
     client,
 ):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}?lang=fr",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}?lang=fr",
         headers={"Accept-Language": "de"},
     )
 
@@ -175,12 +171,12 @@ def test_get_organization_unit_returns_with_language_from_query_param_even_if_he
     }
 
 
-def test_get_organization_unit_returns_with_default_language_if_header_empty(
-    organization_unit,
+def test_get_unit_returns_with_default_language_if_header_empty(
+    unit,
     client,
 ):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         headers={"Accept-Language": ""},
     )
 
@@ -199,12 +195,12 @@ def test_get_organization_unit_returns_with_default_language_if_header_empty(
     }
 
 
-def test_get_organization_unit_returns_with_first_known_language_from_header(
-    organization_unit,
+def test_get_unit_returns_with_first_known_language_from_header(
+    unit,
     client,
 ):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         headers={"Accept-Language": "cn, *, de-DE, en"},
     )
 
@@ -223,12 +219,12 @@ def test_get_organization_unit_returns_with_first_known_language_from_header(
     }
 
 
-def test_get_organization_unit_returns_with_first_known_language_from_header_ignoring_qfactor(
-    organization_unit,
+def test_get_unit_returns_with_first_known_language_from_header_ignoring_qfactor(
+    unit,
     client,
 ):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         headers={"Accept-Language": "fr;q=0.9, de;q=0.8"},
     )
 
@@ -262,9 +258,9 @@ def test_get_organization_unit_returns_with_first_known_language_from_header_ign
 #     assert response.json() == {"code": 403, "description": "Forbidden"}
 
 
-def test_get_organization_units_returns_single_with_given_language(organization_unit, client):
+def test_get_units_returns_single_with_given_language(unit, client):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits?lang=fr"
+        f"/api/v1/organizations/{unit.organization.organization_id}/units?lang=fr"
     )
 
     assert response.status_code == 200
@@ -286,15 +282,13 @@ def test_get_organization_units_returns_single_with_given_language(organization_
     }
 
 
-def test_get_organization_units_skips_translations_that_are_not_available(
-    organization_unit, client
-):
-    org_unit = OrganizationUnit.objects.last()
-    org_unit.name_it = None
-    org_unit.name_rm = None
-    org_unit.save()
+def test_get_units_skips_translations_that_are_not_available(unit, client):
+    unit = Unit.objects.last()
+    unit.name_it = None
+    unit.name_rm = None
+    unit.save()
 
-    response = client.get(f"/api/v1/organizations/{org_unit.organization.organization_id}/orgunits")
+    response = client.get(f"/api/v1/organizations/{unit.organization.organization_id}/units")
 
     assert response.status_code == 200
     assert response.json() == {
@@ -313,9 +307,9 @@ def test_get_organization_units_skips_translations_that_are_not_available(
     }
 
 
-def test_get_organization_units_returns_with_language_from_header(organization_unit, client):
+def test_get_units_returns_with_language_from_header(unit, client):
     response = client.get(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units",
         headers={"Accept-Language": "de"},
     )
 
@@ -339,7 +333,7 @@ def test_get_organization_units_returns_with_language_from_header(organization_u
 
 
 @patch("organization.models.Client")
-def test_create_organization_unit(boto_client, client, organization):
+def test_create_unit(boto_client, client, organization):
     data = {
         "id": "ch.bafu.fauna",
         "organization_id": "ch.bafu",
@@ -352,7 +346,7 @@ def test_create_organization_unit(boto_client, client, organization):
         },
     }
     response = client.post(
-        "/api/v1/organizations/ch.bafu/orgunits", content_type="application/json", data=data
+        "/api/v1/organizations/ch.bafu/units", content_type="application/json", data=data
     )
 
     assert response.status_code == 201
@@ -368,8 +362,8 @@ def test_create_organization_unit(boto_client, client, organization):
             "rm": "Fauna",
         },
     }
-    actual = OrganizationUnit.objects.last()
-    assert actual.organization_unit_id == data["id"]
+    actual = Unit.objects.last()
+    assert actual.unit_id == data["id"]
     assert actual.organization.organization_id == data["organization_id"]
     assert actual.name_de == data["name_translations"]["de"]
     assert actual.name_fr == data["name_translations"]["fr"]
@@ -379,7 +373,7 @@ def test_create_organization_unit(boto_client, client, organization):
 
 
 @patch("organization.models.Client")
-def test_create_organization_unit_already_exists(boto_client, client, organization):
+def test_create_unit_already_exists(boto_client, client, organization):
     data = {
         "id": "ch.bafu.fauna",
         "organization_id": "ch.bafu",
@@ -392,22 +386,22 @@ def test_create_organization_unit_already_exists(boto_client, client, organizati
         },
     }
     response = client.post(
-        "/api/v1/organizations/ch.bafu/orgunits", content_type="application/json", data=data
+        "/api/v1/organizations/ch.bafu/units", content_type="application/json", data=data
     )
     assert response.status_code == 201
 
     # Try to create the same organization unit a second time
     response = client.post(
-        "/api/v1/organizations/ch.bafu/orgunits", content_type="application/json", data=data
+        "/api/v1/organizations/ch.bafu/units", content_type="application/json", data=data
     )
     assert response.status_code == 409
     assert response.json() == {
         "code": 409,
-        "description": ["Organization unit with this External ID already exists."],
+        "description": ["Unit with this External ID already exists."],
     }
 
 
-def test_update_organization_unit(client, organization_unit):
+def test_update_unit(client, unit):
     data = {
         "name_translations": {
             "de": "Name DE",
@@ -418,7 +412,7 @@ def test_update_organization_unit(client, organization_unit):
         },
     }
     response = client.put(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         content_type="application/json",
         data=data,
     )
@@ -435,7 +429,7 @@ def test_update_organization_unit(client, organization_unit):
             "rm": "Name RM",
         },
     }
-    actual = OrganizationUnit.objects.last()
+    actual = Unit.objects.last()
     assert actual.name_de == data["name_translations"]["de"]
     assert actual.name_fr == data["name_translations"]["fr"]
     assert actual.name_en == data["name_translations"]["en"]
@@ -443,11 +437,9 @@ def test_update_organization_unit(client, organization_unit):
     assert actual.name_rm == data["name_translations"]["rm"]
 
 
-def test_delete_organization_unit(client, organization_unit):
+def test_delete_unit(client, unit):
     response = client.delete(
-        f"/api/v1/organizations/{organization_unit.organization.organization_id}/orgunits/{organization_unit.organization_unit_id}",
+        f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
     )
     assert response.status_code == 204
-    assert not OrganizationUnit.objects.filter(
-        organization_unit_id=organization_unit.organization_unit_id
-    ).exists()
+    assert not Unit.objects.filter(unit_id=unit.unit_id).exists()
