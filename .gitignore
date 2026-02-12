@@ -175,6 +175,8 @@ cython_debug/
 .local
 .timestamps
 
+# vs code
+*.code-workspace
 
 # Sublime Text
 *.sublime-*
