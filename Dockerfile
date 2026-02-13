@@ -2,7 +2,7 @@
 # Container that contains basic configurations used by all other containers
 # It should only contain variables that don't change or change very infrequently
 # so that the cache is not needlessly invalidated
-FROM python:3.13-slim-bookworm AS base
+FROM python:3.14-slim-bookworm AS base
 ENV HTTP_PORT=8080
 ENV USER=swissgeo
 ENV GROUP=swissgeo
@@ -17,7 +17,7 @@ RUN apt-get -qq update > /dev/null \
 ###########################################################
 # Builder container
 FROM base AS builder
-COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.2 /uv /uvx /bin/
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
