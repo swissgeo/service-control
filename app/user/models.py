@@ -58,3 +58,14 @@ class CustomUser(models.Model):
             remove_extra_audience(self.user.username)
 
         return super().delete(using=using, keep_parents=keep_parents)
+
+
+class Role(models.Model):
+    _context = "Roles model"
+
+    role_id = models.CharField(_(_context, "Role ID"), unique=True, db_index=True)
+    name = models.CharField(_(_context, "Name"), unique=True, db_index=True)
+    description = models.TextField(_(_context, "Description"), blank=True)
+
+    def __str__(self) -> str:
+        return str(self.name)

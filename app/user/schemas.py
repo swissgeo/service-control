@@ -15,3 +15,13 @@ class MachineUserListSchema(Schema):
 class CreateMachineUserSchema(Schema):
     name: str
     token_duration_min: int | None = None
+
+
+class RoleSchema(Schema):
+    id: str
+    name: str
+    description: str
+
+
+class RoleListSchema(Schema):
+    items: list[RoleSchema]

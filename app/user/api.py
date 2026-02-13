@@ -7,8 +7,14 @@ from ninja.errors import ValidationError
 from cognito.utils.client import Client
 from organization.models import Organization
 from user.extra_audience import add_extra_audience
-from user.models import CustomUser
-from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
+from user.models import CustomUser, Role
+from user.schemas import (
+    CreateMachineUserSchema,
+    MachineUserListSchema,
+    MachineUserSchema,
+    RoleListSchema,
+    RoleSchema,
+)
 from utils.auth import organization_admin_auth
 
 router = Router()
@@ -18,6 +24,14 @@ def machine_user_to_response(model: CustomUser) -> MachineUserSchema:
     return MachineUserSchema(
         name=model.user.last_name,
         client_id=model.user.username,
+    )
+
+
+def role_to_response(model: Role) -> RoleSchema:
+    return RoleSchema(
+        id=model.role_id,
+        name=model.name,
+        description=model.description,
     )
 
 
@@ -127,3 +141,21 @@ def delete_machine_users(
     machine_user_to_delete.delete()
 
     return HttpResponse(status=204)
+
+
+@router.get(
+    "/roles",
+    response={200: RoleListSchema},
+    exclude_none=True,
+)
+def roles(
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+) -> RoleListSchema:
+    """List all available roles.
+
+    TODO: Authorization is this public??
+    """
+
+    models = Role.objects.order_by("name").all()
+    response = [role_to_response(model) for model in models]
+    return RoleListSchema(items=response)

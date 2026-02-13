@@ -10,6 +10,8 @@ from user.models import CustomUser
 if TYPE_CHECKING:
     from django.http.request import HttpRequest
 
+from user.models import Role
+
 
 class CustomUserInline(admin.StackedInline):
     model = CustomUser
@@ -60,3 +62,11 @@ class UserAdmin(BaseUserAdmin):
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    """Admin View for roles"""
+
+    list_display = ("role_id", "name")
+    readonly_fields = ("role_id", "name", "description")
