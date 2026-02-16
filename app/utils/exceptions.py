@@ -1,4 +1,7 @@
-from django.core.exceptions import ValidationError
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.core.exceptions import ValidationError
 
 
 def contains_error_code(exception: ValidationError, code: str) -> bool:

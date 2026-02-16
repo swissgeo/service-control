@@ -41,11 +41,15 @@ from utils.otel import initialize_tracing, setup_trace_provider
 initialize_tracing()
 
 from gunicorn.app.base import BaseApplication
-from gunicorn.arbiter import Arbiter
-from gunicorn.workers.base import Worker
-from gunicorn.config import Config
-from django.core.handlers.wsgi import WSGIHandler
 from django.core.wsgi import get_wsgi_application
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gunicorn.arbiter import Arbiter
+    from gunicorn.workers.base import Worker
+    from gunicorn.config import Config
+    from django.core.handlers.wsgi import WSGIHandler
 
 # Here we cannot use `from django.conf import settings` because it breaks the `make gunicornserve`
 from config.settings_prod import get_logging_config

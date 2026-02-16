@@ -44,7 +44,7 @@ class CustomBaseCommand(BaseCommand):
 
         parser.add_argument("--logger", action="store_true", help="use logger configuration")
 
-    def handle(self, *args: Any, **options: dict["str", Any]) -> None:
+    def handle(self, *args: Any, **options: dict[str, Any]) -> None:
         """
         The actual logic of the command.
 
@@ -53,7 +53,7 @@ class CustomBaseCommand(BaseCommand):
 
         raise NotImplementedError("subclasses of CustomBaseCommand must provide a handle() method")
 
-    def execute(self, *args: Any, **options: dict["str", Any]) -> None:
+    def execute(self, *args: Any, **options: dict[str, Any]) -> None:
         """Try to execute the command and log any exceptions if the logger is configured."""
 
         self.options = options

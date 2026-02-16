@@ -1,16 +1,20 @@
 import logging
-from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
-from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
 from utils.fields import CustomSlugField
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from django.db.models.base import ModelBase
+
 logger = logging.getLogger(__name__)
+
 
 # TODO check if we can fix the DJ001, DJ012 warnings
 # ruff: noqa: DJ001, DJ012

@@ -1,11 +1,15 @@
 import logging
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.contrib.auth.models import Group
-from django.http import HttpRequest, HttpResponse
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
 

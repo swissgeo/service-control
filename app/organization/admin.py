@@ -1,9 +1,11 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.contrib import admin
-from django.http.request import HttpRequest
 
 from .models import Organization, Unit
+
+if TYPE_CHECKING:
+    from django.http.request import HttpRequest
 
 
 @admin.register(Organization)

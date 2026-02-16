@@ -88,7 +88,7 @@ class Client:
             ClientId=client_id,
         )
 
-    def list_users(self, pagination_token: str | None) -> "ListUsersResponseTypeDef":
+    def list_users(self, pagination_token: str | None) -> ListUsersResponseTypeDef:
         """List all users in user pool"""
         if pagination_token is not None:
             # Setting PaginationToken to None is not accepted
@@ -97,7 +97,7 @@ class Client:
             )
         return self.client.list_users(UserPoolId=self.user_pool_id)
 
-    def get_user_attribute(self, attrs: list["AttributeTypeTypeDef"], name: str) -> str | None:
+    def get_user_attribute(self, attrs: list[AttributeTypeTypeDef], name: str) -> str | None:
         """Get a user attribute value from a list of attributes"""
         for attr in attrs:
             if attr["Name"] == name:

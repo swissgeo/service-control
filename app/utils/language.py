@@ -1,9 +1,10 @@
 from enum import StrEnum
-from typing import Any, Final
-
-from django.http.request import HttpHeaders
+from typing import TYPE_CHECKING, Any, Final
 
 from .header import extract_lang
+
+if TYPE_CHECKING:
+    from django.http.request import HttpHeaders
 
 
 class LanguageCode(StrEnum):
