@@ -1,11 +1,14 @@
-from collections.abc import Generator
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from io import StringIO
 from logging import ERROR, INFO, getLogger
 from logging.config import dictConfig
 from time import time
+from typing import TYPE_CHECKING
 
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class TimestampedStringIO(StringIO):

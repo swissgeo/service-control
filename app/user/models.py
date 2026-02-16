@@ -1,9 +1,12 @@
-from collections.abc import Iterable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from django.db import models
-from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from django.db.models.base import ModelBase
 
 
 class User(models.Model):

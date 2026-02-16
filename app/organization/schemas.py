@@ -1,6 +1,6 @@
 from ninja import Schema
 
-from schemas import TranslationsSchema
+from schemas import TranslationsSchema  # noqa: TC001
 
 
 class OrganizationSchema(Schema):

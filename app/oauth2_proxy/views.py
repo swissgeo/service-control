@@ -1,10 +1,13 @@
+from typing import TYPE_CHECKING
 from urllib.parse import quote, quote_plus
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
 
 
 def base_url(request: HttpRequest) -> str:

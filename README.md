@@ -50,7 +50,7 @@ app/manage.py migrate --redirect-std-to-logger
 
 Prerequisites on host for development and build:
 
-- python version 3.13
+- python version 3.14
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - `docker` and `docker compose`
 
