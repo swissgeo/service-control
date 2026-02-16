@@ -34,6 +34,7 @@ dev = [
     "django_debug_toolbar",
     "django-extensions",
     "django-stubs~=5.2",  # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
+    "pre-commit",
     "pytest-cov",
     "pytest-django",
     "pytest-xdist",

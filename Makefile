@@ -26,6 +26,7 @@ PYTHON := $(UV_RUN) python3
 TEST := $(UV_RUN) pytest
 RUFF := $(UV_RUN) ruff
 TY := $(UV_RUN) ty
+PRE_COMMIT := $(UV_RUN) pre-commit
 
 # Docker variables?
 DOCKER_REGISTRY = 074597099015.dkr.ecr.eu-central-1.amazonaws.com
@@ -62,6 +63,7 @@ ci: .env
 .PHONY: setup
 setup:.env ## Create virtualenv with all packages for development
 	uv sync
+	$(PRE_COMMIT) install
 	# Start a new zsh shell with the virtualenv activated and the .env file loaded into the environment
 	# variables. The later is required for django which reads the settings from the environment variables
 	uv run zsh
