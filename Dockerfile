@@ -17,7 +17,7 @@ RUN apt-get -qq update > /dev/null \
 ###########################################################
 # Builder container
 FROM base AS builder
-COPY --from=ghcr.io/astral-sh/uv:0.10.2 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.3 /uv /uvx /bin/
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
