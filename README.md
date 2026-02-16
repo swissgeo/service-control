@@ -13,6 +13,7 @@
 - [Local Development](#local-development)
   - [Dependencies](#dependencies)
   - [Setup](#setup)
+  - [Pre-Commit Hooks](#pre-commit-hooks)
   - [Using the Admin UI](#using-the-admin-ui)
   - [Updating Packages](#updating-packages)
   - [Running Tests In Parallel](#running-tests-in-parallel)
@@ -78,6 +79,12 @@ Once your database has been initialized, you can later sync it with the latest D
 ```bash
 app/manage.py migrate
 ```
+
+### Pre-Commit Hooks
+
+This project uses pre-commit hooks to lint and type-check before committing. Pre-commits hooks can
+either be bypassed entirely with the `--no-verify` option (`git commit --no-verify ...`), or
+individually using the `SKIP` environment variable (`SKIP=lint git commit ...`).
 
 ### Using the Admin UI
 
