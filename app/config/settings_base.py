@@ -196,7 +196,7 @@ DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
 DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", None)
 
 # Testing
-TESTING = False
+TESTING: bool = False
 
 
 # Read configuration from file

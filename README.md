@@ -28,7 +28,6 @@
   - [Sampling](#sampling)
   - [Local Telemetry](#local-telemetry)
 - [Type Checking](#type-checking)
-  - [Mypy](#mypy)
   - [Library Types](#library-types)
 
 ## Summary Of The Project
@@ -286,19 +285,9 @@ and visiting the Zipkin dashboard at [http://localhost:9411](http://localhost:94
 
 ## Type Checking
 
-### Mypy
-
-Type checking can be done by either calling `mypy` or the make target: 
-
-```sh
-make type-check
-```
-
-This will check all files in the repository.
-
 ### Library Types
 
-For type-checking, the external library [mypy](https://mypy.readthedocs.io) is being used. See the [type hints cheat sheet](https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html) for help on getting the types right.
+For type-checking, the external library [ty](https://docs.astral.sh/ty) is being used.
 
 Some 3rd party libraries need to have explicit type stubs installed for the type checker
 to work. Some of them can be found in [typeshed](https://github.com/python/typeshed). Sometimes dedicated

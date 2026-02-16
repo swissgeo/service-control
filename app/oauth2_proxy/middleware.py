@@ -1,10 +1,10 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.middleware import RemoteUserMiddleware
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -36,6 +36,7 @@ class Oauth2ProxyRemoteMiddleware:
             # If the user is not authenticated then do nothing and let django
             # refuse the request
             return self.get_response(request)
+        user = cast("User", user)
 
         # If the user is authenticated then we need to update it with the following oauth2-proxy
         # provided user information:
