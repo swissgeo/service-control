@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 @admin.register(Organization)
-class OrganizationAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
+class OrganizationAdmin(admin.ModelAdmin):
     """Admin View for Organization"""
 
     list_display = ("organization_id", "acronym_en", "name_en")
@@ -27,7 +27,7 @@ class OrganizationAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
 
 
 @admin.register(Unit)
-class UnitAdmin(admin.ModelAdmin):  # type:ignore[type-arg]
+class UnitAdmin(admin.ModelAdmin):
     """Admin View for Organization Unit"""
 
     list_display = ("unit_id", "name_en", "get_organization_name")

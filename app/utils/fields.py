@@ -5,7 +5,7 @@ from django.utils.regex_helper import _lazy_re_compile
 slug_re = _lazy_re_compile(r"^[-a-z0-9_.]+\Z")
 
 
-class CustomSlugField(models.CharField):  # type:ignore[type-arg]
+class CustomSlugField(models.CharField):
     """A custom slug field also allowing periods but not uppercase letters."""
 
     default_validators = [  # noqa: RUF012
