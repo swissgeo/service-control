@@ -16,10 +16,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# TODO check if we can fix the DJ001 warning
-# ruff: noqa: DJ001
-
-
 class Organization(models.Model):
     _context = "Organization model"
 
