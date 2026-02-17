@@ -62,22 +62,10 @@ To create and activate a virtual Python environment with all dependencies instal
 make setup
 ```
 
-To start the local postgres container, run this:
+Then run the server
 
 ```bash
-make start-local-db
-```
-
-To initialize the database, run this (at least once):
-
-```bash
-make init-db
-```
-
-Once your database has been initialized, you can later sync it with the latest Django migrations by running only:
-
-```bash
-app/manage.py migrate
+make serve
 ```
 
 ### Pre-Commit Hooks
@@ -277,14 +265,12 @@ The python SDK supports ratio based [head sampling](https://opentelemetry.io/doc
 Local telemetry can be tested by using one of the serve commands that use gunicorn, either 
 
 ```bash
-make start-local-db
 make gunicornserve
 ```
 
 or
 
 ```bash
-make start-local-db
 make dockerrun
 ```
 
