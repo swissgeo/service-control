@@ -16,15 +16,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# TODO check if we can fix the DJ001, DJ012 warnings
-# ruff: noqa: DJ001, DJ012
+# TODO check if we can fix the DJ001 warning
+# ruff: noqa: DJ001
 
 
 class Organization(models.Model):
     _context = "Organization model"
-
-    def __str__(self) -> str:
-        return str(self.organization_id)
 
     """
     Note: The "blank=False" for a model field doesn't prevent DB changes.
@@ -50,6 +47,9 @@ class Organization(models.Model):
     acronym_en = models.CharField(_(_context, "Acronym (English)"))
     acronym_it = models.CharField(_(_context, "Acronym (Italian)"), null=True, blank=True)
     acronym_rm = models.CharField(_(_context, "Acronym (Romansh)"), null=True, blank=True)
+
+    def __str__(self) -> str:
+        return str(self.organization_id)
 
     def save(
         self,
@@ -97,9 +97,6 @@ class Organization(models.Model):
 class Unit(models.Model):
     _context = "Organization Unit model"
 
-    def __str__(self) -> str:
-        return str(self.unit_id)
-
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
@@ -118,6 +115,9 @@ class Unit(models.Model):
     name_en = models.CharField(_(_context, "Name (English)"))
     name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
     name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
+
+    def __str__(self) -> str:
+        return str(self.unit_id)
 
     def save(
         self,
