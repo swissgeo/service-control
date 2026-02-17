@@ -83,6 +83,7 @@ ignore = [
     "FIX",    # Ignore fixme comments
     "ERA001", # TODO remove this for production, ignore commented code
     "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
+    "DJ001",  # Ignore nullable strings
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
