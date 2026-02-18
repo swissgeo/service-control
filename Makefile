@@ -69,8 +69,9 @@ setup:.env ## Create virtualenv with all packages for development
 	uv run zsh
 
 
-.PHONY: init-db
-init-db: ## Initialize the local database
+.PHONY: start-local-db
+start-local-db: ## Run the local db and cognito as docker container
+	docker compose up -d
 	$(PYTHON) $(DJANGO_MANAGER) init_db
 	$(PYTHON) $(DJANGO_MANAGER) migrate
 
@@ -84,11 +85,6 @@ format: ## Call ruff format to make sure your code is easier to read and respect
 .PHONY: django-checks
 django-checks: ## Run the django checks
 	$(PYTHON) $(DJANGO_MANAGER) check --fail-level WARNING
-
-
-.PHONY: django-check-migrations
-django-check-migrations: ## Check the migrations
-	@echo "Check for missing migration files"
 	$(PYTHON) $(DJANGO_MANAGER) makemigrations --no-input --check
 
 
@@ -103,17 +99,17 @@ ci-check-format: format ## Check the format (CI)
 
 
 .PHONY: serve
-serve: ## Serve the application locally
+serve: start-local-db ## Serve the application locally
 	$(PYTHON) $(DJANGO_MANAGER) runserver
 
 
 .PHONY: serve-debug
-serve-debug: ## Serve the application locally for debugging
+serve-debug: start-local-db ## Serve the application locally for debugging
 	$(PYTHON) $(DJANGO_MANAGER_DEBUG) runserver
 
 
 .PHONY: gunicornserve
-gunicornserve: ## Serve the application locally with gunicorn
+gunicornserve: start-local-db ## Serve the application locally with gunicorn
 	$(PYTHON) $(APP_SRC_DIR)/wsgi.py
 
 
@@ -139,7 +135,7 @@ dockerpush: dockerbuild ## Push to the docker registry
 
 
 .PHONY: dockerrun
-dockerrun: dockerbuild ## Run the locally built docker image
+dockerrun: start-local-db dockerbuild ## Run the locally built docker image
 	docker run \
 		-it -p $(HTTP_PORT):8080 \
 		--env-file=${ENV_FILE} \
@@ -153,11 +149,6 @@ dockerrun: dockerbuild ## Run the locally built docker image
 lint: ## Run the linter and type checker on the code base
 	$(RUFF) check
 	$(TY) check
-
-
-.PHONY: start-local-db
-start-local-db: ## Run the local db and cognito as docker container
-	docker compose up -d
 
 
 .PHONY: test-ci
