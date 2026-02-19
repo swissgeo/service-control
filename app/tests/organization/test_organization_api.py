@@ -472,7 +472,7 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
     }
 
 
-@patch("organization.models.Client", new_callable=AsyncMagicMock)
+@patch("organization.signals.Client", new_callable=AsyncMagicMock)
 def test_create_organization(boto_client, client, db):
     data = {
         "id": "ch.bafu",
@@ -528,7 +528,7 @@ def test_create_organization(boto_client, client, db):
     assert actual.acronym_rm == data["acronym_translations"]["rm"]
 
 
-@patch("organization.models.Client", new_callable=AsyncMagicMock)
+@patch("organization.signals.Client", new_callable=AsyncMagicMock)
 def test_create_organization_required_only(boto_client, client, db):
     data = {
         "id": "ch.bafu",
@@ -684,7 +684,7 @@ def test_create_organization_missing_required(client, db):
     assert response.status_code == 422
 
 
-@patch("organization.models.Client", new_callable=AsyncMagicMock)
+@patch("organization.signals.Client", new_callable=AsyncMagicMock)
 def test_create_organization_already_exists(boto_client, client, db):
     data = {
         "id": "ch.bafu",

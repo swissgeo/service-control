@@ -7,7 +7,6 @@ from django.contrib import admin
 from user.models import MachineUser, User
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
     from django.forms import ModelForm
     from django.http.request import HttpRequest
 
@@ -25,22 +24,7 @@ class MachineUserAdmin(admin.ModelAdmin):
         form: ModelForm[MachineUser],  # noqa: ARG002 unused argument
         change: bool,  # noqa: ARG002 unused argument
     ) -> None:
-        async_to_sync(obj.save_and_sync)()
-
-    def delete_model(
-        self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
-        obj: MachineUser,
-    ) -> None:
-        async_to_sync(obj.delete_and_sync)()
-
-    def delete_queryset(
-        self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
-        queryset: QuerySet[MachineUser],
-    ) -> None:
-        for obj in queryset:
-            async_to_sync(obj.delete_and_sync)()
+        async_to_sync(obj.create_with_app_client)()
 
 
 @admin.register(User)

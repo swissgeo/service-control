@@ -69,7 +69,7 @@ def test_create_machine_user_fails_if_already_exists(ssm_client, boto_client, ma
     assert ssm_client.return_value.mock_calls == []
 
 
-@patch("user.models.Client", new_callable=AsyncMagicMock)
+@patch("user.signals.Client", new_callable=AsyncMagicMock)
 @patch("user.extra_audience.Client", new_callable=AsyncMagicMock)
 def test_delete_machine_user(ssm_client, boto_client, machine_user, client):
     ssm_client.return_value.get_parameter.return_value = ""

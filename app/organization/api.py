@@ -74,7 +74,7 @@ async def create_organization(
         acronym_rm=organization_in.acronym_translations.rm,
     )
 
-    await org.save_and_sync()
+    await org.asave()
 
     return organization_to_response(org, lang_to_use)
 
@@ -108,7 +108,7 @@ async def update_organization(
     org.acronym_it = organization_in.acronym_translations.it
     org.acronym_rm = organization_in.acronym_translations.rm
 
-    await org.save_and_sync()
+    await org.asave()
 
     return organization_to_response(org, lang_to_use)
 
@@ -206,7 +206,7 @@ async def create_unit(
         name_it=unit_in.name_translations.it,
         name_rm=unit_in.name_translations.rm,
     )
-    await unit.save_and_sync()
+    await unit.asave()
 
     return unit_to_response(unit, lang_to_use)
 
@@ -238,7 +238,7 @@ async def update_unit(
     unit.name_en = unit_in.name_translations.en
     unit.name_it = unit_in.name_translations.it
     unit.name_rm = unit_in.name_translations.rm
-    await unit.save_and_sync()
+    await unit.asave()
 
     return unit_to_response(unit, lang_to_use)
 
@@ -307,4 +307,4 @@ async def delete_unit(
         organization_id=organization_id,
         unit_id=unit_id,
     )
-    await unit.delete_and_sync()
+    await unit.adelete()

@@ -9,7 +9,7 @@ from utils.testing import AsyncMagicMock
 
 @pytest.fixture(name="organization")
 def fixture_organization(db):
-    with patch("organization.models.Client", new_callable=AsyncMagicMock):
+    with patch("organization.signals.Client", new_callable=AsyncMagicMock):
         yield Organization.objects.create(
             organization_id="ch.bafu",
             acronym_de="BAFU",
@@ -27,7 +27,7 @@ def fixture_organization(db):
 
 @pytest.fixture(name="unit")
 def fixture_unit(db, organization):
-    with patch("organization.models.Client", new_callable=AsyncMagicMock):
+    with patch("organization.signals.Client", new_callable=AsyncMagicMock):
         yield Unit.objects.create(
             organization=organization,
             unit_id="ch.bafu.fauna",

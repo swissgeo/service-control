@@ -41,7 +41,7 @@ async def create_machine_user(
         organization=org,
     )
 
-    app_client = await new_machine_user.save_and_sync(machine_user_in.token_duration_min)
+    app_client = await new_machine_user.create_with_app_client(machine_user_in.token_duration_min)
 
     return MachineUserSchema(
         name=app_client.name, client_id=app_client.client_id, client_secret=app_client.client_secret
@@ -79,6 +79,6 @@ async def delete_machine_users(
     machine_user_id: str,
 ) -> HttpResponse:
     machine_user_to_delete = await aget_object_or_404(MachineUser, machine_user_id=machine_user_id)
-    await machine_user_to_delete.delete_and_sync()
+    await machine_user_to_delete.adelete()
 
     return HttpResponse(status=204)

@@ -8,7 +8,7 @@ from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client, CreateClientResponse
-from user.extra_audience import add_extra_audience, remove_extra_audience
+from user.extra_audience import add_extra_audience
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,9 @@ class MachineUser(models.Model):
     def __str__(self) -> str:
         return str(self.name)
 
-    async def save_and_sync(self, token_duration_mins: int | None = None) -> CreateClientResponse:
+    async def create_with_app_client(
+        self, token_duration_mins: int | None = None
+    ) -> CreateClientResponse:
         """Validates the model before writing it to the database and create in cognito."""
 
         # Create cognito app client
@@ -103,13 +105,3 @@ class MachineUser(models.Model):
             )
 
         return app_client
-
-    async def delete_and_sync(self) -> tuple[int, dict[str, int]]:
-        """Deletes from the database and cognito."""
-
-        cognito_client = Client()
-        if not await cognito_client.delete_app_client(self.machine_user_id):
-            logger.warning("cognito app client '%s' not found, not deleted", self.machine_user_id)
-        await remove_extra_audience(self.machine_user_id)
-
-        return await self.adelete()

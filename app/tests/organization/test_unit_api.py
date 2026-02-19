@@ -333,7 +333,7 @@ def test_get_units_returns_with_language_from_header(unit, client):
     }
 
 
-@patch("organization.models.Client", new_callable=AsyncMagicMock)
+@patch("organization.signals.Client", new_callable=AsyncMagicMock)
 def test_create_unit(boto_client, client, organization):
     data = {
         "id": "ch.bafu.fauna",
@@ -373,7 +373,7 @@ def test_create_unit(boto_client, client, organization):
     assert actual.name_rm == data["name_translations"]["rm"]
 
 
-@patch("organization.models.Client", new_callable=AsyncMagicMock)
+@patch("organization.signals.Client", new_callable=AsyncMagicMock)
 def test_create_unit_already_exists(boto_client, client, organization):
     data = {
         "id": "ch.bafu.fauna",
