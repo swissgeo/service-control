@@ -4,7 +4,6 @@ from ninja import Router
 
 from cognito.utils.client import Client
 from organization.models import Organization
-from user.extra_audience import add_extra_audience, remove_extra_audience
 from user.models import MachineUser
 from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
 
@@ -45,21 +44,13 @@ def create_machine_user(
 
     try:
         # Save app client info in database
-        new_machine_user = MachineUser.objects.create(
+        MachineUser.objects.create(
             machine_user_id=app_client.client_id,
             name=app_client.name,
             created_by_user="TODO: Get user from header",
             organization=org,
         )
     except:
-        cognito_client.delete_app_client(app_client.client_id)
-        raise
-
-    try:
-        # Add client id for Oauth2-Proxy
-        add_extra_audience(app_client.client_id)
-    except:
-        new_machine_user.delete()
         cognito_client.delete_app_client(app_client.client_id)
         raise
 
@@ -106,7 +97,6 @@ def delete_machine_users(
     # No exception handling on purpose, as if something fails, at least the
     # client may no longer have access.
     cognito_client.delete_app_client(machine_user_to_delete.machine_user_id)
-    remove_extra_audience(machine_user_to_delete.machine_user_id)
     machine_user_to_delete.delete()
 
     return HttpResponse(status=204)
