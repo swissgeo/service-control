@@ -5,6 +5,7 @@ from django.contrib import admin
 from .models import Organization, Unit
 
 if TYPE_CHECKING:
+    from django.db.models import QuerySet
     from django.http.request import HttpRequest
 
 
@@ -24,6 +25,14 @@ class OrganizationAdmin(admin.ModelAdmin):
             # Organization id cannot be updated
             return (*self.readonly_fields, "organization_id")
         return self.readonly_fields
+
+    def delete_queryset(
+        self,
+        request: HttpRequest,  # noqa: ARG002 unused argument
+        queryset: QuerySet[Organization],
+    ) -> None:
+        for obj in queryset:
+            obj.delete()
 
 
 @admin.register(Unit)
@@ -46,3 +55,11 @@ class UnitAdmin(admin.ModelAdmin):
     @admin.display(description="Organization", ordering="organization__name_en")
     def get_organization_name(self, obj: Unit) -> str:
         return obj.organization.name_en
+
+    def delete_queryset(
+        self,
+        request: HttpRequest,  # noqa: ARG002 unused argument
+        queryset: QuerySet[Unit],
+    ) -> None:
+        for obj in queryset:
+            obj.delete()
