@@ -110,11 +110,18 @@ DATABASES = {
         "PASSWORD": env.str("DB_PW", "service_control"),
         "HOST": env.str("DB_HOST", "service_control"),
         "PORT": env.str("DB_PORT", "5432"),
+        "OPTIONS": {},
         "TEST": {
             "NAME": env.str("DB_NAME_TEST", "test_service_control"),
         },
     },
 }
+
+# Database pool
+# https://www.psycopg.org/psycopg3/docs/api/pool.html#the-connectionpool-class
+DB_POOL = env.json("DB_POOL", default=None)
+if DB_POOL:
+    DATABASES["default"]["OPTIONS"]["pool"] = DB_POOL
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
