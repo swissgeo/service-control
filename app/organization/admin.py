@@ -31,6 +31,7 @@ class OrganizationAdmin(admin.ModelAdmin):
         request: HttpRequest,  # noqa: ARG002 unused argument
         queryset: QuerySet[Organization],
     ) -> None:
+        #  Make sure that the cognito group is deleted when batch deleting a organizations
         for obj in queryset:
             obj.delete()
 
@@ -61,5 +62,6 @@ class UnitAdmin(admin.ModelAdmin):
         request: HttpRequest,  # noqa: ARG002 unused argument
         queryset: QuerySet[Unit],
     ) -> None:
+        #  Make sure that the cognito group is deleted when batch deleting a units
         for obj in queryset:
             obj.delete()
