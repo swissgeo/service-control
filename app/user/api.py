@@ -4,7 +4,7 @@ from ninja import Router
 
 from cognito.utils.client import Client
 from organization.models import Organization
-from user.extra_audience import add_extra_audience, remove_extra_audience
+from user.extra_audience import add_extra_audience
 from user.models import MachineUser
 from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
 
@@ -101,12 +101,6 @@ def delete_machine_users(
     machine_user_id: str,
 ) -> HttpResponse:
     machine_user_to_delete = get_object_or_404(MachineUser, machine_user_id=machine_user_id)
-    cognito_client = Client()
-
-    # No exception handling on purpose, as if something fails, at least the
-    # client may no longer have access.
-    cognito_client.delete_app_client(machine_user_to_delete.machine_user_id)
-    remove_extra_audience(machine_user_to_delete.machine_user_id)
     machine_user_to_delete.delete()
 
     return HttpResponse(status=204)

@@ -81,12 +81,16 @@ class Client:
             client_secret=resp["UserPoolClient"]["ClientSecret"],
         )
 
-    def delete_app_client(self, client_id: str) -> None:
+    def delete_app_client(self, client_id: str) -> bool:
         """Delete cognito app client"""
-        self.client.delete_user_pool_client(
-            UserPoolId=self.user_pool_id,
-            ClientId=client_id,
-        )
+        try:
+            self.client.delete_user_pool_client(
+                UserPoolId=self.user_pool_id,
+                ClientId=client_id,
+            )
+        except self.client.exceptions.ResourceNotFoundException:
+            return False
+        return True
 
     def list_users(self, pagination_token: str | None) -> ListUsersResponseTypeDef:
         """List all users in user pool"""
