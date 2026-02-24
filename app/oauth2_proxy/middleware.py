@@ -24,7 +24,7 @@ class Oauth2ProxyRemoteMiddleware:
     group_header = "HTTP_X_AUTH_REQUEST_GROUPS"
     preferred_username_header = "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME"
     email_header = "HTTP_X_AUTH_REQUEST_EMAIL"
-    token_header = "HTTP_X_AUTH_REQUEST_TOKEN"  # noqa: S105 possible hardcoded password
+    token_header = "HTTP_X_AUTH_REQUEST_ACCESS_TOKEN"  # noqa: S105 possible hardcoded password
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
