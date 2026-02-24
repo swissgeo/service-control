@@ -22,6 +22,7 @@ dependencies = [
     "opentelemetry-instrumentation==0.60b1",
     "opentelemetry-sdk~=1.39",
     "psycopg[binary,pool]~=3.2",
+    "pyjwt~=2.11",
     "pyyaml~=6.0",
     "tinydb~=4.8",
     "whitenoise~=6.11",
@@ -33,7 +34,7 @@ dev = [
     "debugpy",
     "django_debug_toolbar",
     "django-extensions",
-    "django-stubs~=5.2",  # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
+    "django-stubs~=5.2",                  # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
     "pre-commit",
     "pytest-cov",
     "pytest-django",
