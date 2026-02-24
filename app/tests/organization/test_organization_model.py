@@ -5,7 +5,8 @@ from django.forms import ModelForm
 
 import pytest
 
-from organization.models import Organization
+from organization.models import Organization, Unit
+from user.models import MachineUser
 
 
 @patch("organization.models.Client")
@@ -214,3 +215,38 @@ def test_delete_deletes_records(client, db):
 
     assert not Organization.objects.first()
     assert client.return_value.delete_group.called
+
+
+@patch("organization.models.Client")
+@patch("user.models.Client")
+@patch("user.extra_audience.Client")
+def test_delete_deletes_related_records(ssm_client, user_client, org_client, organization):
+    unit_in = {
+        "organization": organization,
+        "unit_id": "ch.bafu.fauna",
+        "name_de": "Fauna",
+        "name_fr": "Faune",
+        "name_en": "Fauna",
+        "name_it": None,
+        "name_rm": None,
+    }
+    Unit.objects.create(**unit_in)
+
+    machine_user_in = {
+        "machine_user_id": "abc",
+        "name": "Machine 1",
+        "created_by_user": "user1",
+        "organization": organization,
+    }
+    MachineUser.objects.create(**machine_user_in)
+
+    organization.delete()
+
+    assert not Organization.objects.first()
+    assert not Unit.objects.first()
+    assert not MachineUser.objects.first()
+
+    assert org_client.return_value.delete_group.call_count == 2
+    assert user_client.return_value.delete_app_client.called
+    assert ssm_client.return_value.get_parameter.called
+    assert ssm_client.return_value.put_parameter.called

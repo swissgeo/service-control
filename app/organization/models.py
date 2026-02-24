@@ -81,12 +81,21 @@ class Organization(models.Model):
         using: str | None = None,
         keep_parents: bool = False,
     ) -> tuple[int, dict[str, int]]:
-        """Deletes from the database and cognito."""
+        """Deletes from the database and cognito. Also calls delete of the related models which
+        also perform some cleanup in cognito."""
+
+        for machine_user in self.machineuser_set.all():  # type:ignore[unresolved-attribute]
+            machine_user.delete()
+
+        for unit in self.unit_set.all():  # type:ignore[unresolved-attribute]
+            unit.delete()
+
+        result = super().delete(using=using, keep_parents=keep_parents)
 
         client = Client()
-        result = super().delete(using=using, keep_parents=keep_parents)
         if not client.delete_group(self.organization_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.organization_id)
+
         return result
 
 

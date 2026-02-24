@@ -1,12 +1,18 @@
+import logging
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
+from cognito.utils.client import Client
+from user.extra_audience import remove_extra_audience
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from django.db.models.base import ModelBase
+
+logger = logging.getLogger(__name__)
 
 
 class User(models.Model):
@@ -80,3 +86,17 @@ class MachineUser(models.Model):
             using=using,
             update_fields=update_fields,
         )
+
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+    ) -> tuple[int, dict[str, int]]:
+        """Deletes from the database and cognito."""
+
+        client = Client()
+        if not client.delete_app_client(self.machine_user_id):
+            logger.warning("cognito app client '%s' not found, not deleted", self.machine_user_id)
+        remove_extra_audience(self.machine_user_id)
+
+        return super().delete(using=using, keep_parents=keep_parents)

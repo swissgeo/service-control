@@ -37,7 +37,7 @@ def test_object_stored_as_expected_for_valid_input(client, organization):
 
 @patch("organization.models.Client")
 def test_object_created_in_db_with_optional_fields_null(client, organization):
-    organization_in = {
+    unit_in = {
         "organization": organization,
         "unit_id": "ch.bafu.fauna",
         "name_de": "Fauna",
@@ -46,20 +46,20 @@ def test_object_created_in_db_with_optional_fields_null(client, organization):
         "name_it": None,
         "name_rm": None,
     }
-    Unit.objects.create(**organization_in)
+    Unit.objects.create(**unit_in)
 
     units = Unit.objects.all()
 
     assert len(units) == 1
 
     actual = Unit.objects.last()
-    assert actual.unit_id == organization_in["unit_id"]
+    assert actual.unit_id == unit_in["unit_id"]
 
-    assert actual.name_de == organization_in["name_de"]
-    assert actual.name_fr == organization_in["name_fr"]
-    assert actual.name_en == organization_in["name_en"]
-    assert actual.name_it == organization_in["name_it"]
-    assert actual.name_rm == organization_in["name_rm"]
+    assert actual.name_de == unit_in["name_de"]
+    assert actual.name_fr == unit_in["name_fr"]
+    assert actual.name_en == unit_in["name_en"]
+    assert actual.name_it == unit_in["name_it"]
+    assert actual.name_rm == unit_in["name_rm"]
 
     assert client.return_value.create_group.called
 

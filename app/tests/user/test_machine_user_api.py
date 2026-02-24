@@ -68,7 +68,7 @@ def test_create_machine_user_fails_if_already_exists(ssm_client, boto_client, ma
     assert ssm_client.return_value.mock_calls == []
 
 
-@patch("user.api.Client")
+@patch("user.models.Client")
 @patch("user.extra_audience.Client")
 def test_delete_machine_user(ssm_client, boto_client, machine_user, client):
     response = client.delete(
