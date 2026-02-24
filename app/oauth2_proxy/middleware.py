@@ -30,7 +30,7 @@ class Oauth2ProxyRemoteMiddleware:
         self.get_response = get_response
         # One-time configuration and initialization.
 
-    def __call__(self, request: HttpRequest) -> HttpResponse:  # noqa: C901
+    def __call__(self, request: HttpRequest) -> HttpResponse:
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
@@ -43,18 +43,12 @@ class Oauth2ProxyRemoteMiddleware:
 
         # If the user is authenticated then we need to update it with the following oauth2-proxy
         # provided user information:
-        #  - preferred_username
         #  - email
         #  - first_name
         #  - last_name
         #
         # Groups are not updated from oauth2-proxy as service-control is the data-owner for groups.
         # Any changes to groups will always be done via service-control
-        try:
-            preferred_username = request.META[self.preferred_username_header].strip()
-        except KeyError as error:
-            logger.warning("Failed to get preferred_username header: %s", error)
-            preferred_username = None
 
         try:
             email = request.META[self.email_header].strip()
@@ -73,6 +67,8 @@ class Oauth2ProxyRemoteMiddleware:
         try:
             token = request.META[self.token_header].strip()
             # As oauth2-proxy already verifies the token, we skip verification and only read payload
+            # This is also important for performance as validating signature would require a call to
+            # cognito to retrieve the public key.
             decoded = jwt.decode(token, options={"verify_signature": False})
             first_name = decoded["first_name"]
             last_name = decoded["last_name"]
@@ -85,9 +81,6 @@ class Oauth2ProxyRemoteMiddleware:
         # on every request.
         changed = False
 
-        if preferred_username and user.username != preferred_username:
-            user.username = preferred_username
-            changed = True
         if first_name and user.first_name != first_name:
             user.first_name = first_name
             changed = True

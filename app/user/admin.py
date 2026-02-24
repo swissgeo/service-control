@@ -42,7 +42,7 @@ class CustomUserInline(admin.StackedInline):
 class UserAdmin(BaseUserAdmin):
     inlines: ClassVar[list[type[CustomUserInline]]] = [CustomUserInline]
 
-    list_display = ("username", "first_name", "last_name", "get_organization", "is_staff")
+    list_display = ("username", "email", "first_name", "last_name", "get_organization", "is_staff")
 
     @admin.display(description="Organization")
     def get_organization(self, obj: User) -> str:
