@@ -64,9 +64,9 @@ ci: .env
 setup:.env ## Create virtualenv with all packages for development
 	uv sync
 	$(PRE_COMMIT) install
-	# Start a new zsh shell with the virtualenv activated and the .env file loaded into the environment
+	# Start a new shell with the virtualenv activated and the .env file loaded into the environment
 	# variables. The later is required for django which reads the settings from the environment variables
-	uv run zsh
+	uv run $$SHELL
 
 
 .PHONY: start-local-db
