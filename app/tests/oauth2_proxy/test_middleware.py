@@ -13,7 +13,7 @@ def test_oauth_middleware_creates_user(settings, db, client, django_user_model):
         # Header:    {"alg": "HS256", "typ": "JWT"}
         # Payload:   {"first_name": "Hans", "last_name": "Maulwurf"}
         # Signature: invalid
-        "HTTP_X_AUTH_REQUEST_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjogIkhhbnMiLCAibGFzdF9uYW1lIjogIk1hdWx3dXJmIn0=.aW52YWxpZA==",  # noqa: E501
+        "HTTP_X_AUTH_REQUEST_ACCESS_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjogIkhhbnMiLCAibGFzdF9uYW1lIjogIk1hdWx3dXJmIn0=.aW52YWxpZA==",  # noqa: E501
     }
     client.get("/", **headers)
 
@@ -53,7 +53,7 @@ def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
         # Header:    {"alg": "HS256", "typ": "JWT"}
         # Payload:   {"first_name": "Joseph", "last_name": "Quimby"}
         # Signature: invalid
-        "HTTP_X_AUTH_REQUEST_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjogIkpvc2VwaCIsICJsYXN0X25hbWUiOiAiUXVpbWJ5In0=.aW52YWxpZA==",  # noqa: E501
+        "HTTP_X_AUTH_REQUEST_ACCESS_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjogIkpvc2VwaCIsICJsYXN0X25hbWUiOiAiUXVpbWJ5In0=.aW52YWxpZA==",  # noqa: E501
     }
     client.get("/", **headers)
 
