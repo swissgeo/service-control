@@ -5,6 +5,8 @@ from pydantic import BaseModel
 
 from django.conf import settings
 
+from config.aws import config
+
 if TYPE_CHECKING:
     from mypy_boto3_cognito_idp.type_defs import AttributeTypeTypeDef, ListUsersResponseTypeDef
 
@@ -32,7 +34,7 @@ class Client:
     def __init__(self) -> None:
         self.endpoint_url = settings.COGNITO_ENDPOINT_URL
         self.user_pool_id = settings.COGNITO_POOL_ID
-        self.client = client("cognito-idp", endpoint_url=self.endpoint_url)
+        self.client = client("cognito-idp", endpoint_url=self.endpoint_url, config=config)
 
     def create_group(self, name: str) -> bool:
         """Create a new cognito user group.

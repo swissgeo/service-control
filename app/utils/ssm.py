@@ -4,6 +4,8 @@ from boto3 import client
 
 from django.conf import settings
 
+from config.aws import config
+
 if TYPE_CHECKING:
     from mypy_boto3_ssm import SSMClient
     from mypy_boto3_ssm.type_defs import GetParameterResultTypeDef
@@ -13,7 +15,7 @@ class SSMClient:
     """AWS client to manage ssm parameters"""
 
     def __init__(self) -> None:
-        self.client = client("ssm")
+        self.client = client("ssm", config=config)
 
     def get_parameter(self, name: str) -> str:
         """Get SSM parameter value"""
