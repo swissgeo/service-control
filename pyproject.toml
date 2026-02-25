@@ -100,12 +100,14 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 "app/tests/**" = [
     "S101",    # Ignore usage of assert statements in tests
+    "S106",    # Ignore hard coded passwords in tests
     "ANN201",  # Ignore missing return type hints in tests
     "INP001",  # Ignore implicit namespace packages in tests
     "ANN001",  # Ignore missing type hints in tests
     "ARG001",  # Ignore unused function arguments in tests
     "ARG005",  # Ignore unused lambda argument in tests
     "PLR2004", # Ignore magic number in tests
+    "PLR0913", # Ignore too many arguments in function in tests
 ]
 
 "app/stubs/**" = [

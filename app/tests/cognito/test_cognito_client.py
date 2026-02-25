@@ -97,7 +97,7 @@ def test_create_app_client(mock_boto3):
     assert response == CreateClientResponse(
         name="client_name",
         client_id="client_id",
-        client_secret="client_secret",  # noqa:S106
+        client_secret="client_secret",
     )
     assert (
         call().create_user_pool_client(
@@ -167,7 +167,7 @@ def test_list_users(mock_boto3):
 @patch("cognito.utils.client.client")
 def test_list_users_paginated(mock_boto3):
     client = Client()
-    client.list_users(pagination_token="token")  # noqa: S106
+    client.list_users(pagination_token="token")
     assert (
         call().list_users(UserPoolId=client.user_pool_id, PaginationToken="token")
         in mock_boto3.mock_calls

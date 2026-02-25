@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, cast
 import jwt
 
 from django.conf import settings
-from django.contrib.auth import get_user
 from django.contrib.auth.middleware import RemoteUserMiddleware
 
 if TYPE_CHECKING:
@@ -34,7 +33,7 @@ class Oauth2ProxyRemoteMiddleware:
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
-        user = get_user(request)
+        user = request.user  # this is set by the middleware above
         if not user.is_authenticated:
             # If the user is not authenticated then do nothing and let django
             # refuse the request
