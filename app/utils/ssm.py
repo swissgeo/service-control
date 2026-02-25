@@ -8,11 +8,16 @@ if TYPE_CHECKING:
     from mypy_boto3_ssm.type_defs import GetParameterResultTypeDef
 
 
+ssm_client = client("ssm")
+
+
 class SSMClient:
     """AWS client to manage ssm parameters"""
 
+    exceptions = ssm_client.exceptions
+
     def __init__(self) -> None:
-        self.client = client("ssm")
+        self.client = ssm_client
 
     def get_parameter(self, name: str) -> str:
         """Get SSM parameter value"""
@@ -26,6 +31,8 @@ class SSMClient:
 
 class LocalClient:
     """Local parameter store client"""
+
+    exceptions = ssm_client.exceptions
 
     def __init__(self) -> None:
         pass
