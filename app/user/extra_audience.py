@@ -1,6 +1,11 @@
+import logging
+
 from django.conf import settings
+from ninja.errors import AuthorizationError
 
 from utils.ssm import Client
+
+logger = logging.getLogger(__name__)
 
 
 def add_extra_audience(aud: str) -> None:
@@ -9,7 +14,11 @@ def add_extra_audience(aud: str) -> None:
     ssm_client = Client()
     param_value = ssm_client.get_parameter(param_name)
     param_value = aud if not param_value else param_value + "," + aud
-    ssm_client.put_parameter(param_name, param_value)
+    try:
+        ssm_client.put_parameter(param_name, param_value)
+    except ssm_client.exceptions.ValidationException as error:
+        logger.exception("Failed to add extra audience, limit exceeded")
+        raise AuthorizationError(message="Too many M2M users") from error
 
 
 def remove_extra_audience(aud: str) -> None:
