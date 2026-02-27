@@ -34,6 +34,7 @@ class CustomUser(models.Model):
     organization = models.ForeignKey(
         "organization.Organization", null=True, on_delete=models.SET_NULL
     )
+    roles = models.ManyToManyField("user.Role", blank=True)
 
     # user_type is an enum to differentiate human users from machine users
     user_type = models.CharField(

@@ -29,7 +29,7 @@ services:
     entrypoint: >
       /bin/sh -c "
         [ ! -f /app/.cognito/db/${COGNITO_POOL_ID}.json ] &&
-        echo '{}' > /app/.cognito/db/${COGNITO_POOL_ID}.json
+        cp default-pool.json /app/.cognito/db/${COGNITO_POOL_ID}.json
         node /app/start.js;
       "
 
