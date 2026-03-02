@@ -37,6 +37,7 @@ def create_machine_user(
     TODO: Add request body with authorization permissions for machine user and create respective
     policy in verified permissions.
     """
+    request_user = getattr(request.user, "customuser", None)
 
     org = get_object_or_404(Organization, organization_id=organization_id)
     existing_machine_user = CustomUser.objects.filter(
@@ -62,8 +63,7 @@ def create_machine_user(
         new_machine_user = CustomUser.objects.create(
             user_type=CustomUser.UserType.MACHINE,
             user=base_user,
-            # TODO: Fix created_by_user when authentication is implemented.
-            created_by_user=request.user if request.user.is_authenticated else None,
+            created_by_user=request_user,
             organization=org,
         )
     except:

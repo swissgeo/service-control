@@ -1,13 +1,15 @@
+from typing import Any
 from unittest.mock import patch
 
 from jwt import encode
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 import pytest
 
 from organization.models import Organization, Unit
-from user.models import CustomUser, MachineUser
+from user.models import CustomUser
 
 
 @pytest.fixture(name="organization")
@@ -42,10 +44,25 @@ def fixture_unit(db, organization):
         )
 
 
+@pytest.fixture(name="user")
+def fixture_user(organization):
+    auth_user = User.objects.create(
+        username="user1",
+        first_name="Chuck",
+        last_name="Norris",
+        email="c.n@example.com",
+    )
+    return CustomUser.objects.create(
+        user=auth_user,
+        user_type=CustomUser.UserType.HUMAN,
+        organization=organization,
+    )
+
+
 @pytest.fixture(name="machine_user")
-def fixture_machine_user(organization):
-    return MachineUser.objects.create(
-        machine_user_id="abc", name="Machine 1", created_by_user="user1", organization=organization
+def fixture_machine_user(organization, user, django_machine_user_factory):
+    return django_machine_user_factory(
+        username="abc", name="Machine 1", organization=organization, created_by_user=user
     )
 
 
@@ -90,3 +107,29 @@ def fixture_user_headers(django_user_model, organization):
             ),
         },
     }
+
+
+@pytest.fixture
+def django_machine_user_factory(db):
+    """A fixture to create machine users.
+
+    Returns a callable that accepts a username, name, organization, and the user who created it.
+
+    Example usage:
+
+        def test_something(django_machine_user_factory):
+            user = django_machine_user_factory('admin', 'Admin User', organization, user)
+
+    """
+
+    def create_machine_user(
+        username: str, name: str, organization: Organization, created_by_user: User
+    ) -> Any:
+        return CustomUser.objects.create(
+            user=User.objects.create_user(username=username, last_name=name),
+            user_type=CustomUser.UserType.MACHINE,
+            organization=organization,
+            created_by_user=created_by_user,
+        )
+
+    return create_machine_user
