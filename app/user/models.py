@@ -1,6 +1,5 @@
 import logging
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -9,6 +8,7 @@ from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from cognito.utils.client import Client
+from config import roles
 from user.extra_audience import remove_extra_audience
 
 if TYPE_CHECKING:
@@ -22,13 +22,12 @@ logger = logging.getLogger(__name__)
 class RoleType(models.TextChoices):
     """Enumeration of roles for user choices."""
 
-    ORG_ADMIN = "org_admin", _("Role", "Organization Admin")
-    DATASET_ADMIN = "dataset_admin", _("Role", "Dataset Admin")
-    DATASET_CONTRIBUTOR = "dataset_contributor", _("Role", "Dataset Contributor")
+    ORG_ADMIN = roles.ORG_ADMIN, _("Role", "Organization Admin")
+    DATASET_ADMIN = roles.DATASET_ADMIN, _("Role", "Dataset Admin")
+    DATASET_CONTRIBUTOR = roles.DATASET_CONTRIBUTOR, _("Role", "Dataset Contributor")
 
 
-@dataclass
-class Role:
+class Role(NamedTuple):
     role_id: str
     name: str
     description: str

@@ -16,6 +16,8 @@ from pathlib import Path
 import environ
 import yaml
 
+from config.roles import ORG_ADMIN
+
 env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -208,7 +210,7 @@ DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", None)
 
 # Map roles to aws verified permissions policy templates.
 ROLE_POLICY_TEMPLATE_IDS = {
-    "org_admin": env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
     "dataset_admin": env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
     "dataset_contributor": env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
 }
