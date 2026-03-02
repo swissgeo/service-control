@@ -5,6 +5,7 @@ from ninja import Router
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
+from config import roles
 from organization.models import Organization
 from user.extra_audience import add_extra_audience
 from user.models import CustomUser, Role
@@ -15,7 +16,7 @@ from user.schemas import (
     RoleListSchema,
     RoleSchema,
 )
-from utils.auth import any_organization_admin_auth, organization_admin_auth
+from utils.auth import organization_role_auth, role_auth
 
 router = Router()
 
@@ -39,7 +40,7 @@ def role_to_response(model: Role) -> RoleSchema:
     "/organizations/{organization_id}/machineusers",
     response={201: MachineUserSchema},
     exclude_none=True,
-    auth=organization_admin_auth,
+    auth=organization_role_auth(roles.ORG_ADMIN),
 )
 def create_machine_user(
     request: HttpRequest,
@@ -101,7 +102,7 @@ def create_machine_user(
     "/organizations/{organization_id}/machineusers",
     response={200: MachineUserListSchema},
     exclude_none=True,
-    auth=organization_admin_auth,
+    auth=organization_role_auth(roles.ORG_ADMIN),
 )
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -125,7 +126,7 @@ def machine_users(
 @router.delete(
     "/organizations/{organization_id}/machineusers/{machine_user_id}",
     exclude_none=True,
-    auth=organization_admin_auth,
+    auth=organization_role_auth(roles.ORG_ADMIN),
 )
 def delete_machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -147,7 +148,7 @@ def delete_machine_users(
     "/roles",
     response={200: RoleListSchema},
     exclude_none=True,
-    auth=any_organization_admin_auth,
+    auth=role_auth(roles.ORG_ADMIN),
 )
 def roles(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
