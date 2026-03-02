@@ -1,30 +1,38 @@
 from unittest.mock import patch
-from uuid import uuid4
 
 from django.contrib.auth.models import User
+from django.test import override_settings
 
-from user.models import CustomUser, Role
+from user.models import CustomUser, Role, RoleType
 
 
-@patch("user.signals.Client")
-def test_custom_user_role_changes_sync_to_cognito(client_cls, organization):
-    auth_user = User.objects.create(username=f"user-{uuid4().hex}")
-    custom_user = CustomUser.objects.create(user=auth_user, organization=organization)
-
-    role = Role.objects.create(
-        role_id=f"role-{uuid4().hex}",
-        name=f"Role {uuid4().hex}",
-        description="",
+@patch("user.models.Client")
+def test_custom_user_stores_role_ids_as_list(cognito_client, organization):
+    auth_user = User.objects.create(username="user1")
+    custom_user = CustomUser.objects.create(
+        user=auth_user,
+        organization=organization,
+        user_type=CustomUser.UserType.HUMAN,
+        roles=[RoleType.ORG_ADMIN, RoleType.DATASET_CONTRIBUTOR],
     )
 
-    custom_user.roles.add(role)
-    assert client_cls.return_value.update_user_roles.call_args_list[-1].args == (
-        auth_user.username,
-        [role.role_id],
-    )
+    assert custom_user.roles == [RoleType.ORG_ADMIN, RoleType.DATASET_CONTRIBUTOR]
+    assert cognito_client.return_value.update_user_roles.called
 
-    custom_user.roles.clear()
-    assert client_cls.return_value.update_user_roles.call_args_list[-1].args == (
-        auth_user.username,
-        [],
+
+@override_settings(
+    ROLE_POLICY_TEMPLATE_IDS={
+        "org_admin": "some_id_for_org_admin",
+        "dataset_admin": None,
+        "dataset_contributor": "some_id_for_dataset_contributor",
+    }
+)
+def test_role_catalog_loads_external_ids_from_settings():
+    roles_by_id = {role.role_id: role for role in Role.all()}
+
+    assert roles_by_id[RoleType.ORG_ADMIN].policy_template_id == "some_id_for_org_admin"
+    assert roles_by_id[RoleType.DATASET_ADMIN].policy_template_id is None
+    assert (
+        roles_by_id[RoleType.DATASET_CONTRIBUTOR].policy_template_id
+        == "some_id_for_dataset_contributor"
     )

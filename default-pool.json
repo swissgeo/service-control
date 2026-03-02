@@ -1,6 +1,5 @@
 {
-  "Users": {
-  },
+  "Users": {},
   "Options": {
     "Policies": {
       "PasswordPolicy": {
@@ -253,19 +252,5 @@
       "email"
     ],
     "Id": "local_PoolPrty"
-  },
-  "Groups": {
-    "test": {
-      "CreationDate": "2026-02-23T15:44:18.882Z",
-      "Description": "Managed by service-control",
-      "GroupName": "test",
-      "LastModifiedDate": "2026-02-23T15:44:18.882Z"
-    },
-    "unit_a": {
-      "CreationDate": "2026-02-10T10:53:21.048Z",
-      "Description": "Managed by service-control",
-      "GroupName": "unit_a",
-      "LastModifiedDate": "2026-02-10T10:53:21.048Z"
-    }
   }
 }

@@ -15,7 +15,7 @@ from user.schemas import (
     RoleListSchema,
     RoleSchema,
 )
-from utils.auth import organization_admin_auth
+from utils.auth import any_organization_admin_auth, organization_admin_auth
 
 router = Router()
 
@@ -147,15 +147,13 @@ def delete_machine_users(
     "/roles",
     response={200: RoleListSchema},
     exclude_none=True,
+    auth=any_organization_admin_auth,
 )
 def roles(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
 ) -> RoleListSchema:
-    """List all available roles.
+    """List all available roles."""
 
-    TODO: Authorization is this public??
-    """
-
-    models = Role.objects.order_by("name").all()
+    models = sorted(Role.all(), key=lambda role: role.name)
     response = [role_to_response(model) for model in models]
     return RoleListSchema(items=response)

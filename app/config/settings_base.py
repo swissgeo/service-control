@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "corsheaders",
     "cognito",
     "support",
@@ -204,6 +205,13 @@ COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
 # M2M
 DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
 DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", None)
+
+# Map roles to aws verified permissions policy templates.
+ROLE_POLICY_TEMPLATE_IDS = {
+    "org_admin": env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    "dataset_admin": env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    "dataset_contributor": env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
+}
 
 # Testing
 TESTING: bool = False

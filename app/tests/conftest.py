@@ -45,7 +45,8 @@ def fixture_unit(db, organization):
 
 
 @pytest.fixture(name="user")
-def fixture_user(organization):
+@patch("user.models.Client")
+def fixture_user(cognito_client, organization):
     auth_user = User.objects.create(
         username="user1",
         first_name="Chuck",
@@ -67,7 +68,8 @@ def fixture_machine_user(organization, user, django_machine_user_factory):
 
 
 @pytest.fixture(name="user_headers")
-def fixture_user_headers(django_user_model, organization):
+@patch("user.models.Client")
+def fixture_user_headers(cognito_client, django_user_model, organization):
 
     organization_admin = django_user_model.objects.create_user(
         username="organization_admin",

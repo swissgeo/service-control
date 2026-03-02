@@ -1,5 +1,9 @@
-def test_get_roles_returns_expected(db, client):
-    response = client.get("/api/v1/roles")
+import pytest
+
+
+@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+def test_get_roles_returns_expected(username, client, user_headers):
+    response = client.get("/api/v1/roles", headers=user_headers[username])
 
     assert response.status_code == 200
     assert response.json() == {
