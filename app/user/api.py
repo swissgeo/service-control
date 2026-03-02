@@ -7,6 +7,7 @@ from organization.models import Organization
 from user.extra_audience import add_extra_audience
 from user.models import MachineUser
 from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
+from utils.auth import organization_admin_auth
 
 router = Router()
 
@@ -22,6 +23,7 @@ def machine_user_to_response(model: MachineUser) -> MachineUserSchema:
     "/organizations/{organization_id}/machineusers",
     response={201: MachineUserSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def create_machine_user(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -30,7 +32,6 @@ def create_machine_user(
 ) -> MachineUserSchema:
     """Create a Machine User.
 
-    TODO: Authorization should only be available to organization admins.
     TODO: Add request body with authorization permissions for machine user and create respective
     policy in verified permissions.
     """
@@ -72,14 +73,14 @@ def create_machine_user(
     "/organizations/{organization_id}/machineusers",
     response={200: MachineUserListSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
 ) -> MachineUserListSchema:
-    """List machine users of organization.
-
-    TODO: Authorization should only be available to organization admins.
+    """
+    List machine users of organization.
     """
 
     models = (
@@ -94,12 +95,16 @@ def machine_users(
 @router.delete(
     "/organizations/{organization_id}/machineusers/{machine_user_id}",
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def delete_machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,  # noqa: ARG001  not used but in path
     machine_user_id: str,
 ) -> HttpResponse:
+    """
+    Delete machine user of organization.
+    """
     machine_user_to_delete = get_object_or_404(MachineUser, machine_user_id=machine_user_id)
     machine_user_to_delete.delete()
 

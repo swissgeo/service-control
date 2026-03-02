@@ -2,6 +2,7 @@ from django.http import HttpRequest  # noqa:TC002
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
+from utils.auth import organization_admin_auth, superuser_auth
 from utils.language import LanguageCode, get_language, get_translation
 
 from .models import Organization, Unit
@@ -45,15 +46,16 @@ def organization_to_response(model: Organization, lang: LanguageCode) -> Organiz
     )
 
 
-@router.post("/organizations", response={201: OrganizationSchema}, exclude_none=True)
+@router.post(
+    "/organizations", response={201: OrganizationSchema}, exclude_none=True, auth=superuser_auth
+)
 def create_organization(
     request: HttpRequest,
     organization_in: CreateOrganizationSchema,
     lang: LanguageCode | None = None,
 ) -> OrganizationSchema:
-    """Create an organization.
-
-    TODO: Authorization should only be available to swissgeo-admin users.
+    """
+    Create an organization.
     """
     lang_to_use = get_language(lang, request.headers)
     org = Organization.objects.create(
@@ -76,6 +78,7 @@ def create_organization(
     "/organizations/{organization_id}",
     response={200: OrganizationSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def update_organization(
     request: HttpRequest,
@@ -83,9 +86,8 @@ def update_organization(
     organization_in: UpdateOrganizationSchema,
     lang: LanguageCode | None = None,
 ) -> OrganizationSchema:
-    """Update an organization.
-
-    TODO: Authorization should only be available to swissgeo-admin users.
+    """
+    Update an organization.
     """
     lang_to_use = get_language(lang, request.headers)
 
@@ -106,15 +108,11 @@ def update_organization(
 
 
 @router.get(
-    "/organizations",
-    response={200: OrganizationListSchema},
-    exclude_none=True,
+    "/organizations", response={200: OrganizationListSchema}, exclude_none=True, auth=superuser_auth
 )
 def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> OrganizationListSchema:
     """
     List all organizations.
-
-    TODO: Authorization should only be available to swissgeo-admin users.
     """
     models = Organization.objects.order_by("id").all()
     lang_to_use = get_language(lang, request.headers)
@@ -126,6 +124,7 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
     "/organizations/{organization_id}",
     response={200: OrganizationSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def organization(
     request: HttpRequest,
@@ -134,8 +133,6 @@ def organization(
 ) -> OrganizationSchema:
     """
     Get details of an organization.
-
-    TODO: Authorization, should only be available to organization admin.
     """
     model = get_object_or_404(Organization, organization_id=organization_id)
     lang_to_use = get_language(lang, request.headers)
@@ -164,6 +161,7 @@ def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
     "/organizations/{organization_id}/units",
     response={201: UnitSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def create_unit(
     request: HttpRequest,
@@ -171,8 +169,8 @@ def create_unit(
     unit_in: CreateUnitSchema,
     lang: LanguageCode | None = None,
 ) -> UnitSchema:
-    """Create an organization unit.
-    TODO: Authorization should only be available to organization admin.
+    """
+    Create an organization unit.
     """
     lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
@@ -192,6 +190,7 @@ def create_unit(
     "/organizations/{organization_id}/units/{unit_id}",
     response={200: UnitSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def update_unit(
     request: HttpRequest,
@@ -200,9 +199,8 @@ def update_unit(
     unit_in: UpdateUnitSchema,
     lang: LanguageCode | None = None,
 ) -> UnitSchema:
-    """Update an organization unit.
-
-    TODO: Authorization should only be available to organization admin.
+    """
+    Update an organization unit.
     """
     lang_to_use = get_language(lang, request.headers)
 
@@ -225,14 +223,13 @@ def update_unit(
     "/organizations/{organization_id}/units",
     response={200: UnitListSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def units(
     request: HttpRequest, organization_id: str, lang: LanguageCode | None = None
 ) -> UnitListSchema:
     """
     List all organization units for a given organization.
-
-    TODO: Authorization should only be available to organization admin ??
     """
     models = Unit.objects.filter(organization__organization_id=organization_id).order_by("id")
     lang_to_use = get_language(lang, request.headers)
@@ -244,6 +241,7 @@ def units(
     "/organizations/{organization_id}/units/{unit_id}",
     response={200: UnitSchema},
     exclude_none=True,
+    auth=organization_admin_auth,
 )
 def unit(
     request: HttpRequest,
@@ -253,8 +251,6 @@ def unit(
 ) -> UnitSchema:
     """
     Get details of an organization unit.
-
-    TODO: Authorization should only be available to organization admin.
     """
     model = get_object_or_404(
         Unit,
@@ -268,15 +264,15 @@ def unit(
 @router.delete(
     "/organizations/{organization_id}/units/{unit_id}",
     response={204: None},
+    auth=organization_admin_auth,
 )
 def delete_unit(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     unit_id: str,
 ) -> None:
-    """Delete an organization unit.
-
-    TODO: Authorization should only be available to organization admin.
+    """
+    Delete an organization unit.
     """
     unit = get_object_or_404(
         Unit,

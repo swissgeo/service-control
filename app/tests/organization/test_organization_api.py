@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from organization.api import organization_to_response
 from organization.models import Organization
 from organization.schemas import OrganizationSchema
@@ -63,8 +65,27 @@ def test_organization_to_response_returns_response_with_default_language_if_unde
     assert actual == expected
 
 
-def test_get_organization_returns_existing_organization_with_default_language(organization, client):
-    response = client.get(f"/api/v1/organizations/{organization.organization_id}")
+# ==========  GET (organization) ==========
+
+
+@pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
+def test_get_organization_unauthorized(username, status_code, user_headers, organization, client):
+    response = client.get(
+        f"/api/v1/organizations/{organization.organization_id}",
+        headers=user_headers[username],
+    )
+
+    assert response.status_code == status_code
+
+
+@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+def test_get_organization_returns_existing_organization_with_default_language(
+    username, user_headers, organization, client
+):
+    response = client.get(
+        f"/api/v1/organizations/{organization.organization_id}",
+        headers=user_headers[username],
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -88,8 +109,13 @@ def test_get_organization_returns_existing_organization_with_default_language(or
     }
 
 
-def test_get_organization_returns_organization_with_language_from_query(organization, client):
-    response = client.get(f"/api/v1/organizations/{organization.organization_id}?lang=de")
+def test_get_organization_returns_organization_with_language_from_query(
+    user_headers, organization, client
+):
+    response = client.get(
+        f"/api/v1/organizations/{organization.organization_id}?lang=de",
+        headers=user_headers["admin"],
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -113,14 +139,16 @@ def test_get_organization_returns_organization_with_language_from_query(organiza
     }
 
 
-def test_get_organization_returns_404_for_nonexisting_organization(client, db):
-    response = client.get("/api/v1/organizations/2")
+def test_get_organization_returns_404_for_nonexisting_organization(user_headers, client, db):
+    response = client.get("/api/v1/organizations/2", headers=user_headers["admin"])
 
     assert response.status_code == 404
     assert response.json() == {"code": 404, "description": "Resource not found"}
 
 
-def test_get_organization_skips_translations_that_are_not_available(organization, client):
+def test_get_organization_skips_translations_that_are_not_available(
+    user_headers, organization, client
+):
     organization = Organization.objects.last()
     organization.name_it = None
     organization.name_rm = None
@@ -128,7 +156,10 @@ def test_get_organization_skips_translations_that_are_not_available(organization
     organization.acronym_rm = None
     organization.save()
 
-    response = client.get(f"/api/v1/organizations/{organization.organization_id}")
+    response = client.get(
+        f"/api/v1/organizations/{organization.organization_id}",
+        headers=user_headers["admin"],
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -148,10 +179,12 @@ def test_get_organization_skips_translations_that_are_not_available(organization
     }
 
 
-def test_get_organization_returns_organization_with_language_from_header(organization, client):
+def test_get_organization_returns_organization_with_language_from_header(
+    user_headers, organization, client
+):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers={"Accept-Language": "de"},
+        headers=user_headers["admin"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -177,12 +210,11 @@ def test_get_organization_returns_organization_with_language_from_header(organiz
 
 
 def test_get_organization_returns_organization_with_language_from_query_param_even_if_header_set(
-    organization,
-    client,
+    user_headers, organization, client
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}?lang=fr",
-        headers={"Accept-Language": "de"},
+        headers=user_headers["admin"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -208,12 +240,11 @@ def test_get_organization_returns_organization_with_language_from_query_param_ev
 
 
 def test_get_organization_returns_organization_with_default_language_if_header_empty(
-    organization,
-    client,
+    user_headers, organization, client
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers={"Accept-Language": ""},
+        headers=user_headers["admin"] | {"Accept-Language": ""},
     )
 
     assert response.status_code == 200
@@ -239,12 +270,11 @@ def test_get_organization_returns_organization_with_default_language_if_header_e
 
 
 def test_get_organization_returns_organization_with_first_known_language_from_header(
-    organization,
-    client,
+    user_headers, organization, client
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers={"Accept-Language": "cn, *, de-DE, en"},
+        headers=user_headers["admin"] | {"Accept-Language": "cn, *, de-DE, en"},
     )
 
     assert response.status_code == 200
@@ -270,12 +300,11 @@ def test_get_organization_returns_organization_with_first_known_language_from_he
 
 
 def test_get_organization_returns_with_first_known_language_from_header_ignoring_qfactor(
-    organization,
-    client,
+    user_headers, organization, client
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers={"Accept-Language": "fr;q=0.9, de;q=0.8"},
+        headers=user_headers["admin"] | {"Accept-Language": "fr;q=0.9, de;q=0.8"},
     )
 
     assert response.status_code == 200
@@ -300,23 +329,28 @@ def test_get_organization_returns_with_first_known_language_from_header_ignoring
     }
 
 
-# def test_get_organization_returns_401_if_not_logged_in(organization, client):
-#     response = client.get(f"/api/v1/organizations/{organization.organization_id}")
-
-#     assert response.status_code == 401
-#     assert response.json() == {"code": 401, "description": "Unauthorized"}
-
-# def test_get_organization_returns_403_if_no_permission(organization, client, django_user_factory):
-#     django_user_factory('test', 'test', [])
-
-#     response = client.get(f"/api/v1/organizations/{organization.organization_id}")
-
-#     assert response.status_code == 403
-#     assert response.json() == {"code": 403, "description": "Forbidden"}
+# ==========  GET (organizations)  ==========
 
 
-def test_get_organizations_returns_single_organization_with_given_language(organization, client):
-    response = client.get("/api/v1/organizations?lang=fr")
+@pytest.mark.parametrize(
+    ("username", "status_code"), [("anonymous", 401), ("user", 403), ("organization_admin", 403)]
+)
+def test_get_organizations_unauthorized(username, status_code, user_headers, organization, client):
+    response = client.get(
+        "/api/v1/organizations?lang=fr",
+        headers=user_headers[username],
+    )
+
+    assert response.status_code == status_code
+
+
+def test_get_organizations_returns_single_organization_with_given_language(
+    user_headers, organization, client
+):
+    response = client.get(
+        "/api/v1/organizations?lang=fr",
+        headers=user_headers["admin"],
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -344,7 +378,9 @@ def test_get_organizations_returns_single_organization_with_given_language(organ
     }
 
 
-def test_get_organizations_skips_translations_that_are_not_available(organization, client):
+def test_get_organizations_skips_translations_that_are_not_available(
+    user_headers, organization, client
+):
     organization = Organization.objects.last()
     organization.name_it = None
     organization.name_rm = None
@@ -352,7 +388,7 @@ def test_get_organizations_skips_translations_that_are_not_available(organizatio
     organization.acronym_rm = None
     organization.save()
 
-    response = client.get("/api/v1/organizations")
+    response = client.get("/api/v1/organizations", headers=user_headers["admin"])
 
     assert response.status_code == 200
     assert response.json() == {
@@ -376,8 +412,12 @@ def test_get_organizations_skips_translations_that_are_not_available(organizatio
     }
 
 
-def test_get_organizations_returns_organization_with_language_from_header(organization, client):
-    response = client.get("/api/v1/organizations", headers={"Accept-Language": "de"})
+def test_get_organizations_returns_organization_with_language_from_header(
+    user_headers, organization, client
+):
+    response = client.get(
+        "/api/v1/organizations", headers=user_headers["admin"] | {"Accept-Language": "de"}
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -406,8 +446,7 @@ def test_get_organizations_returns_organization_with_language_from_header(organi
 
 
 def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_language(
-    organization,
-    client,
+    user_headers, organization, client
 ):
     organization = {
         "organization_id": "ch.bav",
@@ -424,7 +463,7 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
     }
     Organization.objects.create(**organization)
 
-    response = client.get("/api/v1/organizations?lang=fr")
+    response = client.get("/api/v1/organizations?lang=fr", headers=user_headers["admin"])
 
     assert response.status_code == 200
     assert response.json() == {
@@ -471,45 +510,89 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
     }
 
 
+# ==========  POST  ==========
+
+
 @patch("organization.models.Client")
-def test_create_organization(boto_client, client, db):
+@pytest.mark.parametrize(
+    ("username", "status_code"), [("anonymous", 401), ("user", 403), ("organization_admin", 403)]
+)
+def test_create_organization_unauthorized(
+    boto_client, username, status_code, user_headers, client, db
+):
     data = {
-        "id": "ch.bafu",
+        "id": "ch.bfs",
         "acronym_translations": {
             "de": "BAFU",
-            "fr": "OFEV",
-            "en": "FOEN",
-            "it": "UFAM",
-            "rm": "UFAM",
+            "fr": "OFS",
+            "en": "FSO",
+            "it": "UST",
+            "rm": "UST",
         },
         "name_translations": {
-            "de": "Bundesamt für Umwelt",
+            "de": "Bundesamt für Statistik",
             "fr": "Office fédéral de l'environnement",
-            "en": "Federal Office for the Environment",
-            "it": "Ufficio federale dell'ambiente",
-            "rm": "Uffizi federal per l'ambient",
+            "en": "Federal Statistical Office",
+            "it": "Ufficio federale di statistica",
+            "rm": "Uffizi federal da statistica",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers[username],
+        data=data,
+    )
+
+    assert response.status_code == status_code
+
+
+@patch("organization.models.Client")
+def test_create_organization_creates_organization_as_expected(
+    boto_client, user_headers, client, db
+):
+    data = {
+        "id": "ch.bfs",
+        "acronym_translations": {
+            "de": "BAFU",
+            "fr": "OFS",
+            "en": "FSO",
+            "it": "UST",
+            "rm": "UST",
+        },
+        "name_translations": {
+            "de": "Bundesamt für Statistik",
+            "fr": "Office fédéral de l'environnement",
+            "en": "Federal Statistical Office",
+            "it": "Ufficio federale di statistica",
+            "rm": "Uffizi federal da statistica",
+        },
+    }
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
 
     assert response.status_code == 201
     assert response.json() == {
-        "id": "ch.bafu",
-        "name": "Federal Office for the Environment",
-        "name_translations": {
-            "de": "Bundesamt für Umwelt",
-            "fr": "Office fédéral de l'environnement",
-            "en": "Federal Office for the Environment",
-            "it": "Ufficio federale dell'ambiente",
-            "rm": "Uffizi federal per l'ambient",
-        },
-        "acronym": "FOEN",
+        "id": "ch.bfs",
+        "acronym": "FSO",
         "acronym_translations": {
             "de": "BAFU",
-            "fr": "OFEV",
-            "en": "FOEN",
-            "it": "UFAM",
-            "rm": "UFAM",
+            "fr": "OFS",
+            "en": "FSO",
+            "it": "UST",
+            "rm": "UST",
+        },
+        "name": "Federal Statistical Office",
+        "name_translations": {
+            "de": "Bundesamt für Statistik",
+            "fr": "Office fédéral de l'environnement",
+            "en": "Federal Statistical Office",
+            "it": "Ufficio federale di statistica",
+            "rm": "Uffizi federal da statistica",
         },
     }
     actual = Organization.objects.last()
@@ -528,41 +611,46 @@ def test_create_organization(boto_client, client, db):
 
 
 @patch("organization.models.Client")
-def test_create_organization_required_only(boto_client, client, db):
+def test_create_organization_required_only(boto_client, user_headers, client, db):
     data = {
-        "id": "ch.bafu",
+        "id": "ch.bfs",
         "acronym_translations": {
             "de": "BAFU",
-            "fr": "OFEV",
-            "en": "FOEN",
+            "fr": "OFS",
+            "en": "FSO",
         },
         "name_translations": {
-            "de": "Bundesamt für Umwelt",
+            "de": "Bundesamt für Statistik",
             "fr": "Office fédéral de l'environnement",
-            "en": "Federal Office for the Environment",
+            "en": "Federal Statistical Office",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
 
     assert response.status_code == 201
     assert response.json() == {
-        "id": "ch.bafu",
-        "name": "Federal Office for the Environment",
-        "name_translations": {
-            "de": "Bundesamt für Umwelt",
-            "fr": "Office fédéral de l'environnement",
-            "en": "Federal Office for the Environment",
-        },
-        "acronym": "FOEN",
+        "id": "ch.bfs",
+        "acronym": "FSO",
         "acronym_translations": {
             "de": "BAFU",
-            "fr": "OFEV",
-            "en": "FOEN",
+            "fr": "OFS",
+            "en": "FSO",
+        },
+        "name": "Federal Statistical Office",
+        "name_translations": {
+            "de": "Bundesamt für Statistik",
+            "fr": "Office fédéral de l'environnement",
+            "en": "Federal Statistical Office",
         },
     }
 
 
-def test_create_organization_missing_required(client, db):
+def test_create_organization_missing_required(user_headers, client, db):
     data = {
         "acronym_translations": {
             "de": "BAFU",
@@ -575,7 +663,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -585,7 +678,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -595,7 +693,12 @@ def test_create_organization_missing_required(client, db):
             "en": "FOEN",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -609,7 +712,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -623,7 +731,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -637,7 +750,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -651,7 +769,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -665,7 +788,12 @@ def test_create_organization_missing_required(client, db):
             "en": "Federal Office for the Environment",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
     data = {
         "id": "ch.bafu",
@@ -679,34 +807,49 @@ def test_create_organization_missing_required(client, db):
             "fr": "Office fédéral de l'environnement",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 422
 
 
 @patch("organization.models.Client")
-def test_create_organization_already_exists(boto_client, client, db):
+def test_create_organization_already_exists(boto_client, user_headers, client, db):
     data = {
-        "id": "ch.bafu",
+        "id": "ch.bfs",
         "acronym_translations": {
             "de": "BAFU",
-            "fr": "OFEV",
-            "en": "FOEN",
-            "it": "UFAM",
-            "rm": "UFAM",
+            "fr": "OFS",
+            "en": "FSO",
+            "it": "UST",
+            "rm": "UST",
         },
         "name_translations": {
-            "de": "Bundesamt für Umwelt",
+            "de": "Bundesamt für Statistik",
             "fr": "Office fédéral de l'environnement",
-            "en": "Federal Office for the Environment",
-            "it": "Ufficio federale dell'ambiente",
-            "rm": "Uffizi federal per l'ambient",
+            "en": "Federal Statistical Office",
+            "it": "Ufficio federale di statistica",
+            "rm": "Uffizi federal da statistica",
         },
     }
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 201
 
     # Try to create the same organization a second time
-    response = client.post("/api/v1/organizations", content_type="application/json", data=data)
+    response = client.post(
+        "/api/v1/organizations",
+        content_type="application/json",
+        headers=user_headers["admin"],
+        data=data,
+    )
     assert response.status_code == 409
     assert response.json() == {
         "code": 409,
@@ -714,7 +857,13 @@ def test_create_organization_already_exists(boto_client, client, db):
     }
 
 
-def test_update_organization(client, organization):
+# ==========  PUT  ==========
+
+
+@pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
+def test_update_organization_unauthorized(
+    username, status_code, user_headers, client, organization
+):
     data = {
         "acronym_translations": {
             "de": "New DE",
@@ -734,6 +883,36 @@ def test_update_organization(client, organization):
     response = client.put(
         f"/api/v1/organizations/{organization.organization_id}",
         content_type="application/json",
+        headers=user_headers[username],
+        data=data,
+    )
+    assert response.status_code == status_code
+
+
+@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+def test_update_organization_updates_organization_as_expected(
+    client, username, user_headers, organization
+):
+    data = {
+        "acronym_translations": {
+            "de": "New DE",
+            "fr": "New FR",
+            "en": "New EN",
+            "it": "New IT",
+            "rm": "New RM",
+        },
+        "name_translations": {
+            "de": "Name DE",
+            "fr": "Name FR",
+            "en": "Name EN",
+            "it": "Name IT",
+            "rm": "Name RM",
+        },
+    }
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}",
+        content_type="application/json",
+        headers=user_headers[username],
         data=data,
     )
     assert response.status_code == 200
@@ -770,7 +949,7 @@ def test_update_organization(client, organization):
     assert actual.acronym_rm == data["acronym_translations"]["rm"]
 
 
-def test_update_organization_not_found(client, organization):
+def test_update_organization_not_found(user_headers, client, organization):
     data = {
         "acronym_translations": {
             "de": "New DE",
@@ -790,6 +969,7 @@ def test_update_organization_not_found(client, organization):
     response = client.put(
         "/api/v1/organizations/new.id",
         content_type="application/json",
+        headers=user_headers["admin"],
         data=data,
     )
     assert response.status_code == 404

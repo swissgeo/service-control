@@ -35,7 +35,7 @@ def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
 
     user = django_user_model.objects.create_user(
         username="joseph.quimby",
-        password="pass",  # noqa: S106
+        password="pass",
     )
     user.first_name = "Joe Quimby"
     user.email = "joe.quimby@example.com"
@@ -78,7 +78,7 @@ def test_oauth_middleware_updated_superuser_staff(settings, db, client, django_u
 
     user = django_user_model.objects.create_user(
         username="joseph.quimby",
-        password="pass",  # noqa: S106
+        password="pass",
     )
     user.first_name = "Joseph"
     user.last_name = "Quimby"
@@ -118,7 +118,7 @@ def test_oauth_middleware_header_group_is_relevant(settings, db, client, django_
 
     user = django_user_model.objects.create_user(
         username="joseph.quimby",
-        password="pass",  # noqa: S106
+        password="pass",
     )
     user.first_name = "Joseph"
     user.last_name = "Quimby"
