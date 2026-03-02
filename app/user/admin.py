@@ -5,34 +5,10 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 
-from user.models import CustomUser, MachineUser
+from user.models import CustomUser
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
     from django.http.request import HttpRequest
-
-
-@admin.register(MachineUser)
-class MachineUserAdmin(admin.ModelAdmin):
-    """Admin View for machine users"""
-
-    list_display = ("machine_user_id", "name", "organization", "created_by_user")
-
-    def has_add_permission(
-        self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
-    ) -> bool:
-        # Disable creating machine users via admin UI as this will not create the app client.
-        return False
-
-    def delete_queryset(
-        self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
-        queryset: QuerySet[MachineUser],
-    ) -> None:
-        #  Make sure that the cognito app client is deleted when batch deleting a machine users.
-        for obj in queryset:
-            obj.delete()
 
 
 class CustomUserInline(admin.StackedInline):
@@ -49,6 +25,7 @@ class UserAdmin(BaseUserAdmin):
         "first_name",
         "last_name",
         "get_organization",
+        "get_user_type",
         "is_staff",
         "is_active",
     )
@@ -57,6 +34,11 @@ class UserAdmin(BaseUserAdmin):
     def get_organization(self, obj: User) -> str:
         """Display the organization from the related CustomUser"""
         return obj.customuser.organization  # ty: ignore[unresolved-attribute]
+
+    @admin.display(description="Type")
+    def get_user_type(self, obj: User) -> str:
+        """Display the user type from the related CustomUser"""
+        return obj.customuser.user_type  # ty: ignore[unresolved-attribute]
 
     def has_add_permission(
         self,

@@ -6,6 +6,7 @@ from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
+from user.models import CustomUser
 from utils.fields import CustomSlugField
 
 if TYPE_CHECKING:
@@ -84,7 +85,9 @@ class Organization(models.Model):
         """Deletes from the database and cognito. Also calls delete of the related models which
         also perform some cleanup in cognito."""
 
-        for machine_user in self.machineuser_set.all():  # type:ignore[unresolved-attribute]
+        for machine_user in CustomUser.objects.filter(
+            organization=self, user_type=CustomUser.UserType.MACHINE
+        ):
             machine_user.delete()
 
         for unit in self.unit_set.all():  # type:ignore[unresolved-attribute]
