@@ -279,3 +279,7 @@ ADMIN_PATH_PREFIX = env.str("ADMIN_PATH_PREFIX", default="")
 
 # Path prefix for api endpoints. Should end with a slash, for example 'service-control/'.
 API_PATH_PREFIX = env.str("API_PATH_PREFIX", default="api/")
+
+# Django Admin interface logout redirect URL, if left empty it default to the django admin
+# root domain
+DJANGO_ADMIN_LOGOUT_REDIRECT_URL = env.str("DJANGO_ADMIN_LOGOUT_REDIRECT_URL", default="")
