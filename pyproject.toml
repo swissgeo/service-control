@@ -69,6 +69,7 @@ target-version = "py314"
 exclude = [
     "app/*/migrations/**",                          # Exclude django generated migrations files from linting
     "app/dataset/management/commands/oar*",         # Exclude OAR stub generator during POC phase
+    "app/harvest/management/commands/harvest_stream*", # Exclude harvest stream command during POC phase
 ]
 select = ["ALL"]
 ignore = [
