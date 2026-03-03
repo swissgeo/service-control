@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     "dataset",
     "user",
     "harvest",
+    "shared",
+    "dataservice",
 ]
 
 MIDDLEWARE = [
