@@ -5,6 +5,7 @@ import boto3
 import environ
 from pydantic import BaseModel, ConfigDict, Field
 
+from dataset.models import Dataset
 from organization.models import Organization
 from utils.command import CustomBaseCommand
 
@@ -99,7 +100,11 @@ class Command(CustomBaseCommand):
             action="store_true",
             help="Import organisations",
         )
-
+        parser.add_argument(
+            "--datasets",
+            action="store_true",
+            help="Import datasets",
+        )
         parser.add_argument(
             "--target-env",
             type=str,
@@ -132,6 +137,8 @@ class Command(CustomBaseCommand):
         # Handle sub-commands
         if options["organisations"]:
             self.import_organisations(*args, **options)
+        if options["datasets"]:
+            self.import_datasets(*args, **options)
 
     # ##########################################################################
     def import_organisations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -187,3 +194,71 @@ class Command(CustomBaseCommand):
                         setattr(org, field[0], field[1])
 
                 org.save()
+
+    # ##########################################################################
+    def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+
+        self.print_success("Importing datasets")
+
+        class DatasetImport(DynamoDBParsableModel):
+            dataset_id: str
+            title_de: str
+            title_fr: str
+            title_en: str
+            title_it: str | None
+            title_rm: str | None
+            description_de: str
+            description_fr: str
+            description_en: str
+            description_it: str | None
+            description_rm: str | None
+            attribution: list[str]
+            provider: list[str]
+            created: str
+            updated: str
+            geocat_id: str
+            _legacy_id: int
+
+        dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
+        paginator = dynamodb_client.get_paginator("scan")
+
+        for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
+            for item in page["Items"]:
+                try:
+                    import_ds = DatasetImport.from_dynamodb_item(item)
+                    self.print_success(
+                        f"Parsed dataset: {import_ds.dataset_id} - {import_ds.title_de}"
+                    )
+                except Exception as e:  # noqa: BLE001
+                    self.print_error(f"Failed to parse item: {item}. Error: {e}")
+
+                ds, _ = Dataset.objects.get_or_create(
+                    dataset_id=import_ds.dataset_id,
+                    defaults={
+                        "title_short_de": import_ds.title_de,
+                        "title_short_fr": import_ds.title_fr,
+                        "title_short_en": import_ds.title_en,
+                        "title_short_it": import_ds.title_it,
+                        "title_short_rm": import_ds.title_rm,
+                        "description_de": import_ds.description_de,
+                        "description_fr": import_ds.description_fr,
+                        "description_en": import_ds.description_en,
+                        "description_it": import_ds.description_it,
+                        "description_rm": import_ds.description_rm,
+                        "geocat_id": import_ds.geocat_id,
+                    },
+                )
+
+                ds.title_short_de = import_ds.title_de
+                ds.title_short_fr = import_ds.title_fr
+                ds.title_short_en = import_ds.title_en
+                ds.title_short_it = import_ds.title_it
+                ds.title_short_rm = import_ds.title_rm
+                ds.description_de = import_ds.description_de
+                ds.description_fr = import_ds.description_fr
+                ds.description_en = import_ds.description_en
+                ds.description_it = import_ds.description_it
+                ds.description_rm = import_ds.description_rm
+                ds.geocat_id = import_ds.geocat_id
+
+                ds.save()
