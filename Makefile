@@ -74,6 +74,7 @@ start-local-db: ## Run the local db and cognito as docker container
 	docker compose up -d
 	$(PYTHON) $(DJANGO_MANAGER) init_db
 	$(PYTHON) $(DJANGO_MANAGER) migrate
+	$(PYTHON) $(DJANGO_MANAGER) loaddata fixtures/dataservice.json
 
 
 .PHONY: format

@@ -181,6 +181,9 @@ cython_debug/
 # Sublime Text
 *.sublime-*
 
+# Zed Editor
+.zed/
+
 .ruff_cache
 # Local database files for TinyDB
-app/harvest/*
+app/harvest/*.json
