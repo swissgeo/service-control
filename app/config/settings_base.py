@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "organization",
     "dataset",
     "user",
+    "harvest",
 ]
 
 MIDDLEWARE = [
