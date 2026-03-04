@@ -68,7 +68,7 @@ target-version = "py314"
 [tool.ruff.lint]
 exclude = [
     "app/*/migrations/**",                          # Exclude django generated migrations files from linting
-    "app/dataset/management/commands/oar*",         # Exclude OAR stub generator during POC phase
+    "app/dataset/management/commands/oarecords.py", # Exclude OAR stub generator during POC phase
 ]
 select = ["ALL"]
 ignore = [
