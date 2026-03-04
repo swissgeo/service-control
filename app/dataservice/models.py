@@ -39,15 +39,27 @@ class Dataservice(models.Model):
     type = models.CharField(_(_context, "Type"), max_length=32, choices=TYPE_CHOICES)
     title = models.CharField(_(_context, "Title"), max_length=128)
     service_desc = models.ForeignKey(
-        "shared.ServiceDescLink", on_delete=models.SET_NULL, null=True, blank=True
+        "shared.ServiceDescLink",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dataservice_service_descs",
     )
     service_doc = models.ForeignKey(
-        "shared.ServiceDocLink", on_delete=models.SET_NULL, null=True, blank=True
+        "shared.ServiceDocLink",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dataservice_service_docs",
     )
     describes = models.ForeignKey(
-        "shared.DescribesLink", on_delete=models.SET_NULL, null=True, blank=True
+        "shared.DescribesLink",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dataservice_describes",
     )
-    templated_links = models.ManyToManyField("shared.TemplateLink", blank=True)
+    linktemplates = models.ManyToManyField("shared.LinkTemplate", blank=True)
 
     created_at = models.DateTimeField(
         auto_now_add=True,

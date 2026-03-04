@@ -41,9 +41,6 @@ class Link(models.Model):
 
     objects = LinkManager()
 
-    class Meta:
-        abstract = True
-
     def __str__(self) -> str:
         return f"{self.rel}: {self.href}"
 
@@ -61,28 +58,31 @@ class Link(models.Model):
 
 
 class ServiceDescLink(Link):
-    pass
+    class Meta:
+        proxy = True
 
 
 class ServiceDocLink(Link):
-    pass
+    class Meta:
+        proxy = True
 
 
 class DescribesLink(Link):
-    pass
+    class Meta:
+        proxy = True
 
 
-class TemplateLinkManager(models.Manager):
-    def get_by_natural_key(self, templatelink_id: str) -> models.Model:
-        return self.get(templatelink_id=templatelink_id)
+class LinkTemplateManager(models.Manager):
+    def get_by_natural_key(self, linktemplate_id: str) -> models.Model:
+        return self.get(linktemplate_id=linktemplate_id)
 
 
-class TemplateLink(models.Model):
-    """TemplateLink model."""
+class LinkTemplate(models.Model):
+    """LinkTemplate model."""
 
-    _context = "TemplateLink Model"
+    _context = "LinkTemplate Model"
 
-    templatelink_id = CustomSlugField(
+    linktemplate_id = CustomSlugField(
         _(_context, "External ID"), unique=True, blank=True, max_length=100
     )
 
@@ -109,36 +109,36 @@ class TemplateLink(models.Model):
         help_text=_(_context, "Date and time when the dataset was last updated"),
     )
 
-    objects = TemplateLinkManager()
+    objects = LinkTemplateManager()
 
     def __str__(self) -> str:
         return f"{self.rel}: {self.uri_template}"
 
     def save(self, *args, **kwargs) -> None:
-        if not self.templatelink_id:
-            self.templatelink_id = slugify(self.title)
+        if not self.linktemplate_id:
+            self.linktemplate_id = slugify(self.title)
 
         super().save(*args, **kwargs)
 
     def natural_key(self) -> tuple:
-        return (self.templatelink_id,)
+        return (self.linktemplate_id,)
 
 
-class TemplateLinkVariableManager(models.Manager):
-    def get_by_natural_key(self, variable_name: str, template_link_id: str) -> models.Model:
+class LinkTemplateVariableManager(models.Manager):
+    def get_by_natural_key(self, variable_name: str, linktemplate_id: str) -> models.Model:
         return self.get(
-            template_link__templatelink_id=template_link_id,
+            linktemplate__linktemplate_id=linktemplate_id,
             variable_name=variable_name,
         )
 
 
-class TemplateLinkVariable(models.Model):
-    """TemplateLinkVariable model."""
+class LinkTemplateVariable(models.Model):
+    """LinkTemplateVariable model."""
 
-    _context = "TemplateLinkVariable Model"
+    _context = "LinkTemplateVariable Model"
 
-    template_link = models.ForeignKey(
-        TemplateLink,
+    linktemplate = models.ForeignKey(
+        LinkTemplate,
         on_delete=models.CASCADE,
         related_name="variables",
     )
@@ -150,24 +150,23 @@ class TemplateLinkVariable(models.Model):
         blank=True, null=True, help_text=_(_context, "JSON field to store the variable dictionary")
     )
 
-    objects = TemplateLinkVariableManager()
+    objects = LinkTemplateVariableManager()
 
     class Meta:
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["template_link", "variable_name"], name="unique_variable_per_template_link"
+                fields=["linktemplate", "variable_name"], name="unique_variable_per_linktemplate"
             ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.variable_name} (for {self.template_link})"
+        return f"{self.variable_name} (for {self.linktemplate})"
 
     def natural_key(self) -> tuple:
-        return (self.variable_name,) + self.template_link.natural_key()  # noqa: RUF005, following Django docs ex.
+        return (self.variable_name,) + self.linktemplate.natural_key()  # noqa: RUF005, following Django docs ex.
 
     # According to Django docs, when using natural keys with foreign keys,
     # you need to specify the dependencies of the natural key.
-    # In this case, TemplateLinkVariable depends on TemplateLink because of
+    # In this case, LinkTemplateVariable depends on LinkTemplate because of
     # the foreign key relationship.
-    # However: ty doesn't accept this as "unresolvable attribute"
-    # natural_key.dependencies = ["shared.templatelink"]  # noqa: RUF012, RUF100
+    natural_key.dependencies = ["shared.linktemplate"]  # noqa: RUF012, RUF100  # ty:ignore[unresolved-attribute]

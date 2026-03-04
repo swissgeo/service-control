@@ -4,10 +4,10 @@ from django.contrib import admin
 
 from .models import (
     DescribesLink,
+    LinkTemplate,
+    LinkTemplateVariable,
     ServiceDescLink,
     ServiceDocLink,
-    TemplateLink,
-    TemplateLinkVariable,
 )
 
 if TYPE_CHECKING:
@@ -38,21 +38,21 @@ class DescribesLinkAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at", "link_id")
 
 
-class TemplateLinkVariableInline(admin.TabularInline):
-    """Inline admin for TemplateLinkVariable"""
+class LinkTemplateVariableInline(admin.TabularInline):
+    """Inline admin for LinkTemplateVariable"""
 
-    model = TemplateLinkVariable
+    model = LinkTemplateVariable
     extra = 1
     fields = ("variable_name", "variable_dict")
 
 
-@admin.register(TemplateLink)
-class TemplateLinkAdmin(admin.ModelAdmin):
-    """Admin View for TemplateLink"""
+@admin.register(LinkTemplate)
+class LinkTemplateAdmin(admin.ModelAdmin):
+    """Admin View for LinkTemplate"""
 
-    list_display = ("templatelink_id", "uri_template", "rel", "link_type")
-    readonly_fields = ("created_at", "updated_at", "templatelink_id")
-    inlines = [TemplateLinkVariableInline]  # noqa: RUF012
+    list_display = ("linktemplate_id", "uri_template", "rel", "link_type")
+    readonly_fields = ("created_at", "updated_at", "linktemplate_id")
+    inlines = [LinkTemplateVariableInline]  # noqa: RUF012
 
     def get_readonly_fields(
         self,
