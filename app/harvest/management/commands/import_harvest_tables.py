@@ -60,6 +60,8 @@ class DynamoDBParsableModel(BaseModel):
             conv = cls.handle_N(value)
         elif type_key == "L":
             conv = cls.handle_L(value)
+        elif type_key == "NULL":
+            conv = None
         else:
             raise ValueError(f"Unsupported DynamoDB type '{type_key}' (value: '{value}'")
 
@@ -67,9 +69,6 @@ class DynamoDBParsableModel(BaseModel):
 
     @classmethod
     def handle_S(cls, value: Any) -> str | None:  # noqa: N802
-        # special handling for "NONE" strings: convert it to None
-        if value == "NONE":
-            return None
         return value
 
     @classmethod
