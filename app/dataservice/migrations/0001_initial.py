@@ -6,31 +6,92 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('shared', '0001_initial'),
+        ("shared", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Dataservice',
+            name="Dataservice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dataservice_id', utils.fields.CustomSlugField(max_length=100, unique=True, verbose_name='External ID')),
-                ('type', models.CharField(choices=[('ogc:wms', 'ogc:wms'), ('ogc:wmts', 'ogc:wmts'), ('ogc:wfs', 'ogc:wfs'), ('ogcapi:features', 'ogcapi:features'), ('ogcapi:stac', 'ogcapi:stac'), ('geoadmin:features', 'geoadmin:features')], max_length=32, verbose_name='Type')),
-                ('title', models.CharField(max_length=128, verbose_name='Title')),
-                ('created_at', models.DateTimeField(auto_now_add=True, help_text='Date and time when the dataservice was created', verbose_name='Created at')),
-                ('updated_at', models.DateTimeField(auto_now=True, help_text='Date and time when the dataservice was last updated', verbose_name='Updated at')),
-                ('describes', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='shared.describeslink')),
-                ('service_desc', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='shared.servicedesclink')),
-                ('service_doc', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='shared.servicedoclink')),
-                ('templated_links', models.ManyToManyField(blank=True, to='shared.templatelink')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "dataservice_id",
+                    utils.fields.CustomSlugField(
+                        max_length=100, unique=True, verbose_name="External ID"
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("ogc:wms", "ogc:wms"),
+                            ("ogc:wmts", "ogc:wmts"),
+                            ("ogc:wfs", "ogc:wfs"),
+                            ("ogcapi:features", "ogcapi:features"),
+                            ("ogcapi:stac", "ogcapi:stac"),
+                            ("geoadmin:features", "geoadmin:features"),
+                        ],
+                        max_length=32,
+                        verbose_name="Type",
+                    ),
+                ),
+                ("title", models.CharField(max_length=128, verbose_name="Title")),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="Date and time when the dataservice was created",
+                        verbose_name="Created at",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date and time when the dataservice was last updated",
+                        verbose_name="Updated at",
+                    ),
+                ),
+                (
+                    "describes",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="shared.describeslink",
+                    ),
+                ),
+                (
+                    "service_desc",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="shared.servicedesclink",
+                    ),
+                ),
+                (
+                    "service_doc",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="shared.servicedoclink",
+                    ),
+                ),
+                ("templated_links", models.ManyToManyField(blank=True, to="shared.templatelink")),
             ],
             options={
-                'verbose_name': 'Dataservice',
-                'verbose_name_plural': 'Dataservices',
+                "verbose_name": "Dataservice",
+                "verbose_name_plural": "Dataservices",
             },
         ),
     ]
