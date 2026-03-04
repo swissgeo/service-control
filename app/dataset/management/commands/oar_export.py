@@ -1,19 +1,18 @@
 import json
-import pathlib
-from typing import Annotated, Any, Literal, Optional
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 import boto3
 import environ
-import requests
 from botocore.client import Config
-from config.settings_base import BASE_DIR
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
-from tinydb import Query, TinyDB
+from pydantic import AfterValidator, BaseModel, Field
+
+from dataservice.models import Dataservice
 from utils.command import CustomBaseCommand
 
-from dataset.models import Dataset
-from dataservice.models import Dataservice
+if TYPE_CHECKING:
+    from django.core.management.base import CommandParser
 
+    from dataset.models import Dataset
 
 env = environ.Env()
 
@@ -38,7 +37,7 @@ class Lang(BaseModel):
     code: str
     name: str
     dir: str = "ltr"
-    alternate: Optional[str] = None
+    alternate: str | None = None
 
 
 LANGS = {
@@ -72,7 +71,7 @@ class Command(CustomBaseCommand):
 
     help = "OAR management"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
         # (mainly 'logger')
         super().add_arguments(parser)
@@ -124,7 +123,7 @@ class Command(CustomBaseCommand):
             help="Delete exported OARecords styles from the S3 bucket",
         )
 
-    def handle(self, *args: Any, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Main entry point of command."""
         if env.str("USER") != "geoadmin" and options["command"] in ("upload", "clean"):
             if options["target_env"] == "dev":
@@ -132,7 +131,7 @@ class Command(CustomBaseCommand):
             elif options["target_env"] in ["int", "prod"]:
                 profile_name = "swisstopo-swissgeo"
             else:
-                raise ValueError(f"Invalid target environment: {options['target_env']}")
+                raise ValueError(f"Invalid target environment: {options['target_env']}")  # noqa:TRY003
             self.print(
                 f"We're likely running this command locally, so we're using"
                 f" the SSO profile {profile_name} to get a session."
@@ -140,11 +139,6 @@ class Command(CustomBaseCommand):
             self.session = boto3.Session(profile_name=profile_name)  # pylint: disable=attribute-defined-outside-init
         else:
             self.session = boto3.Session()  # pylint: disable=attribute-defined-outside-init
-
-        # initialize temporary local file-bases databases
-        # Note: usage of TinyDB is just for prototyping purposes and current state of initial development.
-        # It will likely be replaced by either directly populating Models in service-control and/or
-        # have some kind of generic harvesting mechanism that detects changes and updates only changed records.
 
         # S3 client configuration
         client_access_kwargs = {
@@ -158,16 +152,16 @@ class Command(CustomBaseCommand):
         self.oastyles_s3_bucket = f"oa-styles-static-{options['target_env']}-swissgeo"
 
         # Show parsed arguments (useful for debugging)
-        if options.get("verbosity", 0) >= 2:
+        if options.get("verbosity", 0) >= 2:  # noqa:PLR2004
             self.print(f"Debug: parsed args = {json.dumps(options)}")
 
         if options["command"] == "services":
-            self.do_export_services(*args, **options)
+            self.do_export_services(**options)
         if options["command"] == "clean":
-            self.do_clean(*args, **options)
+            self.do_clean(**options)
 
     # ##########################################################################
-    def do_export_services(self, *args: Any, **options: Any) -> None:
+    def do_export_services(self, **options: Any) -> None:
 
         services = {}
 
@@ -187,7 +181,7 @@ class Command(CustomBaseCommand):
 
         if options["upload"]:
             self.print_success("Starting to upload local OGC API Records to S3...")
-            for lang in LANGS.keys():
+            for lang in LANGS:
                 for service_id, service_record in services.items():
                     key = f"{OAR_PREFIX}/collections/geoadmin.services/items/{service_id}.{lang}"
                     self.s3_client.put_object(
@@ -201,7 +195,7 @@ class Command(CustomBaseCommand):
                     self.print(f" - {key}")
 
     # ##########################################################################
-    def do_export_landing_page(self, *args: Any, **options: Any) -> None:
+    def do_export_landing_page(self) -> None:
         # Landing page
         self.print("Uploading landing page...")
         landing_page = {
@@ -244,7 +238,7 @@ class Command(CustomBaseCommand):
                 "http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/json",
             ]
         }
-        for lang in LANGS.keys():
+        for lang in LANGS:
             self.s3_client.put_object(
                 Bucket=self.oarecords_s3_bucket,
                 Key=f"{OAR_PREFIX}/conformance.{lang}",
@@ -299,7 +293,7 @@ class Command(CustomBaseCommand):
                 }
             ],
         }
-        for lang in LANGS.keys():
+        for lang in LANGS:
             self.s3_client.put_object(
                 Bucket=self.oarecords_s3_bucket,
                 Key=f"{OAR_PREFIX}/collections.{lang}",
@@ -311,7 +305,7 @@ class Command(CustomBaseCommand):
         # endregion
 
     # ##########################################################################
-    def do_clean(self, *args: Any, **options: Any) -> None:
+    def do_clean(self, **options: Any) -> None:
         buckets = []
         if options["records"]:
             buckets.append(self.oarecords_s3_bucket)
@@ -320,7 +314,8 @@ class Command(CustomBaseCommand):
 
         for bucket in buckets:
             self.print_success(
-                f"Cleaning bucket: {bucket}. (delete files in batches of {options['batch_size']} files)..."
+                f"Cleaning bucket: {bucket}. "
+                "(delete files in batches of {options['batch_size']} files)..."
             )
 
             nr_objs = 0
@@ -353,32 +348,32 @@ class Command(CustomBaseCommand):
 
 def is_url(url: str) -> str:
     if not url.startswith("http"):
-        raise ValueError(f"{url} is not a valid URL")
+        raise ValueError(f"{url} is not a valid URL")  # noqa:TRY003
     return url
 
 
 class Link(BaseModel):
     href: Annotated[str, AfterValidator(is_url)]
     rel: str
-    title: Optional[str] = None
-    typ: Optional[str] = Field(default=None, serialization_alias="type")
-    hreflang: Optional[str] = None
+    title: str | None = None
+    typ: str | None = Field(default=None, serialization_alias="type")
+    hreflang: str | None = None
 
 
 class TemplateLink(BaseModel):
-    uriTemplate: str
+    uriTemplate: str  # noqa:N815
     rel: str
-    title: Optional[str] = None
-    typ: Optional[str] = Field(default=None, serialization_alias="type")
-    variables: Optional[dict] = None
+    title: str | None = None
+    typ: str | None = Field(default=None, serialization_alias="type")
+    variables: dict | None = None
 
 
 class OARRecord(BaseModel):
     id: str
     links: list[Link] = Field(default_factory=list)
-    linkTemplates: list[TemplateLink] = Field(default_factory=list)
+    linkTemplates: list[TemplateLink] = Field(default_factory=list)  # noqa:N815
     type: Literal["Feature"] = "Feature"
-    geometry: Optional[dict] = None
+    geometry: dict | None = None
 
 
 class OARDataset(OARRecord):
@@ -389,7 +384,7 @@ class OARDataset(OARRecord):
     """
 
     properties: dict = Field(default_factory=lambda: {"type": "Dataset"})
-    geometry: Optional[dict] = {
+    geometry: dict | None = {
         "type": "Polygon",
         "coordinates": [
             [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
@@ -397,7 +392,7 @@ class OARDataset(OARRecord):
     }
 
     @classmethod
-    def from_dataset(self, ds: Dataset, lang: str) -> OARDataset:
+    def from_dataset(cls, ds: Dataset, lang: str) -> OARDataset:
         record = OARDataset(id=ds.dataset_id)
 
         # Set properties
@@ -445,12 +440,12 @@ class OARDataservice(OARRecord):
     properties: dict = {}
 
     @classmethod
-    def from_dataservice(self, ds: Dataservice, lang: str = "de") -> OARDataservice:
+    def from_dataservice(cls, ds: Dataservice) -> OARDataservice:
         record = OARDataservice(id=ds.dataservice_id)
 
         # Set properties
-        record.properties["title"] = getattr(ds, f"title", None)
-        record.properties["type"] = getattr(ds, f"type", None)
+        record.properties["title"] = getattr(ds, "title", None)
+        record.properties["type"] = getattr(ds, "type", None)
 
         # Add links
         if ds.service_doc:
@@ -487,12 +482,9 @@ class OARDataservice(OARRecord):
                     rel=template_link.rel,
                     typ=template_link.link_type,
                     title=template_link.title,
-                    variables={
-                        variable_name: variable_value
-                        for variable_name, variable_value in template_link.variables.all().values_list(
-                            "variable_name", "variable_dict"
-                        )
-                    },
+                    variables=dict(
+                        template_link.variables.all().values_list("variable_name", "variable_dict")
+                    ),
                 )
             )
 
@@ -540,8 +532,8 @@ class OARCollection(BaseModel):
     id: str
     title: str
     type: str = "Collection"
-    itemType: str = "record"
-    recordsArrayName: str = "records"
+    itemType: str = "record"  # noqa:N815
+    recordsArrayName: str = "records"  # noqa:N815
     records: list[Any] = Field(default_factory=list)
     links: list[Link] = Field(default_factory=list)
 
@@ -550,10 +542,10 @@ class Contact(BaseModel):
     organisation: str
     country: str
     role: str
-    # name: Optional[str] = None
-    # position: Optional[str] = None
-    # email: Optional[str] = None
-    # phone: Optional[str] = None
-    # address: Optional[str] = None
-    # city: Optional[str] = None
-    # postal_code: Optional[str] = None
+    # name: str | None = None
+    # position: str | None = None
+    # email: str | None = None
+    # phone: str | None = None
+    # address: str | None = None
+    # city: str | None = None
+    # postal_code: str | None = None
