@@ -22,7 +22,7 @@ def strtobool(value: str) -> bool:
         return True
     if value in ("n", "no", "f", "false", "off", "0"):
         return False
-    raise ValueError(f"invalid truth value '{value}'")  # noqa: TRY003
+    raise ValueError(f"invalid truth value '{value}'")
 
 
 def initialize_tracing() -> bool:
