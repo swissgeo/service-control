@@ -1,0 +1,107 @@
+from typing import Any, Self
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class ParsingError(Exception):
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg)
+
+
+class DynamoDBParsableModel(BaseModel):
+    """Base model for parsing DynamoDB items, which are returned in a specific
+    format."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    @classmethod
+    def from_dynamodb_item(cls, item: dict[str, Any]) -> Self:
+        """Parse a DynamoDB item, which is a dict where each key maps to another
+        dict with a single key indicating the type (e.g., 'S' for string) and
+        the value.
+
+        For example, an item like {'name': {'S': 'Alice'}, 'age': {'N': '30'}}
+        would be parsed into {'name': 'Alice', 'age': 30}.
+
+        This method assumes that all fields in the model are present in the item
+        and that their types match. It will raise a ValidationError if parsing
+        fails.
+        """
+        parsed_data: dict[str, Any] = {}
+        for field_name in cls.model_fields:
+            if field_name not in item:
+                raise ParsingError(f"Missing field '{field_name}' in DynamoDB item")
+            dynamo_value = item[field_name]
+            try:
+                parsed_data[field_name] = cls.handle_item(dynamo_value)
+            except Exception as e:
+                raise ParsingError(
+                    f"Error parsing field '{field_name}' with value '{dynamo_value}'"
+                ) from e
+
+        return cls(**parsed_data)
+
+    @classmethod
+    def handle_item(cls, item: dict) -> Any:
+        if not isinstance(item, dict) or len(item) != 1:
+            raise TypeError(f"Invalid item type {type(item)}, expecting `dict`")
+        if len(item) != 1:
+            raise ValueError(f"I can only handle items with 1 key/value pair, got {len(item)}")
+        type_key, value = next(iter(item.items()))
+        if type_key == "S":
+            conv = cls.handle_S(value)
+        elif type_key == "N":
+            conv = cls.handle_N(value)
+        elif type_key == "L":
+            conv = cls.handle_L(value)
+        elif type_key == "NULL":
+            conv = None
+        else:
+            raise ValueError(f"Unsupported DynamoDB type '{type_key}' (value: '{value}'")
+
+        return conv
+
+    @classmethod
+    def handle_S(cls, value: Any) -> str | None:  # noqa: N802
+        return value
+
+    @classmethod
+    def handle_N(cls, value: Any) -> int | None:  # noqa: N802
+        return int(value)  # or float(value) if needed
+
+    @classmethod
+    def handle_L(cls, value: list) -> list | None:  # noqa: N802
+        return [cls.handle_item(item) for item in value]
+
+
+class OrganisationImport(DynamoDBParsableModel):
+    provider_id: str = Field(serialization_alias="organization_id")
+    name_de: str
+    name_fr: str
+    name_en: str
+    name_it: str | None
+    name_rm: str | None
+    acronym_de: str
+    acronym_fr: str
+    acronym_en: str
+    acronym_it: str | None
+    acronym_rm: str | None
+    _legacy_id: int
+
+
+class DatasetImport(DynamoDBParsableModel):
+    dataset_id: str
+    title_de: str
+    title_fr: str
+    title_en: str
+    title_it: str | None
+    title_rm: str | None
+    description_de: str
+    description_fr: str
+    description_en: str
+    description_it: str | None
+    description_rm: str | None
+    attribution: list[str]
+    provider: list[str]
+    geocat_id: str
+    _legacy_id: int
