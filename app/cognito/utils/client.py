@@ -119,7 +119,7 @@ class Client:
         if not first_name or not last_name or not email:
             # These attributes are set as required in the user pool, so should always be present.
             # If not, raise an error to avoid creating incomplete user records in the database.
-            raise Exception(f"User {username} is missing required attributes")  # noqa: TRY002, TRY003
+            raise Exception(f"User {username} is missing required attributes")  # noqa: TRY002
 
         return CognitoUser(
             username=resp["Username"],

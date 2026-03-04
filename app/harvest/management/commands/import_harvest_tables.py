@@ -13,8 +13,6 @@ if TYPE_CHECKING:
 
 env = environ.Env()
 
-P = TypeVar("P", bound="DynamoDBParsableModel")
-
 
 class DynamoDBParsableModel(BaseModel):
     """Base model for parsing DynamoDB items, which are returned in a specific
@@ -35,21 +33,26 @@ class DynamoDBParsableModel(BaseModel):
         and that their types match. It will raise a ValidationError if parsing
         fails.
         """
-        parsed_data: Annotated[dict[str, Any], ""] = {}
+        parsed_data: dict[str, Any] = {}
         for field_name in cls.model_fields:
             if field_name not in item:
-                raise ValueError(f"Missing field '{field_name}' in DynamoDB item")  # noqa: TRY003
+                raise ValueError(f"Missing field '{field_name}' in DynamoDB item")
             dynamo_value = item[field_name]
-            if not isinstance(dynamo_value, dict) or len(dynamo_value) != 1:
-                raise ValueError(f"Invalid format for field '{field_name}': {dynamo_value}")  # noqa: TRY003
-            parsed_data[field_name] = cls.handle_item(dynamo_value)
+            try:
+                parsed_data[field_name] = cls.handle_item(dynamo_value)
+            except Exception as e:
+                raise ValueError(
+                    f"Error parsing field '{field_name}' with value '{dynamo_value}'"
+                ) from e
 
         return cls(**parsed_data)
 
     @classmethod
     def handle_item(cls, item: dict) -> Any:
-        if len(item) > 1:
-            raise ValueError(f"I can only handle items with 1 key/value pair, got {len(item)}")  # noqa: TRY003
+        if not isinstance(item, dict) or len(item) != 1:
+            raise TypeError(f"Invalid item type {type(item)}, expecting `dict`")
+        if len(item) != 1:
+            raise ValueError(f"I can only handle items with 1 key/value pair, got {len(item)}")
         type_key, value = next(iter(item.items()))
         if type_key == "S":
             conv = cls.handle_S(value)
@@ -58,7 +61,7 @@ class DynamoDBParsableModel(BaseModel):
         elif type_key == "L":
             conv = cls.handle_L(value)
         else:
-            raise ValueError(f"Unsupported DynamoDB type '{type_key}' (value: '{value}'")  # noqa: TRY003
+            raise ValueError(f"Unsupported DynamoDB type '{type_key}' (value: '{value}'")
 
         return conv
 
@@ -78,15 +81,33 @@ class DynamoDBParsableModel(BaseModel):
         return [cls.handle_item(item) for item in value]
 
 
-class Command(CustomBaseCommand):
-    """Manage OGC API Records Content.
+class OrganisationImport(DynamoDBParsableModel):
+    provider_id: str = Field(serialization_alias="organization_id")
+    created: str
+    updated: str
+    name_de: str
+    name_fr: str
+    name_en: str
+    name_it: str | None
+    name_rm: str | None
+    acronym_de: str
+    acronym_fr: str
+    acronym_en: str
+    acronym_it: str | None
+    acronym_rm: str | None
+    _legacy_id: int
 
-    Currently, this command harvests various sources, merges their content,
-    and writes static OGC API Records compliant JSON files to S3
+
+class Command(CustomBaseCommand):
+    """Import data from DynamoDB harvesting tables.
+
+    This command imports data from DynamoDB harvesting tables. It currently supports importing
+    organisations, but can be extended to import other entities in the future.
 
     """
 
-    help = "OAR management"
+    help = "Importing data from DynamoDB harvesting tables. "
+    "Currently supports importing organisations."
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -108,22 +129,20 @@ class Command(CustomBaseCommand):
             help="Specify the target environment",
         )
 
+        parser.add_argument(
+            "--profile-name",
+            type=str,
+            nargs="?",
+            default=None,
+            help="Specify the profile name (only needed locally)",
+        )
+
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
-        if env.str("USER") != "geoadmin":
-            if options["target_env"] == "dev":
-                profile_name = "swisstopo-swissgeo-dev"
-            elif options["target_env"] in ["int", "prod"]:
-                profile_name = "swisstopo-swissgeo"
-            else:
-                raise ValueError(f"Invalid target environment: {options['target_env']}")  # noqa: TRY003
-            self.print(
-                f"We're likely running this command locally, so we're using"
-                f" the SSO profile {profile_name} to get a session."
-            )
-            self.session = boto3.Session(profile_name=profile_name)  # pylint: disable=attribute-defined-outside-init
+        if options["profile_name"]:
+            self.session = boto3.Session(profile_name=options["profile_name"])
         else:
-            self.session = boto3.Session()  # pylint: disable=attribute-defined-outside-init
+            self.session = boto3.Session()
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
@@ -140,22 +159,6 @@ class Command(CustomBaseCommand):
 
         dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
         paginator = dynamodb_client.get_paginator("scan")
-
-        class OrganisationImport(DynamoDBParsableModel):
-            provider_id: str = Field(serialization_alias="organization_id")
-            created: str
-            updated: str
-            name_de: str
-            name_fr: str
-            name_en: str
-            name_it: str | None
-            name_rm: str | None
-            acronym_de: str
-            acronym_fr: str
-            acronym_en: str
-            acronym_it: str | None
-            acronym_rm: str | None
-            _legacy_id: int
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
