@@ -15,7 +15,8 @@ from user.models import CustomUser
 
 @pytest.fixture(name="organization")
 def fixture_organization(db):
-    with patch("organization.models.Client"):
+    with patch("organization.models.VPClient") as vp_client, patch("organization.models.Client"):
+        vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
         yield Organization.objects.create(
             organization_id="ch.bafu",
             acronym_de="BAFU",

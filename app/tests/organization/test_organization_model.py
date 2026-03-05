@@ -10,7 +10,9 @@ from user.models import CustomUser
 
 
 @patch("organization.models.Client")
-def test_object_stored_as_expected_for_valid_input(client, db):
+@patch("organization.models.VPClient")
+def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     organization_in = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
@@ -43,11 +45,17 @@ def test_object_stored_as_expected_for_valid_input(client, db):
     assert organization_in["acronym_it"] == actual.acronym_it
     assert organization_in["acronym_rm"] == actual.acronym_rm
 
+    assert actual.vp_org_admin_policy_id == "mock-policy-id"
+
     assert client.return_value.create_group.called
+    assert vp_client.return_value.create_org_admin_policy.called
+    assert vp_client.return_value.create_org_admin_policy.call_args.args[0] == "ch.bafu"
 
 
 @patch("organization.models.Client")
-def test_object_created_in_db_with_optional_fields_null(client, db):
+@patch("organization.models.VPClient")
+def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     organization_in = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
@@ -81,8 +89,11 @@ def test_object_created_in_db_with_optional_fields_null(client, db):
     assert actual.acronym_en == organization_in["acronym_en"]
     assert actual.acronym_it == organization_in["acronym_it"]
     assert actual.acronym_rm == organization_in["acronym_rm"]
+    assert actual.vp_org_admin_policy_id == "mock-policy-id"
 
     assert client.return_value.create_group.called
+    assert vp_client.return_value.create_org_admin_policy.called
+    assert vp_client.return_value.create_org_admin_policy.call_args.args[0] == "ch.bafu"
 
 
 def test_raises_exception_when_creating_db_object_with_mandatory_field_null(db):
@@ -131,7 +142,9 @@ def test_form_invalid_for_blank_mandatory_field(db):
 
 
 @patch("organization.models.Client")
-def test_raises_exception_for_existing_slug(client, db):
+@patch("organization.models.VPClient")
+def test_raises_exception_for_existing_slug(vp_client, client, db):
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     Organization.objects.create(
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
@@ -154,10 +167,13 @@ def test_raises_exception_for_existing_slug(client, db):
 
     assert Organization.objects.count() == 1
     assert client.return_value.create_group.call_count == 1
+    assert vp_client.return_value.create_org_admin_policy.call_count == 1
 
 
 @patch("organization.models.Client")
-def test_save_updates_records(client, db):
+@patch("organization.models.VPClient")
+def test_save_updates_records(vp_client, client, db):
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     model_fields = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für",
@@ -171,13 +187,18 @@ def test_save_updates_records(client, db):
     actual = Organization.objects.first()
     assert actual.name_de == "Bundesamt für"
     assert client.return_value.create_group.called
+    assert vp_client.return_value.create_org_admin_policy.called
+    assert vp_client.return_value.create_org_admin_policy.call_args.args[0] == "ch.bafu"
 
     client.return_value.reset_mock()
+    vp_client.return_value.reset_mock()
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id-2"
     actual.name_de = "Bundesamt für Umwelt"
     actual.save()
     updated = Organization.objects.first()
     assert updated.name_de == "Bundesamt für Umwelt"
     assert client.return_value.mock_calls == []
+    assert vp_client.return_value.mock_calls == []
 
     with pytest.raises(ValidationError):
         Organization.objects.create(
@@ -192,10 +213,13 @@ def test_save_updates_records(client, db):
 
     assert Organization.objects.count() == 1
     assert client.return_value.mock_calls == []
+    assert vp_client.return_value.mock_calls == []
 
 
 @patch("organization.models.Client")
-def test_delete_deletes_records(client, db):
+@patch("organization.models.VPClient")
+def test_delete_deletes_records(vp_client, client, db):
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     model_fields = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für",
@@ -210,19 +234,24 @@ def test_delete_deletes_records(client, db):
     actual = Organization.objects.first()
 
     assert client.return_value.create_group.called
+    assert vp_client.return_value.create_org_admin_policy.called
 
     actual.delete()
 
     assert not Organization.objects.first()
     assert client.return_value.delete_group.called
+    assert vp_client.return_value.delete_policy.called
+    assert vp_client.return_value.delete_policy.call_args.args[0] == "mock-policy-id"
 
 
 @patch("organization.models.Client")
 @patch("user.models.Client")
 @patch("user.extra_audience.Client")
+@patch("organization.models.VPClient")
 def test_delete_deletes_related_records(
-    ssm_client, user_client, org_client, organization, django_machine_user_factory
+    vp_client, ssm_client, user_client, org_client, organization, django_machine_user_factory
 ):
+    # vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     unit_in = {
         "organization": organization,
         "unit_id": "ch.bafu.fauna",
