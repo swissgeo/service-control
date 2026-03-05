@@ -131,3 +131,11 @@ class Client:
             org_unit_name=self.get_user_attribute(resp["UserAttributes"], "custom:org_unit_name"),
             org_uid=self.get_user_attribute(resp["UserAttributes"], "custom:org_uid"),
         )
+
+    def update_user_roles(self, username: str, roles: list[str]) -> None:
+        """Update the roles of a user in user pool"""
+        self.client.admin_update_user_attributes(
+            UserPoolId=self.user_pool_id,
+            Username=username,
+            UserAttributes=[{"Name": "custom:roles", "Value": ",".join(roles)}],
+        )

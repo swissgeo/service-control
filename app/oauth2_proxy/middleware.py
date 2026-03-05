@@ -20,6 +20,21 @@ class Oauth2ProxyRemoteUserMiddleware(RemoteUserMiddleware):
 
 
 class Oauth2ProxyRemoteMiddleware:
+    """
+    Middleware Checks if user is authenticated.
+    If user is authenticated, update the basic user information first_name, last_name, email.
+    This information comes from Cognito and is provided in the access token. As cognito is the
+    "data-owner" for these attributes, we always update these values in service-control.
+
+    Next read the user groups and check if the user is superuser/staff. This is a special group
+    that allows the user to access the admin UI. Groups are not updated based as cognito is not the
+    "data-owner", but service-control. If users groups change this must be done via service-control
+    that will update cognito accordingly.
+    The same goes for the users roles. They are not updated from the token as service-control is the
+    "data-owner" for roles. Roles are not read in this middleware as they are not needed at this
+    level. They will be checked on endpoints level checks where needed.
+    """
+
     group_header = "HTTP_X_AUTH_REQUEST_GROUPS"
     preferred_username_header = "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME"
     email_header = "HTTP_X_AUTH_REQUEST_EMAIL"
@@ -39,15 +54,6 @@ class Oauth2ProxyRemoteMiddleware:
             # refuse the request
             return self.get_response(request)
         user = cast("User", user)
-
-        # If the user is authenticated then we need to update it with the following oauth2-proxy
-        # provided user information:
-        #  - email
-        #  - first_name
-        #  - last_name
-        #
-        # Groups are not updated from oauth2-proxy as service-control is the data-owner for groups.
-        # Any changes to groups will always be done via service-control
 
         try:
             email = request.META[self.email_header].strip()

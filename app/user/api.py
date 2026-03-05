@@ -5,11 +5,18 @@ from ninja import Router
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
+from config import roles
 from organization.models import Organization
 from user.extra_audience import add_extra_audience
-from user.models import CustomUser
-from user.schemas import CreateMachineUserSchema, MachineUserListSchema, MachineUserSchema
-from utils.auth import organization_admin_auth
+from user.models import CustomUser, Role
+from user.schemas import (
+    CreateMachineUserSchema,
+    MachineUserListSchema,
+    MachineUserSchema,
+    RoleListSchema,
+    RoleSchema,
+)
+from utils.auth import organization_role_auth, role_auth
 
 router = Router()
 
@@ -21,11 +28,19 @@ def machine_user_to_response(model: CustomUser) -> MachineUserSchema:
     )
 
 
+def role_to_response(model: Role) -> RoleSchema:
+    return RoleSchema(
+        id=model.role_id,
+        name=model.name,
+        description=model.description,
+    )
+
+
 @router.post(
     "/organizations/{organization_id}/machineusers",
     response={201: MachineUserSchema},
     exclude_none=True,
-    auth=organization_admin_auth,
+    auth=organization_role_auth(roles.ORG_ADMIN),
 )
 def create_machine_user(
     request: HttpRequest,
@@ -87,7 +102,7 @@ def create_machine_user(
     "/organizations/{organization_id}/machineusers",
     response={200: MachineUserListSchema},
     exclude_none=True,
-    auth=organization_admin_auth,
+    auth=organization_role_auth(roles.ORG_ADMIN),
 )
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -111,7 +126,7 @@ def machine_users(
 @router.delete(
     "/organizations/{organization_id}/machineusers/{machine_user_id}",
     exclude_none=True,
-    auth=organization_admin_auth,
+    auth=organization_role_auth(roles.ORG_ADMIN),
 )
 def delete_machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -127,3 +142,19 @@ def delete_machine_users(
     machine_user_to_delete.delete()
 
     return HttpResponse(status=204)
+
+
+@router.get(
+    "/roles",
+    response={200: RoleListSchema},
+    exclude_none=True,
+    auth=role_auth(roles.ORG_ADMIN),
+)
+def roles(
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+) -> RoleListSchema:
+    """List all available roles."""
+
+    models = sorted(Role.all(), key=lambda role: role.name)
+    response = [role_to_response(model) for model in models]
+    return RoleListSchema(items=response)

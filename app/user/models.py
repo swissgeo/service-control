@@ -1,13 +1,61 @@
 import logging
+from typing import TYPE_CHECKING, Any, NamedTuple
 
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from cognito.utils.client import Client
+from config import roles
 from user.extra_audience import remove_extra_audience
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from django.db.models.base import ModelBase
+
 logger = logging.getLogger(__name__)
+
+
+class RoleType(models.TextChoices):
+    """Enumeration of roles for user choices."""
+
+    ORG_ADMIN = roles.ORG_ADMIN, _("Role", "Organization Admin")
+    DATASET_ADMIN = roles.DATASET_ADMIN, _("Role", "Dataset Admin")
+    DATASET_CONTRIBUTOR = roles.DATASET_CONTRIBUTOR, _("Role", "Dataset Contributor")
+
+
+class Role(NamedTuple):
+    role_id: str
+    name: str
+    description: str
+    policy_template_id: str | None = None
+
+    @classmethod
+    def all(cls) -> list[Role]:
+        policy_template_ids = settings.ROLE_POLICY_TEMPLATE_IDS
+        return [
+            cls(
+                role_id=RoleType.ORG_ADMIN,
+                name="Organization Admin",
+                description="Organization administrator with full access to all resources.",
+                policy_template_id=policy_template_ids.get(RoleType.ORG_ADMIN),
+            ),
+            cls(
+                role_id=RoleType.DATASET_ADMIN,
+                name="Dataset Admin",
+                description="Dataset administrator with full access to all datasets of their Unit.",
+                policy_template_id=policy_template_ids.get(RoleType.DATASET_ADMIN),
+            ),
+            cls(
+                role_id=RoleType.DATASET_CONTRIBUTOR,
+                name="Dataset Contributor",
+                description="Dataset contributor with limited access to datasets of their Unit.",
+                policy_template_id=policy_template_ids.get(RoleType.DATASET_CONTRIBUTOR),
+            ),
+        ]
 
 
 class CustomUser(models.Model):
@@ -25,14 +73,18 @@ class CustomUser(models.Model):
     _context = "User model"
 
     class UserType(models.TextChoices):
-        _context = "User model"
-        HUMAN = "HUMAN", _(_context, "Human")
-        MACHINE = "MACHINE", _(_context, "Machine")
+        HUMAN = "HUMAN", _("User model", "Human")
+        MACHINE = "MACHINE", _("User model", "Machine")
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # User can exist without an organization -> nullable
     organization = models.ForeignKey(
         "organization.Organization", null=True, on_delete=models.SET_NULL
+    )
+    roles = ArrayField(
+        base_field=models.CharField(max_length=32, choices=RoleType.choices),
+        default=list,
+        blank=True,
     )
 
     # user_type is an enum to differentiate human users from machine users
@@ -40,10 +92,35 @@ class CustomUser(models.Model):
         _(_context, "User Type"), max_length=10, choices=UserType.choices, default=UserType.HUMAN
     )
     # Only set for machine users.
-    created_by_user = models.ForeignKey("user.CustomUser", null=True, on_delete=models.SET_NULL)
+    created_by_user = models.ForeignKey(
+        "user.CustomUser", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self) -> str:
         return str(self.user.username)
+
+    def save(
+        self,
+        *args: Any,  # noqa: ARG002 unused arguments
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
+
+        if self.user_type == self.UserType.HUMAN:
+            client = Client()
+            client.update_user_roles(
+                self.user.username,
+                self.roles,
+            )
+
+        return super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
 
     def delete(
         self,

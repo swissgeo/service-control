@@ -16,6 +16,8 @@ from pathlib import Path
 import environ
 import yaml
 
+from config.roles import DATASET_ADMIN, DATASET_CONTRIBUTOR, ORG_ADMIN
+
 env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "corsheaders",
     "cognito",
     "support",
@@ -204,6 +207,13 @@ COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
 # M2M
 DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
 DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", None)
+
+# Map roles to aws verified permissions policy templates.
+ROLE_POLICY_TEMPLATE_IDS = {
+    ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
+}
 
 # Testing
 TESTING: bool = False

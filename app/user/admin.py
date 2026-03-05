@@ -3,16 +3,30 @@ from typing import TYPE_CHECKING, ClassVar
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
 from django.http import HttpRequest
 
-from user.models import CustomUser
+from user.models import CustomUser, RoleType
 
 if TYPE_CHECKING:
     from django.http.request import HttpRequest
 
 
+class CustomUserAdminForm(ModelForm):
+    roles = MultipleChoiceField(
+        choices=RoleType.choices,
+        required=False,
+        widget=SelectMultiple,
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ("user", "organization", "roles", "user_type", "created_by_user")
+
+
 class CustomUserInline(admin.StackedInline):
     model = CustomUser
+    form = CustomUserAdminForm
     can_delete = False
 
 
