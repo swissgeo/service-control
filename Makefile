@@ -70,11 +70,16 @@ setup:.env ## Create virtualenv with all packages for development
 
 
 .PHONY: start-local-db
-start-local-db: ## Run the local db and cognito as docker container
-	docker compose up -d
+start-local-db: ## Run the local db
+	docker compose up -d db
 	$(PYTHON) $(DJANGO_MANAGER) init_db
 	$(PYTHON) $(DJANGO_MANAGER) migrate
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
+
+
+.PHONY: start-local-services
+start-local-services: ## Run the the support services (cognito, otel)
+	docker compose up -d
 
 
 .PHONY: format
@@ -100,17 +105,17 @@ ci-check-format: format ## Check the format (CI)
 
 
 .PHONY: serve
-serve: start-local-db ## Serve the application locally
+serve: start-local-services start-local-db ## Serve the application locally
 	$(PYTHON) $(DJANGO_MANAGER) runserver
 
 
 .PHONY: serve-debug
-serve-debug: start-local-db ## Serve the application locally for debugging
+serve-debug: start-local-services start-local-db ## Serve the application locally for debugging
 	$(PYTHON) $(DJANGO_MANAGER_DEBUG) runserver
 
 
 .PHONY: gunicornserve
-gunicornserve: start-local-db ## Serve the application locally with gunicorn
+gunicornserve: start-local-services start-local-db ## Serve the application locally with gunicorn
 	$(PYTHON) $(APP_SRC_DIR)/wsgi.py
 
 
@@ -136,7 +141,7 @@ dockerpush: dockerbuild ## Push to the docker registry
 
 
 .PHONY: dockerrun
-dockerrun: start-local-db dockerbuild ## Run the locally built docker image
+dockerrun: start-local-services start-local-db dockerbuild ## Run the locally built docker image
 	docker run \
 		-it -p $(HTTP_PORT):8080 \
 		--env-file=${ENV_FILE} \
@@ -158,7 +163,7 @@ test-ci: ## Run tests in the CI
 
 
 .PHONY: test
-test: ## Run tests locally
+test: start-local-services start-local-db ## Run tests locally
 	$(TEST) --cov --cov-branch --cov-report=html
 
 
