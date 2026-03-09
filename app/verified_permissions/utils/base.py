@@ -13,3 +13,6 @@ class BaseClient(ABC):
 
     @abstractmethod
     def delete_policy(self, policy_id: str) -> None: ...
+
+    @abstractmethod
+    def create_machine_user_policy(self, client_id: str, organization_id: str) -> str: ...

@@ -3,7 +3,11 @@ from unittest.mock import patch
 from user.models import CustomUser
 
 
-def test_object_stored_as_expected_for_valid_input(django_machine_user_factory, organization, user):
+@patch("user.models.VPClient")
+def test_object_stored_as_expected_for_valid_input(
+    avp_client, django_machine_user_factory, organization, user
+):
+    avp_client.return_value.create_machine_user_policy.return_value = "test-policy-id"
     machine_user_in = {
         "username": "abc",
         "name": "Machine 1",
@@ -22,13 +26,18 @@ def test_object_stored_as_expected_for_valid_input(django_machine_user_factory, 
     assert actual.user.last_name == "Machine 1"
     assert machine_user_in["created_by_user"] == actual.created_by_user
     assert machine_user_in["organization"] == actual.organization
+    assert actual.vp_machine_user_policy_id == "test-policy-id"
+
+    assert avp_client.return_value.create_machine_user_policy.called
 
 
 @patch("user.models.Client")
 @patch("user.extra_audience.Client")
+@patch("user.models.VPClient")
 def test_delete_deletes_records(
-    ssm_client, boto_client, organization, user, django_machine_user_factory
+    avp_client, ssm_client, boto_client, organization, user, django_machine_user_factory
 ):
+    avp_client.return_value.create_machine_user_policy.return_value = "test-policy-id"
     model_fields = {
         "username": "def",
         "name": "Machine 1",
@@ -44,5 +53,5 @@ def test_delete_deletes_records(
     assert boto_client.return_value.delete_app_client.called
     assert ssm_client.return_value.get_parameter.called
     assert ssm_client.return_value.put_parameter.called
-    assert ssm_client.return_value.get_parameter.called
-    assert ssm_client.return_value.put_parameter.called
+    assert avp_client.return_value.delete_policy.called
+    assert avp_client.return_value.delete_policy.call_args.args[0] == "test-policy-id"

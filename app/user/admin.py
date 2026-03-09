@@ -21,7 +21,14 @@ class CustomUserAdminForm(ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ("user", "organization", "roles", "user_type", "created_by_user")
+        fields = (
+            "user",
+            "organization",
+            "roles",
+            "user_type",
+            "created_by_user",
+            "vp_machine_user_policy_id",
+        )
 
 
 class CustomUserInline(admin.StackedInline):

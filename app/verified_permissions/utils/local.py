@@ -18,3 +18,6 @@ class Client(BaseClient):
 
     def delete_policy(self, policy_id: str) -> None:
         pass
+
+    def create_machine_user_policy(self, client_id: str, organization_id: str) -> str:  # noqa: ARG002 ..
+        return "dummy-machine-user-policy-id"

@@ -10,6 +10,7 @@ from django.utils.translation import pgettext_lazy as _
 from cognito.utils.client import Client
 from config import roles
 from user.extra_audience import remove_extra_audience
+from verified_permissions.utils.client import Client as VPClient
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -95,6 +96,12 @@ class CustomUser(models.Model):
     created_by_user = models.ForeignKey(
         "user.CustomUser", null=True, blank=True, on_delete=models.SET_NULL
     )
+    vp_machine_user_policy_id = models.CharField(
+        _(_context, "Verified Permissions Policy ID"),
+        max_length=100,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self) -> str:
         return str(self.user.username)
@@ -115,6 +122,12 @@ class CustomUser(models.Model):
                 self.roles,
             )
 
+        if self.user_type == self.UserType.MACHINE and self._state.adding:
+            client = VPClient()
+            self.vp_machine_user_policy_id = client.create_machine_user_policy(
+                client_id=self.user.username, organization_id=self.organization.organization_id
+            )
+
         return super().save(
             force_insert=force_insert,
             force_update=force_update,
@@ -133,5 +146,7 @@ class CustomUser(models.Model):
             if not client.delete_app_client(self.user.username):
                 logger.warning("cognito app client '%s' not found, not deleted", self.user.username)
             remove_extra_audience(self.user.username)
+            vp_client = VPClient()
+            vp_client.delete_policy(self.vp_machine_user_policy_id)
 
         return super().delete(using=using, keep_parents=keep_parents)
