@@ -43,6 +43,12 @@ class Command(CustomBaseCommand):
             help="Import datasets",
         )
         parser.add_argument(
+            "--distributions",
+            action="store_true",
+            help="Import datasets",
+        )
+
+        parser.add_argument(
             "--target-env",
             type=str,
             choices=["dev", "int", "prod"],
@@ -74,6 +80,8 @@ class Command(CustomBaseCommand):
             self.import_organisations(*args, **options)
         if options["datasets"]:
             self.import_datasets(*args, **options)
+        if options["distributions"]:
+            self.import_distributions(*args, **options)
 
     # ##########################################################################
     def import_organisations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -162,3 +170,15 @@ class Command(CustomBaseCommand):
                 ds.geocat_id = import_ds.geocat_id
 
                 ds.save()
+
+    # ##########################################################################
+    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+
+        self.print_success("Importing distributions")
+
+        dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
+        paginator = dynamodb_client.get_paginator("scan")
+
+        for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
+            for item in page["Items"]:
+                self.print(item)
