@@ -10,6 +10,7 @@ from django.utils.translation import pgettext_lazy as _
 from cognito.utils.client import Client
 from config import roles
 from user.extra_audience import remove_extra_audience
+from verified_permissions.utils.base import VerifiedPermissionsResource
 from verified_permissions.utils.client import Client as VPClient
 
 if TYPE_CHECKING:
@@ -59,7 +60,7 @@ class Role(NamedTuple):
         ]
 
 
-class CustomUser(models.Model):
+class CustomUser(VerifiedPermissionsResource, models.Model):
     """CustomUser extends the Django default User model.
     A user can either be a human or a machine. Human users are stored as users in cognito, machine
     users are client apps in cognito.
@@ -72,6 +73,8 @@ class CustomUser(models.Model):
     """
 
     _context = "User model"
+
+    vp_entity_type = "MachineUser"
 
     class UserType(models.TextChoices):
         HUMAN = "HUMAN", _("User model", "Human")
@@ -150,3 +153,9 @@ class CustomUser(models.Model):
             vp_client.delete_policy(self.vp_machine_user_policy_id)
 
         return super().delete(using=using, keep_parents=keep_parents)
+
+    def get_vp_entity_id(self) -> str:
+        return self.user.username
+
+    def get_vp_parents(self) -> list[VerifiedPermissionsResource]:
+        return [self.organization] if self.organization else []

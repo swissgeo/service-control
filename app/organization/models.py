@@ -9,6 +9,7 @@ from cognito.utils.client import Client
 from config import roles
 from user.models import CustomUser
 from utils.fields import CustomSlugField
+from verified_permissions.utils.base import VerifiedPermissionsResource
 from verified_permissions.utils.client import Client as VPClient
 
 if TYPE_CHECKING:
@@ -19,8 +20,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Organization(models.Model):
+class Organization(VerifiedPermissionsResource, models.Model):
     _context = "Organization model"
+
+    vp_entity_type = "Organization"
 
     """
     Note: The "blank=False" for a model field doesn't prevent DB changes.
@@ -118,9 +121,14 @@ class Organization(models.Model):
 
         return result
 
+    def get_vp_entity_id(self) -> str:
+        return self.organization_id
 
-class Unit(models.Model):
+
+class Unit(VerifiedPermissionsResource, models.Model):
     _context = "Organization Unit model"
+
+    vp_entity_type = "Unit"
 
     organization = models.ForeignKey(
         Organization,
@@ -183,3 +191,9 @@ class Unit(models.Model):
         if not client.delete_group(self.unit_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.unit_id)
         return result
+
+    def get_vp_entity_id(self) -> str:
+        return self.unit_id
+
+    def get_vp_parents(self) -> list[VerifiedPermissionsResource]:
+        return [self.organization]

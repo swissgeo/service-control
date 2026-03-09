@@ -3,7 +3,7 @@ from boto3 import client
 from django.conf import settings
 
 from config.aws import config
-from verified_permissions.utils.base import BaseClient
+from verified_permissions.utils.base import BaseClient, VerifiedPermissionsResource
 
 
 class Client(BaseClient):
@@ -129,3 +129,43 @@ class Client(BaseClient):
             },
         )
         return resp["policyId"]
+
+    def is_authorized(
+        self,
+        token: str,
+        action: str,
+        resource: VerifiedPermissionsResource,
+    ) -> bool:
+        resp = self.client.is_authorized_with_token(
+            policyStoreId=self.policy_store_id,
+            token=token,
+            action={"actionType": f"{self.namespace}::Action", "actionId": action},
+            resource=self._build_resource(resource),
+            entities=self._build_entities(resource),
+        )
+        return resp["decision"] == "ALLOW"
+
+    def _build_resource(self, resource: VerifiedPermissionsResource) -> dict:
+        return {
+            "entityType": f"{self.namespace}::{resource.vp_entity_type}",
+            "entityId": resource.get_vp_entity_id(),
+        }
+
+    def _build_entity_identifier(self, resource: VerifiedPermissionsResource) -> dict:
+        return {
+            "entityType": f"{self.namespace}::{resource.vp_entity_type}",
+            "entityId": resource.get_vp_entity_id(),
+        }
+
+    def _build_entities(self, resource: VerifiedPermissionsResource) -> dict:
+        return {
+            "entityList": [
+                {
+                    "identifier": self._build_entity_identifier(resource),
+                    "parents": [
+                        self._build_entity_identifier(parent)
+                        for parent in resource.get_vp_parents()
+                    ],
+                }
+            ]
+        }

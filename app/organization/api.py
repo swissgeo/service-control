@@ -2,8 +2,7 @@ from django.http import HttpRequest  # noqa:TC002
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
-from config import roles
-from utils.auth import organization_role_auth, superuser_auth
+from utils.auth import superuser_auth, vp_auth
 from utils.language import LanguageCode, get_language, get_translation
 
 from .models import Organization, Unit
@@ -79,7 +78,7 @@ def create_organization(
     "/organizations/{organization_id}",
     response={200: OrganizationSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("updateOrganization"),
 )
 def update_organization(
     request: HttpRequest,
@@ -125,7 +124,7 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
     "/organizations/{organization_id}",
     response={200: OrganizationSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("getOrganization"),
 )
 def organization(
     request: HttpRequest,
@@ -162,7 +161,7 @@ def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
     "/organizations/{organization_id}/units",
     response={201: UnitSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("createUnit"),
 )
 def create_unit(
     request: HttpRequest,
@@ -191,7 +190,7 @@ def create_unit(
     "/organizations/{organization_id}/units/{unit_id}",
     response={200: UnitSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("updateUnit", path_var="unit_id"),
 )
 def update_unit(
     request: HttpRequest,
@@ -224,7 +223,7 @@ def update_unit(
     "/organizations/{organization_id}/units",
     response={200: UnitListSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("listUnits"),
 )
 def units(
     request: HttpRequest, organization_id: str, lang: LanguageCode | None = None
@@ -242,7 +241,7 @@ def units(
     "/organizations/{organization_id}/units/{unit_id}",
     response={200: UnitSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("getUnit", path_var="unit_id"),
 )
 def unit(
     request: HttpRequest,
@@ -265,7 +264,7 @@ def unit(
 @router.delete(
     "/organizations/{organization_id}/units/{unit_id}",
     response={204: None},
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth("deleteUnit", path_var="unit_id"),
 )
 def delete_unit(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja

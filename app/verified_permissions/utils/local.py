@@ -1,4 +1,4 @@
-from verified_permissions.utils.base import BaseClient
+from verified_permissions.utils.base import BaseClient, VerifiedPermissionsResource
 
 
 class Client(BaseClient):
@@ -21,3 +21,11 @@ class Client(BaseClient):
 
     def create_machine_user_policy(self, client_id: str, organization_id: str) -> str:  # noqa: ARG002 ..
         return "dummy-machine-user-policy-id"
+
+    def is_authorized(
+        self,
+        token: str,  # noqa: ARG002 ..
+        action: str,  # noqa: ARG002 ..
+        resource: VerifiedPermissionsResource,  # noqa: ARG002 ..
+    ) -> bool:
+        return True
