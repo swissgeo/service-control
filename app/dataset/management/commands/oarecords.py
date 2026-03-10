@@ -257,7 +257,7 @@ class Command(CustomBaseCommand):
             for lang in options["lang"]:
                 self.print(f" - Language: {lang}")
                 response = requests.get(
-                    f"https://api3.geo.admin.ch/rest/services/all/MapServer/layersConfig?language={lang}",
+                    f"https://api3.geo.admin.ch/rest/services/all/MapServer/layersConfig?lang={lang}",
                     timeout=30,
                 )
                 layers = response.json()
@@ -271,7 +271,7 @@ class Command(CustomBaseCommand):
             for lang in options["lang"]:
                 self.print(f" - Language: {lang}")
                 response = requests.get(
-                    f"https://api3.geo.admin.ch/rest/services/api/MapServer?language={lang}",
+                    f"https://api3.geo.admin.ch/rest/services/api/MapServer?lang={lang}",
                     timeout=30,
                 )
                 mapserverlayers = response.json()
@@ -430,14 +430,19 @@ class Command(CustomBaseCommand):
 
             # Details
             if "urlDetails" in mapserver_entry["attributes"]:
-                links.append(
-                    Link(
-                        href=mapserver_entry["attributes"]["urlDetails"],
-                        rel="describedby",
-                        typ="text/html",
-                        title="Details",
+                try:
+                    links.append(
+                        Link(
+                            href=mapserver_entry["attributes"]["urlDetails"],
+                            rel="describedby",
+                            typ="text/html",
+                            title="Details",
+                        )
                     )
-                )
+                except Exception as e:  # noqa: BLE001
+                    self.print_warning(
+                        f"  -> {mapserver_entry['attributes']['urlDetails']} is not a valid link, skipping!"
+                    )
 
             # GeoCat Alternate
             if "idGeoCat" in mapserver_entry:
@@ -519,7 +524,7 @@ class Command(CustomBaseCommand):
                 links.append(dataset_link)
                 links.append(
                     Link(
-                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.wmts",
+                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/wmts-geoadminch",
                         rel="service",
                     )
                 )
@@ -586,7 +591,7 @@ class Command(CustomBaseCommand):
                 links.append(dataset_link)
                 links.append(
                     Link(
-                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/ch.admin.geo.wms",
+                        href=f"{OAR_BASE_URL}/collections/geoadmin.services/items/wms-geoadminch",
                         rel="service",
                     )
                 )
