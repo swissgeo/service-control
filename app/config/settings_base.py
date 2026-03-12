@@ -16,7 +16,7 @@ from pathlib import Path
 import environ
 import yaml
 
-from config.roles import DATASET_ADMIN, DATASET_CONTRIBUTOR, ORG_ADMIN
+from config.authorization import VPRole
 
 env = environ.Env()
 
@@ -212,9 +212,9 @@ VERIFIED_PERMISSIONS_STORE_ID = env.str("VERIFIED_PERMISSIONS_STORE_ID", "local"
 VERIFIED_PERMISSIONS_NAMESPACE = env.str("VERIFIED_PERMISSIONS_NAMESPACE", "swissgeo")
 # Map roles to aws verified permissions policy templates.
 ROLE_POLICY_TEMPLATE_IDS = {
-    ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
-    DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
-    DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
+    VPRole.ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    VPRole.DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    VPRole.DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
 }
 
 # M2M

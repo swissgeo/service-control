@@ -9,6 +9,7 @@ from verified_permissions.utils.client import Client
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from config.authorization import VPAction
     from verified_permissions.utils.base import BaseClient
 
 
@@ -23,7 +24,7 @@ def _get_vp_client() -> BaseClient:
 
 
 def vp_auth(
-    action: str, resource: Parameter = Parameter.ORGANIZATION
+    action: VPAction, resource: Parameter = Parameter.ORGANIZATION
 ) -> Callable[[HttpRequest], bool]:
     """
     Checks if the user is logged in and has the required permissions for the action.
@@ -41,7 +42,9 @@ def vp_auth(
 
         client = _get_vp_client()
         token = request.META[token_header]
-        if client.is_authorized(token=token, action=action, resource=resource, request=request):
+        if client.is_authorized(
+            token=token, action=action.value, resource=resource, request=request
+        ):
             return True
 
         raise AuthorizationError

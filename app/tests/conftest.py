@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 
 import pytest
 
-from config import roles
+from config.authorization import VPRole
 from organization.models import Organization, Unit
 from user.models import CustomUser
 
@@ -80,7 +80,7 @@ def fixture_user_headers(cognito_client, django_user_model, organization):
     CustomUser.objects.create(
         user=organization_admin,
         organization=organization,
-        roles=[roles.ORG_ADMIN],
+        roles=[VPRole.ORG_ADMIN],
     )
     # TODO: add organization user etc.
 

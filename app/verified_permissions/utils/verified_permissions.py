@@ -4,6 +4,7 @@ from boto3 import client
 
 from django.conf import settings
 
+from config.authorization import VPRole
 from config.aws import config
 from verified_permissions.utils.base import BaseClient
 
@@ -44,7 +45,7 @@ class Client(BaseClient):
             str: The ID of the created policy.
         """
         return self._create_policy_from_template(
-            settings.ROLE_POLICY_TEMPLATE_IDS[settings.ORG_ADMIN],
+            settings.ROLE_POLICY_TEMPLATE_IDS[VPRole.ORG_ADMIN],
             {
                 "entityType": f"{self.namespace}::UserGroup",
                 "entityId": f"{self.user_pool_id}|{organization_id}",
@@ -65,7 +66,7 @@ class Client(BaseClient):
             str: The ID of the created policy.
         """
         return self._create_policy_from_template(
-            settings.ROLE_POLICY_TEMPLATE_IDS[settings.DATASET_ADMIN],
+            settings.ROLE_POLICY_TEMPLATE_IDS[VPRole.DATASET_ADMIN],
             {
                 "entityType": f"{self.namespace}::UserGroup",
                 "entityId": f"{self.user_pool_id}|{unit_id}",
@@ -86,7 +87,7 @@ class Client(BaseClient):
             str: The ID of the created policy.
         """
         return self._create_policy_from_template(
-            settings.ROLE_POLICY_TEMPLATE_IDS[settings.DATASET_CONTRIBUTOR],
+            settings.ROLE_POLICY_TEMPLATE_IDS[VPRole.DATASET_CONTRIBUTOR],
             {
                 "entityType": f"{self.namespace}::UserGroup",
                 "entityId": f"{self.user_pool_id}|{unit_id}",

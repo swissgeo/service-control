@@ -5,7 +5,7 @@ from ninja import Router
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
-from config import roles
+from config.authorization import VPAction
 from organization.models import Organization
 from user.extra_audience import add_extra_audience
 from user.models import CustomUser, Role
@@ -41,7 +41,7 @@ def role_to_response(model: Role) -> RoleSchema:
     f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/machineusers",
     response={201: MachineUserSchema},
     exclude_none=True,
-    auth=vp_auth(roles.CREATE_MACHINE_USER),
+    auth=vp_auth(VPAction.CREATE_MACHINE_USER),
 )
 def create_machine_user(
     request: HttpRequest,
@@ -103,7 +103,7 @@ def create_machine_user(
     f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/machineusers",
     response={200: MachineUserListSchema},
     exclude_none=True,
-    auth=vp_auth(roles.LIST_MACHINE_USERS),
+    auth=vp_auth(VPAction.LIST_MACHINE_USERS),
 )
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -127,7 +127,7 @@ def machine_users(
 @router.delete(
     f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/machineusers/{{{Parameter.MACHINE_USER.parameter_name}}}",
     exclude_none=True,
-    auth=vp_auth(roles.DELETE_MACHINE_USER, resource=Parameter.MACHINE_USER),
+    auth=vp_auth(VPAction.DELETE_MACHINE_USER, resource=Parameter.MACHINE_USER),
 )
 def delete_machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja

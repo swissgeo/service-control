@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from config.authorization import VPRole
 from verified_permissions.utils.verified_permissions import Client
 
 
@@ -9,9 +10,9 @@ def test_create_org_admin_policy(mock_boto3, settings):
     settings.VERIFIED_PERMISSIONS_STORE_ID = "test-policy-store-id"
     settings.VERIFIED_PERMISSIONS_NAMESPACE = "test-namespace"
     settings.ROLE_POLICY_TEMPLATE_IDS = {
-        settings.ORG_ADMIN: "test-org-admin-template-id",
-        settings.DATASET_ADMIN: "test-dataset-admin-template-id",
-        settings.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
+        VPRole.ORG_ADMIN: "test-org-admin-template-id",
+        VPRole.DATASET_ADMIN: "test-dataset-admin-template-id",
+        VPRole.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
     }
     settings.COGNITO_POOL_ID = "test-user-pool-id"
     mock_boto3.return_value.create_policy.return_value = {"policyId": "test-policy-id"}
@@ -48,9 +49,9 @@ def test_create_dataset_admin_policy(mock_boto3, settings):
     settings.VERIFIED_PERMISSIONS_STORE_ID = "test-policy-store-id"
     settings.VERIFIED_PERMISSIONS_NAMESPACE = "test-namespace"
     settings.ROLE_POLICY_TEMPLATE_IDS = {
-        settings.ORG_ADMIN: "test-org-admin-template-id",
-        settings.DATASET_ADMIN: "test-dataset-admin-template-id",
-        settings.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
+        VPRole.ORG_ADMIN: "test-org-admin-template-id",
+        VPRole.DATASET_ADMIN: "test-dataset-admin-template-id",
+        VPRole.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
     }
     settings.COGNITO_POOL_ID = "test-user-pool-id"
     mock_boto3.return_value.create_policy.return_value = {"policyId": "test-policy-id"}
@@ -87,9 +88,9 @@ def test_create_dataset_contributor_policy(mock_boto3, settings):
     settings.VERIFIED_PERMISSIONS_STORE_ID = "test-policy-store-id"
     settings.VERIFIED_PERMISSIONS_NAMESPACE = "test-namespace"
     settings.ROLE_POLICY_TEMPLATE_IDS = {
-        settings.ORG_ADMIN: "test-org-admin-template-id",
-        settings.DATASET_ADMIN: "test-dataset-admin-template-id",
-        settings.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
+        VPRole.ORG_ADMIN: "test-org-admin-template-id",
+        VPRole.DATASET_ADMIN: "test-dataset-admin-template-id",
+        VPRole.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
     }
     settings.COGNITO_POOL_ID = "test-user-pool-id"
     mock_boto3.return_value.create_policy.return_value = {"policyId": "test-policy-id"}
@@ -126,9 +127,9 @@ def test_create_machine_user_policy(mock_boto3, settings):
     settings.VERIFIED_PERMISSIONS_STORE_ID = "test-policy-store-id"
     settings.VERIFIED_PERMISSIONS_NAMESPACE = "test-namespace"
     settings.ROLE_POLICY_TEMPLATE_IDS = {
-        settings.ORG_ADMIN: "test-org-admin-template-id",
-        settings.DATASET_ADMIN: "test-dataset-admin-template-id",
-        settings.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
+        VPRole.ORG_ADMIN: "test-org-admin-template-id",
+        VPRole.DATASET_ADMIN: "test-dataset-admin-template-id",
+        VPRole.DATASET_CONTRIBUTOR: "test-dataset-contributor-template-id",
     }
     settings.COGNITO_POOL_ID = "test-user-pool-id"
     mock_boto3.return_value.create_policy.return_value = {"policyId": "test-policy-id"}

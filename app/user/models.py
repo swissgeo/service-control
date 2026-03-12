@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from cognito.utils.client import Client
-from config import roles
+from config.authorization import VPRole
 from user.extra_audience import remove_extra_audience
 from verified_permissions.utils.client import Client as VPClient
 
@@ -18,14 +18,6 @@ if TYPE_CHECKING:
     from django.db.models.base import ModelBase
 
 logger = logging.getLogger(__name__)
-
-
-class RoleType(models.TextChoices):
-    """Enumeration of roles for user choices."""
-
-    ORG_ADMIN = roles.ORG_ADMIN, _("Role", "Organization Admin")
-    DATASET_ADMIN = roles.DATASET_ADMIN, _("Role", "Dataset Admin")
-    DATASET_CONTRIBUTOR = roles.DATASET_CONTRIBUTOR, _("Role", "Dataset Contributor")
 
 
 class Role(NamedTuple):
@@ -39,22 +31,22 @@ class Role(NamedTuple):
         policy_template_ids = settings.ROLE_POLICY_TEMPLATE_IDS
         return [
             cls(
-                role_id=RoleType.ORG_ADMIN,
+                role_id=VPRole.ORG_ADMIN.value,
                 name="Organization Admin",
                 description="Organization administrator with full access to all resources.",
-                policy_template_id=policy_template_ids.get(RoleType.ORG_ADMIN),
+                policy_template_id=policy_template_ids.get(VPRole.ORG_ADMIN),
             ),
             cls(
-                role_id=RoleType.DATASET_ADMIN,
+                role_id=VPRole.DATASET_ADMIN.value,
                 name="Dataset Admin",
                 description="Dataset administrator with full access to all datasets of their Unit.",
-                policy_template_id=policy_template_ids.get(RoleType.DATASET_ADMIN),
+                policy_template_id=policy_template_ids.get(VPRole.DATASET_ADMIN),
             ),
             cls(
-                role_id=RoleType.DATASET_CONTRIBUTOR,
+                role_id=VPRole.DATASET_CONTRIBUTOR.value,
                 name="Dataset Contributor",
                 description="Dataset contributor with limited access to datasets of their Unit.",
-                policy_template_id=policy_template_ids.get(RoleType.DATASET_CONTRIBUTOR),
+                policy_template_id=policy_template_ids.get(VPRole.DATASET_CONTRIBUTOR),
             ),
         ]
 
@@ -83,7 +75,7 @@ class CustomUser(models.Model):
         "organization.Organization", null=True, on_delete=models.SET_NULL
     )
     roles = ArrayField(
-        base_field=models.CharField(max_length=32, choices=RoleType.choices),
+        base_field=models.CharField(max_length=32, choices=VPRole.choices()),
         default=list,
         blank=True,
     )

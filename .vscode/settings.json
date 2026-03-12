@@ -9,7 +9,7 @@
         "editor.formatOnSave": false,
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
-            "source.organizeImports": "never"
+            "source.organizeImports": "explicit"
         }
     },
     "pytest.command": "uv run pytest", // Avoid pipenv to create an empty Pipfile when opening the project, this project is managed by uv

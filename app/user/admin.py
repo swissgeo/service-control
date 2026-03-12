@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
 from django.http import HttpRequest
 
-from user.models import CustomUser, RoleType
+from config.authorization import VPRole
+from user.models import CustomUser
 
 if TYPE_CHECKING:
     from django.http.request import HttpRequest
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 class CustomUserAdminForm(ModelForm):
     roles = MultipleChoiceField(
-        choices=RoleType.choices,
+        choices=VPRole.choices(),
         required=False,
         widget=SelectMultiple,
     )

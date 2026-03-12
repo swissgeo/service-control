@@ -6,7 +6,7 @@ from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
-from config import roles
+from config.authorization import VPRole
 from user.models import CustomUser
 from utils.fields import CustomSlugField
 from verified_permissions.utils.client import Client as VPClient
@@ -48,7 +48,7 @@ class Organization(models.Model):
     acronym_rm = models.CharField(_(_context, "Acronym (Romansh)"), null=True, blank=True)
 
     vp_org_admin_policy_id = models.CharField(
-        _(_context, f"Verified Permissions Policy ID for {roles.ORG_ADMIN}"),
+        _(_context, f"Verified Permissions Policy ID for {VPRole.ORG_ADMIN.value}"),
         max_length=100,
         null=True,
         blank=True,
