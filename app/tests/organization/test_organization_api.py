@@ -68,8 +68,12 @@ def test_organization_to_response_returns_response_with_default_language_if_unde
 # ==========  GET (organization) ==========
 
 
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
-def test_get_organization_unauthorized(username, status_code, user_headers, organization, client):
+def test_get_organization_unauthorized(
+    vp_client, username, status_code, user_headers, organization, client
+):
+    vp_client.return_value.is_authorized.return_value = False
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
         headers=user_headers[username],
@@ -860,10 +864,12 @@ def test_create_organization_already_exists(boto_client, user_headers, client, d
 # ==========  PUT  ==========
 
 
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
 def test_update_organization_unauthorized(
-    username, status_code, user_headers, client, organization
+    vp_client, username, status_code, user_headers, client, organization
 ):
+    vp_client.return_value.is_authorized.return_value = False
     data = {
         "acronym_translations": {
             "de": "New DE",

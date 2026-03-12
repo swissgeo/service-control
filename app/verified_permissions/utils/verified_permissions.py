@@ -1,9 +1,28 @@
+from typing import TYPE_CHECKING
+
 from boto3 import client
 
 from django.conf import settings
 
 from config.aws import config
-from verified_permissions.utils.base import BaseClient, VerifiedPermissionsResource
+from verified_permissions.utils.base import BaseClient
+
+if TYPE_CHECKING:
+    from mypy_boto3_verifiedpermissions import VerifiedPermissionsClient
+
+    from django.http import HttpRequest
+
+    from utils.api_path import Parameter
+
+
+class _ClientCache:
+    instance: VerifiedPermissionsClient | None = None
+
+
+def _get_client() -> VerifiedPermissionsClient:
+    if _ClientCache.instance is None:
+        _ClientCache.instance = client("verifiedpermissions", config=config)
+    return _ClientCache.instance
 
 
 class Client(BaseClient):
@@ -13,7 +32,7 @@ class Client(BaseClient):
         self.policy_store_id = settings.VERIFIED_PERMISSIONS_STORE_ID
         self.namespace = settings.VERIFIED_PERMISSIONS_NAMESPACE
         self.user_pool_id = settings.COGNITO_POOL_ID
-        self.client = client("verifiedpermissions", config=config)
+        self.client = _get_client()
 
     def create_org_admin_policy(self, organization_id: str) -> str:
         """Create a policy an organization admin policy to manage their organization.
@@ -134,38 +153,29 @@ class Client(BaseClient):
         self,
         token: str,
         action: str,
-        resource: VerifiedPermissionsResource,
+        resource: Parameter,
+        request: HttpRequest,
     ) -> bool:
         resp = self.client.is_authorized_with_token(
             policyStoreId=self.policy_store_id,
             token=token,
             action={"actionType": f"{self.namespace}::Action", "actionId": action},
-            resource=self._build_resource(resource),
-            entities=self._build_entities(resource),
+            resource=resource.vp_entity(request, self.namespace),
+            entities=self._build_entities(resource, request),
         )
         return resp["decision"] == "ALLOW"
 
-    def _build_resource(self, resource: VerifiedPermissionsResource) -> dict:
-        return {
-            "entityType": f"{self.namespace}::{resource.vp_entity_type}",
-            "entityId": resource.get_vp_entity_id(),
-        }
+    def _build_entities(self, resource: Parameter, request: HttpRequest) -> dict:
+        entity_list: list = []
+        seen: set[Parameter] = set()
 
-    def _build_entity_identifier(self, resource: VerifiedPermissionsResource) -> dict:
-        return {
-            "entityType": f"{self.namespace}::{resource.vp_entity_type}",
-            "entityId": resource.get_vp_entity_id(),
-        }
+        def collect(param: Parameter) -> None:
+            if param in seen:
+                return
+            seen.add(param)
+            entity_list.append(param.vp_entity_with_parents(request, self.namespace))
+            for parent in param.parents:
+                collect(parent)
 
-    def _build_entities(self, resource: VerifiedPermissionsResource) -> dict:
-        return {
-            "entityList": [
-                {
-                    "identifier": self._build_entity_identifier(resource),
-                    "parents": [
-                        self._build_entity_identifier(parent)
-                        for parent in resource.get_vp_parents()
-                    ],
-                }
-            ]
-        }
+        collect(resource)
+        return {"entityList": entity_list}

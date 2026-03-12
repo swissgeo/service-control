@@ -1,4 +1,11 @@
-from verified_permissions.utils.base import BaseClient, VerifiedPermissionsResource
+from typing import TYPE_CHECKING
+
+from verified_permissions.utils.base import BaseClient
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+
+    from utils.api_path import Parameter
 
 
 class Client(BaseClient):
@@ -26,6 +33,8 @@ class Client(BaseClient):
         self,
         token: str,  # noqa: ARG002 ..
         action: str,  # noqa: ARG002 ..
-        resource: VerifiedPermissionsResource,  # noqa: ARG002 ..
+        resource: Parameter,  # noqa: ARG002 ..
+        request: HttpRequest,  # noqa: ARG002 ..
     ) -> bool:
+        return True
         return True

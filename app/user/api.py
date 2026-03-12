@@ -16,7 +16,8 @@ from user.schemas import (
     RoleListSchema,
     RoleSchema,
 )
-from utils.auth import role_auth, vp_auth
+from utils.api_path import Parameter
+from utils.auth import is_authenticated, vp_auth
 
 router = Router()
 
@@ -37,10 +38,10 @@ def role_to_response(model: Role) -> RoleSchema:
 
 
 @router.post(
-    "/organizations/{organization_id}/machineusers",
+    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/machineusers",
     response={201: MachineUserSchema},
     exclude_none=True,
-    auth=vp_auth("createMachineUser"),
+    auth=vp_auth(roles.CREATE_MACHINE_USER),
 )
 def create_machine_user(
     request: HttpRequest,
@@ -99,10 +100,10 @@ def create_machine_user(
 
 
 @router.get(
-    "/organizations/{organization_id}/machineusers",
+    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/machineusers",
     response={200: MachineUserListSchema},
     exclude_none=True,
-    auth=vp_auth("listMachineUsers"),
+    auth=vp_auth(roles.LIST_MACHINE_USERS),
 )
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -124,9 +125,9 @@ def machine_users(
 
 
 @router.delete(
-    "/organizations/{organization_id}/machineusers/{machine_user_id}",
+    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/machineusers/{{{Parameter.MACHINE_USER.parameter_name}}}",
     exclude_none=True,
-    auth=vp_auth("deleteMachineUser", path_var="machine_user_id"),
+    auth=vp_auth(roles.DELETE_MACHINE_USER, resource=Parameter.MACHINE_USER),
 )
 def delete_machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -148,7 +149,7 @@ def delete_machine_users(
     "/roles",
     response={200: RoleListSchema},
     exclude_none=True,
-    auth=role_auth(roles.ORG_ADMIN),  # TODO: Check how to validate this in verified permissions
+    auth=is_authenticated,
 )
 def roles(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja

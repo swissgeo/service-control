@@ -1,23 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
-class VerifiedPermissionsResource:
-    """Mixin for Django models that can be used as a resource in a Verified Permissions request.
-
-    Subclasses must declare a "vp_entity_type" class attribute (the Verified Permissions entity type
-    name without the namespace prefix, e.g. "Organization") and implement
-    "get_vp_entity_id".  Override "get_vp_parents" when the entity has parent entities.
-    """
-
-    vp_entity_type: str
-
-    def get_vp_entity_id(self) -> str:
-        """Return the bare entity ID (no namespace prefix)."""
-        raise NotImplementedError
-
-    def get_vp_parents(self) -> list[VerifiedPermissionsResource]:
-        """Return parent resources for this entity (default: none)."""
-        return []
+    from utils.api_path import Parameter
 
 
 class BaseClient(ABC):
@@ -41,5 +28,6 @@ class BaseClient(ABC):
         self,
         token: str,
         action: str,
-        resource: VerifiedPermissionsResource,
+        resource: Parameter,
+        request: HttpRequest,
     ) -> bool: ...

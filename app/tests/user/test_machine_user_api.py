@@ -7,8 +7,12 @@ from cognito.utils.client import CreateClientResponse
 # ==========  GET  ==========
 
 
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
-def test_get_machine_users_unauthorized(username, status_code, user_headers, machine_user, client):
+def test_get_machine_users_unauthorized(
+    vp_client, username, status_code, user_headers, machine_user, client
+):
+    vp_client.return_value.is_authorized.return_value = False
     response = client.get(
         f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers",
         headers=user_headers[username],
@@ -40,10 +44,12 @@ def test_get_machine_users_returns_expected(username, user_headers, machine_user
 
 @patch("user.api.Client")
 @patch("user.extra_audience.Client")
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
 def test_create_machine_user_unauthorized(
-    ssm_client, boto_client, username, status_code, user_headers, machine_user, client
+    vp_client, ssm_client, boto_client, username, status_code, user_headers, machine_user, client
 ):
+    vp_client.return_value.is_authorized.return_value = False
     response = client.post(
         f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers",
         content_type="application/json",
@@ -113,10 +119,12 @@ def test_create_machine_user_fails_if_already_exists(
 
 @patch("user.models.Client")
 @patch("user.extra_audience.Client")
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
 def test_delete_machine_user_unauthorized(
-    ssm_client, boto_client, username, status_code, user_headers, machine_user, client
+    vp_client, ssm_client, boto_client, username, status_code, user_headers, machine_user, client
 ):
+    vp_client.return_value.is_authorized.return_value = False
     response = client.delete(
         f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers/{machine_user.user.username}",
         headers=user_headers[username],
