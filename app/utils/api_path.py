@@ -1,32 +1,26 @@
-from enum import Enum
-from typing import TYPE_CHECKING, Self
+from enum import StrEnum
+from typing import TYPE_CHECKING
+
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
 
 
-class Parameter(Enum):
+class VPEntityType(StrEnum):
+    ORGANIZATION = "Organization"
+    UNIT = "Unit"
+    MACHINE_USER = "MachineUser"
+
+
+class Parameter(BaseModel):
     """Parameter represents a path variable in the API that identifies an entity in the verified
     permissions policy store.
     """
 
-    ORGANIZATION = ("organization_id", "Organization", [])
-    UNIT = ("unit_id", "Unit", ["ORGANIZATION"])
-    MACHINE_USER = ("machine_user_id", "MachineUser", ["ORGANIZATION"])
-
-    def __new__(cls, parameter_name: str, _entity_type: str, _parent_names: list[str]) -> Self:
-        obj = object.__new__(cls)
-        obj._value_ = parameter_name
-        return obj
-
-    def __init__(self, parameter_name: str, entity_type: str, parent_names: list[str]) -> None:
-        self.parameter_name = parameter_name  # The name of the path variable in the API path
-        self.entity_type = entity_type  # Entity name in verified permissions policy store
-        self.parent_names = parent_names
-
-    @property
-    def parents(self) -> list[Parameter]:
-        return [Parameter[name] for name in self.parent_names]
+    parameter_name: str
+    vp_entity_type: VPEntityType
+    parents: list[Parameter] = []
 
     def vp_entity(self, request: HttpRequest, namespace: str) -> dict:
         """Verified permissions entity representation for the parameter in the request."""
@@ -34,7 +28,7 @@ class Parameter(Enum):
             resource_id := resolver_match.kwargs.get(self.parameter_name)
         ):
             return {
-                "entityType": f"{namespace}::{self.entity_type}",
+                "entityType": f"{namespace}::{self.vp_entity_type}",
                 "entityId": resource_id,
             }
         return {}
@@ -47,3 +41,12 @@ class Parameter(Enum):
             "identifier": self.vp_entity(request, namespace),
             "parents": [p.vp_entity(request, namespace) for p in self.parents],
         }
+
+
+Organization = Parameter(parameter_name="organization_id", vp_entity_type=VPEntityType.ORGANIZATION)
+Unit = Parameter(parameter_name="unit_id", vp_entity_type=VPEntityType.UNIT, parents=[Organization])
+Machine_user = Parameter(
+    parameter_name="machine_user_id",
+    vp_entity_type=VPEntityType.MACHINE_USER,
+    parents=[Organization],
+)

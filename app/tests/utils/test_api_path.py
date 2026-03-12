@@ -1,13 +1,13 @@
 from django.http import HttpRequest
 
-from utils.api_path import Parameter
+from utils import api_path
 
 
 def test_parameter_vp_entity():
     request = HttpRequest()
     request.resolver_match = type("ResolverMatch", (), {"kwargs": {"organization_id": "org123"}})()
 
-    result = Parameter.ORGANIZATION.vp_entity(request, "test_namespace")
+    result = api_path.Organization.vp_entity(request, "test_namespace")
 
     assert result == {
         "entityType": "test_namespace::Organization",
@@ -18,7 +18,7 @@ def test_parameter_vp_entity():
         "ResolverMatch", (), {"kwargs": {"organization_id": "org123", "unit_id": "unit123"}}
     )()
 
-    result = Parameter.UNIT.vp_entity(request, "test_namespace")
+    result = api_path.Unit.vp_entity(request, "test_namespace")
 
     assert result == {
         "entityType": "test_namespace::Unit",
@@ -31,7 +31,7 @@ def test_parameter_vp_entity():
         {"kwargs": {"organization_id": "org123", "machine_user_id": "machine123"}},
     )()
 
-    result = Parameter.MACHINE_USER.vp_entity(request, "test_namespace")
+    result = api_path.Machine_user.vp_entity(request, "test_namespace")
 
     assert result == {
         "entityType": "test_namespace::MachineUser",
@@ -43,7 +43,7 @@ def test_parameter_vp_entity_with_parents():
     request = HttpRequest()
     request.resolver_match = type("ResolverMatch", (), {"kwargs": {"organization_id": "org123"}})()
 
-    result = Parameter.ORGANIZATION.vp_entity_with_parents(request, "test_namespace")
+    result = api_path.Organization.vp_entity_with_parents(request, "test_namespace")
 
     assert result == {
         "identifier": {
@@ -57,7 +57,7 @@ def test_parameter_vp_entity_with_parents():
         "ResolverMatch", (), {"kwargs": {"organization_id": "org123", "unit_id": "unit123"}}
     )()
 
-    result = Parameter.UNIT.vp_entity_with_parents(request, "test_namespace")
+    result = api_path.Unit.vp_entity_with_parents(request, "test_namespace")
 
     assert result == {
         "identifier": {

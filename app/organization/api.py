@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from ninja import Router
 
 from config.authorization import VPAction
-from utils.api_path import Parameter
+from utils import api_path
 from utils.auth import superuser_auth, vp_auth
 from utils.language import LanguageCode, get_language, get_translation
 
@@ -77,7 +77,7 @@ def create_organization(
 
 
 @router.put(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}",
     response={200: OrganizationSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_ORGANIZATION),
@@ -123,7 +123,7 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
 
 
 @router.get(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}",
     response={200: OrganizationSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.GET_ORGANIZATION),
@@ -160,7 +160,7 @@ def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
 
 
 @router.post(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/units",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/units",
     response={201: UnitSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.CREATE_UNIT),
@@ -189,10 +189,10 @@ def create_unit(
 
 
 @router.put(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/units/{{{Parameter.UNIT.parameter_name}}}",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/units/{{{api_path.Unit.parameter_name}}}",
     response={200: UnitSchema},
     exclude_none=True,
-    auth=vp_auth(VPAction.UPDATE_UNIT, resource=Parameter.UNIT),
+    auth=vp_auth(VPAction.UPDATE_UNIT, resource=api_path.Unit),
 )
 def update_unit(
     request: HttpRequest,
@@ -222,7 +222,7 @@ def update_unit(
 
 
 @router.get(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/units",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/units",
     response={200: UnitListSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.LIST_UNITS),
@@ -240,10 +240,10 @@ def units(
 
 
 @router.get(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/units/{{{Parameter.UNIT.parameter_name}}}",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/units/{{{api_path.Unit.parameter_name}}}",
     response={200: UnitSchema},
     exclude_none=True,
-    auth=vp_auth(VPAction.GET_UNIT, resource=Parameter.UNIT),
+    auth=vp_auth(VPAction.GET_UNIT, resource=api_path.Unit),
 )
 def unit(
     request: HttpRequest,
@@ -264,9 +264,9 @@ def unit(
 
 
 @router.delete(
-    f"/organizations/{{{Parameter.ORGANIZATION.parameter_name}}}/units/{{{Parameter.UNIT.parameter_name}}}",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/units/{{{api_path.Unit.parameter_name}}}",
     response={204: None},
-    auth=vp_auth(VPAction.DELETE_UNIT, resource=Parameter.UNIT),
+    auth=vp_auth(VPAction.DELETE_UNIT, resource=api_path.Unit),
 )
 def delete_unit(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja

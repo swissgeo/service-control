@@ -3,13 +3,14 @@ from typing import TYPE_CHECKING
 from django.http import HttpRequest  # noqa:TC002
 from ninja.errors import AuthorizationError
 
-from utils.api_path import Parameter
+from utils import api_path
 from verified_permissions.utils.client import Client
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from config.authorization import VPAction
+    from utils.api_path import Parameter
     from verified_permissions.utils.base import BaseClient
 
 
@@ -24,7 +25,7 @@ def _get_vp_client() -> BaseClient:
 
 
 def vp_auth(
-    action: VPAction, resource: Parameter = Parameter.ORGANIZATION
+    action: VPAction, resource: Parameter = api_path.Organization
 ) -> Callable[[HttpRequest], bool]:
     """
     Checks if the user is logged in and has the required permissions for the action.
