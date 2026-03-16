@@ -6,8 +6,10 @@ from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
+from config.authorization import VPRole
 from user.models import CustomUser
 from utils.fields import CustomSlugField
+from verified_permissions.utils.client import Client as VPClient
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -45,6 +47,13 @@ class Organization(models.Model):
     acronym_it = models.CharField(_(_context, "Acronym (Italian)"), null=True, blank=True)
     acronym_rm = models.CharField(_(_context, "Acronym (Romansh)"), null=True, blank=True)
 
+    vp_org_admin_policy_id = models.CharField(
+        _(_context, f"Verified Permissions Policy ID for {VPRole.ORG_ADMIN.value}"),
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+
     def __str__(self) -> str:
         return str(self.organization_id)
 
@@ -59,13 +68,18 @@ class Organization(models.Model):
         """Validates the model before writing it to the database and create in cognito."""
 
         self.full_clean()
-        client = Client()
+        cognito_client = Client()
+        vp_client = VPClient()
         if self._state.adding:
-            if not client.create_group(self.organization_id):
+            if not cognito_client.create_group(self.organization_id):
                 logger.warning(
                     "cognito user group '%s' already exists, not created",
                     self.organization_id,
                 )
+            policy_id = vp_client.create_org_admin_policy(
+                self.organization_id,
+            )
+            self.vp_org_admin_policy_id = policy_id
         else:
             existing_org_id = Organization.objects.get(pk=self.pk).organization_id
             if self.organization_id != existing_org_id:
@@ -98,6 +112,9 @@ class Organization(models.Model):
         client = Client()
         if not client.delete_group(self.organization_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.organization_id)
+
+        vp_client = VPClient()
+        vp_client.delete_policy(self.vp_org_admin_policy_id)
 
         return result
 

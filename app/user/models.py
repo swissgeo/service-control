@@ -8,8 +8,9 @@ from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from cognito.utils.client import Client
-from config import roles
+from config.authorization import VPRole
 from user.extra_audience import remove_extra_audience
+from verified_permissions.utils.client import Client as VPClient
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -17,14 +18,6 @@ if TYPE_CHECKING:
     from django.db.models.base import ModelBase
 
 logger = logging.getLogger(__name__)
-
-
-class RoleType(models.TextChoices):
-    """Enumeration of roles for user choices."""
-
-    ORG_ADMIN = roles.ORG_ADMIN, _("Role", "Organization Admin")
-    DATASET_ADMIN = roles.DATASET_ADMIN, _("Role", "Dataset Admin")
-    DATASET_CONTRIBUTOR = roles.DATASET_CONTRIBUTOR, _("Role", "Dataset Contributor")
 
 
 class Role(NamedTuple):
@@ -38,22 +31,22 @@ class Role(NamedTuple):
         policy_template_ids = settings.ROLE_POLICY_TEMPLATE_IDS
         return [
             cls(
-                role_id=RoleType.ORG_ADMIN,
+                role_id=VPRole.ORG_ADMIN.value,
                 name="Organization Admin",
                 description="Organization administrator with full access to all resources.",
-                policy_template_id=policy_template_ids.get(RoleType.ORG_ADMIN),
+                policy_template_id=policy_template_ids.get(VPRole.ORG_ADMIN),
             ),
             cls(
-                role_id=RoleType.DATASET_ADMIN,
+                role_id=VPRole.DATASET_ADMIN.value,
                 name="Dataset Admin",
                 description="Dataset administrator with full access to all datasets of their Unit.",
-                policy_template_id=policy_template_ids.get(RoleType.DATASET_ADMIN),
+                policy_template_id=policy_template_ids.get(VPRole.DATASET_ADMIN),
             ),
             cls(
-                role_id=RoleType.DATASET_CONTRIBUTOR,
+                role_id=VPRole.DATASET_CONTRIBUTOR.value,
                 name="Dataset Contributor",
                 description="Dataset contributor with limited access to datasets of their Unit.",
-                policy_template_id=policy_template_ids.get(RoleType.DATASET_CONTRIBUTOR),
+                policy_template_id=policy_template_ids.get(VPRole.DATASET_CONTRIBUTOR),
             ),
         ]
 
@@ -82,7 +75,7 @@ class CustomUser(models.Model):
         "organization.Organization", null=True, on_delete=models.SET_NULL
     )
     roles = ArrayField(
-        base_field=models.CharField(max_length=32, choices=RoleType.choices),
+        base_field=models.CharField(max_length=32, choices=VPRole.choices()),
         default=list,
         blank=True,
     )
@@ -94,6 +87,12 @@ class CustomUser(models.Model):
     # Only set for machine users.
     created_by_user = models.ForeignKey(
         "user.CustomUser", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    vp_machine_user_policy_id = models.CharField(
+        _(_context, "Verified Permissions Policy ID"),
+        max_length=100,
+        null=True,
+        blank=True,
     )
 
     def __str__(self) -> str:
@@ -115,6 +114,12 @@ class CustomUser(models.Model):
                 self.roles,
             )
 
+        if self.user_type == self.UserType.MACHINE and self._state.adding:
+            client = VPClient()
+            self.vp_machine_user_policy_id = client.create_machine_user_policy(
+                client_id=self.user.username, organization_id=self.organization.organization_id
+            )
+
         return super().save(
             force_insert=force_insert,
             force_update=force_update,
@@ -133,5 +138,7 @@ class CustomUser(models.Model):
             if not client.delete_app_client(self.user.username):
                 logger.warning("cognito app client '%s' not found, not deleted", self.user.username)
             remove_extra_audience(self.user.username)
+            vp_client = VPClient()
+            vp_client.delete_policy(self.vp_machine_user_policy_id)
 
         return super().delete(using=using, keep_parents=keep_parents)

@@ -5,7 +5,7 @@ from ninja import Router
 from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
-from config import roles
+from config.authorization import VPAction
 from organization.models import Organization
 from user.extra_audience import add_extra_audience
 from user.models import CustomUser, Role
@@ -16,7 +16,8 @@ from user.schemas import (
     RoleListSchema,
     RoleSchema,
 )
-from utils.auth import organization_role_auth, role_auth
+from utils import api_path
+from utils.auth import is_authenticated, vp_auth
 
 router = Router()
 
@@ -37,10 +38,10 @@ def role_to_response(model: Role) -> RoleSchema:
 
 
 @router.post(
-    "/organizations/{organization_id}/machineusers",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/machineusers",
     response={201: MachineUserSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth(VPAction.CREATE_MACHINE_USER),
 )
 def create_machine_user(
     request: HttpRequest,
@@ -99,10 +100,10 @@ def create_machine_user(
 
 
 @router.get(
-    "/organizations/{organization_id}/machineusers",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/machineusers",
     response={200: MachineUserListSchema},
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth(VPAction.LIST_MACHINE_USERS),
 )
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -124,9 +125,9 @@ def machine_users(
 
 
 @router.delete(
-    "/organizations/{organization_id}/machineusers/{machine_user_id}",
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/machineusers/{{{api_path.Machine_user.parameter_name}}}",
     exclude_none=True,
-    auth=organization_role_auth(roles.ORG_ADMIN),
+    auth=vp_auth(VPAction.DELETE_MACHINE_USER, resource=api_path.Machine_user),
 )
 def delete_machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
@@ -148,7 +149,7 @@ def delete_machine_users(
     "/roles",
     response={200: RoleListSchema},
     exclude_none=True,
-    auth=role_auth(roles.ORG_ADMIN),
+    auth=is_authenticated,
 )
 def roles(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja

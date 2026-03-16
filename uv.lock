@@ -54,6 +54,9 @@ cognito-idp = [
 ssm = [
     { name = "mypy-boto3-ssm" },
 ]
+verifiedpermissions = [
+    { name = "mypy-boto3-verifiedpermissions" },
+]
 
 [[package]]
 name = "botocore"
@@ -505,6 +508,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/6a/e9/cde8a9fe2bf061e595256e5542f4c803efdcb2f741611bcae9763f2af993/mypy_boto3_ssm-1.42.54.tar.gz", hash = "sha256:f4bc19a08635757808b66ef94a5b52c3729da998587745962626e60606a1be2c", size = 94255, upload-time = "2026-02-20T20:49:58.148Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/54/58fa9dba05049adbfd5ecbd755a2e730c118d682367d885e8b35e9b9f0cf/mypy_boto3_ssm-1.42.54-py3-none-any.whl", hash = "sha256:dfd70aa5f60be70437b53482fa6e183bafe922598a50fc6c51f6ad3bd70d8c04", size = 95951, upload-time = "2026-02-20T20:49:54.202Z" },
+]
+
+[[package]]
+name = "mypy-boto3-verifiedpermissions"
+version = "1.42.33"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/15/3818517e13e7e9e9af39870f37189eda325618c59f52282b641b7a917ae5/mypy_boto3_verifiedpermissions-1.42.33.tar.gz", hash = "sha256:1eeefd3cfaa331921d7621f70d0c98d17aa16cfb1733ad41851ea258ab0c7119", size = 24969, upload-time = "2026-01-22T20:45:14.065Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3b/49/f5a2081cef75a9045d1a2c5cf1caeaf1d5847bdb6975dd446649c26933b5/mypy_boto3_verifiedpermissions-1.42.33-py3-none-any.whl", hash = "sha256:5309112ccb74b6408284fbf68f2a5e3de9b79200319a9ceaad37b4b242595248", size = 31247, upload-time = "2026-01-22T20:45:12.797Z" },
 ]
 
 [[package]]
@@ -1117,7 +1129,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["cognito-idp", "ssm"] },
+    { name = "boto3-stubs", extra = ["cognito-idp", "ssm", "verifiedpermissions"] },
     { name = "debugpy" },
     { name = "django-debug-toolbar" },
     { name = "django-extensions" },
@@ -1161,7 +1173,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["cognito-idp", "ssm"], specifier = "~=1.42" },
+    { name = "boto3-stubs", extras = ["cognito-idp", "ssm", "verifiedpermissions"], specifier = "~=1.42" },
     { name = "debugpy" },
     { name = "django-debug-toolbar" },
     { name = "django-extensions" },

@@ -16,7 +16,7 @@ from pathlib import Path
 import environ
 import yaml
 
-from config.roles import DATASET_ADMIN, DATASET_CONTRIBUTOR, ORG_ADMIN
+from config.authorization import VPRole
 
 env = environ.Env()
 
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "corsheaders",
     "cognito",
+    "verified_permissions",
     "support",
     "organization",
     "dataset",
@@ -199,21 +200,26 @@ OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME = env.str("OAUTH2_PROXY_EXTRA_AUD_SSM_PARA
 
 # Only when running server locally to not connect to ssm parameter store
 USE_LOCAL_SSM_STORE = env.bool("USE_LOCAL_SSM_STORE", False)
+# Only when running server locally to not connect to verified permissions
+USE_LOCAL_VERIFIED_PERMISSIONS = env.bool("USE_LOCAL_VERIFIED_PERMISSIONS", False)
 
 # Cognito
 COGNITO_ENDPOINT_URL = env.str("COGNITO_ENDPOINT_URL", "http://localhost:9229")
 COGNITO_POOL_ID = env.str("COGNITO_POOL_ID", "local")
 
+# Verified Permissions
+VERIFIED_PERMISSIONS_STORE_ID = env.str("VERIFIED_PERMISSIONS_STORE_ID", "local")
+VERIFIED_PERMISSIONS_NAMESPACE = env.str("VERIFIED_PERMISSIONS_NAMESPACE", "swissgeo")
+# Map roles to aws verified permissions policy templates.
+ROLE_POLICY_TEMPLATE_IDS = {
+    VPRole.ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    VPRole.DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
+    VPRole.DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
+}
+
 # M2M
 DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
 DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", None)
-
-# Map roles to aws verified permissions policy templates.
-ROLE_POLICY_TEMPLATE_IDS = {
-    ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
-    DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
-    DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
-}
 
 # Testing
 TESTING: bool = False

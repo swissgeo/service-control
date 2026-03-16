@@ -54,8 +54,10 @@ def test_unit_to_response_returns_response_with_default_language_if_undefined(
 # ==========  GET  ==========
 
 
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
-def test_get_unit_unauthorized(username, status_code, user_headers, unit, client):
+def test_get_unit_unauthorized(vp_client, username, status_code, user_headers, unit, client):
+    vp_client.return_value.is_authorized.return_value = False
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         headers=user_headers[username],
@@ -341,11 +343,13 @@ def test_get_units_returns_with_language_from_header(user_headers, unit, client)
 # ==========  POST  ==========
 
 
+@patch("utils.auth._get_vp_client")
 @patch("organization.models.Client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
 def test_create_unit_unauthorized(
-    boto_client, status_code, username, user_headers, client, organization
+    boto_client, vp_client, status_code, username, user_headers, client, organization
 ):
+    vp_client.return_value.is_authorized.return_value = False
     data = {
         "id": "ch.bafu.fauna",
         "organization_id": "ch.bafu",
@@ -451,8 +455,10 @@ def test_create_unit_already_exists(boto_client, user_headers, client, organizat
 # ==========  PUT  ==========
 
 
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
-def test_update_unit_unauthorized(username, status_code, user_headers, client, unit):
+def test_update_unit_unauthorized(vp_client, username, status_code, user_headers, client, unit):
+    vp_client.return_value.is_authorized.return_value = False
     data = {
         "name_translations": {
             "de": "Name DE",
@@ -512,8 +518,10 @@ def test_update_unit_updates_unit_as_expected(username, user_headers, client, un
 # ==========  DELETE  ==========
 
 
+@patch("utils.auth._get_vp_client")
 @pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401), ("user", 403)])
-def test_delete_unit_unauthorized(username, status_code, user_headers, client, unit):
+def test_delete_unit_unauthorized(vp_client, username, status_code, user_headers, client, unit):
+    vp_client.return_value.is_authorized.return_value = False
     response = client.delete(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
         headers=user_headers[username],
