@@ -247,11 +247,9 @@ def test_delete_deletes_records(vp_client, client, db):
 @patch("organization.models.Client")
 @patch("user.models.Client")
 @patch("user.extra_audience.Client")
-@patch("organization.models.VPClient")
 def test_delete_deletes_related_records(
-    vp_client, ssm_client, user_client, org_client, organization, django_machine_user_factory
+    ssm_client, user_client, org_client, organization, django_machine_user_factory
 ):
-    # vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
     unit_in = {
         "organization": organization,
         "unit_id": "ch.bafu.fauna",

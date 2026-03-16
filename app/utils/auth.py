@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from django.http import HttpRequest  # noqa:TC002
@@ -14,14 +15,9 @@ if TYPE_CHECKING:
     from verified_permissions.utils.base import BaseClient
 
 
-class _VPClientCache:
-    instance: BaseClient | None = None
-
-
+@lru_cache(maxsize=1)
 def _get_vp_client() -> BaseClient:
-    if _VPClientCache.instance is None:
-        _VPClientCache.instance = Client()
-    return _VPClientCache.instance
+    return Client()
 
 
 def vp_auth(

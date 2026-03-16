@@ -37,4 +37,3 @@ class Client(BaseClient):
         request: HttpRequest,  # noqa: ARG002 ..
     ) -> bool:
         return True
-        return True

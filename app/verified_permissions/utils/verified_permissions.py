@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from boto3 import client
@@ -16,14 +17,9 @@ if TYPE_CHECKING:
     from utils.api_path import Parameter
 
 
-class _ClientCache:
-    instance: VerifiedPermissionsClient | None = None
-
-
+@lru_cache(maxsize=1)
 def _get_client() -> VerifiedPermissionsClient:
-    if _ClientCache.instance is None:
-        _ClientCache.instance = client("verifiedpermissions", config=config)
-    return _ClientCache.instance
+    return client("verifiedpermissions", config=config)
 
 
 class Client(BaseClient):
