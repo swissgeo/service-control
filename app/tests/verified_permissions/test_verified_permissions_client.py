@@ -180,7 +180,7 @@ def test_delete_policy(mock_boto3, settings):
     assert mock_boto3.return_value.delete_policy.call_args.kwargs["policyId"] == "test-policy-id"
 
 
-def test_build_entities():
+def test_build_entities_organization():
     # Setup
     client = Client()
     resource = api_path.Organization
@@ -205,6 +205,10 @@ def test_build_entities():
         ],
     }
 
+
+def test_build_entities_with_parents():
+    # Setup
+    client = Client()
     resource = api_path.Unit
     request = HttpRequest()
     request.resolver_match = type(
