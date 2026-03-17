@@ -76,7 +76,6 @@ class Dataservice(models.Model):
     objects = DataserviceManager()
 
     class Meta:
-        abstract = True
         verbose_name = _("Dataservice Model", "Dataservice")
         verbose_name_plural = _("Dataservice Model", "Dataservices")
 
@@ -97,6 +96,25 @@ class Dataservice(models.Model):
         raise NotImplementedError(
             "Subclasses of Dataservice must implement the service_type property"
         )
+
+    # TODO: this is a naive implementation that checks if the object
+    # has an attribute referencing the child class object.
+    # A proper solution would involve using a third-party package
+    # like django-polymorphic or django-model-utils, we leave it like
+    # this for now to avoid adding additional dependencies and complexity
+    # for now.
+    def get_child_class_object(self) -> Dataservice:
+        """Returns the child object of the dataservice instance."""
+        for subclass in self.__class__.__subclasses__():
+            try:
+                return subclass.objects.get(pk=self.pk)
+            except subclass.DoesNotExist:
+                continue
+            # This solution is possible as well but leads to more
+            # complex code on usage side.
+            # if hasattr(self, subclass.__name__.lower()):
+            #     return getattr(self, subclass.__name__.lower())
+        raise TypeError(f"no child found for dataservice with id {self.dataservice_id}")
 
 
 class WMSDataservice(Dataservice):

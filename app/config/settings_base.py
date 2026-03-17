@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "harvest",
     "shared",
     "dataservice",
+    "distribution",
 ]
 
 MIDDLEWARE = [

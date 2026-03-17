@@ -187,3 +187,6 @@ cython_debug/
 .ruff_cache
 # Local database files for TinyDB
 app/harvest/*.json
+
+# Temp files
+*.tmp

@@ -17,11 +17,14 @@ _context = "Distribution Model"
 class Distribution(models.Model):
     """Abstract Base Distribution model."""
 
+    # TODO: should this identifier be globally unique or just unique per dataset?
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     title = models.CharField(_(_context, "Title"), max_length=255)
+    # TODO: protocol can be removed
     protocol = models.CharField(_(_context, "Protocol"), max_length=32)
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_(_context, "Created at"),
@@ -34,7 +37,6 @@ class Distribution(models.Model):
     )
 
     class Meta:
-        abstract = True
         verbose_name = _("Distribution", "Distributions")
         verbose_name_plural = _("Distribution", "Distributions")
 

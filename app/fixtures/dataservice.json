@@ -1,134 +1,67 @@
 [
   {
-    "model": "shared.servicedoclink",
-    "fields": {
-      "link_id": "geoadmin-wmts-docu",
-      "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
-      "rel": "service-doc",
-      "link_type": null,
-      "title": "Geoadmin WMTS Docu",
-      "hreflang": null,
-      "created_at": "2026-03-02T14:37:05.120Z",
-      "updated_at": "2026-03-02T14:37:05.120Z"
-    }
-  },
-  {
-    "model": "shared.servicedoclink",
-    "fields": {
-      "link_id": "geoadmin-wms-docu",
-      "href": "https://docs.geo.admin.ch/visualize-data/wms.html#web-map-service-wms",
-      "rel": "service-doc",
-      "link_type": null,
-      "title": "Geoadmin WMS Docu",
-      "hreflang": null,
-      "created_at": "2026-03-02T15:18:24.160Z",
-      "updated_at": "2026-03-02T15:18:24.160Z"
-    }
-  },
-  {
-    "model": "shared.describeslink",
-    "fields": {
-      "link_id": "stac-api-landingpage",
-      "href": "https://data.geo.admin.ch/api/stac/v1/",
-      "rel": "describes",
-      "link_type": "application/json",
-      "title": "STAC API Landingpage",
-      "hreflang": null,
-      "created_at": "2026-03-02T21:23:37.532Z",
-      "updated_at": "2026-03-02T21:25:16.662Z"
-    }
-  },
-  {
-    "model": "shared.linktemplate",
-    "fields": {
-      "linktemplate_id": "wms-capabilities-file",
-      "uri_template": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
-      "rel": "about",
-      "link_type": "application/xml",
-      "title": "WMS Capabilities File",
-      "created_at": "2026-03-02T19:46:56.183Z",
-      "updated_at": "2026-03-02T19:46:56.183Z"
-    }
-  },
-  {
-    "model": "shared.linktemplate",
-    "fields": {
-      "linktemplate_id": "wmts-capabilities-file",
-      "uri_template": "https://wmts.geo.admin.ch/EPSG/{EPSG}/1.0.0/WMTSCapabilities.xml",
-      "rel": "about",
-      "link_type": "application/vnd.ogc.wmts_xml",
-      "title": "WMTS Capabilities File",
-      "created_at": "2026-03-02T20:12:09.396Z",
-      "updated_at": "2026-03-02T20:12:09.396Z"
-    }
-  },
-  {
-    "model": "shared.linktemplatevariable",
-    "fields": {
-      "linktemplate": ["wms-capabilities-file"],
-      "variable_name": "lang",
-      "variable_dict": {
-        "enum": ["de", "fr", "en", "it"],
-        "type": "string",
-        "default": "de",
-        "description": "Language"
-      }
-    }
-  },
-  {
-    "model": "shared.linktemplatevariable",
-    "fields": {
-      "linktemplate": ["wmts-capabilities-file"],
-      "variable_name": "EPSG",
-      "variable_dict": {
-        "enum": [2056, 21781, 4326],
-        "type": "number",
-        "format": "integer",
-        "default": 2056,
-        "description": "EPSG"
-      }
-    }
-  },
-  {
     "model": "dataservice.dataservice",
     "fields": {
       "dataservice_id": "wmts-geoadminch",
-      "type": "ogc:wmts",
       "title": "WMTS geo.admin.ch",
-      "service_desc": null,
-      "service_doc": ["geoadmin-wmts-docu"],
-      "describes": null,
-      "created_at": "2026-03-02T14:26:03.323Z",
-      "updated_at": "2026-03-02T20:12:28.556Z",
-      "linktemplates": [["wmts-capabilities-file"]]
+      "openapi_spec_url": null,
+      "documentation_url_de": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+      "documentation_url_fr": null,
+      "documentation_url_en": null,
+      "documentation_url_it": null,
+      "created_at": "2026-03-17T08:33:36.829Z",
+      "updated_at": "2026-03-17T08:33:36.829Z"
     }
   },
   {
     "model": "dataservice.dataservice",
     "fields": {
       "dataservice_id": "wms-geoadminch",
-      "type": "ogc:wms",
       "title": "WMS geo.admin.ch",
-      "service_desc": null,
-      "service_doc": ["geoadmin-wms-docu"],
-      "describes": null,
-      "created_at": "2026-03-02T15:18:33.089Z",
-      "updated_at": "2026-03-02T19:54:56.127Z",
-      "linktemplates": [["wms-capabilities-file"]]
+      "openapi_spec_url": null,
+      "documentation_url_de": "https://docs.geo.admin.ch/visualize-data/wms.html#web-map-service-wms",
+      "documentation_url_fr": null,
+      "documentation_url_en": null,
+      "documentation_url_it": null,
+      "created_at": "2026-03-17T08:34:41.348Z",
+      "updated_at": "2026-03-17T08:34:41.348Z"
     }
   },
   {
     "model": "dataservice.dataservice",
     "fields": {
-      "dataservice_id": "geoadmin-stac-service",
-      "type": "ogcapi:stac",
-      "title": "Geoadmin Stac Service",
-      "service_desc": null,
-      "service_doc": null,
-      "describes": ["stac-api-landingpage"],
-      "created_at": "2026-03-02T21:23:48.546Z",
-      "updated_at": "2026-03-02T21:23:48.546Z",
-      "linktemplates": []
+      "dataservice_id": "stac-api-landingpage",
+      "title": "STAC API Landingpage",
+      "openapi_spec_url": "https://data.geo.admin.ch/api/stac/static/spec/v1/openapi.yaml",
+      "documentation_url_de": "https://data.geo.admin.ch/api/stac/static/spec/v1/api.html",
+      "documentation_url_fr": null,
+      "documentation_url_en": null,
+      "documentation_url_it": null,
+      "created_at": "2026-03-17T08:35:06.131Z",
+      "updated_at": "2026-03-17T08:35:06.131Z"
+    }
+  },
+  {
+    "model": "dataservice.wmsdataservice",
+    "fields": {
+      "dataservice_ptr": ["wms-geoadminch"],
+      "languages": "[\"de\", \"fr\", \"en\", \"it\"]",
+      "capabilities_url": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}"
+    }
+  },
+  {
+    "model": "dataservice.wmtsdataservice",
+    "fields": {
+      "dataservice_ptr": ["wmts-geoadminch"],
+      "variable_epsg_list": "[\"2056\", \"21781\", \"4326\"]",
+      "capabilities_url": "https://wmts.geo.admin.ch/EPSG/{epsg}/1.0.0/WMTSCapabilities.xml"
+    }
+  },
+  {
+    "model": "dataservice.ogcapistacdataservice",
+    "fields": {
+      "dataservice_ptr": ["stac-api-landingpage"],
+      "landing_page_url": "https://data.geo.admin.ch/api/stac/v1/"
     }
   }
 ]

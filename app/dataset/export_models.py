@@ -2,8 +2,14 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 from pydantic import AfterValidator, BaseModel, Field
 
+from dataservice.models import (
+    Dataservice,
+    OGCAPIStacDataservice,
+    WMSDataservice,
+    WMTSDataservice,
+)
+
 if TYPE_CHECKING:
-    from dataservice.models import Dataservice
     from dataset.models import Dataset
 
 
@@ -97,50 +103,99 @@ class OARDataservice(OARRecord):
 
     @classmethod
     def from_dataservice(cls, ds: Dataservice, lang: str = "de") -> OARDataservice:  # noqa: ARG003
+        # Cast to child class object
+        ds = ds.get_child_class_object()
+
+        # Instantiate record with common properties
         record = OARDataservice(id=ds.dataservice_id)
 
-        # Set properties
+        # Set common properties
         record.properties["title"] = getattr(ds, "title", None)
-        record.properties["type"] = getattr(ds, "type", None)
+        record.properties["type"] = ds.service_type
 
         # Add links
-        if ds.service_doc:
+        if ds.documentation_url_de:
             record.links.append(
                 Link(
-                    href=ds.service_doc.href,
-                    rel=ds.service_doc.rel,
-                    typ=ds.service_doc.link_type,
-                    title=ds.service_doc.title,
+                    href=ds.documentation_url_de,
+                    rel="service-doc",
+                    title="Service Documentation (DE)",
                 )
             )
-        if ds.service_desc:
+        if ds.openapi_spec_url:
             record.links.append(
                 Link(
-                    href=ds.service_desc.href,
-                    rel=ds.service_desc.rel,
-                    typ=ds.service_desc.link_type,
-                    title=ds.service_desc.title,
+                    href=ds.openapi_spec_url,
+                    rel="service-desc",
+                    typ="application/json",
+                    title="OpenAPI Specification",
                 )
             )
-        if ds.describes:
+
+        # Handle service-specific links
+        if isinstance(ds, WMTSDataservice):
+            if "{epsg}" in ds.capabilities_url:
+                record.linkTemplates.append(
+                    LinkTemplate(
+                        uriTemplate=ds.capabilities_url,
+                        rel="about",
+                        typ="application/xml",
+                        title="WMTS Capabilities File",
+                        variables={
+                            "epsg": {
+                                "enum": ds.variable_epsg_list,
+                                "type": "number",
+                                "format": "integer",
+                                "default": 2056,
+                                "description": "EPSG",
+                            }
+                        },
+                    )
+                )
+            else:
+                record.links.append(
+                    Link(
+                        href=ds.capabilities_url,
+                        rel="about",
+                        typ="application/xml",
+                        title="WMTS Capabilities File",
+                    )
+                )
+
+        elif isinstance(ds, WMSDataservice):
+            if "{lang}" in ds.capabilities_url:
+                record.linkTemplates.append(
+                    LinkTemplate(
+                        uriTemplate=ds.capabilities_url,
+                        rel="about",
+                        typ="application/xml",
+                        title="WMS Capabilities File",
+                        variables={
+                            "lang": {
+                                "enum": ds.languages,
+                                "type": "string",
+                                "default": "de",
+                                "description": "Language code",
+                            }
+                        },
+                    )
+                )
+            else:
+                record.links.append(
+                    Link(
+                        href=ds.capabilities_url,
+                        rel="about",
+                        typ="application/xml",
+                        title="WMS Capabilities File",
+                    )
+                )
+        elif isinstance(ds, OGCAPIStacDataservice):
             record.links.append(
                 Link(
-                    href=ds.describes.href,
-                    rel=ds.describes.rel,
-                    typ=ds.describes.link_type,
-                    title=ds.describes.title,
-                )
-            )
-        for template_link in ds.linktemplates.all():
-            record.linkTemplates.append(
-                LinkTemplate(
-                    uriTemplate=template_link.uri_template,
-                    rel=template_link.rel,
-                    typ=template_link.link_type,
-                    title=template_link.title,
-                    variables=dict(
-                        template_link.variables.all().values_list("variable_name", "variable_dict")
-                    ),
+                    href=ds.landing_page_url,
+                    rel="describes",
+                    typ="application/json",
+                    title="Landing Page of the OGC API Features/STAC Dataservice",
                 )
             )
 

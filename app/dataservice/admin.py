@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any
 from django.contrib import admin
 
 from .models import (
+    Dataservice,
     GeoadminFeaturesDataservice,
     OGCAPIFeaturesDataservice,
     OGCAPIStacDataservice,
@@ -13,6 +14,14 @@ from .models import (
 
 if TYPE_CHECKING:
     from django.http.request import HttpRequest
+
+
+@admin.register(Dataservice)
+class DataserviceAdmin(admin.ModelAdmin):
+    """Admin View for Dataservice"""
+
+    list_display = ("dataservice_id", "title")
+    readonly_fields = ("created_at", "updated_at", "dataservice_id")
 
 
 @admin.register(WMSDataservice)
