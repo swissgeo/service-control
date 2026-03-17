@@ -155,7 +155,7 @@ class Client(BaseClient):
     ) -> bool:
         resp = self.client.is_authorized_with_token(
             policyStoreId=self.policy_store_id,
-            token=token,
+            accessToken=token,
             action={"actionType": f"{self.namespace}::Action", "actionId": action},
             resource=resource.vp_entity(request, self.namespace),
             entities=self._build_entities(resource, request),
@@ -164,12 +164,12 @@ class Client(BaseClient):
 
     def _build_entities(self, resource: Parameter, request: HttpRequest) -> dict:
         entity_list: list = []
-        seen: set[Parameter] = set()
+        seen: set[str] = set()
 
         def collect(param: Parameter) -> None:
-            if param in seen:
+            if param.parameter_name in seen:
                 return
-            seen.add(param)
+            seen.add(param.parameter_name)
             entity_list.append(param.vp_entity_with_parents(request, self.namespace))
             for parent in param.parents:
                 collect(parent)

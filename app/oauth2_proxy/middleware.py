@@ -4,7 +4,11 @@ from typing import TYPE_CHECKING, cast
 import jwt
 
 from django.conf import settings
+from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.auth.middleware import RemoteUserMiddleware
+from ninja.errors import AuthenticationError
+
+from user.models import CustomUser
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -13,6 +17,32 @@ if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
+
+
+class RemoteCustomUserBackend(RemoteUserBackend):
+    """Middleware backend to create a CustomUser when a new user is created."""
+
+    preferred_username_header = "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME"
+
+    def configure_user(self, request: HttpRequest, user: User, created: bool = True) -> User:
+        """
+        If a new user was created, create a related CustomUser with the
+        preferred_username from the header.
+        Only human users are created here when they login for the first time. Machine users are
+        created separately. Machine users will also never have a cognito_username.
+        """
+        if created:
+            try:
+                cognito_username = request.META[self.preferred_username_header].strip()
+            except KeyError as error:
+                logger.exception("Failed to get preferred_username header")
+                raise AuthenticationError from error
+            CustomUser.objects.create(
+                user=user,
+                user_type=CustomUser.UserType.HUMAN,
+                cognito_username=cognito_username,
+            )
+        return user
 
 
 class Oauth2ProxyRemoteUserMiddleware(RemoteUserMiddleware):

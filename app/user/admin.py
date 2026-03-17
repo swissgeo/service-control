@@ -24,6 +24,7 @@ class CustomUserAdminForm(ModelForm):
         model = CustomUser
         fields = (
             "user",
+            "cognito_username",
             "organization",
             "roles",
             "user_type",
@@ -43,6 +44,7 @@ class UserAdmin(BaseUserAdmin):
 
     list_display = (
         "username",
+        "get_cognito_username",
         "email",
         "first_name",
         "last_name",
@@ -61,6 +63,11 @@ class UserAdmin(BaseUserAdmin):
     def get_user_type(self, obj: User) -> str:
         """Display the user type from the related CustomUser"""
         return obj.customuser.user_type  # ty: ignore[unresolved-attribute]
+
+    @admin.display(description="cognito_username")
+    def get_cognito_username(self, obj: User) -> str:
+        """Display the cognito_username from the related CustomUser"""
+        return obj.customuser.cognito_username  # ty: ignore[unresolved-attribute]
 
     def has_add_permission(
         self,

@@ -14,8 +14,12 @@ def test_custom_user_stores_role_ids_as_list(cognito_client, organization):
         user=auth_user,
         organization=organization,
         user_type=CustomUser.UserType.HUMAN,
-        roles=[VPRole.ORG_ADMIN, VPRole.DATASET_CONTRIBUTOR],
     )
+
+    # Roles are only store on update, not on create, so we need to call save here to store the
+    # roles in cognito for the first time.
+    custom_user.roles = [VPRole.ORG_ADMIN, VPRole.DATASET_CONTRIBUTOR]
+    custom_user.save()
 
     assert custom_user.roles == [VPRole.ORG_ADMIN, VPRole.DATASET_CONTRIBUTOR]
     assert cognito_client.return_value.update_user_roles.called

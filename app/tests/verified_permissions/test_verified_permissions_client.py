@@ -1,6 +1,9 @@
 from unittest.mock import patch
 
+from django.http import HttpRequest
+
 from config.authorization import VPRole
+from utils import api_path
 from verified_permissions.utils.verified_permissions import Client
 
 
@@ -175,3 +178,67 @@ def test_delete_policy(mock_boto3, settings):
         == "test-policy-store-id"
     )
     assert mock_boto3.return_value.delete_policy.call_args.kwargs["policyId"] == "test-policy-id"
+
+
+def test_build_entities_organization():
+    # Setup
+    client = Client()
+    resource = api_path.Organization
+    request = HttpRequest()
+    request.resolver_match = type(
+        "ResolverMatch", (), {"kwargs": {"organization_id": "org123", "unit_id": "unit123"}}
+    )()
+
+    # Run
+    entities = client._build_entities(resource, request)  # noqa: SLF001
+
+    # Assert
+    assert entities == {
+        "entityList": [
+            {
+                "identifier": {
+                    "entityId": "org123",
+                    "entityType": "swissgeo::Organization",
+                },
+                "parents": [],
+            },
+        ],
+    }
+
+
+def test_build_entities_with_parents():
+    # Setup
+    client = Client()
+    resource = api_path.Unit
+    request = HttpRequest()
+    request.resolver_match = type(
+        "ResolverMatch", (), {"kwargs": {"organization_id": "org123", "unit_id": "unit123"}}
+    )()
+
+    # Run
+    entities = client._build_entities(resource, request)  # noqa: SLF001
+
+    # Assert
+    assert entities == {
+        "entityList": [
+            {
+                "identifier": {
+                    "entityId": "unit123",
+                    "entityType": "swissgeo::Unit",
+                },
+                "parents": [
+                    {
+                        "entityId": "org123",
+                        "entityType": "swissgeo::Organization",
+                    },
+                ],
+            },
+            {
+                "identifier": {
+                    "entityId": "org123",
+                    "entityType": "swissgeo::Organization",
+                },
+                "parents": [],
+            },
+        ],
+    }

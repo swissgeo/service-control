@@ -90,6 +90,7 @@ def fixture_user_headers(cognito_client, django_user_model, organization):
             "X-Auth-Request-User": "admin",
             "X-Auth-Request-Groups": ",".join(settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS),
             "X-Auth-Request-Email": "admin@example.org",
+            "X-Auth-Request-Preferred-Username": "prefix-admin",
             "X-Auth-Request-Access-Token": encode(
                 {"first_name": "admin", "last_name": "admin"}, "key"
             ),
@@ -98,6 +99,7 @@ def fixture_user_headers(cognito_client, django_user_model, organization):
             "X-Auth-Request-User": "user",
             "X-Auth-Request-Groups": "",
             "X-Auth-Request-Email": "user@example.org",
+            "X-Auth-Request-Preferred-Username": "prefix-user",
             "X-Auth-Request-Access-Token": encode(
                 {"first_name": "user", "last_name": "user"}, "key"
             ),
@@ -106,6 +108,7 @@ def fixture_user_headers(cognito_client, django_user_model, organization):
             "X-Auth-Request-User": "organization_admin",
             "X-Auth-Request-Groups": "organization",
             "X-Auth-Request-Email": "organization_admin@example.org",
+            "X-Auth-Request-Preferred-Username": "prefix-organization_admin",
             "X-Auth-Request-Access-Token": encode(
                 {"first_name": "organization_admin", "last_name": "organization_admin"}, "key"
             ),

@@ -58,9 +58,16 @@ class CustomUser(models.Model):
 
     For basic human user attributes (email, first_name, last_name), cognito is the source of truth.
     Service-control is the source of truth for organizations, roles and their relations to users.
-    The username holds the cognito user ID in case of human users, in the case of machine users it
-    holds the app client id. The name of a machine user is stored in the last_name field of the
-    default User model.
+
+    Important attributes defined on (django.contrib.auth.models) User model:
+    - username:
+        - cognito user ID (sub) in case of human users
+        - app client ID in case of machine users
+    - first_name: first name as stored in cognito for human users, not set for machine users
+    - last_name:
+        - last name as stored in cognito for human users
+        - name of the machine user for machine users
+    - email: email as stored in cognito for human users, not set for machine users
     """
 
     _context = "User model"
@@ -70,6 +77,19 @@ class CustomUser(models.Model):
         MACHINE = "MACHINE", _("User model", "Machine")
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    # cognito_username is only set for human users. This is the username as stored in cognito,
+    # usually the external (eIAM) reference. This required as cognito expects this username as
+    # identifier in most API calls (e.g. AdminUpdateUserAttributes).
+    # The cognito_username is taken from the preferred_username header set by oauth2-proxy. It is
+    # only set on the first user login and never updated as this value never changes is cognito.
+    cognito_username = models.CharField(
+        _(_context, "Cognito Username"),
+        max_length=100,
+        null=True,
+        blank=True,
+        unique=True,
+    )
     # User can exist without an organization -> nullable
     organization = models.ForeignKey(
         "organization.Organization", null=True, on_delete=models.SET_NULL
@@ -107,10 +127,14 @@ class CustomUser(models.Model):
         update_fields: Iterable[str] | None = None,
     ) -> None:
 
-        if self.user_type == self.UserType.HUMAN:
+        if self.user_type == self.UserType.HUMAN and not self._state.adding:
+            # Custom user will be created by RemoteCustomUserBackend when the user logs in for
+            # first time. At this point the user will never have roles set yet, so we can skip the
+            # call to cognito to update user roles. For subsequent updates of human users, we need
+            # to update the roles in cognito if they have changed.
             client = Client()
             client.update_user_roles(
-                self.user.username,
+                self.cognito_username,
                 self.roles,
             )
 

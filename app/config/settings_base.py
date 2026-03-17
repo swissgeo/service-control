@@ -83,7 +83,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.RemoteUserBackend",
+    "oauth2_proxy.middleware.RemoteCustomUserBackend",
 ]
 
 ROOT_URLCONF = "config.urls"
