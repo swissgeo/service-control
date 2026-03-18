@@ -8,8 +8,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
-from dataservice.models import OGCAPIStacDataservice, WMSDataservice, WMTSDataservice
-from dataset.models import Dataset
 from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)
@@ -23,8 +21,23 @@ class Distribution(PolymorphicModel):
     # TODO: should this identifier be globally unique or just unique per dataset?
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
     title = models.CharField(_(_context, "Title"), max_length=255)
+
+    DATA_SOURCE_CHOICE_BOD_LAYERS_JS = "bod-layers-js"
+    DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES = "service-capabilities"
+    DATA_SOURCE_CHOICE_USER_INPUT = "user-input"
+    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (DATA_SOURCE_CHOICE_BOD_LAYERS_JS, "BOD (Layers JS)"),
+        (
+            DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
+            "Service Capabilities (e.g. WMS GetCapabilities, STAC API)",
+        ),
+        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Via Admin Interface)"),
+    ]
+    data_source = models.CharField(
+        _(_context, "Data Source"), choices=DATA_SOURCE_CHOICES, max_length=255
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -59,7 +72,9 @@ class ExternalDistribution(Distribution):
 class ExternalWMSDistribution(ExternalDistribution):
     """Distribution model for external WMS distributions."""
 
-    dataservice = models.ForeignKey(WMSDataservice, on_delete=models.SET_NULL, null=True)
+    dataservice = models.ForeignKey(
+        "dataservice.WMSDataservice", on_delete=models.SET_NULL, null=True
+    )
     wms_layer_name = models.CharField(_(_context, "WMS Layer Name"), max_length=255)
     opacity = models.DecimalField(
         _(_context, "Opacity"),
@@ -90,7 +105,9 @@ class ExternalWMSDistribution(ExternalDistribution):
 class ExternalWMTSDistribution(ExternalDistribution):
     """Distribution model for external WMTS distributions."""
 
-    dataservice = models.ForeignKey(WMTSDataservice, on_delete=models.SET_NULL, null=True)
+    dataservice = models.ForeignKey(
+        "dataservice.WMTSDataservice", on_delete=models.SET_NULL, null=True
+    )
     wmts_layer_name = models.CharField(_(_context, "WMTS Layer Name"), max_length=255)
     opacity = models.DecimalField(
         _(_context, "Opacity"),
@@ -115,7 +132,9 @@ class ExternalWMTSDistribution(ExternalDistribution):
 class ExternalStacDistribution(ExternalDistribution):
     """Distribution model for external STAC distributions."""
 
-    dataservice = models.ForeignKey(OGCAPIStacDataservice, on_delete=models.SET_NULL, null=True)
+    dataservice = models.ForeignKey(
+        "dataservice.OGCAPIStacDataservice", on_delete=models.SET_NULL, null=True
+    )
     stac_collection_id = models.CharField(_(_context, "STAC Collection ID"), max_length=255)
 
     class Meta:
@@ -127,3 +146,32 @@ class ExternalStacDistribution(ExternalDistribution):
         ]
         verbose_name = _(_context, "External STAC Distributions")
         verbose_name_plural = _(_context, "External STAC Distributions")
+
+
+class ExternalGeoJSONDistribution(ExternalDistribution):
+    """Distribution model for external GeoJSON distributions."""
+
+    geojson_url_de = models.URLField(_(_context, "GeoJSON URL (DE)"), max_length=2048)
+    geojson_url_fr = models.URLField(
+        _(_context, "GeoJSON URL (FR)"), max_length=2048, null=True, blank=True
+    )
+    geojson_url_it = models.URLField(
+        _(_context, "GeoJSON URL (IT)"), max_length=2048, null=True, blank=True
+    )
+    geojson_url_en = models.URLField(
+        _(_context, "GeoJSON URL (EN)"), max_length=2048, null=True, blank=True
+    )
+    geojson_url_rm = models.URLField(
+        _(_context, "GeoJSON URL (RM)"), max_length=2048, null=True, blank=True
+    )
+    style_url = models.URLField(
+        _(_context, "Style URL"),
+        max_length=2048,
+        null=True,
+        blank=True,
+        help_text=_(_context, "Optional URL to a style file for the GeoJSON layer."),
+    )
+
+    class Meta:
+        verbose_name = _(_context, "External GeoJSON Distributions")
+        verbose_name_plural = _(_context, "External GeoJSON Distributions")

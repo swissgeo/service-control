@@ -2,12 +2,16 @@ import logging
 
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
+from pystac.collection import Collection
+from pystac_client import Client
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
 
+from dataset.models import Dataset
+from distribution.models import Distribution, ExternalStacDistribution
 from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)
@@ -187,6 +191,75 @@ class OGCAPIStacDataservice(Dataservice):
     @property
     def service_type(self) -> str:
         return "ogcapi:stac"
+
+    def sync_from_capabilities(self, default_dataset_id: str = "ORPHANAGE") -> None:
+        """Evaluate the capabilities to detect distributions.
+
+        We try to map STAC collection_ids automatically to datasets. If no matching
+        dataset is found, the distribution is added to the default dataset (if given).
+        """
+
+        processed = set()
+
+        orphanage_dataset = Dataset.objects.get(dataset_id=default_dataset_id)
+
+        # Get managed collections from STAC API
+        client = Client.open(self.landing_page_url)
+        for collection in client.collection_search().collections():
+            collection_id = collection.id
+            processed.add(collection_id)
+
+            # check if distribution with this collection_id already exists
+            try:
+                distribution = ExternalStacDistribution.objects.get(
+                    stac_collection_id=collection_id,
+                    dataservice=self,
+                )
+                logger.debug(
+                    "Distribution for collection_id %s already exists, "
+                    "skipping creation for dataservice %s.",
+                    collection_id,
+                    self.dataservice_id,
+                )
+            except ExternalStacDistribution.DoesNotExist:
+                # try to find a dataset with the same geocat_id as the collection_id
+                dataset = Dataset.objects.filter(dataset_id=collection_id).first()
+
+                if not dataset:
+                    logger.warning(
+                        "No dataset found for collection_id %s, "
+                        "adding distribution to default dataset %s.",
+                        collection_id,
+                        default_dataset_id,
+                    )
+                    dataset = orphanage_dataset
+
+                # create new distribution
+                ExternalStacDistribution.objects.create(
+                    distribution_id=f"{collection_id}:stac",
+                    dataset=dataset,
+                    title="STAC Download Collection",
+                    data_source="service-capabilities",
+                    dataservice=self,
+                    stac_collection_id=collection_id,
+                )
+                logger.info(
+                    f"Added distribution for collection_id {collection_id} to "
+                    f"dataset {dataset.dataset_id} from dataservice {self.dataservice_id}."
+                )
+            else:
+                # If the distribution is linked to the orphanage dataset, we check if there's
+                # a dataset now matching the collection_id and link it to this dataset if found
+
+                if distribution.dataset == orphanage_dataset:
+                    dataset = Dataset.objects.filter(dataset_id=collection_id).first()
+                    if dataset:
+                        distribution.dataset = dataset
+                        distribution.save()
+                        logger.info(
+                            f"Updated distribution for collection_id {collection_id} to "
+                            f"dataset {dataset.dataset_id} from dataservice {self.dataservice_id}."
+                        )
 
 
 class GeoadminFeaturesDataservice(Dataservice):

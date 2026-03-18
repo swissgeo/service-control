@@ -24,6 +24,7 @@ dependencies = [
     "opentelemetry-sdk~=1.39",
     "psycopg[binary,pool]~=3.2",
     "pyjwt~=2.11",
+    "pystac-client~=0.9",
     "pyyaml~=6.0",
     "tinydb~=4.8",
     "whitenoise~=6.11",
@@ -87,6 +88,7 @@ ignore = [
     "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
     "DJ001",  # Ignore nullable strings
     "TRY003", # Ignore long messages in exceptions
+    "G004",   # Ignore f-string missing placeholders
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

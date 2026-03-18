@@ -4,9 +4,15 @@ from typing import TYPE_CHECKING, Any
 import boto3
 import environ
 
-from dataservice.models import WMSDataservice, WMTSDataservice
+from dataservice.models import OGCAPIStacDataservice, WMSDataservice, WMTSDataservice
 from dataset.models import Dataset
-from distribution.models import ExternalWMSDistribution, ExternalWMTSDistribution
+from distribution.models import (
+    Distribution,
+    ExternalGeoJSONDistribution,
+    ExternalStacDistribution,
+    ExternalWMSDistribution,
+    ExternalWMTSDistribution,
+)
 from harvest.import_models import DatasetImport, LayersJSImport, OrganisationImport, ParsingError
 from organization.models import Organization
 from utils.command import CustomBaseCommand
@@ -202,7 +208,6 @@ class Command(CustomBaseCommand):
 
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
             for item in page["Items"]:
-                self.print(json.dumps(item))
                 try:
                     ljs = LayersJSImport.from_dynamodb_item(item)
                     self.print_success(f"Parsed layers_js: {ljs.layer_id}")
@@ -223,6 +228,9 @@ class Command(CustomBaseCommand):
                 if ljs.layertype in ["wms", "wmts"]:
                     self.import_wms_distribution(ljs, dataset, wms_dataservice)
 
+                if ljs.layertype == "geojson":
+                    self.import_geojson_distribution(ljs, dataset)
+
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
     ) -> None:
@@ -235,7 +243,8 @@ class Command(CustomBaseCommand):
             wmts_layer_name=ljs.layer_id,
         )
         dist.dataservice = wmts_dataservice
-        dist.title = "WMTS Distribution"
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "WMTS Layer"
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -254,7 +263,8 @@ class Command(CustomBaseCommand):
             wms_layer_name=ljs.layer_id,
         )
         dist.dataservice = wms_dataservice
-        dist.title = "WMS Distribution"
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "WMS Layer"
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -262,4 +272,27 @@ class Command(CustomBaseCommand):
 
         if ljs.wms_gutter:
             dist.gutter = ljs.wms_gutter
+        dist.save()
+
+    def import_geojson_distribution(self, ljs: LayersJSImport, dataset: Dataset) -> None:
+
+        geojson_distribution_id = ljs.layer_id + ":geojson"
+
+        dist, _ = ExternalGeoJSONDistribution.objects.get_or_create(
+            distribution_id=geojson_distribution_id,
+            dataset=dataset,
+            defaults={"geojson_url_de": ljs.geojson_url_de},
+        )
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "GeoJSON Layer"
+        dist.geojson_url_de = ljs.geojson_url_de
+        dist.geojson_url_fr = ljs.geojson_url_fr
+        dist.geojson_url_it = ljs.geojson_url_it
+        dist.geojson_url_en = ljs.geojson_url_en
+        dist.geojson_url_rm = ljs.geojson_url_rm
+        # The geojson style URL is not stored in the layers_js table,
+        # but we can construct it from the layer_id
+        # (see https://github.com/geoadmin/mf-chsdi3/blob/master/chsdi/models/bod.py#L142)
+        # Note: we always reference prod env here
+        dist.style_url = "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json"
         dist.save()
