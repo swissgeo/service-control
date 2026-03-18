@@ -1,5 +1,8 @@
 import logging
 
+from polymorphic.managers import PolymorphicManager
+from polymorphic.models import PolymorphicModel
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.template.defaultfilters import slugify
@@ -12,21 +15,13 @@ logger = logging.getLogger(__name__)
 _context = "Dataservice Module"
 
 
-class DataserviceManager(models.Manager):
+class DataserviceManager(PolymorphicManager):
     def get_by_natural_key(self, dataservice_id: str) -> models.Model:
         return self.get(dataservice_id=dataservice_id)
 
 
-class Dataservice(models.Model):
-    """Dataservice model.
-
-    Note: We purposely create an abstract base class here and create concrete subclasses
-    for different types of dataservices (e.g. WMS, WMTS, WFS, OGC API, etc.). For once
-    we want to be able to link the different distribution types to correct data service
-    (e.g. a WMTS Distribution can only be part of WMTS DataService) and for another,
-    we have different functionality and likely different fields for different types
-    of dataservices (e.g. regarding links).
-    """
+class Dataservice(PolymorphicModel):
+    """Dataservice model."""
 
     dataservice_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
@@ -96,25 +91,6 @@ class Dataservice(models.Model):
         raise NotImplementedError(
             "Subclasses of Dataservice must implement the service_type property"
         )
-
-    # TODO: this is a naive implementation that checks if the object
-    # has an attribute referencing the child class object.
-    # A proper solution would involve using a third-party package
-    # like django-polymorphic or django-model-utils, we leave it like
-    # this for now to avoid adding additional dependencies and complexity
-    # for now.
-    def get_child_class_object(self) -> Dataservice:
-        """Returns the child object of the dataservice instance."""
-        for subclass in self.__class__.__subclasses__():
-            try:
-                return subclass.objects.get(pk=self.pk)
-            except subclass.DoesNotExist:
-                continue
-            # This solution is possible as well but leads to more
-            # complex code on usage side.
-            # if hasattr(self, subclass.__name__.lower()):
-            #     return getattr(self, subclass.__name__.lower())
-        raise TypeError(f"no child found for dataservice with id {self.dataservice_id}")
 
 
 class WMSDataservice(Dataservice):

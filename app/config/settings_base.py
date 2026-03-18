@@ -44,6 +44,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = env.list("CORS_ALLOWED_ORIGIN_REGEXES", default=[]
 # Application definition
 INSTALLED_APPS = [
     "oauth2_proxy",
+    "polymorphic",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

@@ -1,6 +1,9 @@
 import logging
 from typing import ClassVar
 
+from polymorphic.managers import PolymorphicManager
+from polymorphic.models import PolymorphicModel
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
@@ -14,7 +17,7 @@ logger = logging.getLogger(__name__)
 _context = "Distribution Model"
 
 
-class Distribution(models.Model):
+class Distribution(PolymorphicModel):
     """Abstract Base Distribution model."""
 
     # TODO: should this identifier be globally unique or just unique per dataset?
@@ -22,8 +25,6 @@ class Distribution(models.Model):
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     title = models.CharField(_(_context, "Title"), max_length=255)
-    # TODO: protocol can be removed
-    protocol = models.CharField(_(_context, "Protocol"), max_length=32)
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -35,6 +36,8 @@ class Distribution(models.Model):
         verbose_name=_(_context, "Updated at"),
         help_text=_(_context, "Date and time when the distribution was last updated"),
     )
+
+    objects = PolymorphicManager()
 
     class Meta:
         verbose_name = _("Distribution", "Distributions")

@@ -2,6 +2,7 @@
   {
     "model": "dataservice.dataservice",
     "fields": {
+      "polymorphic_ctype": ["dataservice", "wmtsdataservice"],
       "dataservice_id": "wmts-geoadminch",
       "title": "WMTS geo.admin.ch",
       "openapi_spec_url": null,
@@ -16,6 +17,7 @@
   {
     "model": "dataservice.dataservice",
     "fields": {
+      "polymorphic_ctype": ["dataservice", "wmsdataservice"],
       "dataservice_id": "wms-geoadminch",
       "title": "WMS geo.admin.ch",
       "openapi_spec_url": null,
@@ -30,6 +32,7 @@
   {
     "model": "dataservice.dataservice",
     "fields": {
+      "polymorphic_ctype": ["dataservice", "ogcapistacdataservice"],
       "dataservice_id": "stac-api-landingpage",
       "title": "STAC API Landingpage",
       "openapi_spec_url": "https://data.geo.admin.ch/api/stac/static/spec/v1/openapi.yaml",

@@ -9,6 +9,7 @@ dependencies = [
     "django-cors-headers~=4.9",
     "django-environ~=0.12",
     "django-ninja~=1.4",
+    "django-polymorphic~=4.11",
     "django~=6.0",
     "ecs-logging~=2.2",
     "gevent~=25.4",

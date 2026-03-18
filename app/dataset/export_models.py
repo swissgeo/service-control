@@ -103,8 +103,6 @@ class OARDataservice(OARRecord):
 
     @classmethod
     def from_dataservice(cls, ds: Dataservice, lang: str = "de") -> OARDataservice:  # noqa: ARG003
-        # Cast to child class object
-        ds = ds.get_child_class_object()
 
         # Instantiate record with common properties
         record = OARDataservice(id=ds.dataservice_id)

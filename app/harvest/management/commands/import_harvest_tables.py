@@ -189,6 +189,7 @@ class Command(CustomBaseCommand):
                 "No Geoadmin WMTS Dataservice found, try to load fixtures first "
                 "(./manage.py loaddata fixtures/dataservice.json"
             )
+            return
 
         try:
             wms_dataservice = WMSDataservice.objects.get(dataservice_id="wms-geoadminch")
@@ -197,6 +198,7 @@ class Command(CustomBaseCommand):
                 "No Geoadmin WMTS Dataservice found, try to load fixtures first "
                 "(./manage.py loaddata fixtures/dataservice.json"
             )
+            return
 
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
             for item in page["Items"]:
@@ -206,47 +208,6 @@ class Command(CustomBaseCommand):
                     self.print_success(f"Parsed layers_js: {ljs.layer_id}")
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
-
-                # Example of a layers_js itme:
-                # {
-                #     "layer_id": "ch.agroscope.amphibien-ausbreitungskarten_alytes_obstetricans",
-                #     "bod_layer_id": "ch.agroscope.amphibien-ausbreitungskarten_alytes_obstetricans",  # noqa: E501
-                #     "topics": "api,ech,inspire,service-wms",
-                #     "chargeable": False,
-                #     "staging": "prod",
-                #     "server_layername": "ch.agroscope.amphibien-ausbreitungskarten_alytes_obstetricans",  # noqa: E501
-                #     "attribution": "ch.agroscope",
-                #     "layertype": "wmts",
-                #     "opacity": None,
-                #     "minresolution": None,
-                #     "maxresolution": None,
-                #     "extent": None,
-                #     "backgroundlayer": False,
-                #     "tooltip": False,
-                #     "searchable": False,
-                #     "timeenabled": False,
-                #     "haslegend": True,
-                #     "singletile": False,
-                #     "highlightable": False,
-                #     "wms_layers": None,
-                #     "time_behaviour": "last",
-                #     "image_format": "png",
-                #     "tilematrix_resolution_max": Decimal("1"),
-                #     "timestamps": ["current"],
-                #     "parentlayerid": None,
-                #     "sublayersids": None,
-                #     "time_get_parameter": None,
-                #     "time_format": None,
-                #     "wms_gutter": None,
-                #     "sphinx_index": "ch_agroscope_amphibien-ausbreitungskarten_alytes_obstetricans",  # noqa: E501
-                #     "geojson_url_de": None,
-                #     "geojson_url_fr": None,
-                #     "geojson_url_it": None,
-                #     "geojson_url_en": None,
-                #     "geojson_url_rm": None,
-                #     "geojson_update_delay": None,
-                #     "srid": "2056",
-                # }
 
                 try:
                     dataset = Dataset.objects.get(dataset_id=ljs.layer_id)
@@ -258,7 +219,6 @@ class Command(CustomBaseCommand):
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
                     self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
-                    self.import_wms_distribution(ljs, dataset, wms_dataservice)
 
                 if ljs.layertype in ["wms", "wmts"]:
                     self.import_wms_distribution(ljs, dataset, wms_dataservice)
