@@ -74,7 +74,7 @@ class Oauth2ProxyRemoteMiddleware:
         self.get_response = get_response
         # One-time configuration and initialization.
 
-    def __call__(self, request: HttpRequest) -> HttpResponse:
+    def __call__(self, request: HttpRequest) -> HttpResponse:  # noqa: C901
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
@@ -84,6 +84,22 @@ class Oauth2ProxyRemoteMiddleware:
             # refuse the request
             return self.get_response(request)
         user = cast("User", user)
+        # TODO: It is not ideal to get the custom user in every request. We should consider
+        # substituting the auth model AUTH_USER_MODEL with CustomUser, but this is a bigger change.
+        # See GPS-584
+        custom_user = CustomUser.objects.filter(
+            user__username=user.username,
+        ).first()
+        if custom_user is None:
+            logger.error(
+                "Authenticated user does not have a related CustomUser: username=%s",
+                user.username,
+            )
+            raise AuthenticationError
+
+        if custom_user.user_type == CustomUser.UserType.MACHINE:
+            # Machine users don't carry the human profile data from Cognito headers.
+            return self.get_response(request)
 
         try:
             email = request.META[self.email_header].strip()
