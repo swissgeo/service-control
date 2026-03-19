@@ -4,8 +4,10 @@ from typing import TYPE_CHECKING, Any
 import boto3
 import environ
 
+from dataservice.models import WMSDataservice, WMTSDataservice
 from dataset.models import Dataset
-from harvest.import_models import DatasetImport, OrganisationImport, ParsingError
+from distribution.models import ExternalWMSDistribution, ExternalWMTSDistribution
+from harvest.import_models import DatasetImport, LayersJSImport, OrganisationImport, ParsingError
 from organization.models import Organization
 from utils.command import CustomBaseCommand
 
@@ -43,6 +45,12 @@ class Command(CustomBaseCommand):
             help="Import datasets",
         )
         parser.add_argument(
+            "--distributions",
+            action="store_true",
+            help="Import datasets",
+        )
+
+        parser.add_argument(
             "--target-env",
             type=str,
             choices=["dev", "int", "prod"],
@@ -74,6 +82,8 @@ class Command(CustomBaseCommand):
             self.import_organisations(*args, **options)
         if options["datasets"]:
             self.import_datasets(*args, **options)
+        if options["distributions"]:
+            self.import_distributions(*args, **options)
 
     # ##########################################################################
     def import_organisations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -162,3 +172,94 @@ class Command(CustomBaseCommand):
                 ds.geocat_id = import_ds.geocat_id
 
                 ds.save()
+
+    # ##########################################################################
+    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+
+        self.print_success("Importing distributions")
+
+        dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
+        paginator = dynamodb_client.get_paginator("scan")
+
+        # Try to fetch the Geoadmin WMTS dataservice, which is needed to create WMTS distributions.
+        try:
+            wmts_dataservice = WMTSDataservice.objects.get(dataservice_id="wmts-geoadminch")
+        except Dataset.DoesNotExist:
+            self.print_error(
+                "No Geoadmin WMTS Dataservice found, try to load fixtures first "
+                "(./manage.py loaddata fixtures/dataservice.json"
+            )
+            return
+
+        try:
+            wms_dataservice = WMSDataservice.objects.get(dataservice_id="wms-geoadminch")
+        except Dataset.DoesNotExist:
+            self.print_error(
+                "No Geoadmin WMTS Dataservice found, try to load fixtures first "
+                "(./manage.py loaddata fixtures/dataservice.json"
+            )
+            return
+
+        for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
+            for item in page["Items"]:
+                self.print(json.dumps(item))
+                try:
+                    ljs = LayersJSImport.from_dynamodb_item(item)
+                    self.print_success(f"Parsed layers_js: {ljs.layer_id}")
+                except Exception as e:  # noqa: BLE001
+                    self.print_error(f"Failed to parse item: {item}. Error: {e}")
+
+                try:
+                    dataset = Dataset.objects.get(dataset_id=ljs.layer_id)
+                except Dataset.DoesNotExist:
+                    self.print_error(f"No Dataset found for layer_id {ljs.layer_id}")
+                    continue
+
+                # If the layertype is WMTS we create a WMTS and WMS distribution,
+                # if it's WMS only a WMS distribution
+                if ljs.layertype == "wmts":
+                    self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+
+                if ljs.layertype in ["wms", "wmts"]:
+                    self.import_wms_distribution(ljs, dataset, wms_dataservice)
+
+    def import_wmts_distribution(
+        self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
+    ) -> None:
+
+        wmts_distribution_id = ljs.layer_id + ":wmts"
+
+        dist, _ = ExternalWMTSDistribution.objects.get_or_create(
+            distribution_id=wmts_distribution_id,
+            dataset=dataset,
+            wmts_layer_name=ljs.layer_id,
+        )
+        dist.dataservice = wmts_dataservice
+        dist.title = "WMTS Distribution"
+
+        # opacity must be between 0 (excluded) and 1 (included)
+        if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
+            dist.opacity = ljs.opacity
+        dist.save()
+
+    def import_wms_distribution(
+        self, ljs: LayersJSImport, dataset: Dataset, wms_dataservice: WMSDataservice
+    ) -> None:
+
+        wms_distribution_id = ljs.layer_id + ":wms"
+
+        dist, _ = ExternalWMSDistribution.objects.get_or_create(
+            distribution_id=wms_distribution_id,
+            dataset=dataset,
+            wms_layer_name=ljs.layer_id,
+        )
+        dist.dataservice = wms_dataservice
+        dist.title = "WMS Distribution"
+
+        # opacity must be between 0 (excluded) and 1 (included)
+        if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
+            dist.opacity = ljs.opacity
+
+        if ljs.wms_gutter:
+            dist.gutter = ljs.wms_gutter
+        dist.save()

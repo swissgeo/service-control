@@ -32,6 +32,14 @@ class Dataset(models.Model):
 
     geocat_id = models.CharField(_(_context, "Geocat ID"), unique=True, max_length=100)
 
+    preferred_distribution = models.ForeignKey(
+        "distribution.Distribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="preferred_for_datasets",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_(_context, "Created at"),
