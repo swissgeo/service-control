@@ -153,26 +153,42 @@ def test_delete_app_client_not_found(mock_boto3):
 
 
 @patch("cognito.utils.client.client")
-def test_list_users(mock_boto3):
+def test_update_user_roles_empty(mock_boto3):
     client = Client()
-    client.list_users(pagination_token=None)
+    client.update_user_roles(username="client_id", roles=[])
     assert (
-        call().list_users(
+        call().admin_update_user_attributes(
             UserPoolId=client.user_pool_id,
+            Username="client_id",
+            UserAttributes=[{"Name": "custom:roles", "Value": ""}],
         )
         in mock_boto3.mock_calls
     )
 
 
 @patch("cognito.utils.client.client")
-def test_list_users_paginated(mock_boto3):
+def test_update_user_roles_single(mock_boto3):
     client = Client()
-    client.list_users(pagination_token="token")
+    client.update_user_roles(username="client_id", roles=["first_role"])
     assert (
-        call().list_users(UserPoolId=client.user_pool_id, PaginationToken="token")
+        call().admin_update_user_attributes(
+            UserPoolId=client.user_pool_id,
+            Username="client_id",
+            UserAttributes=[{"Name": "custom:roles", "Value": "first_role"}],
+        )
         in mock_boto3.mock_calls
     )
 
 
-# TODO: add test for get_user_attribute
-# TODO: add test for get_users (should probably be called get_user)
+@patch("cognito.utils.client.client")
+def test_update_user_roles_multiple(mock_boto3):
+    client = Client()
+    client.update_user_roles(username="client_id", roles=["first_role", "second_role"])
+    assert (
+        call().admin_update_user_attributes(
+            UserPoolId=client.user_pool_id,
+            Username="client_id",
+            UserAttributes=[{"Name": "custom:roles", "Value": "first_role,second_role"}],
+        )
+        in mock_boto3.mock_calls
+    )

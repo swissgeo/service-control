@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -24,8 +23,8 @@ router = Router()
 
 def machine_user_to_response(model: CustomUser) -> MachineUserSchema:
     return MachineUserSchema(
-        name=model.user.last_name,
-        client_id=model.user.username,
+        name=model.last_name,
+        client_id=model.sub,
     )
 
 
@@ -59,7 +58,7 @@ def create_machine_user(
     existing_machine_user = CustomUser.objects.filter(
         organization__organization_id=organization_id,
         user_type=CustomUser.UserType.MACHINE,
-        user__last_name=machine_user_in.name,
+        last_name=machine_user_in.name,
     ).exists()
     if existing_machine_user:
         raise ValidationError(errors=[{"name": "machine user with this name already exists"}])
@@ -72,13 +71,10 @@ def create_machine_user(
 
     try:
         # Save app client info in database
-        base_user = User.objects.create(
-            username=app_client.client_id,
-            last_name=app_client.name,
-        )
         new_machine_user = CustomUser.objects.create(
             user_type=CustomUser.UserType.MACHINE,
-            user=base_user,
+            sub=app_client.client_id,
+            last_name=app_client.name,
             created_by_user=request_user,
             organization=org,
         )
@@ -117,7 +113,7 @@ def machine_users(
         CustomUser.objects.filter(
             organization__organization_id=organization_id, user_type=CustomUser.UserType.MACHINE
         )
-        .order_by("user__last_name")
+        .order_by("last_name")
         .all()
     )
     response = [machine_user_to_response(model) for model in models]
@@ -138,7 +134,7 @@ def delete_machine_users(
     Delete machine user of organization.
     """
     machine_user_to_delete = get_object_or_404(
-        CustomUser, user_type=CustomUser.UserType.MACHINE, user__username=machine_user_id
+        CustomUser, user_type=CustomUser.UserType.MACHINE, sub=machine_user_id
     )
     machine_user_to_delete.delete()
 

@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, ClassVar
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
 from django.http import HttpRequest
 
@@ -22,52 +21,41 @@ class CustomUserAdminForm(ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = (
-            "user",
+        fields: ClassVar[list[str]] = [
+            "user_type",
+            "sub",
             "cognito_username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_staff",
+            "is_active",
             "organization",
             "roles",
-            "user_type",
             "created_by_user",
             "vp_machine_user_policy_id",
-        )
+            "last_login",
+            "date_joined",
+        ]
 
 
-class CustomUserInline(admin.StackedInline):
-    model = CustomUser
-    form = CustomUserAdminForm
-    can_delete = False
-
-
-class UserAdmin(BaseUserAdmin):
-    inlines: ClassVar[list[type[CustomUserInline]]] = [CustomUserInline]
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    """Admin View for Users"""
 
     list_display = (
-        "username",
-        "get_cognito_username",
+        "sub",
+        "cognito_username",
         "email",
         "first_name",
         "last_name",
-        "get_organization",
-        "get_user_type",
+        "organization",
+        "user_type",
         "is_staff",
         "is_active",
     )
 
-    @admin.display(description="Organization")
-    def get_organization(self, obj: User) -> str:
-        """Display the organization from the related CustomUser"""
-        return obj.customuser.organization  # ty: ignore[unresolved-attribute]
-
-    @admin.display(description="Type")
-    def get_user_type(self, obj: User) -> str:
-        """Display the user type from the related CustomUser"""
-        return obj.customuser.user_type  # ty: ignore[unresolved-attribute]
-
-    @admin.display(description="cognito_username")
-    def get_cognito_username(self, obj: User) -> str:
-        """Display the cognito_username from the related CustomUser"""
-        return obj.customuser.cognito_username  # ty: ignore[unresolved-attribute]
+    form = CustomUserAdminForm
 
     def has_add_permission(
         self,
@@ -86,6 +74,4 @@ class UserAdmin(BaseUserAdmin):
         return False
 
 
-# Re-register UserAdmin
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+admin.site.unregister(Group)

@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-from django.contrib.auth.models import User
 from django.test import override_settings
 
 from config.authorization import VPRole
@@ -9,9 +8,9 @@ from user.models import CustomUser, Role
 
 @patch("user.models.Client")
 def test_custom_user_stores_role_ids_as_list(cognito_client, organization):
-    auth_user = User.objects.create(username="user1")
     custom_user = CustomUser.objects.create(
-        user=auth_user,
+        sub="user1",
+        cognito_username="prefix-user1",
         organization=organization,
         user_type=CustomUser.UserType.HUMAN,
     )
@@ -23,6 +22,11 @@ def test_custom_user_stores_role_ids_as_list(cognito_client, organization):
 
     assert custom_user.roles == [VPRole.ORG_ADMIN, VPRole.DATASET_CONTRIBUTOR]
     assert cognito_client.return_value.update_user_roles.called
+    assert cognito_client.return_value.update_user_roles.call_args[0][0] == "prefix-user1"
+    assert set(cognito_client.return_value.update_user_roles.call_args[0][1]) == {
+        VPRole.ORG_ADMIN,
+        VPRole.DATASET_CONTRIBUTOR,
+    }
 
 
 @override_settings(

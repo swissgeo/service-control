@@ -9,7 +9,7 @@ def test_object_stored_as_expected_for_valid_input(
 ):
     avp_client.return_value.create_machine_user_policy.return_value = "test-policy-id"
     machine_user_in = {
-        "username": "abc",
+        "app_id": "abc",
         "name": "Machine 1",
         "created_by_user": user,
         "organization": organization,
@@ -22,8 +22,8 @@ def test_object_stored_as_expected_for_valid_input(
 
     actual = CustomUser.objects.last()
     assert actual is not None
-    assert actual.user.username == "abc"
-    assert actual.user.last_name == "Machine 1"
+    assert actual.sub == "abc"
+    assert actual.last_name == "Machine 1"
     assert machine_user_in["created_by_user"] == actual.created_by_user
     assert machine_user_in["organization"] == actual.organization
     assert actual.vp_machine_user_policy_id == "test-policy-id"
@@ -39,7 +39,7 @@ def test_delete_deletes_records(
 ):
     avp_client.return_value.create_machine_user_policy.return_value = "test-policy-id"
     model_fields = {
-        "username": "def",
+        "app_id": "def",
         "name": "Machine 1",
         "organization": organization,
         "created_by_user": user,

@@ -84,6 +84,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+AUTH_USER_MODEL = "user.CustomUser"
+
 AUTHENTICATION_BACKENDS = [
     "oauth2_proxy.middleware.RemoteCustomUserBackend",
 ]

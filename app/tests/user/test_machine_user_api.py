@@ -32,8 +32,8 @@ def test_get_machine_users_returns_expected(username, user_headers, machine_user
     assert response.json() == {
         "items": [
             {
-                "name": machine_user.user.last_name,
-                "client_id": machine_user.user.username,
+                "name": machine_user.last_name,
+                "client_id": machine_user.sub,
             }
         ]
     }
@@ -126,7 +126,7 @@ def test_delete_machine_user_unauthorized(
 ):
     vp_client.return_value.is_authorized.return_value = False
     response = client.delete(
-        f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers/{machine_user.user.username}",
+        f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers/{machine_user.sub}",
         headers=user_headers[username],
     )
 
@@ -143,7 +143,7 @@ def test_delete_machine_user_deletes_as_expected(
     ssm_client, boto_client, username, user_headers, machine_user, client
 ):
     response = client.delete(
-        f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers/{machine_user.user.username}",
+        f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers/{machine_user.sub}",
         headers=user_headers[username],
     )
 

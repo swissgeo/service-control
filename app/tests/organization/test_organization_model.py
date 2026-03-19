@@ -262,7 +262,7 @@ def test_delete_deletes_related_records(
     Unit.objects.create(**unit_in)
 
     django_machine_user_factory(
-        username="abc", name="", organization=organization, created_by_user=None
+        app_id="abc", name="", organization=organization, created_by_user=None
     )
 
     organization.delete()

@@ -1,9 +1,12 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import Group
 
 from user.models import CustomUser
 
 
-def test_oauth_middleware_creates_user(settings, db, client, django_user_model):
+@patch("user.models.Client")
+def test_oauth_middleware_creates_user(cognito_client, settings, db, client):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
 
     headers = {
@@ -19,35 +22,25 @@ def test_oauth_middleware_creates_user(settings, db, client, django_user_model):
     }
     client.get("/", **headers)
 
-    user = CustomUser.objects.get(user__username="hans.maulwurf")
-    assert user.user.username == "hans.maulwurf"
-    assert user.user.email == "hans.maulwurf@example.com"
-    assert user.user.first_name == "Hans"
-    assert user.user.last_name == "Maulwurf"
-    assert user.user.is_superuser
-    assert user.user.is_staff
+    user = CustomUser.objects.get(sub="hans.maulwurf")
+    assert user.email == "hans.maulwurf@example.com"
+    assert user.first_name == "Hans"
+    assert user.last_name == "Maulwurf"
+    assert user.is_superuser
+    assert user.is_staff
     assert user.cognito_username == "cognito_hans"
-    # User groups should not be updated/created with values from proxy.
-    assert not user.user.groups.filter(name="admin").exists()
 
 
-def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
+@patch("user.models.Client")
+def test_oauth_middleware_updates_user(cognito_client, settings, db, client):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
 
-    group = Group.objects.create(name="admin")
-
-    user = django_user_model.objects.create_user(
-        username="joseph.quimby",
-        password="pass",
-    )
-    user.first_name = "Joe Quimby"
-    user.email = "joe.quimby@example.com"
-    user.is_superuser = True
-    user.is_staff = True
-    user.groups.add(group)
-    user.save()
     CustomUser.objects.create(
-        user=user,
+        sub="joseph.quimby",
+        first_name="Joe Quimby",
+        email="joe.quimby@example.com",
+        is_superuser=True,
+        is_staff=True,
         user_type=CustomUser.UserType.HUMAN,
         cognito_username="cognito_joseph",
     )
@@ -68,37 +61,26 @@ def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
     # Groups should not be created by middleware
     assert not Group.objects.filter(name="staff").exists()
 
-    user = django_user_model.objects.get(username="joseph.quimby")
+    user = CustomUser.objects.get(sub="joseph.quimby")
     assert user.first_name == "Joseph"
     assert user.last_name == "Quimby"
     assert user.email == "joseph.quimby@example.com"
     assert not user.is_superuser
     assert not user.is_staff
-    # User groups should not be updated by middleware
-    assert not user.groups.filter(name="staff").exists()
-    assert user.groups.filter(name="admin").exists()
 
 
-def test_oauth_middleware_updated_superuser_staff(settings, db, client, django_user_model):
+@patch("user.models.Client")
+def test_oauth_middleware_updated_superuser_staff(cognito_client, settings, db, client):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
-
-    group = Group.objects.create(name="admin")
-
-    user = django_user_model.objects.create_user(
-        username="joseph.quimby",
-        password="pass",
-    )
-    user.first_name = "Joseph"
-    user.last_name = "Quimby"
-    user.email = "joe.quimby@example.com"
-    user.is_superuser = False
-    user.is_staff = False
-    user.groups.add(group)
-    user.save()
     CustomUser.objects.create(
-        user=user,
-        user_type=CustomUser.UserType.HUMAN,
+        sub="joseph.quimby",
         cognito_username="cognito_joseph",
+        first_name="Joseph",
+        last_name="Quimby",
+        email="joe.quimby@example.com",
+        is_superuser=False,
+        is_staff=False,
+        user_type=CustomUser.UserType.HUMAN,
     )
 
     headers = {
@@ -109,7 +91,7 @@ def test_oauth_middleware_updated_superuser_staff(settings, db, client, django_u
     }
     client.get("/", **headers)
 
-    user = django_user_model.objects.get(username="joseph.quimby")
+    user = CustomUser.objects.get(sub="joseph.quimby")
     # Names should not be updated if token is missing
     assert user.first_name == "Joseph"
     assert user.last_name == "Quimby"
@@ -117,32 +99,24 @@ def test_oauth_middleware_updated_superuser_staff(settings, db, client, django_u
     # values updated as user is in admin group
     assert user.is_superuser
     assert user.is_staff
-    assert user.groups.filter(name="admin").exists()
 
 
-def test_oauth_middleware_header_group_is_relevant(settings, db, client, django_user_model):
+@patch("user.models.Client")
+def test_oauth_middleware_header_group_is_relevant(cognito_client, settings, db, client):
     # Test that the user is superuser/staff when the admin group is present in the header, even if
     # the user is not in the group. Normally this should not be possible in service-control. But in
     # other services that only rely on the headers/token and do not manage users this will be the
     # normal case.
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
-
-    Group.objects.create(name="admin")
-
-    user = django_user_model.objects.create_user(
-        username="joseph.quimby",
-        password="pass",
-    )
-    user.first_name = "Joseph"
-    user.last_name = "Quimby"
-    user.email = "joe.quimby@example.com"
-    user.is_superuser = False
-    user.is_staff = False
-    user.save()
     CustomUser.objects.create(
-        user=user,
-        user_type=CustomUser.UserType.HUMAN,
+        sub="joseph.quimby",
         cognito_username="cognito_joseph",
+        first_name="Joseph",
+        last_name="Quimby",
+        email="joe.quimby@example.com",
+        is_superuser=False,
+        is_staff=False,
+        user_type=CustomUser.UserType.HUMAN,
     )
 
     headers = {
@@ -153,11 +127,10 @@ def test_oauth_middleware_header_group_is_relevant(settings, db, client, django_
     }
     client.get("/", **headers)
 
-    user = django_user_model.objects.get(username="joseph.quimby")
+    user = CustomUser.objects.get(sub="joseph.quimby")
     assert user.first_name == "Joseph"
     assert user.last_name == "Quimby"
     assert user.email == "joseph.quimby@example.com"
     # values updated as user is in admin group
     assert user.is_superuser
     assert user.is_staff
-    assert not user.groups.filter(name="admin").exists()

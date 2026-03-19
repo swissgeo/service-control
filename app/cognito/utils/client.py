@@ -1,14 +1,9 @@
-from typing import TYPE_CHECKING
-
 from boto3 import client
 from pydantic import BaseModel
 
 from django.conf import settings
 
 from config.aws import config
-
-if TYPE_CHECKING:
-    from mypy_boto3_cognito_idp.type_defs import AttributeTypeTypeDef, ListUsersResponseTypeDef
 
 
 class CreateClientResponse(BaseModel):
@@ -93,44 +88,6 @@ class Client:
         except self.client.exceptions.ResourceNotFoundException:
             return False
         return True
-
-    def list_users(self, pagination_token: str | None) -> ListUsersResponseTypeDef:
-        """List all users in user pool"""
-        if pagination_token is not None:
-            # Setting PaginationToken to None is not accepted
-            return self.client.list_users(
-                UserPoolId=self.user_pool_id, PaginationToken=pagination_token
-            )
-        return self.client.list_users(UserPoolId=self.user_pool_id)
-
-    def get_user_attribute(self, attrs: list[AttributeTypeTypeDef], name: str) -> str | None:
-        """Get a user attribute value from a list of attributes"""
-        for attr in attrs:
-            if attr["Name"] == name:
-                return attr["Value"]
-        return None
-
-    def get_users(self, username: str) -> CognitoUser:
-        """Get details of a user in user pool"""
-        resp = self.client.admin_get_user(UserPoolId=self.user_pool_id, Username=username)
-        first_name = self.get_user_attribute(resp["UserAttributes"], "given_name")
-        last_name = self.get_user_attribute(resp["UserAttributes"], "family_name")
-        email = self.get_user_attribute(resp["UserAttributes"], "email")
-        if not first_name or not last_name or not email:
-            # These attributes are set as required in the user pool, so should always be present.
-            # If not, raise an error to avoid creating incomplete user records in the database.
-            raise Exception(f"User {username} is missing required attributes")  # noqa: TRY002
-
-        return CognitoUser(
-            username=resp["Username"],
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            org_name=self.get_user_attribute(resp["UserAttributes"], "custom:org_name"),
-            org_name_abbr=self.get_user_attribute(resp["UserAttributes"], "custom:org_name_abbr"),
-            org_unit_name=self.get_user_attribute(resp["UserAttributes"], "custom:org_unit_name"),
-            org_uid=self.get_user_attribute(resp["UserAttributes"], "custom:org_uid"),
-        )
 
     def update_user_roles(self, username: str, roles: list[str]) -> None:
         """Update the roles of a user in user pool"""
