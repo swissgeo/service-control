@@ -1,12 +1,14 @@
 from django.contrib.auth.models import Group
 
+from user.models import CustomUser
+
 
 def test_oauth_middleware_creates_user(settings, db, client, django_user_model):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
 
     headers = {
         "HTTP_X_AUTH_REQUEST_USER": "hans.maulwurf",
-        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant",
+        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "cognito_hans",
         "HTTP_X_AUTH_REQUEST_EMAIL": "hans.maulwurf@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "admin",
         # Token parts base64 encoded:
@@ -17,15 +19,16 @@ def test_oauth_middleware_creates_user(settings, db, client, django_user_model):
     }
     client.get("/", **headers)
 
-    user = django_user_model.objects.get(username="hans.maulwurf")
-    assert user.username == "hans.maulwurf"
-    assert user.email == "hans.maulwurf@example.com"
-    assert user.first_name == "Hans"
-    assert user.last_name == "Maulwurf"
-    assert user.is_superuser
-    assert user.is_staff
+    user = CustomUser.objects.get(user__username="hans.maulwurf")
+    assert user.user.username == "hans.maulwurf"
+    assert user.user.email == "hans.maulwurf@example.com"
+    assert user.user.first_name == "Hans"
+    assert user.user.last_name == "Maulwurf"
+    assert user.user.is_superuser
+    assert user.user.is_staff
+    assert user.cognito_username == "cognito_hans"
     # User groups should not be updated/created with values from proxy.
-    assert not user.groups.filter(name="admin").exists()
+    assert not user.user.groups.filter(name="admin").exists()
 
 
 def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
@@ -46,7 +49,7 @@ def test_oauth_middleware_updates_user(settings, db, client, django_user_model):
 
     headers = {
         "HTTP_X_AUTH_REQUEST_USER": "joseph.quimby",
-        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant",
+        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant for updates",
         "HTTP_X_AUTH_REQUEST_EMAIL": "joseph.quimby@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "staff",
         # Token parts base64 encoded:
@@ -90,7 +93,7 @@ def test_oauth_middleware_updated_superuser_staff(settings, db, client, django_u
 
     headers = {
         "HTTP_X_AUTH_REQUEST_USER": "joseph.quimby",
-        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant",
+        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant for updates",
         "HTTP_X_AUTH_REQUEST_EMAIL": "joseph.quimby@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "admin",
     }
@@ -129,7 +132,7 @@ def test_oauth_middleware_header_group_is_relevant(settings, db, client, django_
 
     headers = {
         "HTTP_X_AUTH_REQUEST_USER": "joseph.quimby",
-        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant",
+        "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME": "Not relevant for updates",
         "HTTP_X_AUTH_REQUEST_EMAIL": "joseph.quimby@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "admin",
     }

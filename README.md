@@ -22,6 +22,7 @@
     - [Run Tests From Within Visual Studio Code](#run-tests-from-within-visual-studio-code)
 - [Cognito](#cognito)
   - [Local Cognito](#local-cognito)
+- [User management](#user-management)
 - [OTEL](#otel)
   - [Environment Variables](#environment-variables)
   - [Adding a New Instrumentation](#adding-a-new-instrumentation)
@@ -177,6 +178,23 @@ class Client:
         self.user_pool_id = "<USER_POOL_ID>"
         self.client = session.client("cognito-idp")
 ```
+
+## User management
+
+The standard django `User` model (django.contrib.auth.models) is extended by the [CustomUser](./app/user/models.py)
+model. This model represents human as well as machine users.
+
+Human users must exist in cognito and are created the first time they call service-control with a
+valid AccessToken. The RemoteUserBackend (django.contrib.auth.backends) is extended by
+[RemoteCustomUserBackend](./app/oauth2_proxy/middleware.py) to also create the CustomUser object if
+needed. The AccessToken uses the cognito user id (sub) as subject and is used as username in the
+service-control model. Most cognito admin api calls (e.g. AdminUpdateUserAttributes) expect the
+cognito username. This is available in the AccessToken as preferred_username. The CustomUser model
+stores this as cognito_username to use in api requests to cognito.
+
+Machine users are always created via service-control api that generates a cognito app client. When
+a machine user calls the api with an AccessToken, the user already exists and will not be created
+by the RemoteCustomUserBackend.
 
 ## OTEL
 
