@@ -156,7 +156,7 @@ def test_create_machine_user_policy(mock_boto3, settings):
             "statement": """permit (
     principal == test-namespace::User::"test-user-pool-id|test-client-id",
     action in test-namespace::Action::"org_admin_actions",
-    resource == test-namespace::Organization::"test-organization-id"
+    resource in test-namespace::Organization::"test-organization-id"
 );""",
         }
     }

@@ -123,7 +123,7 @@ class Client(BaseClient):
                     "statement": f"""permit (
     principal == {self.namespace}::User::"{self.user_pool_id}|{client_id}",
     action in {self.namespace}::Action::"org_admin_actions",
-    resource == {self.namespace}::Organization::"{organization_id}"
+    resource in {self.namespace}::Organization::"{organization_id}"
 );""",
                 }
             },
