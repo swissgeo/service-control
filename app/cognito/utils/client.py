@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 from boto3 import client
 from pydantic import BaseModel
 
@@ -23,6 +25,56 @@ class CognitoUser(BaseModel):
     org_uid: str | None
 
 
+class CognitoUserGroup(ABC):
+    """
+    Base class for Cognito user groups. The group name is derived from the resource with a
+    prefix. This allows to easily identify the type of the group (e.g. organization or unit) and
+    avoid name clashes.
+    """
+
+    # The identifier of the resource this group relates to, e.g. organization_id or unit_id.
+    resource_id: str
+    prefix: str
+
+    def __init__(self, resource_id: str) -> None:
+        self.resource_id = resource_id
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """Return the name of the cognito user group."""
+
+
+class OrganizationGroup(CognitoUserGroup):
+    """
+    Cognito groups that relate to an organization have the prefix "O_".
+    """
+
+    prefix = "O_"
+
+    @property
+    def name(self) -> str:
+        return f"{self.prefix}{self.resource_id}"
+
+
+class UnitGroup(CognitoUserGroup):
+    """
+    Cognito groups that relate to a unit have the prefix "U_", as well as the organization_id as
+    part of the identifier to avoid name clashes between units of different organizations.
+    """
+
+    prefix = "U_"
+    organization_id: str
+
+    def __init__(self, identifier: str, organization_id: str) -> None:
+        super().__init__(identifier)
+        self.organization_id = organization_id
+
+    @property
+    def name(self) -> str:
+        return f"{self.prefix}{self.organization_id}_{self.resource_id}"
+
+
 class Client:
     """A low level client for managing cognito users and groups."""
 
@@ -31,14 +83,14 @@ class Client:
         self.user_pool_id = settings.COGNITO_POOL_ID
         self.client = client("cognito-idp", endpoint_url=self.endpoint_url, config=config)
 
-    def create_group(self, name: str) -> bool:
+    def create_group(self, group: CognitoUserGroup) -> bool:
         """Create a new cognito user group.
 
         Returns False if the group already exists.
         """
         try:
             self.client.create_group(
-                GroupName=name,
+                GroupName=group.name,
                 UserPoolId=self.user_pool_id,
                 Description="Managed by service-control",
             )

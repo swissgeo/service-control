@@ -1,11 +1,11 @@
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
 
-from cognito.utils.client import Client
+from cognito.utils.client import Client, OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from user.models import MachineUser
 from utils.fields import CustomSlugField
@@ -68,17 +68,17 @@ class Organization(models.Model):
         """Validates the model before writing it to the database and create in cognito."""
 
         self.full_clean()
+        is_new = self._state.adding
         cognito_client = Client()
         vp_client = VPClient()
-        if self._state.adding:
-            if not cognito_client.create_group(self.organization_id):
+        if is_new:
+            user_group = OrganizationGroup(self.organization_id)
+            if not cognito_client.create_group(user_group):
                 logger.warning(
                     "cognito user group '%s' already exists, not created",
                     self.organization_id,
                 )
-            policy_id = vp_client.create_org_admin_policy(
-                self.organization_id,
-            )
+            policy_id = vp_client.create_org_admin_policy(user_group)
             self.vp_org_admin_policy_id = policy_id
         else:
             existing_org_id = Organization.objects.get(pk=self.pk).organization_id
@@ -90,6 +90,17 @@ class Organization(models.Model):
             using=using,
             update_fields=update_fields,
         )
+        if is_new:
+            # Create initial unit for the organization
+            Unit.objects.create(
+                organization=self,
+                unit_id="default",
+                name_de="Default",
+                name_fr="Default",
+                name_en="Default",
+                name_it="Default",
+                name_rm="Default",
+            )
 
     def delete(
         self,
@@ -127,7 +138,6 @@ class Unit(models.Model):
     unit_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
-        unique=True,
         db_index=True,
     )
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
@@ -138,6 +148,29 @@ class Unit(models.Model):
     name_en = models.CharField(_(_context, "Name (English)"))
     name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
     name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
+
+    vp_dataset_admin_policy_id = models.CharField(
+        _(_context, f"Verified Permissions Policy ID for {VPRole.DATASET_ADMIN.value}"),
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+    vp_dataset_contributor_policy_id = models.CharField(
+        _(_context, f"Verified Permissions Policy ID for {VPRole.DATASET_CONTRIBUTOR.value}"),
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        constraints: ClassVar = [
+            models.UniqueConstraint(
+                fields=["organization", "unit_id"],
+                name="unique_unit_id_per_org",
+                violation_error_code="unique",
+                violation_error_message="Unit with this External ID already exists.",
+            ),
+        ]
 
     def __str__(self) -> str:
         return str(self.unit_id)
@@ -153,12 +186,18 @@ class Unit(models.Model):
         """Validates the model before writing it to the database and create in cognito."""
         self.full_clean()
         client = Client()
+        vp_client = VPClient()
         if self._state.adding:
-            if not client.create_group(self.unit_id):
+            user_group = UnitGroup(self.unit_id, self.organization.organization_id)
+            if not client.create_group(user_group):
                 logger.warning(
                     "cognito user group '%s' already exists, not created",
                     self.unit_id,
                 )
+            self.vp_dataset_admin_policy_id = vp_client.create_dataset_admin_policy(user_group)
+            self.vp_dataset_contributor_policy_id = vp_client.create_dataset_contributor_policy(
+                user_group
+            )
         else:
             existing_unit_id = Unit.objects.get(pk=self.pk).unit_id
             if self.unit_id != existing_unit_id:
@@ -180,4 +219,9 @@ class Unit(models.Model):
         result = super().delete(using=using, keep_parents=keep_parents)
         if not client.delete_group(self.unit_id):
             logger.warning("cognito user group '%s' not found, not deleted", self.unit_id)
+
+        vp_client = VPClient()
+        vp_client.delete_policy(self.vp_dataset_admin_policy_id)
+        vp_client.delete_policy(self.vp_dataset_contributor_policy_id)
+
         return result

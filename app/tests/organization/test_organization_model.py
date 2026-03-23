@@ -5,6 +5,7 @@ from django.forms import ModelForm
 
 import pytest
 
+from cognito.utils.client import OrganizationGroup
 from organization.models import Organization, Unit
 from user.models import CustomUser
 
@@ -13,6 +14,10 @@ from user.models import CustomUser
 @patch("organization.models.VPClient")
 def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
     vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     organization_in = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
@@ -49,13 +54,25 @@ def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
 
     assert client.return_value.create_group.called
     assert vp_client.return_value.create_org_admin_policy.called
-    assert vp_client.return_value.create_org_admin_policy.call_args.args[0] == "ch.bafu"
+    group_arg = vp_client.return_value.create_org_admin_policy.call_args.args[0]
+    assert isinstance(group_arg, OrganizationGroup)
+    assert group_arg.resource_id == "ch.bafu"
+    assert group_arg.name == "O_ch.bafu"
+
+    default_unit = Unit.objects.first()
+    assert default_unit is not None
+    assert default_unit.unit_id == "default"
+    assert default_unit.organization == actual
 
 
 @patch("organization.models.Client")
 @patch("organization.models.VPClient")
 def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
     vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     organization_in = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
@@ -93,7 +110,15 @@ def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
 
     assert client.return_value.create_group.called
     assert vp_client.return_value.create_org_admin_policy.called
-    assert vp_client.return_value.create_org_admin_policy.call_args.args[0] == "ch.bafu"
+    group_arg = vp_client.return_value.create_org_admin_policy.call_args.args[0]
+    assert isinstance(group_arg, OrganizationGroup)
+    assert group_arg.resource_id == "ch.bafu"
+    assert group_arg.name == "O_ch.bafu"
+
+    default_unit = Unit.objects.first()
+    assert default_unit is not None
+    assert default_unit.unit_id == "default"
+    assert default_unit.organization == actual
 
 
 def test_raises_exception_when_creating_db_object_with_mandatory_field_null(db):
@@ -145,6 +170,10 @@ def test_form_invalid_for_blank_mandatory_field(db):
 @patch("organization.models.VPClient")
 def test_raises_exception_for_existing_slug(vp_client, client, db):
     vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     Organization.objects.create(
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
@@ -166,7 +195,7 @@ def test_raises_exception_for_existing_slug(vp_client, client, db):
         )
 
     assert Organization.objects.count() == 1
-    assert client.return_value.create_group.call_count == 1
+    assert client.return_value.create_group.call_count == 2  # for org and default unit
     assert vp_client.return_value.create_org_admin_policy.call_count == 1
 
 
@@ -174,6 +203,10 @@ def test_raises_exception_for_existing_slug(vp_client, client, db):
 @patch("organization.models.VPClient")
 def test_save_updates_records(vp_client, client, db):
     vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     model_fields = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für",
@@ -186,9 +219,6 @@ def test_save_updates_records(vp_client, client, db):
     Organization.objects.create(**model_fields)
     actual = Organization.objects.first()
     assert actual.name_de == "Bundesamt für"
-    assert client.return_value.create_group.called
-    assert vp_client.return_value.create_org_admin_policy.called
-    assert vp_client.return_value.create_org_admin_policy.call_args.args[0] == "ch.bafu"
 
     client.return_value.reset_mock()
     vp_client.return_value.reset_mock()
@@ -220,6 +250,10 @@ def test_save_updates_records(vp_client, client, db):
 @patch("organization.models.VPClient")
 def test_delete_deletes_records(vp_client, client, db):
     vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     model_fields = {
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für",
@@ -247,9 +281,14 @@ def test_delete_deletes_records(vp_client, client, db):
 @patch("organization.models.Client")
 @patch("user.models.Client")
 @patch("user.extra_audience.Client")
+@patch("organization.models.VPClient")
 def test_delete_deletes_related_records(
-    ssm_client, user_client, org_client, organization, django_machine_user_factory
+    vp_client, ssm_client, user_client, org_client, organization, django_machine_user_factory
 ):
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     unit_in = {
         "organization": organization,
         "unit_id": "ch.bafu.fauna",
@@ -271,7 +310,7 @@ def test_delete_deletes_related_records(
     assert not Unit.objects.first()
     assert not CustomUser.objects.first()
 
-    assert org_client.return_value.delete_group.call_count == 2
+    assert org_client.return_value.delete_group.call_count == 3
     assert user_client.return_value.delete_app_client.called
     assert ssm_client.return_value.get_parameter.called
     assert ssm_client.return_value.put_parameter.called

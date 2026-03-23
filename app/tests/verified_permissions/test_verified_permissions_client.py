@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.http import HttpRequest
 
+from cognito.utils.client import OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from utils import api_path
 from verified_permissions.utils.verified_permissions import Client
@@ -22,7 +23,7 @@ def test_create_org_admin_policy(mock_boto3, settings):
 
     # Run
     client = Client()
-    created_policy_id = client.create_org_admin_policy(organization_id="test-organization-id")
+    created_policy_id = client.create_org_admin_policy(OrganizationGroup("test-organization-id"))
 
     # Assert
     assert created_policy_id == "test-policy-id"
@@ -36,7 +37,7 @@ def test_create_org_admin_policy(mock_boto3, settings):
             "policyTemplateId": "test-org-admin-template-id",
             "principal": {
                 "entityType": "test-namespace::UserGroup",
-                "entityId": "test-user-pool-id|test-organization-id",
+                "entityId": "test-user-pool-id|O_test-organization-id",
             },
             "resource": {
                 "entityType": "test-namespace::Organization",
@@ -61,7 +62,9 @@ def test_create_dataset_admin_policy(mock_boto3, settings):
 
     # Run
     client = Client()
-    created_policy_id = client.create_dataset_admin_policy(unit_id="test-unit-id")
+    created_policy_id = client.create_dataset_admin_policy(
+        UnitGroup("test-unit-id", "test-organization-id")
+    )
 
     # Assert
     assert created_policy_id == "test-policy-id"
@@ -75,7 +78,7 @@ def test_create_dataset_admin_policy(mock_boto3, settings):
             "policyTemplateId": "test-dataset-admin-template-id",
             "principal": {
                 "entityType": "test-namespace::UserGroup",
-                "entityId": "test-user-pool-id|test-unit-id",
+                "entityId": "test-user-pool-id|U_test-organization-id_test-unit-id",
             },
             "resource": {
                 "entityType": "test-namespace::Unit",
@@ -100,7 +103,9 @@ def test_create_dataset_contributor_policy(mock_boto3, settings):
 
     # Run
     client = Client()
-    created_policy_id = client.create_dataset_contributor_policy(unit_id="test-unit-id")
+    created_policy_id = client.create_dataset_contributor_policy(
+        UnitGroup("test-unit-id", "test-organization-id")
+    )
 
     # Assert
     assert created_policy_id == "test-policy-id"
@@ -114,7 +119,7 @@ def test_create_dataset_contributor_policy(mock_boto3, settings):
             "policyTemplateId": "test-dataset-contributor-template-id",
             "principal": {
                 "entityType": "test-namespace::UserGroup",
-                "entityId": "test-user-pool-id|test-unit-id",
+                "entityId": "test-user-pool-id|U_test-organization-id_test-unit-id",
             },
             "resource": {
                 "entityType": "test-namespace::Unit",
