@@ -7,7 +7,7 @@ from cognito.utils.client import Client
 from config.authorization import VPAction
 from organization.models import Organization
 from user.extra_audience import add_extra_audience
-from user.models import CustomUser, Role
+from user.models import MachineUser, Role
 from user.schemas import (
     CreateMachineUserSchema,
     MachineUserListSchema,
@@ -21,9 +21,9 @@ from utils.auth import is_authenticated, vp_auth
 router = Router()
 
 
-def machine_user_to_response(model: CustomUser) -> MachineUserSchema:
+def machine_user_to_response(model: MachineUser) -> MachineUserSchema:
     return MachineUserSchema(
-        name=model.last_name,
+        name=model.name,
         client_id=model.sub,
     )
 
@@ -55,9 +55,8 @@ def create_machine_user(
     request_user = getattr(request.user, "customuser", None)
 
     org = get_object_or_404(Organization, organization_id=organization_id)
-    existing_machine_user = CustomUser.objects.filter(
+    existing_machine_user = MachineUser.objects.filter(
         organization__organization_id=organization_id,
-        user_type=CustomUser.UserType.MACHINE,
         last_name=machine_user_in.name,
     ).exists()
     if existing_machine_user:
@@ -71,8 +70,7 @@ def create_machine_user(
 
     try:
         # Save app client info in database
-        new_machine_user = CustomUser.objects.create(
-            user_type=CustomUser.UserType.MACHINE,
+        new_machine_user = MachineUser.objects.create(
             sub=app_client.client_id,
             last_name=app_client.name,
             created_by_user=request_user,
@@ -109,13 +107,7 @@ def machine_users(
     List machine users of organization.
     """
 
-    models = (
-        CustomUser.objects.filter(
-            organization__organization_id=organization_id, user_type=CustomUser.UserType.MACHINE
-        )
-        .order_by("last_name")
-        .all()
-    )
+    models = MachineUser.objects.filter(organization__organization_id=organization_id)
     response = [machine_user_to_response(model) for model in models]
     return MachineUserListSchema(items=response)
 
@@ -133,9 +125,7 @@ def delete_machine_users(
     """
     Delete machine user of organization.
     """
-    machine_user_to_delete = get_object_or_404(
-        CustomUser, user_type=CustomUser.UserType.MACHINE, sub=machine_user_id
-    )
+    machine_user_to_delete = get_object_or_404(MachineUser, sub=machine_user_id)
     machine_user_to_delete.delete()
 
     return HttpResponse(status=204)

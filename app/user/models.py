@@ -203,3 +203,80 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             vp_client.delete_policy(self.vp_machine_user_policy_id)
 
         return super().delete(using=using, keep_parents=keep_parents)
+
+
+class MachineUserManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset().filter(user_type=CustomUser.UserType.MACHINE)
+
+
+class HumanUserManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset().filter(user_type=CustomUser.UserType.HUMAN)
+
+
+class MachineUser(CustomUser):
+    objects = MachineUserManager()
+
+    @property
+    def client_id(self) -> str:
+        return self.sub
+
+    @client_id.setter
+    def client_id(self, value: str) -> None:
+        self.sub = value
+
+    @property
+    def name(self) -> str:
+        return self.last_name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self.last_name = value
+
+    class Meta:
+        proxy = True
+        verbose_name = "Machine User"
+        verbose_name_plural = "Machine Users"
+        ordering = ("last_name",)
+
+    def save(
+        self,
+        *args: Any,  # noqa: ARG002 unused arguments
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
+        self.user_type = self.UserType.MACHINE
+        return super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
+
+
+class HumanUser(CustomUser):
+    objects = HumanUserManager()
+
+    def save(
+        self,
+        *args: Any,  # noqa: ARG002 unused arguments
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
+        self.user_type = self.UserType.HUMAN
+        return super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
+
+    class Meta:
+        proxy = True
+        verbose_name = "Human User"
+        verbose_name_plural = "Human Users"

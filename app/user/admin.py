@@ -3,46 +3,67 @@ from typing import TYPE_CHECKING, ClassVar
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
-from django.http import HttpRequest
 
 from config.authorization import VPRole
-from user.models import CustomUser
+from user.models import HumanUser, MachineUser
 
 if TYPE_CHECKING:
-    from django.http.request import HttpRequest
+    from django.http import HttpRequest
 
 
-class CustomUserAdminForm(ModelForm):
-    roles = MultipleChoiceField(
-        choices=VPRole.choices(),
-        required=False,
-        widget=SelectMultiple,
-    )
+class HumanUserAdminForm(ModelForm):
+    roles = MultipleChoiceField(choices=VPRole.choices(), required=False, widget=SelectMultiple)
 
     class Meta:
-        model = CustomUser
+        model = HumanUser
         fields: ClassVar[list[str]] = [
-            "user_type",
             "sub",
             "cognito_username",
             "email",
             "first_name",
             "last_name",
-            "is_staff",
-            "is_active",
             "organization",
             "roles",
-            "created_by_user",
-            "vp_machine_user_policy_id",
+            "is_staff",
+            "is_superuser",
+            "is_active",
             "last_login",
             "date_joined",
         ]
+        help_texts: ClassVar[dict[str, str]] = {
+            "sub": "Cognito user sub.",
+        }
 
 
-@admin.register(CustomUser)
-class CustomUserAdmin(admin.ModelAdmin):
-    """Admin View for Users"""
+class MachineUserAdminForm(ModelForm):
+    roles = MultipleChoiceField(choices=VPRole.choices(), required=False, widget=SelectMultiple)
 
+    class Meta:
+        model = MachineUser
+        fields: ClassVar[list[str]] = [
+            "sub",
+            "last_name",  # app client name in your model docstring
+            "organization",
+            "roles",
+            "is_staff",
+            "is_superuser",
+            "created_by_user",
+            "vp_machine_user_policy_id",
+            "is_active",
+            "date_joined",
+        ]
+        labels: ClassVar[dict[str, str]] = {
+            "sub": "Client ID",
+            "last_name": "Name",
+        }
+        help_texts: ClassVar[dict[str, str]] = {
+            "sub": "Create app client in cognito first and provide the app client ID here.",
+        }
+
+
+@admin.register(HumanUser)
+class HumanUserAdmin(admin.ModelAdmin):
+    form = HumanUserAdminForm
     list_display = (
         "sub",
         "cognito_username",
@@ -50,12 +71,10 @@ class CustomUserAdmin(admin.ModelAdmin):
         "first_name",
         "last_name",
         "organization",
-        "user_type",
-        "is_staff",
         "is_active",
+        "is_superuser",
     )
-
-    form = CustomUserAdminForm
+    readonly_fields = ("sub", "cognito_username", "date_joined", "last_login")
 
     def has_add_permission(
         self,
@@ -67,11 +86,33 @@ class CustomUserAdmin(admin.ModelAdmin):
     def has_delete_permission(
         self,
         request: HttpRequest,  # noqa: ARG002 unused argumentrequest
-        obj: CustomUser | None = None,  # noqa: ARG002 unused argumentrequest
+        obj: HumanUser | None = None,  # noqa: ARG002 unused argumentrequest
     ) -> bool:
         # Disable deleting users, cognito is the source of users. If necessary, users can be
         # disabled.
         return False
+
+
+@admin.register(MachineUser)
+class MachineUserAdmin(admin.ModelAdmin):
+    form = MachineUserAdminForm
+    list_display = (
+        "client_id",
+        "name",
+        "organization",
+        "created_by_user",
+        "is_active",
+        "is_superuser",
+    )
+    readonly_fields = ("vp_machine_user_policy_id", "date_joined")
+
+    @admin.display(description="Name", ordering="last_name")
+    def name(self, obj: MachineUser) -> str:
+        return obj.name
+
+    @admin.display(description="Client ID", ordering="sub")
+    def client_id(self, obj: MachineUser) -> str:
+        return obj.client_id
 
 
 admin.site.unregister(Group)
