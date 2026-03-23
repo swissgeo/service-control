@@ -74,12 +74,23 @@ start-local-db: ## Run the local db
 	docker compose up -d db
 	$(PYTHON) $(DJANGO_MANAGER) init_db
 	$(PYTHON) $(DJANGO_MANAGER) migrate
-	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
 
 
 .PHONY: start-local-services
 start-local-services: ## Run the the support services (cognito, otel)
 	docker compose up -d
+
+
+.PHONY: seed-local-testdata
+seed-local-testdata: start-local-services start-local-db ## Seed local organizations/users/roles in db + cognito
+	USE_LOCAL_VERIFIED_PERMISSIONS=true $(PYTHON) $(DJANGO_MANAGER) seed_local_testdata
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
+
+
+.PHONY: reset-local-testdata
+reset-local-testdata: start-local-services start-local-db ## Reset local users/orgs and seed again
+	USE_LOCAL_VERIFIED_PERMISSIONS=true $(PYTHON) $(DJANGO_MANAGER) seed_local_testdata --reset --recreate-cognito-users
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
 
 
 .PHONY: format
