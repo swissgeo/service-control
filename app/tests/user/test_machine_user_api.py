@@ -32,7 +32,7 @@ def test_get_machine_users_returns_expected(username, user_headers, machine_user
     assert response.json() == {
         "items": [
             {
-                "name": machine_user.last_name,
+                "name": machine_user.name,
                 "client_id": machine_user.sub,
             }
         ]

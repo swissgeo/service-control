@@ -81,11 +81,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         unique=True,
         help_text=_(_context, "Cognito subject. Either user id or app client id."),
     )
-    # first_name of human users as is stored in cognito. Not set for machine users.
-    first_name = models.CharField(_(_context, "First Name"), max_length=150, blank=True)
-    # last_name of human users as is stored in cognito. App client name for machine users.
-    last_name = models.CharField(_(_context, "Last Name"), max_length=150, blank=True)
-    email = models.EmailField(_(_context, "Email Address"), blank=True)
     is_staff = models.BooleanField(
         _(_context, "Staff Status"),
         default=False,
@@ -101,7 +96,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ),
     )
     date_joined = models.DateTimeField(_(_context, "Date Joined"), default=timezone.now)
+    # User can exist without an organization -> nullable
+    organization = models.ForeignKey(
+        "organization.Organization", null=True, on_delete=models.SET_NULL
+    )
+    # user_type is an enum to differentiate human users from machine users
+    user_type = models.CharField(
+        _(_context, "User Type"), max_length=10, choices=UserType.choices, default=UserType.HUMAN
+    )
 
+    # --
+    # -- Human user specific fields --
+    # --
+    # first_name of human users as is stored in cognito.
+    first_name = models.CharField(_(_context, "First Name"), max_length=150, blank=True)
+    # last_name of human users as is stored in cognito.
+    last_name = models.CharField(_(_context, "Last Name"), max_length=150, blank=True)
+    email = models.EmailField(_(_context, "Email Address"), blank=True)
     # cognito_username is only set for human users. This is the username as stored in cognito,
     # usually the external (eIAM) reference. This is required as cognito expects this username as
     # identifier in most API calls (e.g. AdminUpdateUserAttributes).
@@ -114,20 +125,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         unique=True,
     )
-    # User can exist without an organization -> nullable
-    organization = models.ForeignKey(
-        "organization.Organization", null=True, on_delete=models.SET_NULL
-    )
     roles = ArrayField(
         base_field=models.CharField(max_length=32, choices=VPRole.choices()),
         default=list,
         blank=True,
     )
 
-    # user_type is an enum to differentiate human users from machine users
-    user_type = models.CharField(
-        _(_context, "User Type"), max_length=10, choices=UserType.choices, default=UserType.HUMAN
-    )
+    # --
+    # -- Machine user specific fields --
+    # --
+    # App client name of machine user.
+    name = models.CharField(_(_context, "Name"), max_length=150, blank=True)
     # Only set for machine users.
     created_by_user = models.ForeignKey(
         "CustomUser", null=True, blank=True, on_delete=models.SET_NULL
@@ -218,27 +226,11 @@ class HumanUserManager(models.Manager):
 class MachineUser(CustomUser):
     objects = MachineUserManager()
 
-    @property
-    def client_id(self) -> str:
-        return self.sub
-
-    @client_id.setter
-    def client_id(self, value: str) -> None:
-        self.sub = value
-
-    @property
-    def name(self) -> str:
-        return self.last_name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        self.last_name = value
-
     class Meta:
         proxy = True
         verbose_name = "Machine User"
         verbose_name_plural = "Machine Users"
-        ordering = ("last_name",)
+        ordering = ("name",)
 
     def save(
         self,

@@ -57,7 +57,7 @@ def create_machine_user(
     org = get_object_or_404(Organization, organization_id=organization_id)
     existing_machine_user = MachineUser.objects.filter(
         organization__organization_id=organization_id,
-        last_name=machine_user_in.name,
+        name=machine_user_in.name,
     ).exists()
     if existing_machine_user:
         raise ValidationError(errors=[{"name": "machine user with this name already exists"}])
@@ -72,7 +72,7 @@ def create_machine_user(
         # Save app client info in database
         new_machine_user = MachineUser.objects.create(
             sub=app_client.client_id,
-            last_name=app_client.name,
+            name=app_client.name,
             created_by_user=request_user,
             organization=org,
         )

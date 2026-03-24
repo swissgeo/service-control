@@ -129,7 +129,7 @@ def django_machine_user_factory(db):
     ) -> Any:
         return CustomUser.objects.create(
             sub=app_id,
-            last_name=name,
+            name=name,
             user_type=CustomUser.UserType.MACHINE,
             organization=organization,
             created_by_user=created_by_user,

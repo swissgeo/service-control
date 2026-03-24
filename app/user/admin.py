@@ -42,9 +42,8 @@ class MachineUserAdminForm(ModelForm):
         model = MachineUser
         fields: ClassVar[list[str]] = [
             "sub",
-            "last_name",  # app client name in your model docstring
+            "name",
             "organization",
-            "roles",
             "is_staff",
             "is_superuser",
             "created_by_user",
@@ -52,10 +51,6 @@ class MachineUserAdminForm(ModelForm):
             "is_active",
             "date_joined",
         ]
-        labels: ClassVar[dict[str, str]] = {
-            "sub": "Client ID",
-            "last_name": "Name",
-        }
         help_texts: ClassVar[dict[str, str]] = {
             "sub": "Create app client in cognito first and provide the app client ID here.",
         }
@@ -97,7 +92,7 @@ class HumanUserAdmin(admin.ModelAdmin):
 class MachineUserAdmin(admin.ModelAdmin):
     form = MachineUserAdminForm
     list_display = (
-        "client_id",
+        "sub",
         "name",
         "organization",
         "created_by_user",
@@ -105,14 +100,6 @@ class MachineUserAdmin(admin.ModelAdmin):
         "is_superuser",
     )
     readonly_fields = ("vp_machine_user_policy_id", "date_joined")
-
-    @admin.display(description="Name", ordering="last_name")
-    def name(self, obj: MachineUser) -> str:
-        return obj.name
-
-    @admin.display(description="Client ID", ordering="sub")
-    def client_id(self, obj: MachineUser) -> str:
-        return obj.client_id
 
 
 admin.site.unregister(Group)

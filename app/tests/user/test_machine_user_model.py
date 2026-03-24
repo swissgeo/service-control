@@ -23,7 +23,7 @@ def test_object_stored_as_expected_for_valid_input(
     actual = CustomUser.objects.last()
     assert actual is not None
     assert actual.sub == "abc"
-    assert actual.last_name == "Machine 1"
+    assert actual.name == "Machine 1"
     assert machine_user_in["created_by_user"] == actual.created_by_user
     assert machine_user_in["organization"] == actual.organization
     assert actual.vp_machine_user_policy_id == "test-policy-id"
