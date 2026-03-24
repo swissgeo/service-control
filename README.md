@@ -181,20 +181,24 @@ class Client:
 
 ## User management
 
-The standard django `User` model (django.contrib.auth.models) is extended by the [CustomUser](./app/user/models.py)
-model. This model represents human as well as machine users.
+The standard django `User` model (django.contrib.auth.models) is replaced by the
+[CustomUser](./app/user/models.py) model. This model represents human as well as machine users.
 
 Human users must exist in cognito and are created the first time they call service-control with a
 valid AccessToken. The RemoteUserBackend (django.contrib.auth.backends) is extended by
-[RemoteCustomUserBackend](./app/oauth2_proxy/middleware.py) to also create the CustomUser object if
-needed. The AccessToken uses the cognito user id (sub) as subject and is used as username in the
+[RemoteCustomUserBackend](./app/oauth2_proxy/middleware.py) to also save the cognito username. The
+AccessToken uses the cognito user id (sub) as subject and is used as identifier in the
 service-control model. Most cognito admin api calls (e.g. AdminUpdateUserAttributes) expect the
-cognito username. This is available in the AccessToken as preferred_username. The CustomUser model
-stores this as cognito_username to use in api requests to cognito.
+cognito username, which is why we also save it in the extended RemoteCustomUserBackend.
 
 Machine users are always created via service-control api that generates a cognito app client. When
 a machine user calls the api with an AccessToken, the user already exists and will not be created
 by the RemoteCustomUserBackend.
+
+The standard django `Groups` are not used, authorization is done externally via verified permissions.
+The only exception is we still use the `is_superuser`/`is_staff` to allow the user to do everything
+and log in to the admin UI. For humans these flags (both or none) are set if they are in the cognito
+group `OAUTH2_PROXY_DJANGO_ADMIN_GROUPS`. For machine users the flags can be set (via admin ui).
 
 ## OTEL
 

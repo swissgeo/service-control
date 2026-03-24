@@ -7,7 +7,7 @@ from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
 from config.authorization import VPRole
-from user.models import CustomUser
+from user.models import MachineUser
 from utils.fields import CustomSlugField
 from verified_permissions.utils.client import Client as VPClient
 
@@ -99,9 +99,7 @@ class Organization(models.Model):
         """Deletes from the database and cognito. Also calls delete of the related models which
         also perform some cleanup in cognito."""
 
-        for machine_user in CustomUser.objects.filter(
-            organization=self, user_type=CustomUser.UserType.MACHINE
-        ):
+        for machine_user in MachineUser.objects.filter(organization=self):
             machine_user.delete()
 
         for unit in self.unit_set.all():  # type:ignore[unresolved-attribute]

@@ -1,10 +1,13 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import environ
 from psycopg import connect
 from psycopg.sql import SQL, Identifier, Literal
 
 from utils.command import CustomBaseCommand
+
+if TYPE_CHECKING:
+    from django.core.management.base import CommandParser
 
 env = environ.Env()
 
@@ -14,7 +17,18 @@ class Command(CustomBaseCommand):
 
     help = "Database management"
 
-    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+    def add_arguments(self, parser: CommandParser) -> None:
+        # Call the base class method to get default arguments defined in the base class
+        # (mainly 'logger')
+        super().add_arguments(parser)
+
+        parser.add_argument(
+            "--recreate-db",
+            action="store_true",
+            help="Drop the database and recreate it (THIS REMOVES ALL DATA)",
+        )
+
+    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
         host = env.str("DB_HOST", default="").strip()
         port = env.str("DB_PORT", default="").strip()
         admin_name = env.str("DB_ADMIN_USER", default="").strip()
@@ -56,6 +70,14 @@ class Command(CustomBaseCommand):
                         ),
                     )
                     self.print_success("Created role '%s'", user_name)
+                    connection.commit()
+
+                if options.get("recreate_db", False):
+                    # drop database
+                    cursor.execute(
+                        SQL("DROP DATABASE IF EXISTS {}").format(Identifier(database_name)),
+                    )
+                    self.print_success("Dropped database '%s'", database_name)
                     connection.commit()
 
                 # create database

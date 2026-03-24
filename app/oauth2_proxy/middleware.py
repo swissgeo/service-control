@@ -13,7 +13,6 @@ from user.models import CustomUser
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from django.contrib.auth.models import User
     from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
@@ -24,9 +23,11 @@ class RemoteCustomUserBackend(RemoteUserBackend):
 
     preferred_username_header = "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME"
 
-    def configure_user(self, request: HttpRequest, user: User, created: bool = True) -> User:
+    def configure_user(
+        self, request: HttpRequest, user: CustomUser, created: bool = True
+    ) -> CustomUser:
         """
-        If a new user was created, create a related CustomUser with the
+        If a new user was created, add the cognito_username with the value from the
         preferred_username from the header.
         Only human users are created here when they login for the first time. Machine users are
         created separately. Machine users will also never have a cognito_username.
@@ -37,11 +38,8 @@ class RemoteCustomUserBackend(RemoteUserBackend):
             except KeyError as error:
                 logger.exception("Failed to get preferred_username header")
                 raise AuthenticationError from error
-            CustomUser.objects.create(
-                user=user,
-                user_type=CustomUser.UserType.HUMAN,
-                cognito_username=cognito_username,
-            )
+            user.cognito_username = cognito_username
+            user.save()
         return user
 
 
@@ -51,11 +49,13 @@ class Oauth2ProxyRemoteUserMiddleware(RemoteUserMiddleware):
 
 class Oauth2ProxyRemoteMiddleware:
     """
-    Middleware Checks if user is authenticated.
-    If user is authenticated, update the basic user information first_name, last_name, email.
-    This information comes from Cognito and is provided in the access token. As cognito is the
-    "data-owner" for these attributes, we always update these values in service-control.
+    Middleware Checks if user is authenticated and returns if not.
 
+    For machine users, nothing else is done as they don't have any profile information.
+
+    For human users update their profile information for email, first_name and last_name. This
+    information comes from Cognito and is provided in the headers/access token. As cognito is the
+    "data-owner" for these attributes, we always update these values in service-control.
     Next read the user groups and check if the user is superuser/staff. This is a special group
     that allows the user to access the admin UI. Groups are not updated based as cognito is not the
     "data-owner", but service-control. If users groups change this must be done via service-control
@@ -74,7 +74,7 @@ class Oauth2ProxyRemoteMiddleware:
         self.get_response = get_response
         # One-time configuration and initialization.
 
-    def __call__(self, request: HttpRequest) -> HttpResponse:  # noqa: C901
+    def __call__(self, request: HttpRequest) -> HttpResponse:
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
@@ -83,24 +83,18 @@ class Oauth2ProxyRemoteMiddleware:
             # If the user is not authenticated then do nothing and let django
             # refuse the request
             return self.get_response(request)
-        user = cast("User", user)
-        # TODO: It is not ideal to get the custom user in every request. We should consider
-        # substituting the auth model AUTH_USER_MODEL with CustomUser, but this is a bigger change.
-        # See GPS-584
-        custom_user = CustomUser.objects.filter(
-            user__username=user.username,
-        ).first()
-        if custom_user is None:
-            logger.error(
-                "Authenticated user does not have a related CustomUser: username=%s",
-                user.username,
-            )
-            raise AuthenticationError
+        user = cast("CustomUser", user)
 
-        if custom_user.user_type == CustomUser.UserType.MACHINE:
-            # Machine users don't carry the human profile data from Cognito headers.
-            return self.get_response(request)
+        if user.user_type == CustomUser.UserType.HUMAN:
+            self._update_user_profile(request, user)
 
+        return self.get_response(request)
+
+    def _update_user_profile(self, request: HttpRequest, user: CustomUser) -> bool:
+        """
+        Update the user profile with the information from the token and headers.
+        Returns True if the user was updated, False otherwise.
+        """
         try:
             email = request.META[self.email_header].strip()
         except KeyError as error:
@@ -151,5 +145,4 @@ class Oauth2ProxyRemoteMiddleware:
 
         if changed:
             user.save()
-
-        return self.get_response(request)
+        return changed

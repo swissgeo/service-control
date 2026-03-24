@@ -1,73 +1,93 @@
 from typing import TYPE_CHECKING, ClassVar
 
+from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
-from django.http import HttpRequest
 
 from config.authorization import VPRole
-from user.models import CustomUser
+from user.models import HumanUser, MachineUser
 
 if TYPE_CHECKING:
-    from django.http.request import HttpRequest
+    from django.http import HttpRequest
 
 
-class CustomUserAdminForm(ModelForm):
-    roles = MultipleChoiceField(
-        choices=VPRole.choices(),
-        required=False,
-        widget=SelectMultiple,
-    )
+class HumanUserAdminForm(ModelForm):
+    roles = MultipleChoiceField(choices=VPRole.choices(), required=False, widget=SelectMultiple)
 
     class Meta:
-        model = CustomUser
-        fields = (
-            "user",
+        model = HumanUser
+        fields: ClassVar[list[str]] = [
+            "sub",
             "cognito_username",
+            "email",
+            "first_name",
+            "last_name",
             "organization",
             "roles",
-            "user_type",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+            "last_login",
+            "date_joined",
+        ]
+        help_texts: ClassVar[dict[str, str]] = {
+            "sub": "Cognito user sub.",
+            "is_superuser": (
+                "Designates that this user has all permissions without explicitly "
+                "assigning them. This is set based on the user being in the group "
+                f"{settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS}"
+            ),
+            "is_staff": (
+                "Designates that this user can log into this admin site. This is "
+                "set based on the user being in the group "
+                f"{settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS}"
+            ),
+        }
+
+
+class MachineUserAdminForm(ModelForm):
+    roles = MultipleChoiceField(choices=VPRole.choices(), required=False, widget=SelectMultiple)
+
+    class Meta:
+        model = MachineUser
+        fields: ClassVar[list[str]] = [
+            "sub",
+            "name",
+            "organization",
+            "is_staff",
+            "is_superuser",
             "created_by_user",
             "vp_machine_user_policy_id",
-        )
+            "is_active",
+            "date_joined",
+        ]
+        help_texts: ClassVar[dict[str, str]] = {
+            "sub": "Create app client in cognito first and provide the app client ID here.",
+        }
 
 
-class CustomUserInline(admin.StackedInline):
-    model = CustomUser
-    form = CustomUserAdminForm
-    can_delete = False
-
-
-class UserAdmin(BaseUserAdmin):
-    inlines: ClassVar[list[type[CustomUserInline]]] = [CustomUserInline]
-
+@admin.register(HumanUser)
+class HumanUserAdmin(admin.ModelAdmin):
+    form = HumanUserAdminForm
     list_display = (
-        "username",
-        "get_cognito_username",
+        "sub",
+        "cognito_username",
         "email",
         "first_name",
         "last_name",
-        "get_organization",
-        "get_user_type",
-        "is_staff",
+        "organization",
         "is_active",
+        "is_superuser",
     )
-
-    @admin.display(description="Organization")
-    def get_organization(self, obj: User) -> str:
-        """Display the organization from the related CustomUser"""
-        return obj.customuser.organization  # ty: ignore[unresolved-attribute]
-
-    @admin.display(description="Type")
-    def get_user_type(self, obj: User) -> str:
-        """Display the user type from the related CustomUser"""
-        return obj.customuser.user_type  # ty: ignore[unresolved-attribute]
-
-    @admin.display(description="cognito_username")
-    def get_cognito_username(self, obj: User) -> str:
-        """Display the cognito_username from the related CustomUser"""
-        return obj.customuser.cognito_username  # ty: ignore[unresolved-attribute]
+    readonly_fields = (
+        "sub",
+        "cognito_username",
+        "date_joined",
+        "last_login",
+        "is_superuser",
+        "is_staff",
+    )
 
     def has_add_permission(
         self,
@@ -79,13 +99,25 @@ class UserAdmin(BaseUserAdmin):
     def has_delete_permission(
         self,
         request: HttpRequest,  # noqa: ARG002 unused argumentrequest
-        obj: CustomUser | None = None,  # noqa: ARG002 unused argumentrequest
+        obj: HumanUser | None = None,  # noqa: ARG002 unused argumentrequest
     ) -> bool:
         # Disable deleting users, cognito is the source of users. If necessary, users can be
         # disabled.
         return False
 
 
-# Re-register UserAdmin
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+@admin.register(MachineUser)
+class MachineUserAdmin(admin.ModelAdmin):
+    form = MachineUserAdminForm
+    list_display = (
+        "sub",
+        "name",
+        "organization",
+        "created_by_user",
+        "is_active",
+        "is_superuser",
+    )
+    readonly_fields = ("vp_machine_user_policy_id", "date_joined")
+
+
+admin.site.unregister(Group)

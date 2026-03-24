@@ -4,7 +4,6 @@ from unittest.mock import patch
 from jwt import encode
 
 from django.conf import settings
-from django.contrib.auth.models import User
 
 import pytest
 
@@ -49,14 +48,12 @@ def fixture_unit(db, organization):
 @pytest.fixture(name="user")
 @patch("user.models.Client")
 def fixture_user(cognito_client, organization):
-    auth_user = User.objects.create(
-        username="user1",
+    return CustomUser.objects.create(
+        sub="1234",
         first_name="Chuck",
         last_name="Norris",
         email="c.n@example.com",
-    )
-    return CustomUser.objects.create(
-        user=auth_user,
+        cognito_username="c.norris",
         user_type=CustomUser.UserType.HUMAN,
         organization=organization,
     )
@@ -65,20 +62,18 @@ def fixture_user(cognito_client, organization):
 @pytest.fixture(name="machine_user")
 def fixture_machine_user(organization, user, django_machine_user_factory):
     return django_machine_user_factory(
-        username="abc", name="Machine 1", organization=organization, created_by_user=user
+        app_id="abc", name="Machine 1", organization=organization, created_by_user=user
     )
 
 
 @pytest.fixture(name="user_headers")
 @patch("user.models.Client")
-def fixture_user_headers(cognito_client, django_user_model, organization):
+def fixture_user_headers(cognito_client, organization):
 
-    organization_admin = django_user_model.objects.create_user(
-        username="organization_admin",
-        password="password",
-    )
     CustomUser.objects.create(
-        user=organization_admin,
+        sub="organization_admin",
+        cognito_username="prefix-organization_admin",
+        user_type=CustomUser.UserType.HUMAN,
         organization=organization,
         roles=[VPRole.ORG_ADMIN],
     )
@@ -130,10 +125,11 @@ def django_machine_user_factory(db):
     """
 
     def create_machine_user(
-        username: str, name: str, organization: Organization, created_by_user: User
+        app_id: str, name: str, organization: Organization, created_by_user: CustomUser
     ) -> Any:
         return CustomUser.objects.create(
-            user=User.objects.create_user(username=username, last_name=name),
+            sub=app_id,
+            name=name,
             user_type=CustomUser.UserType.MACHINE,
             organization=organization,
             created_by_user=created_by_user,
