@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
     from django.http import HttpRequest
 
+    from cognito.utils.client import OrganizationGroup, UnitGroup
     from utils.api_path import Parameter
 
 
@@ -31,7 +32,7 @@ class Client(BaseClient):
         self.user_pool_id = settings.COGNITO_POOL_ID
         self.client = _get_client()
 
-    def create_org_admin_policy(self, organization_id: str) -> str:
+    def create_org_admin_policy(self, user_group: OrganizationGroup) -> str:
         """Create a policy an organization admin policy to manage their organization.
 
         Args:
@@ -44,15 +45,15 @@ class Client(BaseClient):
             settings.ROLE_POLICY_TEMPLATE_IDS[VPRole.ORG_ADMIN],
             {
                 "entityType": f"{self.namespace}::UserGroup",
-                "entityId": f"{self.user_pool_id}|{organization_id}",
+                "entityId": f"{self.user_pool_id}|{user_group.name}",
             },
             {
                 "entityType": f"{self.namespace}::Organization",
-                "entityId": organization_id,
+                "entityId": user_group.resource_id,
             },
         )
 
-    def create_dataset_admin_policy(self, unit_id: str) -> str:
+    def create_dataset_admin_policy(self, user_group: UnitGroup) -> str:
         """Create a dataset admin policy to manage datasets in a unit.
 
         Args:
@@ -65,15 +66,15 @@ class Client(BaseClient):
             settings.ROLE_POLICY_TEMPLATE_IDS[VPRole.DATASET_ADMIN],
             {
                 "entityType": f"{self.namespace}::UserGroup",
-                "entityId": f"{self.user_pool_id}|{unit_id}",
+                "entityId": f"{self.user_pool_id}|{user_group.name}",
             },
             {
                 "entityType": f"{self.namespace}::Unit",
-                "entityId": unit_id,
+                "entityId": user_group.resource_id,
             },
         )
 
-    def create_dataset_contributor_policy(self, unit_id: str) -> str:
+    def create_dataset_contributor_policy(self, user_group: UnitGroup) -> str:
         """Create a dataset contributor policy to manage datasets in a unit.
 
         Args:
@@ -86,11 +87,11 @@ class Client(BaseClient):
             settings.ROLE_POLICY_TEMPLATE_IDS[VPRole.DATASET_CONTRIBUTOR],
             {
                 "entityType": f"{self.namespace}::UserGroup",
-                "entityId": f"{self.user_pool_id}|{unit_id}",
+                "entityId": f"{self.user_pool_id}|{user_group.name}",
             },
             {
                 "entityType": f"{self.namespace}::Unit",
-                "entityId": unit_id,
+                "entityId": user_group.resource_id,
             },
         )
 

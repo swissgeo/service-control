@@ -16,6 +16,10 @@ from user.models import CustomUser
 def fixture_organization(db):
     with patch("organization.models.VPClient") as vp_client, patch("organization.models.Client"):
         vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+        vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+        vp_client.return_value.create_dataset_contributor_policy.return_value = (
+            "mock-contributor-policy-id"
+        )
         yield Organization.objects.create(
             organization_id="ch.bafu",
             acronym_de="BAFU",
@@ -33,7 +37,11 @@ def fixture_organization(db):
 
 @pytest.fixture(name="unit")
 def fixture_unit(db, organization):
-    with patch("organization.models.Client"):
+    with patch("organization.models.VPClient") as vp_client, patch("organization.models.Client"):
+        vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+        vp_client.return_value.create_dataset_contributor_policy.return_value = (
+            "mock-contributor-policy-id"
+        )
         yield Unit.objects.create(
             organization=organization,
             unit_id="ch.bafu.fauna",

@@ -4,17 +4,32 @@ from boto3 import client as real_client
 
 from django.conf import settings
 
-from cognito.utils.client import Client, CreateClientResponse
+from cognito.utils.client import Client, CreateClientResponse, OrganizationGroup, UnitGroup
 
 
 @patch("cognito.utils.client.client")
-def test_create_user_group(mock_boto3):
+def test_create_user_group_organization(mock_boto3):
     client = Client()
-    response = client.create_group(name="test group name")
+    response = client.create_group(OrganizationGroup("test_org_id"))
     assert response is True
     assert (
         call().create_group(
-            GroupName="test group name",
+            GroupName="O_test_org_id",
+            UserPoolId=client.user_pool_id,
+            Description="Managed by service-control",
+        )
+        in mock_boto3.mock_calls
+    )
+
+
+@patch("cognito.utils.client.client")
+def test_create_user_group_unit(mock_boto3):
+    client = Client()
+    response = client.create_group(UnitGroup("test_unit_id", "test_org_id"))
+    assert response is True
+    assert (
+        call().create_group(
+            GroupName="U_test_org_id_test_unit_id",
             UserPoolId=client.user_pool_id,
             Description="Managed by service-control",
         )
@@ -34,11 +49,11 @@ def test_create_user_group_already_exists(mock_boto3):
     )
 
     client = Client()
-    response = client.create_group(name="group already exists")
+    response = client.create_group(OrganizationGroup("group already exists"))
     assert response is False
     assert (
         call().create_group(
-            GroupName="group already exists",
+            GroupName="O_group already exists",
             UserPoolId=client.user_pool_id,
             Description="Managed by service-control",
         )

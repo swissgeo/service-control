@@ -272,6 +272,18 @@ def test_get_units_returns_single_with_given_language(user_headers, unit, client
     assert response.json() == {
         "items": [
             {
+                "id": "default",
+                "organization_id": "ch.bafu",
+                "name": "Default",
+                "name_translations": {
+                    "de": "Default",
+                    "fr": "Default",
+                    "en": "Default",
+                    "it": "Default",
+                    "rm": "Default",
+                },
+            },
+            {
                 "id": "ch.bafu.fauna",
                 "organization_id": "ch.bafu",
                 "name": "Faune",
@@ -282,7 +294,7 @@ def test_get_units_returns_single_with_given_language(user_headers, unit, client
                     "it": "Fauna",
                     "rm": "Fauna",
                 },
-            }
+            },
         ],
     }
 
@@ -302,6 +314,18 @@ def test_get_units_skips_translations_that_are_not_available(user_headers, unit,
     assert response.json() == {
         "items": [
             {
+                "id": "default",
+                "organization_id": "ch.bafu",
+                "name": "Default",
+                "name_translations": {
+                    "de": "Default",
+                    "fr": "Default",
+                    "en": "Default",
+                    "it": "Default",
+                    "rm": "Default",
+                },
+            },
+            {
                 "id": "ch.bafu.fauna",
                 "organization_id": "ch.bafu",
                 "name": "Fauna",
@@ -310,7 +334,7 @@ def test_get_units_skips_translations_that_are_not_available(user_headers, unit,
                     "fr": "Faune",
                     "en": "Fauna",
                 },
-            }
+            },
         ],
     }
 
@@ -325,6 +349,18 @@ def test_get_units_returns_with_language_from_header(user_headers, unit, client)
     assert response.json() == {
         "items": [
             {
+                "id": "default",
+                "organization_id": "ch.bafu",
+                "name": "Default",
+                "name_translations": {
+                    "de": "Default",
+                    "fr": "Default",
+                    "en": "Default",
+                    "it": "Default",
+                    "rm": "Default",
+                },
+            },
+            {
                 "id": "ch.bafu.fauna",
                 "organization_id": "ch.bafu",
                 "name": "Fauna",
@@ -335,7 +371,7 @@ def test_get_units_returns_with_language_from_header(user_headers, unit, client)
                     "it": "Fauna",
                     "rm": "Fauna",
                 },
-            }
+            },
         ],
     }
 
@@ -372,10 +408,15 @@ def test_create_unit_unauthorized(
 
 
 @patch("organization.models.Client")
+@patch("organization.models.VPClient")
 @pytest.mark.parametrize("username", ["admin", "organization_admin"])
 def test_create_unit_creates_unit_as_expected(
-    boto_client, username, user_headers, client, organization
+    vp_client, boto_client, username, user_headers, client, organization
 ):
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     data = {
         "id": "ch.bafu.fauna",
         "organization_id": "ch.bafu",
@@ -418,7 +459,12 @@ def test_create_unit_creates_unit_as_expected(
 
 
 @patch("organization.models.Client")
-def test_create_unit_already_exists(boto_client, user_headers, client, organization):
+@patch("organization.models.VPClient")
+def test_create_unit_already_exists(vp_client, boto_client, user_headers, client, organization):
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
     data = {
         "id": "ch.bafu.fauna",
         "organization_id": "ch.bafu",
