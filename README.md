@@ -69,6 +69,18 @@ Then run the server
 make serve
 ```
 
+To seed local development test data (cognito users, organizations and user-role assignments):
+
+```bash
+make seed-local-testdata
+```
+
+To reset existing seeded users/organizations and re-apply the seed from scratch:
+
+```bash
+make reset-local-testdata
+```
+
 ### Pre-Commit Hooks
 
 This project uses pre-commit hooks to lint and type-check before committing. Pre-commits hooks can
