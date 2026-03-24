@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, ClassVar
 
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
@@ -32,6 +33,16 @@ class HumanUserAdminForm(ModelForm):
         ]
         help_texts: ClassVar[dict[str, str]] = {
             "sub": "Cognito user sub.",
+            "is_superuser": (
+                "Designates that this user has all permissions without explicitly "
+                "assigning them. This is set based on the user being in the group "
+                f"{settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS}"
+            ),
+            "is_staff": (
+                "Designates that this user can log into this admin site. This is "
+                "set based on the user being in the group "
+                f"{settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS}"
+            ),
         }
 
 
@@ -69,7 +80,14 @@ class HumanUserAdmin(admin.ModelAdmin):
         "is_active",
         "is_superuser",
     )
-    readonly_fields = ("sub", "cognito_username", "date_joined", "last_login")
+    readonly_fields = (
+        "sub",
+        "cognito_username",
+        "date_joined",
+        "last_login",
+        "is_superuser",
+        "is_staff",
+    )
 
     def has_add_permission(
         self,

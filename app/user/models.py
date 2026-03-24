@@ -171,7 +171,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             self.user_type == self.UserType.HUMAN
             and not self._state.adding
             and self.cognito_username is not None
-            and self.roles != self.__original_roles
+            and set(self.roles or []) != set(self.__original_roles or [])
         ):
             # Custom user will be created by RemoteCustomUserBackend when the user logs in for
             # first time. At this point the user will never have roles set yet, so we can skip the
