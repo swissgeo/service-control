@@ -6,7 +6,8 @@ import environ
 from botocore.client import Config
 
 from dataservice.models import Dataservice
-from dataset.export_models import LANGS, OARDataservice
+from dataset.export_models import LANGS, OAFeatureCollection, OARDataservice, OARDistribution
+from dataset.models import Dataset
 from utils.command import CustomBaseCommand
 
 if TYPE_CHECKING:
@@ -59,36 +60,38 @@ class Command(CustomBaseCommand):
         # (mainly 'logger')
         super().add_arguments(parser)
 
-        # Language switch
-        parser.add_argument(
-            "--lang",
-            type=str,
-            nargs="+",
-            choices=list(LANGS.keys()),
-            default=["de", "fr", "it", "en"],
-            help="Select the languages to use for the records (default: [de, fr, it, en])",
-        )
-
         # Sub-commands
         sub = parser.add_subparsers(dest="command", required=False, help="Sub-commands")
 
-        services = sub.add_parser("services", help="Export OGC API Records for services")
-        services.add_argument(
+        parser.add_argument(
             "--dump",
             action="store_true",
             help="Dump the generated records (for debugging)",
         )
-        services.add_argument(
+        parser.add_argument(
             "--upload",
             action="store_true",
             help="Upload the generated records to S3",
         )
-        services.add_argument(
+        parser.add_argument(
             "--target-env",
             type=str,
             choices=["dev", "int", "prod"],
             default="dev",
             help="Specify the target environment",
+        )
+        parser.add_argument(
+            "--profile",
+            type=str,
+            default="default",
+            help="AWS CLI profile to use for authentication (default: 'default')",
+        )
+        parser.add_argument(
+            "--types",
+            type=str,
+            nargs="+",
+            choices=["services", "distributions", "landing_page"],
+            help="Select the type of records to export",
         )
 
         clean = sub.add_parser("clean", help="Delete static files from S3 buckets")
@@ -108,18 +111,8 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
-        if env.str("USER") != "geoadmin" and options["command"] in ("upload", "clean"):
-            if options["target_env"] == "dev":
-                profile_name = "swisstopo-swissgeo-dev"
-            elif options["target_env"] in ["int", "prod"]:
-                profile_name = "swisstopo-swissgeo"
-            else:
-                raise ValueError(f"Invalid target environment: {options['target_env']}")
-            self.print(
-                f"We're likely running this command locally, so we're using"
-                f" the SSO profile {profile_name} to get a session."
-            )
-            self.session = boto3.Session(profile_name=profile_name)  # pylint: disable=attribute-defined-outside-init
+        if options["profile"]:
+            self.session = boto3.Session(profile_name=options["profile"])  # pylint: disable=attribute-defined-outside-init
         else:
             self.session = boto3.Session()  # pylint: disable=attribute-defined-outside-init
 
@@ -138,10 +131,32 @@ class Command(CustomBaseCommand):
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
             self.print(f"Debug: parsed args = {json.dumps(options)}")
 
-        if options["command"] == "services":
+        if "services" in options["types"]:
             self.do_export_services(*args, **options)
+        elif "distributions" in options["types"]:
+            self.do_export_distributions(*args, **options)
+
         if options["command"] == "clean":
             self.do_clean(*args, **options)
+
+    # ##########################################################################
+    def do_upload(self, snippets: dict[str, Any], prefix: str = OAR_PREFIX) -> None:
+        """Helper function to upload a dict of OGC API Records snippets to S3.
+
+        Args:
+            snippets: A dict where the key is the relative path (after the base URL,
+                      e.g. "/collections/{collection_id}/items/{item_id}.{lang}")
+                      and the value is the JSON content to upload.
+            prefix: The prefix to use for the S3 object keys (default: OAR_PREFIX)
+        """
+        for key, snippet in snippets.items():
+            self.s3_client.put_object(
+                Bucket=self.oarecords_s3_bucket,
+                Key=f"{prefix}{key}",
+                Body=json.dumps(snippet, indent=2, ensure_ascii=False).encode("utf-8"),
+                ContentType="application/json",
+            )
+            self.print(f" - {prefix}{key}")
 
     # ##########################################################################
     def do_export_services(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -153,29 +168,57 @@ class Command(CustomBaseCommand):
         # 4 lang versions to please the CF function language hack
         self.print("Generating service records...")
         for service in Dataservice.objects.all():
-            self.print(f" - {service.dataservice_id}")
-            service_record = OARDataservice.from_dataservice(service)
-            services[service.dataservice_id] = service_record.model_dump(
-                exclude_none=True, by_alias=True
-            )
+            for lang in LANGS:
+                self.print(f" - {service.dataservice_id}")
+                service_record = OARDataservice.from_dataservice(service)
+                services[
+                    f"/collections/geoadmin.services/items/{service.dataservice_id}.{lang}"
+                ] = service_record.model_dump(exclude_none=True, by_alias=True)
 
         if options["dump"]:
             self.print(json.dumps(services, indent=2, ensure_ascii=False))
 
         if options["upload"]:
             self.print_success("Starting to upload local OGC API Records to S3...")
+            self.do_upload(services, prefix=OAR_PREFIX)
+
+    # ##########################################################################
+    def do_export_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+
+        distribution_collections = {}
+        distributions = {}
+
+        # Aggregate distribution collection and distribution snippets
+        # Note: these snippets are not localised (yet), but we still need to upload
+        # 4 lang versions to please the CF function language hack
+        self.print("Generating distribution records...")
+        for dataset in Dataset.objects.all():
+            ds_distributions = list(dataset.distribution_set.all())  # ty:ignore[unresolved-attribute]
             for lang in LANGS:
-                for service_id, service_record in services.items():
-                    key = f"{OAR_PREFIX}/collections/geoadmin.services/items/{service_id}.{lang}"
-                    self.s3_client.put_object(
-                        Bucket=self.oarecords_s3_bucket,
-                        Key=key,
-                        Body=json.dumps(service_record, indent=2, ensure_ascii=False).encode(
-                            "utf-8"
-                        ),
-                        ContentType="application/json",
+                distribution_collection = OAFeatureCollection()
+                for distribution in ds_distributions:
+                    self.print(f" - {distribution.distribution_id}.{lang}")
+                    distribution_record = OARDistribution.from_distribution(distribution, lang=lang)
+                    distribution_collection.features.append(distribution_record)
+                    distributions[
+                        f"/collections/{dataset.dataset_id}/items/{distribution.distribution_id}.{lang}"
+                    ] = distribution_record.model_dump(
+                        exclude_none=True,
+                        by_alias=True,
                     )
-                    self.print(f" - {key}")
+                distribution_collections[f"/collections/{dataset.dataset_id}/items.{lang}"] = (
+                    distribution_collection.model_dump(exclude_none=True, by_alias=True)
+                )
+
+        # Dump the generated records (for debugging)
+        if options["dump"]:
+            self.print(json.dumps(distribution_collections, indent=2, ensure_ascii=False))
+
+        # Upload the generated records to S3
+        if options["upload"]:
+            self.print_success("Starting to upload local OGC API Records to S3...")
+            self.do_upload(distribution_collections, prefix=OAR_PREFIX)
+            self.do_upload(distributions, prefix=OAR_PREFIX)
 
     # ##########################################################################
     def do_export_landing_page(self, *args: Any, **options: Any) -> None:  # noqa: ARG002

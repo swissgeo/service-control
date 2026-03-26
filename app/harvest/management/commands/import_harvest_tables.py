@@ -4,12 +4,11 @@ from typing import TYPE_CHECKING, Any
 import boto3
 import environ
 
-from dataservice.models import OGCAPIStacDataservice, WMSDataservice, WMTSDataservice
+from dataservice.models import WMSDataservice, WMTSDataservice
 from dataset.models import Dataset
 from distribution.models import (
     Distribution,
     ExternalGeoJSONDistribution,
-    ExternalStacDistribution,
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
@@ -180,7 +179,7 @@ class Command(CustomBaseCommand):
                 ds.save()
 
     # ##########################################################################
-    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
 
         self.print_success("Importing distributions")
 
@@ -223,19 +222,28 @@ class Command(CustomBaseCommand):
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
-                    self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+                    dist = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+                    # Set the preferred distribution to WMTS for WMTS layers
+                    dataset.preferred_distribution = dist
+                    dataset.save()
 
                 if ljs.layertype in ["wms", "wmts"]:
-                    self.import_wms_distribution(ljs, dataset, wms_dataservice)
+                    dist = self.import_wms_distribution(ljs, dataset, wms_dataservice)
+                    # If the preferred distribution is not set yet, we set it to the WMS
+                    # distribution
+                    if not dataset.preferred_distribution:
+                        dataset.preferred_distribution = dist
+                        dataset.save()
 
                 if ljs.layertype == "geojson":
-                    self.import_geojson_distribution(ljs, dataset)
+                    dist = self.import_geojson_distribution(ljs, dataset)
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
-    ) -> None:
+    ) -> Distribution:
 
         wmts_distribution_id = ljs.layer_id + ":wmts"
+        self.print(f"Importing WMTS Distribution {wmts_distribution_id}")
 
         dist, _ = ExternalWMTSDistribution.objects.get_or_create(
             distribution_id=wmts_distribution_id,
@@ -250,12 +258,14 @@ class Command(CustomBaseCommand):
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
             dist.opacity = ljs.opacity
         dist.save()
+        return dist
 
     def import_wms_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wms_dataservice: WMSDataservice
-    ) -> None:
+    ) -> Distribution:
 
         wms_distribution_id = ljs.layer_id + ":wms"
+        self.print(f"Importing WMS Distribution {wms_distribution_id}")
 
         dist, _ = ExternalWMSDistribution.objects.get_or_create(
             distribution_id=wms_distribution_id,
@@ -273,10 +283,12 @@ class Command(CustomBaseCommand):
         if ljs.wms_gutter:
             dist.gutter = ljs.wms_gutter
         dist.save()
+        return dist
 
-    def import_geojson_distribution(self, ljs: LayersJSImport, dataset: Dataset) -> None:
+    def import_geojson_distribution(self, ljs: LayersJSImport, dataset: Dataset) -> Distribution:
 
         geojson_distribution_id = ljs.layer_id + ":geojson"
+        self.print(f"Importing GeoJSON Distribution {geojson_distribution_id}")
 
         dist, _ = ExternalGeoJSONDistribution.objects.get_or_create(
             distribution_id=geojson_distribution_id,
@@ -296,3 +308,4 @@ class Command(CustomBaseCommand):
         # Note: we always reference prod env here
         dist.style_url = "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json"
         dist.save()
+        return dist

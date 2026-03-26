@@ -1,18 +1,10 @@
 import json
 from typing import TYPE_CHECKING, Any
 
-import boto3
 import environ
 
-from dataservice.models import OGCAPIStacDataservice, WMSDataservice, WMTSDataservice
+from dataservice.models import OGCAPIStacDataservice
 from dataset.models import Dataset
-from distribution.models import (
-    ExternalStacDistribution,
-    ExternalWMSDistribution,
-    ExternalWMTSDistribution,
-)
-from harvest.import_models import DatasetImport, LayersJSImport, OrganisationImport, ParsingError
-from organization.models import Organization
 from utils.command import CustomBaseCommand
 
 if TYPE_CHECKING:

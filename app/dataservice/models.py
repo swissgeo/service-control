@@ -2,7 +2,6 @@ import logging
 
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
-from pystac.collection import Collection
 from pystac_client import Client
 
 from django.contrib.postgres.fields import ArrayField
@@ -11,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
 
 from dataset.models import Dataset
-from distribution.models import Distribution, ExternalStacDistribution
+from distribution.models import ExternalStacDistribution
 from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)

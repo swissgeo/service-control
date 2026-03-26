@@ -1,4 +1,5 @@
 import logging
+from abc import abstractmethod
 from typing import ClassVar
 
 from polymorphic.managers import PolymorphicManager
@@ -57,7 +58,17 @@ class Distribution(PolymorphicModel):
         verbose_name_plural = _("Distribution", "Distributions")
 
     def __str__(self) -> str:
-        return self.title
+        return self.distribution_id
+
+    @property
+    @abstractmethod
+    def protocol(self) -> str:
+        """Protocol of the distribution, e.g. WMS, WMTS, STAC API, GeoJSON, etc."""
+
+    @property
+    @abstractmethod
+    def external_id(self) -> str:
+        """External Identifier of the distribution(layer) in the service."""
 
 
 class ExternalDistribution(Distribution):
@@ -101,6 +112,14 @@ class ExternalWMSDistribution(ExternalDistribution):
         verbose_name = _(_context, "External WMS Distributions")
         verbose_name_plural = _(_context, "External WMS Distributions")
 
+    @property
+    def protocol(self) -> str:
+        return "ogc:wms"
+
+    @property
+    def external_id(self) -> str:
+        return self.wms_layer_name
+
 
 class ExternalWMTSDistribution(ExternalDistribution):
     """Distribution model for external WMTS distributions."""
@@ -128,6 +147,14 @@ class ExternalWMTSDistribution(ExternalDistribution):
         verbose_name = _(_context, "External WMTS Distributions")
         verbose_name_plural = _(_context, "External WMTS Distributions")
 
+    @property
+    def protocol(self) -> str:
+        return "ogc:wmts"
+
+    @property
+    def external_id(self) -> str:
+        return self.wmts_layer_name
+
 
 class ExternalStacDistribution(ExternalDistribution):
     """Distribution model for external STAC distributions."""
@@ -147,9 +174,27 @@ class ExternalStacDistribution(ExternalDistribution):
         verbose_name = _(_context, "External STAC Distributions")
         verbose_name_plural = _(_context, "External STAC Distributions")
 
+    @property
+    def protocol(self) -> str:
+        return "ogcapi:stac"
+
+    @property
+    def external_id(self) -> str:
+        return self.stac_collection_id
+
 
 class ExternalGeoJSONDistribution(ExternalDistribution):
-    """Distribution model for external GeoJSON distributions."""
+    """Distribution model for external GeoJSON distributions.
+
+    TODO/TO BE DISCUSSED: Currently GeoJSON Distributions don't have a reference to a dataservice,
+    they just have a link to the actual file. This requires different handling of GeoJSON
+    distributions in several places. We could model GeoJSON distributions with a somewhat generic
+    "dataservie", which would just be the base URL of the GeoJSON file, and then we could have
+    multiple distributions referencing the same "dataservice" with different language-specific URIs
+    (without the domain) that would be the 'externalIds'.
+    This would make handling of GeoJSON distributions more consistent with other distribution
+    types.
+    """
 
     geojson_url_de = models.URLField(_(_context, "GeoJSON URL (DE)"), max_length=2048)
     geojson_url_fr = models.URLField(
@@ -175,3 +220,11 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
     class Meta:
         verbose_name = _(_context, "External GeoJSON Distributions")
         verbose_name_plural = _(_context, "External GeoJSON Distributions")
+
+    @property
+    def protocol(self) -> str:
+        return "geojson"
+
+    @property
+    def external_id(self) -> str:
+        return self.geojson_url_de
