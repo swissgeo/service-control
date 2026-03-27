@@ -64,6 +64,7 @@ def fixture_user(cognito_client, organization, unit):
         cognito_username="c.norris",
         organization=organization,
         unit=unit,
+        roles=[VPRole.DATASET_ADMIN],
     )
 
 
@@ -81,29 +82,40 @@ def fixture_user_headers(cognito_client, organization):
     HumanUser.objects.create(
         sub="organization_admin",
         cognito_username="prefix-organization_admin",
+        first_name="Organization",
+        last_name="Admin",
+        email="organization_admin@example.org",
         organization=organization,
         roles=[VPRole.ORG_ADMIN],
     )
-    # TODO: add organization user etc.
+    HumanUser.objects.create(
+        sub="organization_user",
+        cognito_username="prefix-organization_user",
+        first_name="Organization",
+        last_name="User",
+        email="organization_user@example.org",
+        organization=organization,
+        roles=[VPRole.DATASET_ADMIN],
+    )
 
     return {
         "anonymous": {},
-        "admin": {
-            "X-Auth-Request-User": "admin",
+        "superuser": {
+            "X-Auth-Request-User": "superuser",
             "X-Auth-Request-Groups": ",".join(settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS),
-            "X-Auth-Request-Email": "admin@example.org",
-            "X-Auth-Request-Preferred-Username": "prefix-admin",
+            "X-Auth-Request-Email": "superuser@example.org",
+            "X-Auth-Request-Preferred-Username": "prefix-superuser",
             "X-Auth-Request-Access-Token": encode(
-                {"first_name": "admin", "last_name": "admin"}, "key"
+                {"first_name": "superuser", "last_name": "superuser"}, "key"
             ),
         },
         "user": {
-            "X-Auth-Request-User": "user",
+            "X-Auth-Request-User": "organization_user",
             "X-Auth-Request-Groups": "",
-            "X-Auth-Request-Email": "user@example.org",
-            "X-Auth-Request-Preferred-Username": "prefix-user",
+            "X-Auth-Request-Email": "organization_user@example.org",
+            "X-Auth-Request-Preferred-Username": "prefix-organization_user",
             "X-Auth-Request-Access-Token": encode(
-                {"first_name": "user", "last_name": "user"}, "key"
+                {"first_name": "Organization", "last_name": "User"}, "key"
             ),
         },
         "organization_admin": {
@@ -112,7 +124,7 @@ def fixture_user_headers(cognito_client, organization):
             "X-Auth-Request-Email": "organization_admin@example.org",
             "X-Auth-Request-Preferred-Username": "prefix-organization_admin",
             "X-Auth-Request-Access-Token": encode(
-                {"first_name": "organization_admin", "last_name": "organization_admin"}, "key"
+                {"first_name": "Organization", "last_name": "Admin"}, "key"
             ),
         },
     }

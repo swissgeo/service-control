@@ -20,7 +20,7 @@ from .schemas import (
     UpdateUnitSchema,
 )
 
-router = Router()
+router = Router(tags=["organizations"])
 
 
 def organization_to_response(model: Organization, lang: LanguageCode) -> OrganizationSchema:
