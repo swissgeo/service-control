@@ -3,16 +3,41 @@ from typing import TYPE_CHECKING, ClassVar
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from django.forms import ModelForm, MultipleChoiceField, SelectMultiple
+from django.forms import ModelChoiceField, ModelForm, MultipleChoiceField, SelectMultiple
 
 from config.authorization import VPRole
+from organization.models import Unit
 from user.models import HumanUser, MachineUser
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
 
 
-class HumanUserAdminForm(ModelForm):
+class OrganizationScopedUnitForm(ModelForm):
+    """
+    Custom form to limit the unit choices to the units of the selected organization in the admin UI.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        unit_field = self.fields.get("unit")
+        if not isinstance(unit_field, ModelChoiceField):
+            return
+
+        organization_pk = self.data.get(self.add_prefix("organization"))
+        if organization_pk:
+            unit_field.queryset = Unit.objects.filter(organization_id=organization_pk)
+            return
+
+        if self.instance and self.instance.organization_id:
+            unit_field.queryset = Unit.objects.filter(organization_id=self.instance.organization_id)
+            return
+
+        unit_field.queryset = Unit.objects.none()
+
+
+class HumanUserAdminForm(OrganizationScopedUnitForm):
     roles = MultipleChoiceField(choices=VPRole.choices(), required=False, widget=SelectMultiple)
 
     class Meta:
@@ -24,6 +49,7 @@ class HumanUserAdminForm(ModelForm):
             "first_name",
             "last_name",
             "organization",
+            "unit",
             "roles",
             "is_staff",
             "is_superuser",
@@ -46,15 +72,14 @@ class HumanUserAdminForm(ModelForm):
         }
 
 
-class MachineUserAdminForm(ModelForm):
-    roles = MultipleChoiceField(choices=VPRole.choices(), required=False, widget=SelectMultiple)
-
+class MachineUserAdminForm(OrganizationScopedUnitForm):
     class Meta:
         model = MachineUser
         fields: ClassVar[list[str]] = [
             "sub",
             "name",
             "organization",
+            "unit",
             "is_staff",
             "is_superuser",
             "created_by_user",
@@ -77,6 +102,7 @@ class HumanUserAdmin(admin.ModelAdmin):
         "first_name",
         "last_name",
         "organization",
+        "unit",
         "is_active",
         "is_superuser",
     )
@@ -113,6 +139,7 @@ class MachineUserAdmin(admin.ModelAdmin):
         "sub",
         "name",
         "organization",
+        "unit",
         "created_by_user",
         "is_active",
         "is_superuser",

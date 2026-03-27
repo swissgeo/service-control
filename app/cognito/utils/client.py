@@ -109,6 +109,22 @@ class Client:
             return False
         return True
 
+    def add_user_to_group(self, username: str, group: CognitoUserGroup) -> None:
+        """Add a user to a cognito user group."""
+        self.client.admin_add_user_to_group(
+            UserPoolId=self.user_pool_id,
+            Username=username,
+            GroupName=group.name,
+        )
+
+    def remove_user_from_group(self, username: str, group: CognitoUserGroup) -> None:
+        """Remove a user from a cognito user group."""
+        self.client.admin_remove_user_from_group(
+            UserPoolId=self.user_pool_id,
+            Username=username,
+            GroupName=group.name,
+        )
+
     def create_app_client(self, name: str, token_duration_mins: int | None) -> CreateClientResponse:
         """Create cognito app client"""
         if not token_duration_mins:

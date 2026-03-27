@@ -8,7 +8,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import pgettext_lazy as _
 
-from cognito.utils.client import Client
+from cognito.utils.client import Client, OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from user.extra_audience import remove_extra_audience
 from verified_permissions.utils.client import Client as VPClient
@@ -61,11 +61,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     Service-control is the source of truth for organizations, roles and their relations to users.
     """
 
-    __original_roles = None
+    _original_roles = None
+    _original_unit_id = None
+    _original_organization_id = None
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.__original_roles = self.roles
+        self._original_roles = self.roles
+        self._original_unit_id = getattr(getattr(self, "unit", None), "unit_id", None)
+        self._original_organization_id = getattr(
+            getattr(self, "organization", None), "organization_id", None
+        )
 
     _context = "User model"
 
@@ -98,8 +104,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(_(_context, "Date Joined"), default=timezone.now)
     # User can exist without an organization -> nullable
     organization = models.ForeignKey(
-        "organization.Organization", null=True, on_delete=models.SET_NULL
+        "organization.Organization", null=True, blank=True, on_delete=models.SET_NULL
     )
+    # User can exist without a unit -> nullable
+    unit = models.ForeignKey("organization.Unit", null=True, blank=True, on_delete=models.SET_NULL)
     # user_type is an enum to differentiate human users from machine users
     user_type = models.CharField(
         _(_context, "User Type"), max_length=10, choices=UserType.choices, default=UserType.HUMAN
@@ -155,6 +163,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "sub"
 
+    @property
+    def unit_changed(self) -> bool:
+        return self.organization_changed or self._original_unit_id != getattr(
+            getattr(self, "unit", None), "unit_id", None
+        )
+
+    @property
+    def organization_changed(self) -> bool:
+        return self._original_organization_id != getattr(
+            getattr(self, "organization", None), "organization_id", None
+        )
+
     def __str__(self) -> str:
         return str(self.sub)
 
@@ -167,49 +187,30 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         update_fields: Iterable[str] | None = None,
     ) -> None:
 
-        if (
-            self.user_type == self.UserType.HUMAN
-            and not self._state.adding
-            and self.cognito_username is not None
-            and set(self.roles or []) != set(self.__original_roles or [])
-        ):
-            # Custom user will be created by RemoteCustomUserBackend when the user logs in for
-            # first time. At this point the user will never have roles set yet, so we can skip the
-            # call to cognito to update user roles. For subsequent updates of human users, we need
-            # to update the roles in cognito if they have changed.
-            client = Client()
-            client.update_user_roles(
-                self.cognito_username,
-                self.roles,
-            )
+        if self.unit and self.unit.organization != self.organization:
+            raise ValueError("Unit must belong to the same organization as the user")
 
-        if self.user_type == self.UserType.MACHINE and self._state.adding:
-            client = VPClient()
-            self.vp_machine_user_policy_id = client.create_machine_user_policy(
-                client_id=self.sub, organization_id=self.organization.organization_id
-            )
-
-        return super().save(
+        result = super().save(
             force_insert=force_insert,
             force_update=force_update,
             using=using,
             update_fields=update_fields,
         )
 
+        # Update original values to reflect the state after save
+        self._original_roles = self.roles
+        self._original_unit_id = getattr(getattr(self, "unit", None), "unit_id", None)
+        self._original_organization_id = getattr(
+            getattr(self, "organization", None), "organization_id", None
+        )
+
+        return result
+
     def delete(
         self,
         using: str | None = None,
         keep_parents: bool = False,
     ) -> tuple[int, dict[str, int]]:
-        """In case of machine users, deletes the corresponding app client in cognito."""
-        if self.user_type == self.UserType.MACHINE:
-            client = Client()
-            if not client.delete_app_client(self.sub):
-                logger.warning("cognito app client '%s' not found, not deleted", self.sub)
-            remove_extra_audience(self.sub)
-            vp_client = VPClient()
-            vp_client.delete_policy(self.vp_machine_user_policy_id)
-
         return super().delete(using=using, keep_parents=keep_parents)
 
 
@@ -241,12 +242,40 @@ class MachineUser(CustomUser):
         update_fields: Iterable[str] | None = None,
     ) -> None:
         self.user_type = self.UserType.MACHINE
+
+        if self._state.adding:
+            client = VPClient()
+            self.vp_machine_user_policy_id = client.create_machine_user_policy(
+                client_id=self.sub, organization_id=self.organization.organization_id
+            )
+
+        if not self._state.adding and (self.organization_changed or self.unit_changed):
+            raise ValueError(
+                "Changing organization or unit of a machine user is not allowed. "
+                "Remove it and create a new one instead."
+            )
+
         return super().save(
             force_insert=force_insert,
             force_update=force_update,
             using=using,
             update_fields=update_fields,
         )
+
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+    ) -> tuple[int, dict[str, int]]:
+        """Deletes the corresponding app client in cognito."""
+        client = Client()
+        if not client.delete_app_client(self.sub):
+            logger.warning("cognito app client '%s' not found, not deleted", self.sub)
+        remove_extra_audience(self.sub)
+        vp_client = VPClient()
+        vp_client.delete_policy(self.vp_machine_user_policy_id)
+
+        return super().delete(using=using, keep_parents=keep_parents)
 
 
 class HumanUser(CustomUser):
@@ -261,6 +290,55 @@ class HumanUser(CustomUser):
         update_fields: Iterable[str] | None = None,
     ) -> None:
         self.user_type = self.UserType.HUMAN
+
+        if self.unit and self.unit.organization != self.organization:
+            raise ValueError("Unit must belong to the same organization as the user")
+
+        if (
+            not self._state.adding
+            and self.cognito_username is not None
+            and set(self.roles or []) != set(self._original_roles or [])
+        ):
+            # Custom user will be created by RemoteCustomUserBackend when the user logs in for
+            # first time. At this point the user will never have roles set yet, so we can skip
+            # the call to cognito to update user roles. For subsequent updates of human users,
+            # we need to update the roles in cognito if they have changed.
+            client = Client()
+            client.update_user_roles(
+                self.cognito_username,
+                self.roles,
+            )
+
+        if (
+            self.unit_changed
+            and self._original_unit_id is not None
+            and self._original_organization_id is not None
+        ):
+            client = Client()
+            client.remove_user_from_group(
+                self.cognito_username,
+                UnitGroup(self._original_unit_id, self._original_organization_id),
+            )
+
+        if self.organization_changed and self._original_organization_id is not None:
+            client = Client()
+            client.remove_user_from_group(
+                self.cognito_username,
+                OrganizationGroup(self._original_organization_id),
+            )
+
+        if self.organization_changed and self.organization:
+            client = Client()
+            client.add_user_to_group(
+                self.cognito_username,
+                OrganizationGroup(self.organization.organization_id),
+            )
+        if self.unit_changed and self.unit:
+            client = Client()
+            client.add_user_to_group(
+                self.cognito_username,
+                UnitGroup(self.unit.unit_id, self.organization.organization_id),
+            )
         return super().save(
             force_insert=force_insert,
             force_update=force_update,

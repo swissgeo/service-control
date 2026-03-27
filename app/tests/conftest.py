@@ -9,7 +9,7 @@ import pytest
 
 from config.authorization import VPRole
 from organization.models import Organization, Unit
-from user.models import CustomUser
+from user.models import CustomUser, HumanUser, MachineUser
 
 
 @pytest.fixture(name="organization")
@@ -55,15 +55,15 @@ def fixture_unit(db, organization):
 
 @pytest.fixture(name="user")
 @patch("user.models.Client")
-def fixture_user(cognito_client, organization):
-    return CustomUser.objects.create(
+def fixture_user(cognito_client, organization, unit):
+    return HumanUser.objects.create(
         sub="1234",
         first_name="Chuck",
         last_name="Norris",
         email="c.n@example.com",
         cognito_username="c.norris",
-        user_type=CustomUser.UserType.HUMAN,
         organization=organization,
+        unit=unit,
     )
 
 
@@ -78,10 +78,9 @@ def fixture_machine_user(organization, user, django_machine_user_factory):
 @patch("user.models.Client")
 def fixture_user_headers(cognito_client, organization):
 
-    CustomUser.objects.create(
+    HumanUser.objects.create(
         sub="organization_admin",
         cognito_username="prefix-organization_admin",
-        user_type=CustomUser.UserType.HUMAN,
         organization=organization,
         roles=[VPRole.ORG_ADMIN],
     )
@@ -135,10 +134,9 @@ def django_machine_user_factory(db):
     def create_machine_user(
         app_id: str, name: str, organization: Organization, created_by_user: CustomUser
     ) -> Any:
-        return CustomUser.objects.create(
+        return MachineUser.objects.create(
             sub=app_id,
             name=name,
-            user_type=CustomUser.UserType.MACHINE,
             organization=organization,
             created_by_user=created_by_user,
         )

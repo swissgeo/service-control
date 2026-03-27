@@ -1,6 +1,9 @@
 from unittest.mock import patch
 
-from user.models import CustomUser
+import pytest
+
+from organization.models import Organization, Unit
+from user.models import CustomUser, MachineUser
 
 
 @patch("user.models.VPClient")
@@ -46,12 +49,94 @@ def test_delete_deletes_records(
     }
     django_machine_user_factory(**model_fields)
 
-    actual = CustomUser.objects.filter(user_type=CustomUser.UserType.MACHINE).first()
+    actual = MachineUser.objects.first()
     actual.delete()
 
-    assert not CustomUser.objects.filter(user_type=CustomUser.UserType.MACHINE).first()
+    assert not MachineUser.objects.first()
     assert boto_client.return_value.delete_app_client.called
     assert ssm_client.return_value.get_parameter.called
     assert ssm_client.return_value.put_parameter.called
     assert avp_client.return_value.delete_policy.called
     assert avp_client.return_value.delete_policy.call_args.args[0] == "test-policy-id"
+
+
+@patch("user.models.Client")
+@patch("user.extra_audience.Client")
+@patch("user.models.VPClient")
+@patch("organization.models.VPClient")
+def test_machine_user_cannot_change_org(
+    vp_client, avp_client, ssm_client, boto_client, organization, user, django_machine_user_factory
+):
+    avp_client.return_value.create_machine_user_policy.return_value = "test-policy-id"
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
+    model_fields = {
+        "app_id": "def",
+        "name": "Machine 1",
+        "organization": organization,
+        "created_by_user": user,
+    }
+    django_machine_user_factory(**model_fields)
+
+    actual = MachineUser.objects.first()
+    actual.organization = Organization.objects.create(
+        organization_id="other_id",
+        acronym_de="Other",
+        acronym_fr="Other",
+        acronym_en="Other",
+        name_de="Other",
+        name_fr="Other",
+        name_en="Other",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"Changing organization or unit of a machine user is not allowed\. "
+            r"Remove it and create a new one instead\."
+        ),
+    ):
+        actual.save()
+
+
+@patch("user.models.Client")
+@patch("user.extra_audience.Client")
+@patch("user.models.VPClient")
+@patch("organization.models.VPClient")
+def test_machine_user_cannot_change_unit(
+    vp_client, avp_client, ssm_client, boto_client, organization, user, django_machine_user_factory
+):
+    avp_client.return_value.create_machine_user_policy.return_value = "test-policy-id"
+    vp_client.return_value.create_org_admin_policy.return_value = "mock-policy-id"
+    vp_client.return_value.create_dataset_admin_policy.return_value = "mock-admin-policy-id"
+    vp_client.return_value.create_dataset_contributor_policy.return_value = (
+        "mock-contributor-policy-id"
+    )
+    model_fields = {
+        "app_id": "def",
+        "name": "Machine 1",
+        "organization": organization,
+        "created_by_user": user,
+    }
+    django_machine_user_factory(**model_fields)
+
+    actual = MachineUser.objects.first()
+    actual.unit = Unit.objects.create(
+        unit_id="other_id",
+        organization=organization,
+        name_de="Other",
+        name_fr="Other",
+        name_en="Other",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"Changing organization or unit of a machine user is not allowed\. "
+            r"Remove it and create a new one instead\."
+        ),
+    ):
+        actual.save()
