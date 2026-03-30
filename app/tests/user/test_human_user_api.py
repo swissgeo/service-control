@@ -3,6 +3,8 @@ from unittest.mock import patch
 import pytest
 
 from config.authorization import VPRole
+from organization.models import Unit
+from user.models import HumanUser
 
 # ==========  GET  ==========
 
@@ -120,6 +122,57 @@ def test_update_human_user_updates_as_expected(
     assert boto_client.return_value.update_user_roles.called
 
 
+@patch("user.models.Client")
+@patch("user.extra_audience.Client")
+@patch("utils.auth._get_vp_client")
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
+def test_update_human_user_new_unit(
+    vp_client, ssm_client, boto_client, username, user_headers, user, client
+):
+    Unit.objects.create(
+        unit_id="new_unit",
+        name_de="Neue Einheit",
+        name_en="New Unit",
+        name_fr="Nouvelle unité",
+        organization=user.organization,
+    )
+    response = client.put(
+        f"/api/v1/organizations/{user.organization.organization_id}/users/{user.sub}",
+        content_type="application/json",
+        headers=user_headers[username],
+        data={"unit_id": "new_unit", "roles": [VPRole.ORG_ADMIN.value]},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "id": user.sub,
+        "roles": [
+            {
+                "description": "Organization administrator with full access to all resources.",
+                "id": "org_admin",
+                "name": "Organization Admin",
+            },
+        ],
+        "unit": {
+            "id": "new_unit",
+            "name": "New Unit",
+            "name_translations": {
+                "de": "Neue Einheit",
+                "en": "New Unit",
+                "fr": "Nouvelle unité",
+            },
+            "organization_id": user.organization.organization_id,
+        },
+    }
+
+    assert boto_client.return_value.remove_user_from_group.called
+    assert boto_client.return_value.add_user_to_group.called
+    assert boto_client.return_value.update_user_roles.called
+
+
 # ==========  DELETE  ==========
 
 
@@ -148,3 +201,7 @@ def test_delete_human_user_deletes_as_expected(boto_client, username, user_heade
     assert response.status_code == 204
     assert boto_client.return_value.remove_user_from_group.call_count == 2
     assert boto_client.return_value.update_user_roles.call_count == 1
+    updated_user = HumanUser.objects.filter(sub=user.sub).first()
+    assert updated_user.roles == []
+    assert updated_user.unit is None
+    assert updated_user.organization is None

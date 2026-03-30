@@ -7,7 +7,7 @@ from django.conf import settings
 from cognito.utils.client import Client, CreateClientResponse, OrganizationGroup, UnitGroup
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_create_user_group_organization(mock_boto3):
     client = Client()
     response = client.create_group(OrganizationGroup("test_org_id"))
@@ -22,7 +22,7 @@ def test_create_user_group_organization(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_create_user_group_unit(mock_boto3):
     client = Client()
     response = client.create_group(UnitGroup("test_unit_id", "test_org_id"))
@@ -37,7 +37,7 @@ def test_create_user_group_unit(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_create_user_group_already_exists(mock_boto3):
     # Create a real boto3 client only to get the exception class
     group_exists_exception = real_client("cognito-idp").exceptions.GroupExistsException
@@ -61,7 +61,7 @@ def test_create_user_group_already_exists(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_delete_user_group(mock_boto3):
     client = Client()
     response = client.delete_group(name="test group name")
@@ -75,7 +75,7 @@ def test_delete_user_group(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_delete_user_group_not_found(mock_boto3):
     # Create a real boto3 client only to get the exception class
     group_exists_exception = real_client("cognito-idp").exceptions.ResourceNotFoundException
@@ -98,7 +98,7 @@ def test_delete_user_group_not_found(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_create_app_client(mock_boto3):
     mock_boto3.return_value.create_user_pool_client.return_value = {
         "UserPoolClient": {
@@ -130,7 +130,7 @@ def test_create_app_client(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_delete_app_client(mock_boto3):
     client = Client()
     response = client.delete_app_client(client_id="client_id")
@@ -144,7 +144,7 @@ def test_delete_app_client(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_delete_app_client_not_found(mock_boto3):
     # Create a real boto3 client only to get the exception class
     client_exists_exception = real_client("cognito-idp").exceptions.ResourceNotFoundException
@@ -167,7 +167,7 @@ def test_delete_app_client_not_found(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_update_user_roles_empty(mock_boto3):
     client = Client()
     client.update_user_roles(username="client_id", roles=[])
@@ -181,7 +181,7 @@ def test_update_user_roles_empty(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_update_user_roles_single(mock_boto3):
     client = Client()
     client.update_user_roles(username="client_id", roles=["first_role"])
@@ -195,7 +195,7 @@ def test_update_user_roles_single(mock_boto3):
     )
 
 
-@patch("cognito.utils.client.client")
+@patch("cognito.utils.client._get_client")
 def test_update_user_roles_multiple(mock_boto3):
     client = Client()
     client.update_user_roles(username="client_id", roles=["first_role", "second_role"])

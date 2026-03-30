@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -41,7 +43,8 @@ def role_to_response(model: Role) -> RoleSchema:
     )
 
 
-def map_role_ids_to_response(role_ids: list[str]) -> list[RoleSchema]:
+@lru_cache(maxsize=2 ** len(Role.all()))  # all possible combinations of roles for caching
+def map_role_ids_to_response(role_ids: tuple[str, ...]) -> list[RoleSchema]:
     role_by_id = {role.role_id: role for role in Role.all()}
     return [role_to_response(role_by_id[role_id]) for role_id in role_ids if role_id in role_by_id]
 
@@ -168,7 +171,7 @@ def users(
     organization_id: str,
     lang: LanguageCode | None = None,
 ) -> UserListSchema:
-    """List users of organization."""
+    """List human users of organization."""
 
     lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
@@ -179,7 +182,7 @@ def users(
             email=user.email,
             first_name=user.first_name,
             last_name=user.last_name,
-            roles=map_role_ids_to_response(user.roles),
+            roles=map_role_ids_to_response(tuple(user.roles)),
             unit=unit_to_response(user.unit, lang=lang_to_use) if user.unit else None,
         )
         for user in users
@@ -200,7 +203,7 @@ def update_user(
     user_in: UpdateUserSchema,
     lang: LanguageCode | None = None,
 ) -> UserSchema:
-    """Update roles of user."""
+    """Update roles of human user."""
 
     lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
@@ -218,7 +221,7 @@ def update_user(
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
-        roles=map_role_ids_to_response(user.roles),
+        roles=map_role_ids_to_response(tuple(user.roles)),
         unit=unit_to_response(user.unit, lang=lang_to_use) if user.unit else None,
     )
 
@@ -228,13 +231,13 @@ def update_user(
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_USER),
 )
-def delete_user(
+def remove_user(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     user_id: str,
 ) -> HttpResponse:
     """
-    Remove user from organization. This does not delete the user in cognito but
+    Remove human user from organization. This does not delete the user in cognito but
     removes all roles and unit association.
     """
     user_to_delete = get_object_or_404(

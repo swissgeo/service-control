@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from boto3 import client
 from pydantic import BaseModel
@@ -6,6 +8,9 @@ from pydantic import BaseModel
 from django.conf import settings
 
 from config.aws import config
+
+if TYPE_CHECKING:
+    from mypy_boto3_cognito_idp import CognitoIdentityProviderClient
 
 
 class CreateClientResponse(BaseModel):
@@ -75,13 +80,18 @@ class UnitGroup(CognitoUserGroup):
         return f"{self.prefix}{self.organization_id}_{self.resource_id}"
 
 
+@lru_cache(maxsize=1)
+def _get_client(endpoint_url: str) -> CognitoIdentityProviderClient:
+    return client("cognito-idp", endpoint_url=endpoint_url, config=config)
+
+
 class Client:
     """A low level client for managing cognito users and groups."""
 
     def __init__(self) -> None:
         self.endpoint_url = settings.COGNITO_ENDPOINT_URL
         self.user_pool_id = settings.COGNITO_POOL_ID
-        self.client = client("cognito-idp", endpoint_url=self.endpoint_url, config=config)
+        self.client = _get_client(self.endpoint_url)
 
     def create_group(self, group: CognitoUserGroup) -> bool:
         """Create a new cognito user group.

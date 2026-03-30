@@ -1,6 +1,7 @@
 import logging
 from typing import TYPE_CHECKING, Any, NamedTuple
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.postgres.fields import ArrayField
@@ -68,10 +69,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._original_roles = self.roles
-        self._original_unit_id = getattr(getattr(self, "unit", None), "unit_id", None)
-        self._original_organization_id = getattr(
-            getattr(self, "organization", None), "organization_id", None
-        )
+        self._original_unit_id = getattr(self, "unit_id", None)
+        self._original_organization_id = getattr(self, "organization_id", None)
 
     _context = "User model"
 
@@ -165,15 +164,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def unit_changed(self) -> bool:
-        return self.organization_changed or self._original_unit_id != getattr(
-            getattr(self, "unit", None), "unit_id", None
-        )
+        return self.organization_changed or self._original_unit_id != getattr(self, "unit_id", None)
 
     @property
     def organization_changed(self) -> bool:
-        return self._original_organization_id != getattr(
-            getattr(self, "organization", None), "organization_id", None
-        )
+        return self._original_organization_id != getattr(self, "organization_id", None)
 
     def __str__(self) -> str:
         return str(self.sub)
@@ -199,10 +194,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
         # Update original values to reflect the state after save
         self._original_roles = self.roles
-        self._original_unit_id = getattr(getattr(self, "unit", None), "unit_id", None)
-        self._original_organization_id = getattr(
-            getattr(self, "organization", None), "organization_id", None
-        )
+        self._original_unit_id = getattr(self, "unit_id", None)
+        self._original_organization_id = getattr(self, "organization_id", None)
 
         return result
 
@@ -248,8 +241,7 @@ class MachineUser(CustomUser):
             self.vp_machine_user_policy_id = client.create_machine_user_policy(
                 client_id=self.sub, organization_id=self.organization.organization_id
             )
-
-        if not self._state.adding and (self.organization_changed or self.unit_changed):
+        elif self.organization_changed or self.unit_changed:
             raise ValueError(
                 "Changing organization or unit of a machine user is not allowed. "
                 "Remove it and create a new one instead."
@@ -294,6 +286,8 @@ class HumanUser(CustomUser):
         if self.unit and self.unit.organization != self.organization:
             raise ValueError("Unit must belong to the same organization as the user")
 
+        client = Client()
+
         if (
             not self._state.adding
             and self.cognito_username is not None
@@ -303,7 +297,6 @@ class HumanUser(CustomUser):
             # first time. At this point the user will never have roles set yet, so we can skip
             # the call to cognito to update user roles. For subsequent updates of human users,
             # we need to update the roles in cognito if they have changed.
-            client = Client()
             client.update_user_roles(
                 self.cognito_username,
                 self.roles,
@@ -314,27 +307,30 @@ class HumanUser(CustomUser):
             and self._original_unit_id is not None
             and self._original_organization_id is not None
         ):
-            client = Client()
+            # Use apps to get model due to circular import
+            Organization = apps.get_model("organization", "Organization")
+            Unit = apps.get_model("organization", "Unit")
+            original_unit = Unit.objects.filter(pk=self._original_unit_id).get()
             client.remove_user_from_group(
                 self.cognito_username,
-                UnitGroup(self._original_unit_id, self._original_organization_id),
+                UnitGroup(original_unit.unit_id, original_unit.organization.organization_id),
             )
 
         if self.organization_changed and self._original_organization_id is not None:
-            client = Client()
+            # Use apps to get model due to circular import
+            Organization = apps.get_model("organization", "Organization")
+            original_org = Organization.objects.filter(pk=self._original_organization_id).get()
             client.remove_user_from_group(
                 self.cognito_username,
-                OrganizationGroup(self._original_organization_id),
+                OrganizationGroup(original_org.organization_id),
             )
 
         if self.organization_changed and self.organization:
-            client = Client()
             client.add_user_to_group(
                 self.cognito_username,
                 OrganizationGroup(self.organization.organization_id),
             )
         if self.unit_changed and self.unit:
-            client = Client()
             client.add_user_to_group(
                 self.cognito_username,
                 UnitGroup(self.unit.unit_id, self.organization.organization_id),
