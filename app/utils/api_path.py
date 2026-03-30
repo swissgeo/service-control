@@ -11,6 +11,7 @@ class VPEntityType(StrEnum):
     ORGANIZATION = "Organization"
     UNIT = "Unit"
     MACHINE_USER = "MachineUser"
+    HUMAN_USER = "HumanUser"
 
 
 class Parameter(BaseModel):
@@ -49,4 +50,7 @@ Machine_user = Parameter(
     parameter_name="machine_user_id",
     vp_entity_type=VPEntityType.MACHINE_USER,
     parents=[Organization],
+)
+User = Parameter(
+    parameter_name="user_id", vp_entity_type=VPEntityType.HUMAN_USER, parents=[Organization]
 )

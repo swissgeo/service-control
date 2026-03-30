@@ -28,6 +28,9 @@ class VPAction(Enum):
     LIST_MACHINE_USERS = "listMachineUsers"
     DELETE_MACHINE_USER = "deleteMachineUser"
 
+    LIST_USERS = "listUsers"
+    UPDATE_USER = "updateUser"
+
     @classmethod
     def choices(cls) -> list[tuple[str, str]]:
         return [(key.value, key.name) for key in cls]

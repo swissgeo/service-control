@@ -66,7 +66,7 @@ def test_get_unit_unauthorized(vp_client, username, status_code, user_headers, u
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_get_unit_returns_existing_with_default_language(username, user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
@@ -91,7 +91,7 @@ def test_get_unit_returns_existing_with_default_language(username, user_headers,
 def test_get_unit_returns_with_language_from_query(user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}?lang=fr",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -112,7 +112,7 @@ def test_get_unit_returns_with_language_from_query(user_headers, unit, client):
 def test_get_unit_returns_404_for_nonexisting_organization(user_headers, client, unit):
     response = client.get(
         f"/api/v1/organizations/non_existant/units/{unit.unit_id}",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 404
@@ -120,7 +120,7 @@ def test_get_unit_returns_404_for_nonexisting_organization(user_headers, client,
 
     response = client.get(
         f"/api/v1/organizations/{unit.organization_id}/units/non_existant",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 404
@@ -137,7 +137,7 @@ def test_get_unit_skips_translations_that_are_not_available(user_headers, unit, 
 
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -156,7 +156,7 @@ def test_get_unit_skips_translations_that_are_not_available(user_headers, unit, 
 def test_get_unit_returns_with_language_from_header(user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
-        headers=user_headers["admin"] | {"Accept-Language": "de"},
+        headers=user_headers["superuser"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -179,7 +179,7 @@ def test_get_unit_returns_with_language_from_query_param_even_if_header_set(
 ):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}?lang=fr",
-        headers=user_headers["admin"] | {"Accept-Language": "de"},
+        headers=user_headers["superuser"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -200,7 +200,7 @@ def test_get_unit_returns_with_language_from_query_param_even_if_header_set(
 def test_get_unit_returns_with_default_language_if_header_empty(user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
-        headers=user_headers["admin"] | {"Accept-Language": ""},
+        headers=user_headers["superuser"] | {"Accept-Language": ""},
     )
 
     assert response.status_code == 200
@@ -221,7 +221,7 @@ def test_get_unit_returns_with_default_language_if_header_empty(user_headers, un
 def test_get_unit_returns_with_first_known_language_from_header(user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
-        headers=user_headers["admin"] | {"Accept-Language": "cn, *, de-DE, en"},
+        headers=user_headers["superuser"] | {"Accept-Language": "cn, *, de-DE, en"},
     )
 
     assert response.status_code == 200
@@ -244,7 +244,7 @@ def test_get_unit_returns_with_first_known_language_from_header_ignoring_qfactor
 ):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",
-        headers=user_headers["admin"] | {"Accept-Language": "fr;q=0.9, de;q=0.8"},
+        headers=user_headers["superuser"] | {"Accept-Language": "fr;q=0.9, de;q=0.8"},
     )
 
     assert response.status_code == 200
@@ -265,7 +265,7 @@ def test_get_unit_returns_with_first_known_language_from_header_ignoring_qfactor
 def test_get_units_returns_single_with_given_language(user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units?lang=fr",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -307,7 +307,7 @@ def test_get_units_skips_translations_that_are_not_available(user_headers, unit,
 
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -342,7 +342,7 @@ def test_get_units_skips_translations_that_are_not_available(user_headers, unit,
 def test_get_units_returns_with_language_from_header(user_headers, unit, client):
     response = client.get(
         f"/api/v1/organizations/{unit.organization.organization_id}/units",
-        headers=user_headers["admin"] | {"Accept-Language": "de"},
+        headers=user_headers["superuser"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -409,7 +409,7 @@ def test_create_unit_unauthorized(
 
 @patch("organization.models.Client")
 @patch("organization.models.VPClient")
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_create_unit_creates_unit_as_expected(
     vp_client, boto_client, username, user_headers, client, organization
 ):
@@ -479,7 +479,7 @@ def test_create_unit_already_exists(vp_client, boto_client, user_headers, client
     response = client.post(
         "/api/v1/organizations/ch.bafu/units",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 201
@@ -488,7 +488,7 @@ def test_create_unit_already_exists(vp_client, boto_client, user_headers, client
     response = client.post(
         "/api/v1/organizations/ch.bafu/units",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 409
@@ -523,7 +523,7 @@ def test_update_unit_unauthorized(vp_client, username, status_code, user_headers
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_update_unit_updates_unit_as_expected(username, user_headers, client, unit):
     data = {
         "name_translations": {
@@ -575,7 +575,7 @@ def test_delete_unit_unauthorized(vp_client, username, status_code, user_headers
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_delete_unit_deletes_unit_as_expected(username, user_headers, client, unit):
     response = client.delete(
         f"/api/v1/organizations/{unit.organization.organization_id}/units/{unit.unit_id}",

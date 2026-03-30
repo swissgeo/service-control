@@ -82,7 +82,7 @@ def test_get_organization_unauthorized(
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_get_organization_returns_existing_organization_with_default_language(
     username, user_headers, organization, client
 ):
@@ -118,7 +118,7 @@ def test_get_organization_returns_organization_with_language_from_query(
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}?lang=de",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -144,7 +144,7 @@ def test_get_organization_returns_organization_with_language_from_query(
 
 
 def test_get_organization_returns_404_for_nonexisting_organization(user_headers, client, db):
-    response = client.get("/api/v1/organizations/2", headers=user_headers["admin"])
+    response = client.get("/api/v1/organizations/2", headers=user_headers["superuser"])
 
     assert response.status_code == 404
     assert response.json() == {"code": 404, "description": "Resource not found"}
@@ -162,7 +162,7 @@ def test_get_organization_skips_translations_that_are_not_available(
 
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -188,7 +188,7 @@ def test_get_organization_returns_organization_with_language_from_header(
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers=user_headers["admin"] | {"Accept-Language": "de"},
+        headers=user_headers["superuser"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -218,7 +218,7 @@ def test_get_organization_returns_organization_with_language_from_query_param_ev
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}?lang=fr",
-        headers=user_headers["admin"] | {"Accept-Language": "de"},
+        headers=user_headers["superuser"] | {"Accept-Language": "de"},
     )
 
     assert response.status_code == 200
@@ -248,7 +248,7 @@ def test_get_organization_returns_organization_with_default_language_if_header_e
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers=user_headers["admin"] | {"Accept-Language": ""},
+        headers=user_headers["superuser"] | {"Accept-Language": ""},
     )
 
     assert response.status_code == 200
@@ -278,7 +278,7 @@ def test_get_organization_returns_organization_with_first_known_language_from_he
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers=user_headers["admin"] | {"Accept-Language": "cn, *, de-DE, en"},
+        headers=user_headers["superuser"] | {"Accept-Language": "cn, *, de-DE, en"},
     )
 
     assert response.status_code == 200
@@ -308,7 +308,7 @@ def test_get_organization_returns_with_first_known_language_from_header_ignoring
 ):
     response = client.get(
         f"/api/v1/organizations/{organization.organization_id}",
-        headers=user_headers["admin"] | {"Accept-Language": "fr;q=0.9, de;q=0.8"},
+        headers=user_headers["superuser"] | {"Accept-Language": "fr;q=0.9, de;q=0.8"},
     )
 
     assert response.status_code == 200
@@ -353,7 +353,7 @@ def test_get_organizations_returns_single_organization_with_given_language(
 ):
     response = client.get(
         "/api/v1/organizations?lang=fr",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
     )
 
     assert response.status_code == 200
@@ -392,7 +392,7 @@ def test_get_organizations_skips_translations_that_are_not_available(
     organization.acronym_rm = None
     organization.save()
 
-    response = client.get("/api/v1/organizations", headers=user_headers["admin"])
+    response = client.get("/api/v1/organizations", headers=user_headers["superuser"])
 
     assert response.status_code == 200
     assert response.json() == {
@@ -420,7 +420,7 @@ def test_get_organizations_returns_organization_with_language_from_header(
     user_headers, organization, client
 ):
     response = client.get(
-        "/api/v1/organizations", headers=user_headers["admin"] | {"Accept-Language": "de"}
+        "/api/v1/organizations", headers=user_headers["superuser"] | {"Accept-Language": "de"}
     )
 
     assert response.status_code == 200
@@ -467,7 +467,7 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
     }
     Organization.objects.create(**organization)
 
-    response = client.get("/api/v1/organizations?lang=fr", headers=user_headers["admin"])
+    response = client.get("/api/v1/organizations?lang=fr", headers=user_headers["superuser"])
 
     assert response.status_code == 200
     assert response.json() == {
@@ -575,7 +575,7 @@ def test_create_organization_creates_organization_as_expected(
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
 
@@ -632,7 +632,7 @@ def test_create_organization_required_only(boto_client, user_headers, client, db
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
 
@@ -670,7 +670,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -685,7 +685,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -700,7 +700,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -719,7 +719,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -738,7 +738,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -757,7 +757,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -776,7 +776,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -795,7 +795,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -814,7 +814,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 422
@@ -842,7 +842,7 @@ def test_create_organization_already_exists(boto_client, user_headers, client, d
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 201
@@ -851,7 +851,7 @@ def test_create_organization_already_exists(boto_client, user_headers, client, d
     response = client.post(
         "/api/v1/organizations",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 409
@@ -895,7 +895,7 @@ def test_update_organization_unauthorized(
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_update_organization_updates_organization_as_expected(
     client, username, user_headers, organization
 ):
@@ -975,7 +975,7 @@ def test_update_organization_not_found(user_headers, client, organization):
     response = client.put(
         "/api/v1/organizations/new.id",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data=data,
     )
     assert response.status_code == 404

@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -5,20 +7,25 @@ from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
 from config.authorization import VPAction
-from organization.models import Organization
+from organization.api import unit_to_response
+from organization.models import Organization, Unit
 from user.extra_audience import add_extra_audience
-from user.models import MachineUser, Role
+from user.models import HumanUser, MachineUser, Role
 from user.schemas import (
     CreateMachineUserSchema,
     MachineUserListSchema,
     MachineUserSchema,
     RoleListSchema,
     RoleSchema,
+    UpdateUserSchema,
+    UserListSchema,
+    UserSchema,
 )
 from utils import api_path
 from utils.auth import is_authenticated, vp_auth
+from utils.language import LanguageCode, get_language
 
-router = Router()
+router = Router(tags=["users"])
 
 
 def machine_user_to_response(model: MachineUser) -> MachineUserSchema:
@@ -34,6 +41,12 @@ def role_to_response(model: Role) -> RoleSchema:
         name=model.name,
         description=model.description,
     )
+
+
+@lru_cache(maxsize=2 ** len(Role.all()))  # all possible combinations of roles for caching
+def map_role_ids_to_response(role_ids: tuple[str, ...]) -> list[RoleSchema]:
+    role_by_id = {role.role_id: role for role in Role.all()}
+    return [role_to_response(role_by_id[role_id]) for role_id in role_ids if role_id in role_by_id]
 
 
 @router.post(
@@ -145,3 +158,94 @@ def roles(
     models = sorted(Role.all(), key=lambda role: role.name)
     response = [role_to_response(model) for model in models]
     return RoleListSchema(items=response)
+
+
+@router.get(
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/users",
+    response={200: UserListSchema},
+    exclude_none=True,
+    auth=vp_auth(VPAction.LIST_USERS),
+)
+def users(
+    request: HttpRequest,
+    organization_id: str,
+    lang: LanguageCode | None = None,
+) -> UserListSchema:
+    """List human users of organization."""
+
+    lang_to_use = get_language(lang, request.headers)
+    org = get_object_or_404(Organization, organization_id=organization_id)
+    users = HumanUser.objects.filter(organization=org).order_by("last_name", "first_name")
+    response = [
+        UserSchema(
+            id=user.sub,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            roles=map_role_ids_to_response(tuple(user.roles)),
+            unit=unit_to_response(user.unit, lang=lang_to_use) if user.unit else None,
+        )
+        for user in users
+    ]
+    return UserListSchema(items=response)
+
+
+@router.put(
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/users/{{{api_path.User.parameter_name}}}",
+    response={200: UserSchema},
+    exclude_none=True,
+    auth=vp_auth(VPAction.UPDATE_USER),
+)
+def update_user(
+    request: HttpRequest,
+    organization_id: str,
+    user_id: str,
+    user_in: UpdateUserSchema,
+    lang: LanguageCode | None = None,
+) -> UserSchema:
+    """Update roles of human user."""
+
+    lang_to_use = get_language(lang, request.headers)
+    org = get_object_or_404(Organization, organization_id=organization_id)
+    user = get_object_or_404(HumanUser, organization=org, sub=user_id)
+    if user_in.unit_id:
+        unit = get_object_or_404(Unit, unit_id=user_in.unit_id)
+        user.unit = unit
+    else:
+        user.unit = None
+    user.roles = user_in.roles
+    user.save()
+
+    return UserSchema(
+        id=user.sub,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        roles=map_role_ids_to_response(tuple(user.roles)),
+        unit=unit_to_response(user.unit, lang=lang_to_use) if user.unit else None,
+    )
+
+
+@router.delete(
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/users/{{{api_path.User.parameter_name}}}",
+    exclude_none=True,
+    auth=vp_auth(VPAction.UPDATE_USER),
+)
+def remove_user(
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    organization_id: str,
+    user_id: str,
+) -> HttpResponse:
+    """
+    Remove human user from organization. This does not delete the user in cognito but
+    removes all roles and unit association.
+    """
+    user_to_delete = get_object_or_404(
+        HumanUser, organization__organization_id=organization_id, sub=user_id
+    )
+    user_to_delete.roles = []
+    user_to_delete.unit = None
+    user_to_delete.organization = None
+    user_to_delete.save()
+
+    return HttpResponse(status=204)

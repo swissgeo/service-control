@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_get_roles_returns_expected(username, client, user_headers):
     response = client.get("/api/v1/roles", headers=user_headers[username])
 

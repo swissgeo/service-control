@@ -1,5 +1,7 @@
 from ninja import Schema
 
+from organization.schemas import UnitSchema  # noqa: TC001
+
 
 class MachineUserSchema(Schema):
     name: str
@@ -25,3 +27,21 @@ class RoleSchema(Schema):
 
 class RoleListSchema(Schema):
     items: list[RoleSchema]
+
+
+class UserSchema(Schema):
+    id: str
+    email: str
+    first_name: str
+    last_name: str
+    roles: list[RoleSchema]
+    unit: UnitSchema | None = None
+
+
+class UserListSchema(Schema):
+    items: list[UserSchema]
+
+
+class UpdateUserSchema(Schema):
+    roles: list[str]
+    unit_id: str | None = None

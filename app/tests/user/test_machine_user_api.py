@@ -21,7 +21,7 @@ def test_get_machine_users_unauthorized(
     assert response.status_code == status_code
 
 
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_get_machine_users_returns_expected(username, user_headers, machine_user, client):
     response = client.get(
         f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers",
@@ -65,7 +65,7 @@ def test_create_machine_user_unauthorized(
 
 @patch("user.api.Client")
 @patch("user.extra_audience.Client")
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_create_machine_user_creates_as_expected(
     ssm_client, boto_client, username, user_headers, machine_user, client
 ):
@@ -101,7 +101,7 @@ def test_create_machine_user_fails_if_already_exists(
     response = client.post(
         f"/api/v1/organizations/{machine_user.organization.organization_id}/machineusers",
         content_type="application/json",
-        headers=user_headers["admin"],
+        headers=user_headers["superuser"],
         data={"name": "Machine 1"},
     )
 
@@ -138,7 +138,7 @@ def test_delete_machine_user_unauthorized(
 
 @patch("user.models.Client")
 @patch("user.extra_audience.Client")
-@pytest.mark.parametrize("username", ["admin", "organization_admin"])
+@pytest.mark.parametrize("username", ["superuser", "organization_admin"])
 def test_delete_machine_user_deletes_as_expected(
     ssm_client, boto_client, username, user_headers, machine_user, client
 ):
