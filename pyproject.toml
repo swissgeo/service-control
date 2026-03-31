@@ -88,7 +88,7 @@ ignore = [
     "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
     "DJ001",  # Ignore nullable strings
     "TRY003", # Ignore long messages in exceptions
-    "G004",   # Ignore f-string missing placeholders
+    "G004",   # Ignore rule for logging calls using f-strings
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

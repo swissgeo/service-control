@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
 
 from dataset.models import Dataset
-from distribution.models import ExternalStacDistribution
+from distribution.models import Distribution, ExternalStacDistribution
 from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)
@@ -178,8 +178,6 @@ class OGCAPIStacDataservice(Dataservice):
     landing_page_url = models.URLField(
         _(_context, "Landing Page URL"),
         max_length=500,
-        blank=True,
-        null=True,
         help_text=_(_context, "URL to the landing page of the OGC API STAC Dataservice"),
     )
 
@@ -191,7 +189,7 @@ class OGCAPIStacDataservice(Dataservice):
     def service_type(self) -> str:
         return "ogcapi:stac"
 
-    def sync_from_capabilities(self, default_dataset_id: str = "ORPHANAGE") -> None:
+    def sync_from_capabilities(self, orphanage_dataset_id: str) -> None:
         """Evaluate the capabilities to detect distributions.
 
         We try to map STAC collection_ids automatically to datasets. If no matching
@@ -200,7 +198,15 @@ class OGCAPIStacDataservice(Dataservice):
 
         processed = set()
 
-        orphanage_dataset = Dataset.objects.get(dataset_id=default_dataset_id)
+        try:
+            orphanage_dataset = Dataset.objects.get(dataset_id=orphanage_dataset_id)
+        except Dataset.DoesNotExist:
+            logger.exception(
+                "Default dataset with ID %s not found. Please create this dataset before "
+                "running the sync or provide a different default dataset ID.",
+                orphanage_dataset_id,
+            )
+            raise
 
         # Get managed collections from STAC API
         client = Client.open(self.landing_page_url)
@@ -221,15 +227,15 @@ class OGCAPIStacDataservice(Dataservice):
                     self.dataservice_id,
                 )
             except ExternalStacDistribution.DoesNotExist:
-                # try to find a dataset with the same geocat_id as the collection_id
+                # try to find a dataset with the same dataset_id as the collection_id
                 dataset = Dataset.objects.filter(dataset_id=collection_id).first()
 
                 if not dataset:
                     logger.warning(
                         "No dataset found for collection_id %s, "
-                        "adding distribution to default dataset %s.",
+                        "adding distribution to orphanage dataset %s.",
                         collection_id,
-                        default_dataset_id,
+                        orphanage_dataset_id,
                     )
                     dataset = orphanage_dataset
 
@@ -238,7 +244,7 @@ class OGCAPIStacDataservice(Dataservice):
                     distribution_id=f"{collection_id}:stac",
                     dataset=dataset,
                     title="STAC Download Collection",
-                    data_source="service-capabilities",
+                    data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
                     dataservice=self,
                     stac_collection_id=collection_id,
                 )
@@ -259,6 +265,9 @@ class OGCAPIStacDataservice(Dataservice):
                             f"Updated distribution for collection_id {collection_id} to "
                             f"dataset {dataset.dataset_id} from dataservice {self.dataservice_id}."
                         )
+
+        # Todo: handle existing distributions that are not in the capabilities anymore
+        # (e.g. mark them as deprecated or delete them)
 
 
 class GeoadminFeaturesDataservice(Dataservice):

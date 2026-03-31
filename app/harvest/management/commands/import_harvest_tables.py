@@ -64,7 +64,7 @@ class Command(CustomBaseCommand):
         )
 
         parser.add_argument(
-            "--profile-name",
+            "--profile",
             type=str,
             nargs="?",
             default=None,
@@ -73,8 +73,9 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
-        if options["profile_name"]:
-            self.session = boto3.Session(profile_name=options["profile_name"])
+        profile = options.get("profile")
+        if profile and profile != "default":
+            self.session = boto3.Session(profile_name=profile)
         else:
             self.session = boto3.Session()
 
@@ -237,6 +238,12 @@ class Command(CustomBaseCommand):
 
                 if ljs.layertype == "geojson":
                     dist = self.import_geojson_distribution(ljs, dataset)
+                    # If the preferred distribution is not set yet,
+                    # we set it to the GeoJSON distribution. Currently,
+                    # layers of type geojson only have a GeoJSON distribution.
+                    if not dataset.preferred_distribution:
+                        dataset.preferred_distribution = dist
+                        dataset.save()
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice

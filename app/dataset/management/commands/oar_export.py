@@ -42,15 +42,10 @@ LANGS_GEOCAT = {
 
 
 class Command(CustomBaseCommand):
-    """Manage OGC API Records Content.
+    """Export data entities to OGC API Records service.
 
-    Currently, this command harvests various sources, merges their content,
-    and writes static OGC API Records compliant JSON files to S3
-
-    Note:
-        There are a number of fields/information missing that will be added in later iterations:
-            - related description link
-
+    Currently this command derives OAR records conform snippets
+    from the local database and uploads them to S3.
     """
 
     help = "OAR management"
@@ -87,9 +82,15 @@ class Command(CustomBaseCommand):
             help="AWS CLI profile to use for authentication (default: 'default')",
         )
         parser.add_argument(
+            "--sample",
+            action="store_true",
+            help="Only process a sample of datasets and distributions (for testing)",
+        )
+        parser.add_argument(
             "--types",
             type=str,
             nargs="+",
+            default=[],
             choices=["services", "distributions", "landing_page"],
             help="Select the type of records to export",
         )
@@ -111,8 +112,9 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
-        if options["profile"]:
-            self.session = boto3.Session(profile_name=options["profile"])  # pylint: disable=attribute-defined-outside-init
+        profile = options.get("profile")
+        if profile and profile != "default":
+            self.session = boto3.Session(profile_name=profile)  # pylint: disable=attribute-defined-outside-init
         else:
             self.session = boto3.Session()  # pylint: disable=attribute-defined-outside-init
 
@@ -133,8 +135,10 @@ class Command(CustomBaseCommand):
 
         if "services" in options["types"]:
             self.do_export_services(*args, **options)
-        elif "distributions" in options["types"]:
+        if "distributions" in options["types"]:
             self.do_export_distributions(*args, **options)
+        if "landing_page" in options["types"]:
+            self.do_export_landing_page(*args, **options)
 
         if options["command"] == "clean":
             self.do_clean(*args, **options)
@@ -192,7 +196,11 @@ class Command(CustomBaseCommand):
         # Note: these snippets are not localised (yet), but we still need to upload
         # 4 lang versions to please the CF function language hack
         self.print("Generating distribution records...")
-        for dataset in Dataset.objects.all():
+        if options["sample"]:
+            datasets = Dataset.objects.filter(dataset_id__in=SAMPLE_IDS)
+        else:
+            datasets = Dataset.objects.all()
+        for dataset in datasets:
             ds_distributions = list(dataset.distribution_set.all())  # ty:ignore[unresolved-attribute]
             for lang in LANGS:
                 distribution_collection = OAFeatureCollection()

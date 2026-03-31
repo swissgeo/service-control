@@ -76,12 +76,13 @@ class OARLink(BaseLink):
 
     """
 
-    fqdn: str = "services.dev.sgdi.tech"
-    basepath: str = "/api/oar/v0"
+    # These are "private" fields that should not be included in a model_dump
+    fqdn: str = Field(exclude=True, default="services.dev.sgdi.tech")
+    basepath: str = Field(exclude=True, default="/api/oar/v0")
 
 
 class OARCollectionLink(OARLink):
-    collectionId: str  # noqa: N815
+    collectionId: str = Field(exclude=True)  # noqa: N815
 
     @model_validator(mode="after")
     def generate_href_value(self) -> OARLink:
@@ -98,7 +99,7 @@ class OARCollectionLink(OARLink):
 
 class OARRecordLink(OARCollectionLink):
     model_config = ConfigDict(populate_by_name=True)
-    recordId: str  # noqa: N815
+    recordId: str = Field(exclude=True)  # noqa: N815
 
     @model_validator(mode="after")
     def generate_href_value(self) -> OARLink:
@@ -220,7 +221,12 @@ class OARDistribution(OARRecord):
                         typ="application/json",
                     )
                 )
-        else:
+        elif hasattr(dist, "dataservice") and dist.dataservice:
+            # TODO: We should probably only export distributions that actually have an
+            # associated dataservice, as otherwise the distribution record would be
+            # quite incomplete and not very useful. We'll need to introduce some
+            # "publication status" or similar for distributions anyway and add validation
+            # when transitioning distributions to "published" status.
             # Note: The linter cannot resolve the dataservice attribute since it's defined
             # in the child classes of the distribution base class
             record.links.append(
@@ -391,7 +397,7 @@ class OARCollection(BaseModel):
 
 class OAFeatureCollection(BaseModel):
     typ: str = Field(default="FeatureCollection", serialization_alias="type")
-    features: list[OARRecord] = Field(default_factory=list)
+    features: list[OARDistribution | OARDataset | OARDataservice] = Field(default_factory=list)
     links: list[Link] = Field(default_factory=list)
 
 

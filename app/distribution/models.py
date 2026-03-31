@@ -25,9 +25,9 @@ class Distribution(PolymorphicModel):
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
     title = models.CharField(_(_context, "Title"), max_length=255)
 
-    DATA_SOURCE_CHOICE_BOD_LAYERS_JS = "bod-layers-js"
-    DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES = "service-capabilities"
-    DATA_SOURCE_CHOICE_USER_INPUT = "user-input"
+    DATA_SOURCE_CHOICE_BOD_LAYERS_JS: ClassVar[str] = "bod-layers-js"
+    DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES: ClassVar[str] = "service-capabilities"
+    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
     DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (DATA_SOURCE_CHOICE_BOD_LAYERS_JS, "BOD (Layers JS)"),
         (
@@ -64,11 +64,17 @@ class Distribution(PolymorphicModel):
     @abstractmethod
     def protocol(self) -> str:
         """Protocol of the distribution, e.g. WMS, WMTS, STAC API, GeoJSON, etc."""
+        raise NotImplementedError(
+            "The 'protocol' property must be implemented in concrete Distribution subclasses."
+        )
 
     @property
     @abstractmethod
     def external_id(self) -> str:
         """External Identifier of the distribution(layer) in the service."""
+        raise NotImplementedError(
+            "The 'external_id' property must be implemented in concrete Distribution subclasses."
+        )
 
 
 class ExternalDistribution(Distribution):

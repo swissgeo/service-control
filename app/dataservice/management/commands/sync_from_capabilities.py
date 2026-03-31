@@ -14,15 +14,13 @@ env = environ.Env()
 
 
 class Command(CustomBaseCommand):
-    """Import data from DynamoDB harvesting tables.
+    """Import data from Service Capabilities..
 
-    This command imports data from DynamoDB harvesting tables. It currently supports importing
-    organisations, but can be extended to import other entities in the future.
+    This command tries to infer/sync distributions from STAC and other capability files.
 
     """
 
-    help = "Importing data from DynamoDB harvesting tables. "
-    "Currently supports importing organisations."
+    help = "This command tries to infer/sync distributions from STAC and other capability files."
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -36,9 +34,9 @@ class Command(CustomBaseCommand):
             help="Sync from STAC capabilities (imports datasets and distributions)",
         )
         parser.add_argument(
-            "--default-dataset",
+            "--orphanage-dataset",
             type=str,
-            default="",
+            default="ORPHANAGE",
             help="Add distributions that cannot be automatically"
             " matched to a dataset to this dataset",
         )
@@ -51,27 +49,27 @@ class Command(CustomBaseCommand):
             self.print(f"Debug: parsed args = {json.dumps(options)}")
 
         # Ensure default dataset exists if required
-        self.ensure_default_dataset()
+        self.ensure_orphanage_dataset()
 
         # Handle sub-commands
         if options["stac"]:
             self.sync_stac(*args, **options)
 
     # ##########################################################################
-    def ensure_default_dataset(self) -> None:
+    def ensure_orphanage_dataset(self) -> None:
         """Create the given default dataset if required and not yet available.
 
         This will create a provider and attribution with the same ID as the dataset.
         """
 
         if (
-            not self.options["default_dataset"]
-            or Dataset.objects.filter(dataset_id=self.options["default_dataset"]).first()
+            not self.options["orphanage_dataset"]
+            or Dataset.objects.filter(dataset_id=self.options["orphanage_dataset"]).first()
         ):
             return
 
         Dataset.objects.create(
-            dataset_id=self.options["default_dataset"],
+            dataset_id=self.options["orphanage_dataset"],
             title_short_de="#Missing",
             title_short_fr="#Missing",
             title_short_en="#Missing",
@@ -80,11 +78,22 @@ class Command(CustomBaseCommand):
             description_en="#Missing",
             geocat_id="#Missing",
         )
-        self.print_success(f"Added default dataset '{self.options['default_dataset']}'")
+        self.print_success(f"Added orphanage dataset '{self.options['orphanage_dataset']}'")
 
     # ##########################################################################
     def sync_stac(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Sync from STAC capabilities."""
 
         for service in OGCAPIStacDataservice.objects.all():
-            service.sync_from_capabilities(default_dataset_id=self.options["default_dataset"])
+            self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")
+            try:
+                service.sync_from_capabilities(
+                    orphanage_dataset_id=self.options["orphanage_dataset"]
+                )
+                self.print_success(
+                    f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
+                )
+            except Exception as e:  # noqa: BLE001
+                self.print_error(
+                    f"Error syncing dataservice '{service.dataservice_id}' from capabilities: {e}"
+                )
