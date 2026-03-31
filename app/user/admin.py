@@ -7,7 +7,7 @@ from django.forms import ModelChoiceField, ModelForm, MultipleChoiceField, Selec
 
 from config.authorization import VPRole
 from organization.models import Unit
-from user.models import HumanUser, MachineUser
+from user.models import AccessRequest, HumanUser, MachineUser
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
@@ -148,3 +148,9 @@ class MachineUserAdmin(admin.ModelAdmin):
 
 
 admin.site.unregister(Group)
+
+
+@admin.register(AccessRequest)
+class AccessRequestAdmin(admin.ModelAdmin):
+    list_display = ("user", "organization", "state", "created")
+    readonly_fields = ("created", "updated", "access_request_id")

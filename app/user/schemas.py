@@ -1,6 +1,7 @@
 from ninja import Schema
 
 from organization.schemas import UnitSchema  # noqa: TC001
+from user.models import AccessRequest  # noqa: TC001
 
 
 class MachineUserSchema(Schema):
@@ -45,3 +46,18 @@ class UserListSchema(Schema):
 class UpdateUserSchema(Schema):
     roles: list[str]
     unit_id: str | None = None
+
+
+class CreateAccessRequestSchema(Schema):
+    organization_id: str
+
+
+class AccessRequestSchema(Schema):
+    id: str
+    organization_id: str
+    state: AccessRequest.AccessRequestState
+    created: str
+
+
+class AccessRequestListSchema(Schema):
+    items: list[AccessRequestSchema]

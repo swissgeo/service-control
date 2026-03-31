@@ -10,8 +10,11 @@ from config.authorization import VPAction
 from organization.api import unit_to_response
 from organization.models import Organization, Unit
 from user.extra_audience import add_extra_audience
-from user.models import HumanUser, MachineUser, Role
+from user.models import AccessRequest, HumanUser, MachineUser, Role
 from user.schemas import (
+    AccessRequestListSchema,
+    AccessRequestSchema,
+    CreateAccessRequestSchema,
     CreateMachineUserSchema,
     MachineUserListSchema,
     MachineUserSchema,
@@ -65,7 +68,7 @@ def create_machine_user(
     TODO: Add request body with authorization permissions for machine user and create respective
     policy in verified permissions.
     """
-    request_user = getattr(request.user, "customuser", None)
+    request_user = request.user
 
     org = get_object_or_404(Organization, organization_id=organization_id)
     existing_machine_user = MachineUser.objects.filter(
@@ -249,3 +252,95 @@ def remove_user(
     user_to_delete.save()
 
     return HttpResponse(status=204)
+
+
+@router.post(
+    "/accessrequests",
+    exclude_none=True,
+    response={201: AccessRequestSchema},
+    auth=is_authenticated,
+)
+def create_access_request(
+    request: HttpRequest,
+    access_request_in: CreateAccessRequestSchema,
+) -> AccessRequestSchema:
+    """
+    Create an access request to an organization for the user.
+    """
+
+    request_user = request.user
+    organization = get_object_or_404(
+        Organization, organization_id=access_request_in.organization_id
+    )
+    access_request = AccessRequest.objects.create(
+        user=request_user,
+        organization=organization,
+        state=AccessRequest.AccessRequestState.PENDING.value,
+    )
+
+    return AccessRequestSchema(
+        id=access_request.access_request_id,
+        organization_id=access_request.organization.organization_id,
+        state=access_request.state,
+        created=access_request.created.isoformat(),
+    )
+
+
+@router.get(
+    "/accessrequests",
+    exclude_none=True,
+    response={200: AccessRequestListSchema},
+    auth=is_authenticated,
+)
+def list_access_requests(
+    request: HttpRequest,
+) -> AccessRequestListSchema:
+    """
+    List all access requests for the authenticated user.
+    """
+
+    request_user = request.user
+    access_requests = AccessRequest.objects.filter(user=request_user)
+
+    return AccessRequestListSchema(
+        items=[
+            AccessRequestSchema(
+                id=ar.access_request_id,
+                organization_id=ar.organization.organization_id,
+                state=ar.state,
+                created=ar.created.isoformat(),
+            )
+            for ar in access_requests
+        ]
+    )
+
+
+@router.put(
+    "/accessrequests/{access_request_id}/cancel",
+    exclude_none=True,
+    response={200: AccessRequestSchema},
+    auth=is_authenticated,
+)
+def update_access_request(
+    request: HttpRequest,
+    access_request_id: str,
+) -> AccessRequestSchema:
+    """
+    Cancel an access request for the authenticated user.
+    """
+
+    request_user = request.user
+    access_request = get_object_or_404(
+        AccessRequest, access_request_id=access_request_id, user=request_user
+    )
+    if access_request.state != AccessRequest.AccessRequestState.PENDING.value:
+        raise ValidationError(errors=[{"state": "Only pending access requests can be updated"}])
+    access_request.state = AccessRequest.AccessRequestState.CANCELLED.value
+    access_request.save()
+
+    return AccessRequestSchema(
+        id=access_request.access_request_id,
+        organization_id=access_request.organization.organization_id,
+        state=access_request.state,
+        created=access_request.created.isoformat(),
+    )

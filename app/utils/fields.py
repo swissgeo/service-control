@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.regex_helper import _lazy_re_compile
@@ -16,3 +18,8 @@ class CustomSlugField(models.CharField):
             "invalid",
         ),
     ]
+
+    def generate_unique_slug() -> str:
+        """Generate a unique slug."""
+
+        return str(uuid.uuid4())

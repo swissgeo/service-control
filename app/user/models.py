@@ -8,10 +8,12 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import pgettext_lazy as _
+from ninja.errors import ValidationError
 
 from cognito.utils.client import Client, OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from user.extra_audience import remove_extra_audience
+from utils.fields import CustomSlugField
 from verified_permissions.utils.client import Client as VPClient
 
 if TYPE_CHECKING:
@@ -346,3 +348,68 @@ class HumanUser(CustomUser):
         proxy = True
         verbose_name = "Human User"
         verbose_name_plural = "Human Users"
+
+
+class AccessRequest(models.Model):
+    _context = "Access Request model"
+
+    class AccessRequestState(models.TextChoices):
+        """
+        New access requests have state PENDING. An admin can either APPROVE or DECLINE
+        an access request. The user can also CANCEL a pending access request.
+        """
+
+        PENDING = "PENDING", _("Access Request model", "Pending")
+        APPROVED = "APPROVED", _("Access Request model", "Approved")
+        DECLINED = "DECLINED", _("Access Request model", "Declined")
+        CANCELLED = "CANCELLED", _("Access Request model", "Cancelled")
+
+    access_request_id = CustomSlugField(
+        _(_context, "Access Request ID"),
+        max_length=100,
+        unique=True,
+        db_index=True,
+    )
+    created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
+    updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
+    user = models.ForeignKey(HumanUser, on_delete=models.CASCADE)
+    organization = models.ForeignKey("organization.Organization", on_delete=models.CASCADE)
+    state = models.CharField(
+        _(_context, "State"),
+        max_length=20,
+        choices=AccessRequestState.choices,
+        default=AccessRequestState.PENDING,
+    )
+
+    def __str__(self) -> str:
+        return self.access_request_id
+
+    def save(
+        self,
+        *args: Any,  # noqa: ARG002 unused arguments
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
+
+        if self._state.adding:
+            # Generate a unique access_request_id on creation
+            self.access_request_id = CustomSlugField.generate_unique_slug()
+            # Check user does not already have a pending access request
+            if AccessRequest.objects.filter(
+                user=self.user, state=AccessRequest.AccessRequestState.PENDING
+            ).exists():
+                raise ValidationError(
+                    errors=[{"user": "User already has a pending access request"}]
+                )
+            # Check user does not already belong to an organization
+            if self.user.organization is not None:
+                raise ValidationError(errors=[{"user": "User already belongs to an organization"}])
+
+        return super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
