@@ -15,6 +15,7 @@ from pathlib import Path
 
 import environ
 import yaml
+from corsheaders.defaults import default_headers
 
 from config.authorization import VPRole
 
@@ -40,6 +41,8 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 CORS_ALLOWED_ORIGIN_REGEXES = env.list("CORS_ALLOWED_ORIGIN_REGEXES", default=[])
+
+CORS_ALLOW_HEADERS = list(default_headers) + env.list("CORS_ALLOW_HEADERS", default=[])
 
 # Application definition
 INSTALLED_APPS = [
