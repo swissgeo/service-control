@@ -32,7 +32,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "boto3-stubs[cognito-idp,ssm,verifiedpermissions]~=1.42",
+    "boto3-stubs[cognito-idp,ssm,verifiedpermissions,dynamodb]~=1.42",
     "debugpy",
     "django_debug_toolbar",
     "django-extensions",

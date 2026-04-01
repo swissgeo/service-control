@@ -12,3 +12,4 @@ class DatasetAdmin(admin.ModelAdmin):
     # edit or implement auto-generation for identifiers (probably preferrable)
     readonly_fields = ("created_at", "updated_at", "dataset_id")
     search_fields = ("dataset_id", "title_short_de")
+    filter_horizontal = ("keywords",)

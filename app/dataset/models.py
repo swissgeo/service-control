@@ -40,6 +40,8 @@ class Dataset(models.Model):
         related_name="preferred_for_datasets",
     )
 
+    keywords = models.ManyToManyField("thesaurus.Keyword", related_name="keywords", blank=True)
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_(_context, "Created at"),

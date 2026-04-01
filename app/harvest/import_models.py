@@ -55,6 +55,8 @@ class DynamoDBParsableModel(BaseModel):
             conv = cls.handle_N(value)
         elif type_key == "L":
             conv = cls.handle_L(value)
+        elif type_key == "M":
+            conv = cls.handle_M(value)
         elif type_key == "NULL":
             conv = None
         elif type_key == "BOOL":
@@ -84,6 +86,10 @@ class DynamoDBParsableModel(BaseModel):
     @classmethod
     def handle_L(cls, value: list) -> list:  # noqa: N802
         return [cls.handle_item(item) for item in value]
+
+    @classmethod
+    def handle_M(cls, value: dict) -> dict:  # noqa: N802
+        return {key: cls.handle_item(item) for key, item in value.items()}
 
     @classmethod
     def handle_BOOL(cls, value: bool) -> bool:  # noqa: N802
@@ -161,3 +167,23 @@ class LayersJSImport(DynamoDBParsableModel):
     geojson_url_rm: str | None = None
     geojson_update_delay: int | None = None
     srid: str | None = None
+
+
+# https://github.com/geoadmin/service-control/blob/develop/app/distributions/export_models.py
+class Keyword(DynamoDBParsableModel):
+    type: str | None
+    thesaurus_id: str | None
+    thesaurus_url: str | None
+    thesaurus_date: str | None
+    concept: str | None
+    translation_de: str | None
+    translation_fr: str | None
+    translation_en: str | None
+    translation_it: str | None
+    translation_rm: str | None
+
+
+class KeywordList(DynamoDBParsableModel):
+    dataset_id: str
+    geocat_id: str
+    keywords: list[Keyword]
