@@ -42,6 +42,7 @@ class UnitAdmin(admin.ModelAdmin):
 
     list_display = ("unit_id", "name_en", "get_organization_name")
     readonly_fields = ("created", "updated")
+    list_filter = ("organization",)
 
     def get_readonly_fields(
         self,
