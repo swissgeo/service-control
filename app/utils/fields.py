@@ -19,6 +19,7 @@ class CustomSlugField(models.CharField):
         ),
     ]
 
+    @staticmethod
     def generate_unique_slug() -> str:
         """Generate a unique slug."""
 

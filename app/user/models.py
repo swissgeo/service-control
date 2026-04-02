@@ -369,6 +369,7 @@ class AccessRequest(models.Model):
         max_length=100,
         unique=True,
         db_index=True,
+        default=CustomSlugField.generate_unique_slug,
     )
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
@@ -394,8 +395,6 @@ class AccessRequest(models.Model):
     ) -> None:
 
         if self._state.adding:
-            # Generate a unique access_request_id on creation
-            self.access_request_id = CustomSlugField.generate_unique_slug()
             # Check user does not already have a pending access request
             if AccessRequest.objects.filter(
                 user=self.user, state=AccessRequest.AccessRequestState.PENDING
