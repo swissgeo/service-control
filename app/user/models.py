@@ -8,11 +8,11 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import pgettext_lazy as _
-from ninja.errors import ValidationError
 
 from cognito.utils.client import Client, OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from user.extra_audience import remove_extra_audience
+from utils.exceptions import ConflictError
 from utils.fields import CustomSlugField
 from verified_permissions.utils.client import Client as VPClient
 
@@ -400,12 +400,10 @@ class AccessRequest(models.Model):
             if AccessRequest.objects.filter(
                 user=self.user, state=AccessRequest.AccessRequestState.PENDING
             ).exists():
-                raise ValidationError(
-                    errors=[{"user": "User already has a pending access request"}]
-                )
+                raise ConflictError("User already has a pending access request")
             # Check user does not already belong to an organization
             if self.user.organization is not None:
-                raise ValidationError(errors=[{"user": "User already belongs to an organization"}])
+                raise ConflictError("User already belongs to an organization")
 
         return super().save(
             force_insert=force_insert,

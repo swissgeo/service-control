@@ -8,7 +8,7 @@ from ninja.errors import ValidationError as NinjaValidationError
 from config.logging import LoggedNinjaAPI
 from organization.api import router as organization_router
 from user.api import router as user_router
-from utils.exceptions import contains_error_code, extract_error_messages
+from utils.exceptions import ConflictError, contains_error_code, extract_error_messages
 
 api = LoggedNinjaAPI()
 
@@ -34,6 +34,21 @@ def handle_django_validation_error(
             "description": messages,
         },
         status=status,
+    )
+
+
+@api.exception_handler(ConflictError)
+def handle_conflict_error(
+    request: HttpRequest,
+    exception: ConflictError,
+) -> HttpResponse:
+    return api.create_response(
+        request,
+        {
+            "code": 409,
+            "description": exception.message,
+        },
+        status=409,
     )
 
 

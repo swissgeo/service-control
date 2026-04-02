@@ -17,10 +17,10 @@ def test_create_access_request_for_user_who_belongs_to_organization(
         data={"organization_id": organization.organization_id},
         headers=user_headers["user"],
     )
-    assert response.status_code == 422
+    assert response.status_code == 409
     assert response.json() == {
-        "code": 422,
-        "description": ["User already belongs to an organization"],
+        "code": 409,
+        "description": "User already belongs to an organization",
     }
 
 
@@ -43,10 +43,10 @@ def test_create_access_request_for_user_who_already_has_pending_access_request(
         data={"organization_id": organization.organization_id},
         headers=user_headers["user_without_org"],
     )
-    assert response.status_code == 422
+    assert response.status_code == 409
     assert response.json() == {
-        "code": 422,
-        "description": ["User already has a pending access request"],
+        "code": 409,
+        "description": "User already has a pending access request",
     }
 
 

@@ -38,3 +38,9 @@ def test_handle_django_validation_error(client):
     response = client.get("/api/v1/trigger-django-validation-error")
     assert response.status_code == 422
     assert response.json() == {"code": 422, "description": ["Not a valid email."]}
+
+
+def test_handle_conflict_error(client):
+    response = client.get("/api/v1/trigger-conflict-error")
+    assert response.status_code == 409
+    assert response.json() == {"code": 409, "description": "Conflict Error"}
