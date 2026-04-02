@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "cognito",
     "verified_permissions",
     "support",
+    "thesaurus",
     "organization",
     "dataset",
     "user",

@@ -12,12 +12,22 @@ from distribution.models import (
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
-from harvest.import_models import DatasetImport, LayersJSImport, OrganisationImport, ParsingError
+from harvest.import_models import (
+    DatasetImport,
+    KeywordList,
+    LayersJSImport,
+    OrganisationImport,
+    ParsingError,
+)
 from organization.models import Organization
+from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
 
 if TYPE_CHECKING:
+    from mypy_boto3_dynamodb import DynamoDBClient
+
     from django.core.management.base import CommandParser
+
 
 env = environ.Env()
 
@@ -53,6 +63,11 @@ class Command(CustomBaseCommand):
             "--distributions",
             action="store_true",
             help="Import datasets",
+        )
+        parser.add_argument(
+            "--keywords",
+            action="store_true",
+            help="Import keywords",
         )
 
         parser.add_argument(
@@ -90,13 +105,17 @@ class Command(CustomBaseCommand):
             self.import_datasets(*args, **options)
         if options["distributions"]:
             self.import_distributions(*args, **options)
+        if options["keywords"]:
+            self.import_keywords(*args, **options)
 
     # ##########################################################################
     def import_organisations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
 
         self.print_success("Importing organisations")
 
-        dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
+        dynamodb_client: DynamoDBClient = self.session.client(
+            "dynamodb", region_name="eu-central-1"
+        )
         paginator = dynamodb_client.get_paginator("scan")
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
@@ -135,7 +154,9 @@ class Command(CustomBaseCommand):
 
         self.print_success("Importing datasets")
 
-        dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
+        dynamodb_client: DynamoDBClient = self.session.client(
+            "dynamodb", region_name="eu-central-1"
+        )
         paginator = dynamodb_client.get_paginator("scan")
 
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
@@ -184,7 +205,9 @@ class Command(CustomBaseCommand):
 
         self.print_success("Importing distributions")
 
-        dynamodb_client = self.session.client("dynamodb", region_name="eu-central-1")
+        dynamodb_client: DynamoDBClient = self.session.client(
+            "dynamodb", region_name="eu-central-1"
+        )
         paginator = dynamodb_client.get_paginator("scan")
 
         # Try to fetch the Geoadmin WMTS dataservice, which is needed to create WMTS distributions.
@@ -316,3 +339,56 @@ class Command(CustomBaseCommand):
         dist.style_url = "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json"
         dist.save()
         return dist
+
+    # ##########################################################################
+    def import_keywords(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+
+        self.print_success("Importing keywords")
+
+        dynamodb_client: DynamoDBClient = self.session.client(
+            "dynamodb", region_name="eu-central-1"
+        )
+
+        for dataset in Dataset.objects.iterator():
+            self.print(f"Processing {dataset.dataset_id}")
+
+            response = dynamodb_client.get_item(
+                TableName=f"harvest-keywords-{options['target_env']}",
+                Key={"dataset_id": {"S": dataset.dataset_id}},
+            )
+            item = response.get("Item")
+
+            if not item:
+                self.print("Dataset %s has no keyword harvest table entry", dataset.dataset_id)
+                continue
+
+            try:
+                item_keywords = KeywordList.from_dynamodb_item(item)
+            except ParsingError as e:
+                self.print_error(
+                    "Failed to parse keyword list for dataset %s: %s", dataset.dataset_id, e
+                )
+                continue
+
+            keywords = set()
+            for item_keyword in item_keywords.keywords:
+                if not item_keyword.thesaurus_id or not item_keyword.concept:
+                    continue
+
+                thesaurus, _ = Thesaurus.objects.get_or_create(
+                    thesaurus_id=item_keyword.thesaurus_id
+                )
+                keyword, _ = Keyword.objects.get_or_create(
+                    thesaurus=thesaurus,
+                    keyword_id=item_keyword.concept,
+                    defaults={
+                        "label_de": item_keyword.translation_de,
+                        "label_fr": item_keyword.translation_fr,
+                        "label_en": item_keyword.translation_en,
+                        "label_it": item_keyword.translation_it,
+                        "label_rm": item_keyword.translation_rm,
+                    },
+                )
+                keywords.add(keyword)
+
+            dataset.keywords.set(keywords)
