@@ -268,12 +268,11 @@ def create_access_request(
     Create an access request to an organization for the user.
     """
 
-    request_user = request.user
     organization = get_object_or_404(
         Organization, organization_id=access_request_in.organization_id
     )
     access_request = AccessRequest.objects.create(
-        user=request_user,
+        user=request.user,
         organization=organization,
         state=AccessRequest.AccessRequestState.PENDING.value,
     )
@@ -299,8 +298,7 @@ def list_access_requests(
     List all access requests for the authenticated user.
     """
 
-    request_user = request.user
-    access_requests = AccessRequest.objects.filter(user=request_user)
+    access_requests = AccessRequest.objects.filter(user=request.user)
 
     return AccessRequestListSchema(
         items=[
@@ -329,9 +327,8 @@ def update_access_request(
     Cancel an access request for the authenticated user.
     """
 
-    request_user = request.user
     access_request = get_object_or_404(
-        AccessRequest, access_request_id=access_request_id, user=request_user
+        AccessRequest, access_request_id=access_request_id, user=request.user
     )
     if access_request.state != AccessRequest.AccessRequestState.PENDING.value:
         raise ValidationError(errors=[{"state": "Only pending access requests can be updated"}])
