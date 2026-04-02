@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Annotated, Any, Literal
 
-from pydantic import AfterValidator, BaseModel, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 from dataservice.models import (
     Dataservice,
@@ -8,6 +8,7 @@ from dataservice.models import (
     WMSDataservice,
     WMTSDataservice,
 )
+from distribution.models import Distribution, ExternalGeoJSONDistribution
 
 if TYPE_CHECKING:
     from dataset.models import Dataset
@@ -34,12 +35,83 @@ def is_url(url: str) -> str:
     return url
 
 
-class Link(BaseModel):
-    href: Annotated[str, AfterValidator(is_url)]
+class BaseLink(BaseModel):
+    """Base Link object for OAR records
+
+    The OAR specification defines a Link object with the following properties:
+    - href (string): The URL of the linked resource. This is optional in the base class.
+    - rel (string, required): The relationship type of the link.
+    - title (string, optional): A human-readable title for the link.
+    - type (string, optional): The media type of the linked resource.
+    - hreflang (string, optional): The language of the linked resource.
+
+    """
+
+    href: Annotated[str, AfterValidator(is_url)] | None = None
     rel: str
     title: str | None = None
-    typ: str | None = Field(default=None, serialization_alias="type")
+    typ: str | None = Field(default="application/json", serialization_alias="type")
     hreflang: str | None = None
+
+
+class Link(BaseLink):
+    """Generic Link object for OAR records
+
+    Unlike in the base class, the href property is required in this class, as it represents a fully
+    defined link to an external resource. This class can be used for links that point to
+    resources outside of the OAR service.:
+    - href (string, required): The URL of the linked resource.
+    """
+
+    href: Annotated[str, AfterValidator(is_url)]
+
+
+class OARLink(BaseLink):
+    """Link object for endpoints within the OAR service
+
+    This is a base class for links that point to endpoints within the OAR service itself.
+    - fqdn (string): The fully qualified domain name of the OAR service
+      (e.g. "services.dev.sgdi.tech")
+    - basepath (string): The base path of the OAR API (e.g. "/api/oar/v0")
+
+    """
+
+    # These are "private" fields that should not be included in a model_dump
+    fqdn: str = Field(exclude=True, default="services.dev.sgdi.tech")
+    basepath: str = Field(exclude=True, default="/api/oar/v0")
+
+
+class OARCollectionLink(OARLink):
+    collectionId: str = Field(exclude=True)  # noqa: N815
+
+    @model_validator(mode="after")
+    def generate_href_value(self) -> OARLink:
+        """Generate the href value for the record link.
+
+        This method is called after the model is initialized and will set the href value
+        based on the fqdn, basepath, collectionId and recordId.
+        """
+        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}"
+        if self.hreflang:
+            self.href += f"?language={self.hreflang}"
+        return self
+
+
+class OARRecordLink(OARCollectionLink):
+    model_config = ConfigDict(populate_by_name=True)
+    recordId: str = Field(exclude=True)  # noqa: N815
+
+    @model_validator(mode="after")
+    def generate_href_value(self) -> OARLink:
+        """Generate the href value for the record link.
+
+        This method is called after the model is initialized and will set the href value
+        based on the fqdn, basepath, collectionId and recordId.
+        """
+        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}/items/{self.recordId}"
+        if self.hreflang:
+            self.href += f"?language={self.hreflang}"
+        return self
 
 
 class LinkTemplate(BaseModel):
@@ -52,7 +124,7 @@ class LinkTemplate(BaseModel):
 
 class OARRecord(BaseModel):
     id: str
-    links: list[Link] = Field(default_factory=list)
+    links: list[BaseLink] = Field(default_factory=list)
     linkTemplates: list[LinkTemplate] = Field(default_factory=list)  # noqa: N815
     type: Literal["Feature"] = "Feature"
     geometry: dict | None = None
@@ -89,6 +161,82 @@ class OARDataset(OARRecord):
         # links = getattr(self, f"links_{lang}", [])
         # for link in links:
         #     record.links.append(link)
+
+        return record
+
+
+class OARDistribution(OARRecord):
+    """Distribution record
+
+    A Distribution is a Record with type="Distribution"
+    """
+
+    properties: dict = Field(default_factory=lambda: {"type": "Distribution"})
+    geometry: dict | None = None
+
+    @classmethod
+    def from_distribution(cls, dist: Distribution, lang: str) -> OARDistribution:
+        record = OARDistribution(id=dist.distribution_id)
+
+        # Set properties
+        record.properties["title"] = dist.title
+        record.links.append(
+            OARRecordLink(
+                collectionId=dist.dataset.dataset_id,
+                recordId=dist.distribution_id,
+                rel="self",
+                title="Link to this distribution record",
+                hreflang=lang,
+            )
+        )
+        record.links.append(
+            OARRecordLink(
+                collectionId="swissgeo.catalog",
+                recordId=dist.dataset.dataset_id,
+                rel="dataset",
+                hreflang=lang,
+                title=f"Link to parent dataset {dist.dataset.dataset_id}",
+            )
+        )
+        record.properties["protocol"] = dist.protocol
+
+        # GeoJSON Distributions behave slightly different as they are not linked to a dataservice
+        # but directly to a file
+        if isinstance(dist, ExternalGeoJSONDistribution):
+            url = getattr(dist, f"geojson_url_{lang}", None)
+            if url:
+                record.links.append(
+                    Link(
+                        href=url,
+                        rel="about",
+                        title="Link to GeoJSON file",
+                        typ="application/geo+json",
+                    )
+                )
+                record.links.append(
+                    Link(
+                        href=dist.style_url,
+                        rel="styled-by",
+                        title="Link to style file for the GeoJSON layer",
+                        typ="application/json",
+                    )
+                )
+        elif hasattr(dist, "dataservice") and dist.dataservice:
+            # TODO: We should probably only export distributions that actually have an
+            # associated dataservice, as otherwise the distribution record would be
+            # quite incomplete and not very useful. We'll need to introduce some
+            # "publication status" or similar for distributions anyway and add validation
+            # when transitioning distributions to "published" status.
+            # Note: The linter cannot resolve the dataservice attribute since it's defined
+            # in the child classes of the distribution base class
+            record.links.append(
+                OARRecordLink(
+                    collectionId="geoadmin.services",
+                    recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
+                    rel="dataservice",
+                )
+            )
+            record.properties["externalIds"] = [dist.external_id]
 
         return record
 
@@ -244,6 +392,12 @@ class OARCollection(BaseModel):
     itemType: str = "record"  # noqa: N815
     recordsArrayName: str = "records"  # noqa: N815
     records: list[Any] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list)
+
+
+class OAFeatureCollection(BaseModel):
+    typ: str = Field(default="FeatureCollection", serialization_alias="type")
+    features: list[OARDistribution | OARDataset | OARDataservice] = Field(default_factory=list)
     links: list[Link] = Field(default_factory=list)
 
 

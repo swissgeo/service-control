@@ -6,7 +6,12 @@ import environ
 
 from dataservice.models import WMSDataservice, WMTSDataservice
 from dataset.models import Dataset
-from distribution.models import ExternalWMSDistribution, ExternalWMTSDistribution
+from distribution.models import (
+    Distribution,
+    ExternalGeoJSONDistribution,
+    ExternalWMSDistribution,
+    ExternalWMTSDistribution,
+)
 from harvest.import_models import DatasetImport, LayersJSImport, OrganisationImport, ParsingError
 from organization.models import Organization
 from utils.command import CustomBaseCommand
@@ -59,7 +64,7 @@ class Command(CustomBaseCommand):
         )
 
         parser.add_argument(
-            "--profile-name",
+            "--profile",
             type=str,
             nargs="?",
             default=None,
@@ -68,8 +73,9 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
-        if options["profile_name"]:
-            self.session = boto3.Session(profile_name=options["profile_name"])
+        profile = options.get("profile")
+        if profile and profile != "default":
+            self.session = boto3.Session(profile_name=profile)
         else:
             self.session = boto3.Session()
 
@@ -174,7 +180,7 @@ class Command(CustomBaseCommand):
                 ds.save()
 
     # ##########################################################################
-    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
 
         self.print_success("Importing distributions")
 
@@ -202,7 +208,6 @@ class Command(CustomBaseCommand):
 
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
             for item in page["Items"]:
-                self.print(json.dumps(item))
                 try:
                     ljs = LayersJSImport.from_dynamodb_item(item)
                     self.print_success(f"Parsed layers_js: {ljs.layer_id}")
@@ -218,16 +223,34 @@ class Command(CustomBaseCommand):
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
-                    self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+                    dist = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+                    # Set the preferred distribution to WMTS for WMTS layers
+                    dataset.preferred_distribution = dist
+                    dataset.save()
 
                 if ljs.layertype in ["wms", "wmts"]:
-                    self.import_wms_distribution(ljs, dataset, wms_dataservice)
+                    dist = self.import_wms_distribution(ljs, dataset, wms_dataservice)
+                    # If the preferred distribution is not set yet, we set it to the WMS
+                    # distribution
+                    if not dataset.preferred_distribution:
+                        dataset.preferred_distribution = dist
+                        dataset.save()
+
+                if ljs.layertype == "geojson":
+                    dist = self.import_geojson_distribution(ljs, dataset)
+                    # If the preferred distribution is not set yet,
+                    # we set it to the GeoJSON distribution. Currently,
+                    # layers of type geojson only have a GeoJSON distribution.
+                    if not dataset.preferred_distribution:
+                        dataset.preferred_distribution = dist
+                        dataset.save()
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
-    ) -> None:
+    ) -> Distribution:
 
         wmts_distribution_id = ljs.layer_id + ":wmts"
+        self.print(f"Importing WMTS Distribution {wmts_distribution_id}")
 
         dist, _ = ExternalWMTSDistribution.objects.get_or_create(
             distribution_id=wmts_distribution_id,
@@ -235,18 +258,21 @@ class Command(CustomBaseCommand):
             wmts_layer_name=ljs.layer_id,
         )
         dist.dataservice = wmts_dataservice
-        dist.title = "WMTS Distribution"
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "WMTS Layer"
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
             dist.opacity = ljs.opacity
         dist.save()
+        return dist
 
     def import_wms_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wms_dataservice: WMSDataservice
-    ) -> None:
+    ) -> Distribution:
 
         wms_distribution_id = ljs.layer_id + ":wms"
+        self.print(f"Importing WMS Distribution {wms_distribution_id}")
 
         dist, _ = ExternalWMSDistribution.objects.get_or_create(
             distribution_id=wms_distribution_id,
@@ -254,7 +280,8 @@ class Command(CustomBaseCommand):
             wms_layer_name=ljs.layer_id,
         )
         dist.dataservice = wms_dataservice
-        dist.title = "WMS Distribution"
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "WMS Layer"
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -263,3 +290,29 @@ class Command(CustomBaseCommand):
         if ljs.wms_gutter:
             dist.gutter = ljs.wms_gutter
         dist.save()
+        return dist
+
+    def import_geojson_distribution(self, ljs: LayersJSImport, dataset: Dataset) -> Distribution:
+
+        geojson_distribution_id = ljs.layer_id + ":geojson"
+        self.print(f"Importing GeoJSON Distribution {geojson_distribution_id}")
+
+        dist, _ = ExternalGeoJSONDistribution.objects.get_or_create(
+            distribution_id=geojson_distribution_id,
+            dataset=dataset,
+            defaults={"geojson_url_de": ljs.geojson_url_de},
+        )
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "GeoJSON Layer"
+        dist.geojson_url_de = ljs.geojson_url_de
+        dist.geojson_url_fr = ljs.geojson_url_fr
+        dist.geojson_url_it = ljs.geojson_url_it
+        dist.geojson_url_en = ljs.geojson_url_en
+        dist.geojson_url_rm = ljs.geojson_url_rm
+        # The geojson style URL is not stored in the layers_js table,
+        # but we can construct it from the layer_id
+        # (see https://github.com/geoadmin/mf-chsdi3/blob/master/chsdi/models/bod.py#L142)
+        # Note: we always reference prod env here
+        dist.style_url = "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json"
+        dist.save()
+        return dist
