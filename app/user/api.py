@@ -26,7 +26,7 @@ from user.schemas import (
 )
 from utils import api_path
 from utils.auth import is_authenticated, vp_auth
-from utils.language import LanguageCode, get_language
+from utils.language import LanguageCode, get_language, get_translation
 
 router = Router(tags=["users"])
 
@@ -263,11 +263,13 @@ def remove_user(
 def create_access_request(
     request: HttpRequest,
     access_request_in: CreateAccessRequestSchema,
+    lang: LanguageCode | None = None,
 ) -> AccessRequestSchema:
     """
     Create an access request to an organization for the user.
     """
 
+    lang_to_use = get_language(lang, request.headers)
     organization = get_object_or_404(
         Organization, organization_id=access_request_in.organization_id
     )
@@ -280,6 +282,8 @@ def create_access_request(
     return AccessRequestSchema(
         id=access_request.access_request_id,
         organization_id=access_request.organization.organization_id,
+        organization_acronym=get_translation(access_request.organization, "acronym", lang_to_use),
+        organization_name=get_translation(access_request.organization, "name", lang_to_use),
         state=access_request.state,
         created=access_request.created.isoformat(),
     )
@@ -293,11 +297,13 @@ def create_access_request(
 )
 def list_access_requests(
     request: HttpRequest,
+    lang: LanguageCode | None = None,
 ) -> AccessRequestListSchema:
     """
     List all access requests for the authenticated user.
     """
 
+    lang_to_use = get_language(lang, request.headers)
     access_requests = AccessRequest.objects.filter(user=request.user)
 
     return AccessRequestListSchema(
@@ -305,6 +311,8 @@ def list_access_requests(
             AccessRequestSchema(
                 id=ar.access_request_id,
                 organization_id=ar.organization.organization_id,
+                organization_acronym=get_translation(ar.organization, "acronym", lang_to_use),
+                organization_name=get_translation(ar.organization, "name", lang_to_use),
                 state=ar.state,
                 created=ar.created.isoformat(),
             )
@@ -322,11 +330,13 @@ def list_access_requests(
 def update_access_request(
     request: HttpRequest,
     access_request_id: str,
+    lang: LanguageCode | None = None,
 ) -> AccessRequestSchema:
     """
     Cancel an access request for the authenticated user.
     """
 
+    lang_to_use = get_language(lang, request.headers)
     access_request = get_object_or_404(
         AccessRequest, access_request_id=access_request_id, user=request.user
     )
@@ -338,6 +348,8 @@ def update_access_request(
     return AccessRequestSchema(
         id=access_request.access_request_id,
         organization_id=access_request.organization.organization_id,
+        organization_acronym=get_translation(access_request.organization, "acronym", lang_to_use),
+        organization_name=get_translation(access_request.organization, "name", lang_to_use),
         state=access_request.state,
         created=access_request.created.isoformat(),
     )

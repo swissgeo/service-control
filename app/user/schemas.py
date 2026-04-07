@@ -55,6 +55,8 @@ class CreateAccessRequestSchema(Schema):
 class AccessRequestSchema(Schema):
     id: str
     organization_id: str
+    organization_acronym: str
+    organization_name: str
     state: AccessRequest.AccessRequestState
     created: str
 

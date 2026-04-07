@@ -61,6 +61,8 @@ def test_create_access_request_success(organization, user_without_org, client, u
     assert response.json() == {
         "id": response.json()["id"],  # check id is returned
         "organization_id": organization.organization_id,
+        "organization_acronym": organization.acronym_en,
+        "organization_name": organization.name_en,
         "state": "PENDING",
         "created": response.json()["created"],  # check timestamp is returned
     }
@@ -89,6 +91,8 @@ def test_list_access_requests_for_user_without_org(
             {
                 "id": response.json()["items"][0]["id"],  # check id is returned
                 "organization_id": organization.organization_id,
+                "organization_acronym": organization.acronym_en,
+                "organization_name": organization.name_en,
                 "state": "PENDING",
                 "created": response.json()["items"][0]["created"],  # check timestamp is returned
             }
@@ -116,6 +120,8 @@ def test_cancel_access_request(organization, user_without_org, client, user_head
     assert response.json() == {
         "id": access_request_id,
         "organization_id": organization.organization_id,
+        "organization_acronym": organization.acronym_en,
+        "organization_name": organization.name_en,
         "state": "CANCELLED",
         "created": response.json()["created"],  # check timestamp is returned
     }
@@ -128,6 +134,8 @@ def test_cancel_access_request(organization, user_without_org, client, user_head
             {
                 "id": access_request_id,
                 "organization_id": organization.organization_id,
+                "organization_acronym": organization.acronym_en,
+                "organization_name": organization.name_en,
                 "state": "CANCELLED",
                 "created": response.json()["items"][0]["created"],  # check timestamp is returned
             }
