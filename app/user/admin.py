@@ -7,7 +7,7 @@ from django.forms import ModelChoiceField, ModelForm, MultipleChoiceField, Selec
 
 from config.authorization import VPRole
 from organization.models import Unit
-from user.models import HumanUser, MachineUser
+from user.models import AccessRequest, HumanUser, MachineUser
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
@@ -114,6 +114,7 @@ class HumanUserAdmin(admin.ModelAdmin):
         "is_superuser",
         "is_staff",
     )
+    list_filter = ("is_superuser", "organization")
 
     def has_add_permission(
         self,
@@ -145,6 +146,14 @@ class MachineUserAdmin(admin.ModelAdmin):
         "is_superuser",
     )
     readonly_fields = ("vp_machine_user_policy_id", "date_joined")
+    list_filter = ("organization",)
 
 
 admin.site.unregister(Group)
+
+
+@admin.register(AccessRequest)
+class AccessRequestAdmin(admin.ModelAdmin):
+    list_display = ("user", "organization", "state", "created")
+    readonly_fields = ("created", "updated", "access_request_id")
+    list_filter = ("state", "organization")

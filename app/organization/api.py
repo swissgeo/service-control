@@ -4,7 +4,7 @@ from ninja import Router
 
 from config.authorization import VPAction
 from utils import api_path
-from utils.auth import superuser_auth, vp_auth
+from utils.auth import is_authenticated, superuser_auth, vp_auth
 from utils.language import LanguageCode, get_language, get_translation
 
 from .models import Organization, Unit
@@ -110,7 +110,10 @@ def update_organization(
 
 
 @router.get(
-    "/organizations", response={200: OrganizationListSchema}, exclude_none=True, auth=superuser_auth
+    "/organizations",
+    response={200: OrganizationListSchema},
+    exclude_none=True,
+    auth=is_authenticated,
 )
 def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> OrganizationListSchema:
     """

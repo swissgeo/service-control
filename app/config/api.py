@@ -8,7 +8,7 @@ from ninja.errors import ValidationError as NinjaValidationError
 from config.logging import LoggedNinjaAPI
 from organization.api import router as organization_router
 from user.api import router as user_router
-from utils.exceptions import contains_error_code, extract_error_messages
+from utils.exceptions import ConflictError, contains_error_code, extract_error_messages
 
 api = LoggedNinjaAPI()
 
@@ -24,7 +24,7 @@ def handle_django_validation_error(
     """Convert the given validation error to a response with corresponding status."""
     error_code_unique_constraint_violated = "unique"
 
-    status = 409 if contains_error_code(exception, error_code_unique_constraint_violated) else 422
+    status = 409 if contains_error_code(exception, error_code_unique_constraint_violated) else 400
 
     messages = extract_error_messages(exception)
     return api.create_response(
@@ -34,6 +34,21 @@ def handle_django_validation_error(
             "description": messages,
         },
         status=status,
+    )
+
+
+@api.exception_handler(ConflictError)
+def handle_conflict_error(
+    request: HttpRequest,
+    exception: ConflictError,
+) -> HttpResponse:
+    return api.create_response(
+        request,
+        {
+            "code": 409,
+            "description": exception.message,
+        },
+        status=409,
     )
 
 
@@ -107,10 +122,10 @@ def handle_ninja_validation_error(
     return api.create_response(
         request,
         {
-            "code": 422,
+            "code": 400,
             "description": messages,
         },
-        status=422,
+        status=400,
     )
 
 

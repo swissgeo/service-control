@@ -68,6 +68,18 @@ def fixture_user(cognito_client, organization, unit):
     )
 
 
+@pytest.fixture(name="user_without_org")
+@patch("user.models.Client")
+def fixture_new_user(cognito_client):
+    return HumanUser.objects.create(
+        sub="user_without_org",
+        first_name="New",
+        last_name="User",
+        email="new_user@example.com",
+        cognito_username="prefix-user_without_org",
+    )
+
+
 @pytest.fixture(name="machine_user")
 def fixture_machine_user(organization, user, django_machine_user_factory):
     return django_machine_user_factory(
@@ -77,7 +89,7 @@ def fixture_machine_user(organization, user, django_machine_user_factory):
 
 @pytest.fixture(name="user_headers")
 @patch("user.models.Client")
-def fixture_user_headers(cognito_client, organization):
+def fixture_user_headers(cognito_client, organization, user_without_org):
 
     HumanUser.objects.create(
         sub="organization_admin",
@@ -125,6 +137,19 @@ def fixture_user_headers(cognito_client, organization):
             "X-Auth-Request-Preferred-Username": "prefix-organization_admin",
             "X-Auth-Request-Access-Token": encode(
                 {"first_name": "Organization", "last_name": "Admin"}, "key"
+            ),
+        },
+        "user_without_org": {
+            "X-Auth-Request-User": user_without_org.sub,
+            "X-Auth-Request-Groups": "",
+            "X-Auth-Request-Email": user_without_org.email,
+            "X-Auth-Request-Preferred-Username": user_without_org.cognito_username,
+            "X-Auth-Request-Access-Token": encode(
+                {
+                    "first_name": user_without_org.first_name,
+                    "last_name": user_without_org.last_name,
+                },
+                "key",
             ),
         },
     }

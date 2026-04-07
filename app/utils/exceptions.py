@@ -4,6 +4,16 @@ if TYPE_CHECKING:
     from django.core.exceptions import ValidationError
 
 
+class ConflictError(Exception):
+    """
+    Exception to raise when a conflict occurs, resulting in a 409 Conflict response.
+    """
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(message)
+
+
 def contains_error_code(exception: ValidationError, code: str) -> bool:
     """Return True if the given exception contains an error with the given error code."""
     if hasattr(exception, "code") and exception.code == code:

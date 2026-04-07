@@ -6,6 +6,7 @@ from ninja.errors import AuthenticationError, HttpError
 from ninja.errors import ValidationError as NinjaValidationError
 
 from config.api import api
+from utils.exceptions import ConflictError
 
 router = Router()
 api.add_router("", router)
@@ -54,3 +55,8 @@ def trigger_django_validation_error(request: HttpRequest) -> dict[str, bool | st
 @router.get("/trigger-200-response")
 def trigger_200_response(request: HttpRequest) -> dict[str, bool | str]:
     return "Hello World"
+
+
+@router.get("/trigger-conflict-error")
+def trigger_conflict_error(request: HttpRequest) -> dict[str, bool | str]:
+    raise ConflictError("Conflict Error")

@@ -336,9 +336,7 @@ def test_get_organization_returns_with_first_known_language_from_header_ignoring
 # ==========  GET (organizations)  ==========
 
 
-@pytest.mark.parametrize(
-    ("username", "status_code"), [("anonymous", 401), ("user", 403), ("organization_admin", 403)]
-)
+@pytest.mark.parametrize(("username", "status_code"), [("anonymous", 401)])
 def test_get_organizations_unauthorized(username, status_code, user_headers, organization, client):
     response = client.get(
         "/api/v1/organizations?lang=fr",
@@ -348,12 +346,13 @@ def test_get_organizations_unauthorized(username, status_code, user_headers, org
     assert response.status_code == status_code
 
 
+@pytest.mark.parametrize(("username"), ["superuser", "user", "organization_admin"])
 def test_get_organizations_returns_single_organization_with_given_language(
-    user_headers, organization, client
+    username, user_headers, organization, client
 ):
     response = client.get(
         "/api/v1/organizations?lang=fr",
-        headers=user_headers["superuser"],
+        headers=user_headers[username],
     )
 
     assert response.status_code == 200
@@ -673,7 +672,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "name_translations": {
@@ -688,7 +687,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -703,7 +702,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -722,7 +721,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -741,7 +740,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -760,7 +759,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -779,7 +778,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -798,7 +797,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -817,7 +816,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 @patch("organization.models.Client")
