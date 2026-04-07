@@ -61,5 +61,9 @@ class AccessRequestSchema(Schema):
     created: str
 
 
+class UpdateAccessRequestSchema(Schema):
+    state: AccessRequest.AccessRequestState
+
+
 class AccessRequestListSchema(Schema):
     items: list[AccessRequestSchema]

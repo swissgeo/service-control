@@ -20,6 +20,7 @@ from user.schemas import (
     MachineUserSchema,
     RoleListSchema,
     RoleSchema,
+    UpdateAccessRequestSchema,
     UpdateUserSchema,
     UserListSchema,
     UserSchema,
@@ -322,7 +323,7 @@ def list_access_requests(
 
 
 @router.put(
-    "/accessrequests/{access_request_id}/cancel",
+    "/accessrequests/{access_request_id}",
     exclude_none=True,
     response={200: AccessRequestSchema},
     auth=is_authenticated,
@@ -330,6 +331,7 @@ def list_access_requests(
 def update_access_request(
     request: HttpRequest,
     access_request_id: str,
+    access_request_in: UpdateAccessRequestSchema,
     lang: LanguageCode | None = None,
 ) -> AccessRequestSchema:
     """
@@ -342,6 +344,9 @@ def update_access_request(
     )
     if access_request.state != AccessRequest.AccessRequestState.PENDING.value:
         raise ValidationError(errors=[{"state": "Only pending access requests can be updated"}])
+    if access_request_in.state != AccessRequest.AccessRequestState.CANCELLED.value:
+        raise ValidationError(errors=[{"state": "Can only update state to cancelled"}])
+
     access_request.state = AccessRequest.AccessRequestState.CANCELLED.value
     access_request.save()
 

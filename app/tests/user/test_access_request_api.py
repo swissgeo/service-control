@@ -113,7 +113,9 @@ def test_cancel_access_request(organization, user_without_org, client, user_head
 
     # Cancel access request
     response = client.put(
-        f"/api/v1/accessrequests/{access_request_id}/cancel",
+        f"/api/v1/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "CANCELLED"},
         headers=user_headers["user_without_org"],
     )
     assert response.status_code == 200
@@ -137,6 +139,47 @@ def test_cancel_access_request(organization, user_without_org, client, user_head
                 "organization_acronym": organization.acronym_en,
                 "organization_name": organization.name_en,
                 "state": "CANCELLED",
+                "created": response.json()["items"][0]["created"],  # check timestamp is returned
+            }
+        ]
+    }
+
+
+def test_cancel_access_request_wrong_state(organization, user_without_org, client, user_headers):
+    # Create access request
+    response = client.post(
+        "/api/v1/accessrequests",
+        content_type="application/json",
+        data={"organization_id": organization.organization_id},
+        headers=user_headers["user_without_org"],
+    )
+    assert response.status_code == 201
+    access_request_id = response.json()["id"]
+
+    # Cancel access request
+    response = client.put(
+        f"/api/v1/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "APPROVED"},
+        headers=user_headers["user_without_org"],
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "code": 422,
+        "description": ["Can only update state to cancelled"],
+    }
+
+    # Verify access request is not cancelled
+    response = client.get("/api/v1/accessrequests", headers=user_headers["user_without_org"])
+    assert response.status_code == 200
+    assert response.json() == {
+        "items": [
+            {
+                "id": access_request_id,
+                "organization_id": organization.organization_id,
+                "organization_acronym": organization.acronym_en,
+                "organization_name": organization.name_en,
+                "state": "PENDING",
                 "created": response.json()["items"][0]["created"],  # check timestamp is returned
             }
         ]
