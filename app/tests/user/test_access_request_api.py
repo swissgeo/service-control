@@ -163,9 +163,9 @@ def test_cancel_access_request_wrong_state(organization, user_without_org, clien
         data={"state": "APPROVED"},
         headers=user_headers["user_without_org"],
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     assert response.json() == {
-        "code": 422,
+        "code": 400,
         "description": ["Can only update state to cancelled"],
     }
 
