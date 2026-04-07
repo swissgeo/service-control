@@ -105,9 +105,9 @@ def test_create_machine_user_fails_if_already_exists(
         data={"name": "Machine 1"},
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 400
     assert response.json() == {
-        "code": 422,
+        "code": 400,
         "description": ["machine user with this name already exists"],
     }
     assert boto_client.return_value.mock_calls == []

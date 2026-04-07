@@ -24,7 +24,7 @@ def handle_django_validation_error(
     """Convert the given validation error to a response with corresponding status."""
     error_code_unique_constraint_violated = "unique"
 
-    status = 409 if contains_error_code(exception, error_code_unique_constraint_violated) else 422
+    status = 409 if contains_error_code(exception, error_code_unique_constraint_violated) else 400
 
     messages = extract_error_messages(exception)
     return api.create_response(
@@ -122,10 +122,10 @@ def handle_ninja_validation_error(
     return api.create_response(
         request,
         {
-            "code": 422,
+            "code": 400,
             "description": messages,
         },
-        status=422,
+        status=400,
     )
 
 

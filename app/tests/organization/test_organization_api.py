@@ -672,7 +672,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "name_translations": {
@@ -687,7 +687,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -702,7 +702,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -721,7 +721,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -740,7 +740,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -759,7 +759,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -778,7 +778,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -797,7 +797,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
     data = {
         "id": "ch.bafu",
         "acronym_translations": {
@@ -816,7 +816,7 @@ def test_create_organization_missing_required(user_headers, client, db):
         headers=user_headers["superuser"],
         data=data,
     )
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 @patch("organization.models.Client")

@@ -98,9 +98,9 @@ def test_api_ninja_validation_logging(client, caplog, configure_logger):
     log_entry = json.loads(caplog.text)
 
     assert log_entry["log.level"] == "warning"
-    assert log_entry["message"] == f"Response 422 on {path}"
+    assert log_entry["message"] == f"Response 400 on {path}"
     assert log_entry["http"]["request"]["method"] == "GET"
-    assert log_entry["http"]["response"]["status_code"] == 422
+    assert log_entry["http"]["response"]["status_code"] == 400
     assert log_entry["url"]["path"] == path
 
 
