@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Dataset
+from .models import Dataset, DatasetContact
+
+
+class DatasetContactInline(admin.TabularInline):
+    model = DatasetContact
+    extra = 0
 
 
 @admin.register(Dataset)
@@ -13,3 +18,4 @@ class DatasetAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at", "dataset_id")
     search_fields = ("dataset_id", "title_short_de")
     filter_horizontal = ("keywords",)
+    inlines = (DatasetContactInline,)

@@ -225,3 +225,80 @@ class Unit(models.Model):
         vp_client.delete_policy(self.vp_dataset_contributor_policy_id)
 
         return result
+
+
+class Contact(models.Model):
+    """Contact point of an organization.
+
+    See eCH-0271 CI_Contact.
+    """
+
+    _context = "Organization Contact model"
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+    )
+
+    created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
+    updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
+
+    name_de = models.CharField(_(_context, "Name (German)"), null=True, blank=True)
+    name_fr = models.CharField(_(_context, "Name (French)"), null=True, blank=True)
+    name_en = models.CharField(_(_context, "Name (English)"), null=True, blank=True)
+    name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
+    name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
+
+    email = models.EmailField(_(_context, "Email"), null=True, blank=True)
+    phone = models.CharField(_(_context, "Phone"), null=True, blank=True)
+
+    address_administrative_area = models.CharField(
+        _(_context, "Address: Administrative Area"), null=True, blank=True
+    )
+    address_delivery_point = models.CharField(
+        _(_context, "Address: Delivery Point"), null=True, blank=True
+    )
+    address_postal_code = models.CharField(
+        _(_context, "Address: Postal Code"), null=True, blank=True
+    )
+    address_city = models.CharField(_(_context, "Address: City"), null=True, blank=True)
+    address_country = models.CharField(
+        _(_context, "Address: Country"), max_length=2, null=True, blank=True
+    )
+
+    url_de = models.URLField(
+        _(_context, "URL (German)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_fr = models.URLField(
+        _(_context, "URL (German)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_en = models.URLField(
+        _(_context, "URL (German)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_it = models.URLField(
+        _(_context, "URL (German)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_rm = models.URLField(
+        _(_context, "URL (German)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ("organization__organization_id", "name_en")
+
+    def __str__(self) -> str:
+        return str(self.name_en or "-")
