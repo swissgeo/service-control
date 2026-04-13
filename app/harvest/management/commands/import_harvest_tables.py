@@ -4,8 +4,10 @@ from typing import TYPE_CHECKING, Any
 import boto3
 import environ
 
+from django.db.models import Q
+
 from dataservice.models import WMSDataservice, WMTSDataservice
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetContact
 from distribution.models import (
     Distribution,
     ExternalGeoJSONDistribution,
@@ -13,13 +15,14 @@ from distribution.models import (
     ExternalWMTSDistribution,
 )
 from harvest.import_models import (
+    ContactList,
     DatasetImport,
     KeywordList,
     LayersJSImport,
     OrganisationImport,
     ParsingError,
 )
-from organization.models import Organization
+from organization.models import Contact, Organization
 from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
 
@@ -69,6 +72,11 @@ class Command(CustomBaseCommand):
             action="store_true",
             help="Import keywords",
         )
+        parser.add_argument(
+            "--contacts",
+            action="store_true",
+            help="Import contacts",
+        )
 
         parser.add_argument(
             "--target-env",
@@ -107,6 +115,8 @@ class Command(CustomBaseCommand):
             self.import_distributions(*args, **options)
         if options["keywords"]:
             self.import_keywords(*args, **options)
+        if options["contacts"]:
+            self.import_contacts(*args, **options)
 
     # ##########################################################################
     def import_organisations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -392,3 +402,150 @@ class Command(CustomBaseCommand):
                 keywords.add(keyword)
 
             dataset.keywords.set(keywords)
+
+    # ##########################################################################
+    def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901
+
+        self.print_success("Importing contacts")
+
+        dynamodb_client: DynamoDBClient = self.session.client(
+            "dynamodb", region_name="eu-central-1"
+        )
+
+        for dataset in Dataset.objects.iterator():
+            self.print(f"Processing {dataset.dataset_id}")
+
+            response = dynamodb_client.get_item(
+                TableName=f"harvest-contacts-{options['target_env']}",
+                Key={"dataset_id": {"S": dataset.dataset_id}},
+            )
+            item = response.get("Item")
+
+            if not item:
+                self.print("Dataset %s has no contact harvest table entry", dataset.dataset_id)
+                continue
+
+            try:
+                item_contacts = ContactList.from_dynamodb_item(item)
+            except ParsingError as e:
+                self.print_error(
+                    "Failed to parse contact list for dataset %s: %s", dataset.dataset_id, e
+                )
+                continue
+
+            DatasetContact.objects.filter(dataset=dataset).delete()
+            for item_contact in item_contacts.contacts:
+                organization = self.find_organization(
+                    acronym_de=item_contact.org_acronym_de,
+                    acronym_fr=item_contact.org_acronym_fr,
+                    name_de=item_contact.org_name_de,
+                    name_fr=item_contact.org_name_fr,
+                )
+
+                if not organization:
+                    self.print_error(
+                        f"Organization of role {item_contact.role} not found for dataset {dataset}"
+                    )
+                    continue
+
+                contact = self.find_contact(
+                    organization=organization,
+                    name_de=item_contact.position_name_de,
+                    name_fr=item_contact.position_name_fr,
+                )
+
+                if not contact:
+                    email = None
+                    if item_contact.contact_electronic_mail_addresses:
+                        email = item_contact.contact_electronic_mail_addresses[0]
+                        if len(item_contact.contact_electronic_mail_addresses) > 1:
+                            self.print_warning("Multiple emails not supported")
+
+                    online_resource = None
+                    if item_contact.online_resources:
+                        online_resource = item_contact.online_resources[0]
+                        if len(item_contact.online_resources) > 1:
+                            self.print_warning("Multiple online ressources not supported")
+
+                    country = item_contact.contact_country
+                    country = country if country and len(country) == 2 else None  # noqa:PLR2004
+                    if item_contact.contact_country and not country:
+                        self.print_warning(f"Invalid country code {item_contact.contact_country}")
+
+                    self.print(f"Creating contact for organization {organization}")
+                    contact = Contact.objects.create(
+                        organization=organization,
+                        name_de=item_contact.position_name_de,
+                        name_fr=item_contact.position_name_fr,
+                        name_en=item_contact.position_name_en,
+                        name_it=item_contact.position_name_it,
+                        name_rm=item_contact.position_name_rm,
+                        email=email,
+                        phone=item_contact.contact_voice,
+                        address_administrative_area=item_contact.contact_administrative_area,
+                        address_delivery_point=item_contact.contact_delivery_point,
+                        address_postal_code=item_contact.contact_postal_code,
+                        address_city=item_contact.contact_city,
+                        address_country=country,
+                        url_de=getattr(online_resource, "url_de", None),
+                        url_fr=getattr(online_resource, "url_fr", None),
+                        url_en=getattr(online_resource, "url_en", None),
+                        url_it=getattr(online_resource, "url_it", None),
+                        url_rm=getattr(online_resource, "url_rm", None),
+                    )
+
+                DatasetContact.objects.create(
+                    dataset=dataset, contact=contact, role=item_contact.role
+                )
+
+    def find_organization(
+        self,
+        acronym_de: str | None,
+        acronym_fr: str | None,
+        name_de: str | None,
+        name_fr: str | None,
+    ) -> Organization | None:
+        """Find an organization which best matches the given acronyms or name.
+
+        Returns None if none found.
+        """
+
+        query = Q()
+        if acronym_de:
+            query |= Q(acronym_de=acronym_de)
+        if acronym_fr:
+            query |= Q(acronym_fr=acronym_fr)
+        if name_de:
+            query |= Q(name_de__icontains=name_de)
+        if name_fr:
+            query |= Q(name_fr__icontains=name_fr)
+
+        if not query.children:
+            return None
+
+        return Organization.objects.filter(query).first()
+
+    def find_contact(
+        self,
+        organization: Organization,
+        name_de: str | None,
+        name_fr: str | None,
+    ) -> Contact | None:
+        """Find a contact which best matches the given names.
+
+        Returns None if none found but a name was given. If no name was given, returns any contact
+        of the given organization with no name (default contact)."""
+
+        if name_de or name_fr:
+            query = Q()
+            if name_de:
+                query |= Q(name_de=name_de)
+            if name_fr:
+                query |= Q(name_fr=name_fr)
+            query &= Q(organization=organization)
+
+            return Contact.objects.filter(query).first()
+
+        return Contact.objects.filter(
+            (Q(name_de__isnull=True) | Q(name_de="")) & (Q(name_fr__isnull=True) | Q(name_fr=""))
+        ).first()

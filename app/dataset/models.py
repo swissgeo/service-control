@@ -42,6 +42,10 @@ class Dataset(models.Model):
 
     keywords = models.ManyToManyField("thesaurus.Keyword", related_name="keywords", blank=True)
 
+    contacts = models.ManyToManyField(
+        "organization.Contact", through="DatasetContact", related_name="datasets"
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_(_context, "Created at"),
@@ -59,3 +63,48 @@ class Dataset(models.Model):
 
     def __str__(self) -> str:
         return self.dataset_id
+
+
+class DatasetContact(models.Model):
+    """A dataset can have different contacts with specific roles.
+
+    See eCH-0271: CI_RoleCode.
+    """
+
+    RECOMMENDED_ROLES = (
+        ("custodian", "Custodian"),
+        ("owner", "Owner"),
+        ("distributor", "Distributor"),
+        ("pointOfContact", "Point of Contact"),
+        ("publisher", "Publisher"),
+    )
+
+    NOT_RECOMMENDED_ROLES = (
+        ("resourceProvider", "Resource Provider"),
+        ("user", "User"),
+        ("originator", "Originator"),
+        ("principalInvestigator", "Principal Investigator"),
+        ("processor", "Processor"),
+        ("author", "Author"),
+        ("sponsor", "Sponsor"),
+        ("coAuthor", "Co-Author"),
+        ("collaborator", "Collaborator"),
+        ("editor", "Editor"),
+        ("mediator", "Mediator"),
+        ("rightsHolder", "Rights Holder"),
+        ("contributor", "Contributor"),
+        ("funder", "Funder"),
+        ("stakeholder", "Stakeholder"),
+    )
+
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="dataset_contacts")
+    contact = models.ForeignKey(
+        "organization.Contact", on_delete=models.CASCADE, related_name="dataset_contacts"
+    )
+    role = models.CharField(max_length=100, choices=RECOMMENDED_ROLES + NOT_RECOMMENDED_ROLES)
+
+    class Meta:
+        indexes = (models.Index(fields=["dataset", "contact"]),)
+
+    def __str__(self) -> str:
+        return f"{self.dataset}: {self.contact} ({self.role})"

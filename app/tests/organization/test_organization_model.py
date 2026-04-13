@@ -6,7 +6,7 @@ from django.forms import ModelForm
 import pytest
 
 from cognito.utils.client import OrganizationGroup
-from organization.models import Organization, Unit
+from organization.models import Contact, Organization, Unit
 from user.models import CustomUser
 
 
@@ -299,6 +299,7 @@ def test_delete_deletes_related_records(
         "name_rm": None,
     }
     Unit.objects.create(**unit_in)
+    Contact.objects.create(organization=organization)
 
     django_machine_user_factory(
         app_id="abc", name="", organization=organization, created_by_user=None
@@ -309,6 +310,7 @@ def test_delete_deletes_related_records(
     assert not Organization.objects.first()
     assert not Unit.objects.first()
     assert not CustomUser.objects.first()
+    assert not Contact.objects.first()
 
     assert org_client.return_value.delete_group.call_count == 3
     assert user_client.return_value.delete_app_client.called
