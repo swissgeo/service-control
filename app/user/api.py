@@ -358,3 +358,125 @@ def update_access_request(
         state=access_request.state,
         created=access_request.created.isoformat(),
     )
+
+
+@router.get(
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/accessrequests",
+    response={200: AccessRequestListSchema},
+    exclude_none=True,
+    auth=vp_auth(VPAction.UPDATE_USER),
+)
+def list_access_requests_for_organization(
+    request: HttpRequest,
+    organization_id: str,
+    lang: LanguageCode | None = None,
+) -> AccessRequestListSchema:
+    """
+    List all access requests for an organization.
+    """
+
+    lang_to_use = get_language(lang, request.headers)
+    org = get_object_or_404(Organization, organization_id=organization_id)
+    access_requests = AccessRequest.objects.filter(organization=org).order_by("-created")
+
+    return AccessRequestListSchema(
+        items=[
+            AccessRequestSchema(
+                id=ar.access_request_id,
+                organization_id=ar.organization.organization_id,
+                organization_acronym=get_translation(ar.organization, "acronym", lang_to_use),
+                organization_name=get_translation(ar.organization, "name", lang_to_use),
+                state=ar.state,
+                created=ar.created.isoformat(),
+                user=UserSchema(
+                    id=ar.user.sub,
+                    email=ar.user.email,
+                    first_name=ar.user.first_name,
+                    last_name=ar.user.last_name,
+                    roles=map_role_ids_to_response(tuple(ar.user.roles)),
+                    unit=unit_to_response(ar.user.unit, lang=lang_to_use) if ar.user.unit else None,
+                )
+                if ar.user
+                else None,
+            )
+            for ar in access_requests
+        ]
+    )
+
+
+@router.put(
+    f"/organizations/{{{api_path.Organization.parameter_name}}}/accessrequests/{{access_request_id}}",
+    response={200: AccessRequestSchema},
+    exclude_none=True,
+    auth=vp_auth(VPAction.UPDATE_USER),
+)
+def update_access_request_for_organization(
+    request: HttpRequest,
+    organization_id: str,
+    access_request_id: str,
+    access_request_in: UpdateAccessRequestSchema,
+    lang: LanguageCode | None = None,
+) -> AccessRequestSchema:
+    """
+    Approve or decline an access request for an organization.
+    """
+
+    lang_to_use = get_language(lang, request.headers)
+    org = get_object_or_404(Organization, organization_id=organization_id)
+    access_request = get_object_or_404(
+        AccessRequest, organization=org, access_request_id=access_request_id
+    )
+
+    if access_request.state != AccessRequest.AccessRequestState.PENDING.value:
+        raise ValidationError(errors=[{"state": "Only pending access requests can be updated"}])
+    if access_request_in.state not in [
+        AccessRequest.AccessRequestState.APPROVED.value,
+        AccessRequest.AccessRequestState.DECLINED.value,
+    ]:
+        raise ValidationError(errors=[{"state": "Can only update state to approved or declined"}])
+
+    # At least for now we don't use a database transaction here as adding a user to and organization
+    # triggers changes in cognito which should not be done within a database transaction.
+    if access_request_in.state == AccessRequest.AccessRequestState.APPROVED.value:
+        access_request.user.organization = access_request.organization
+        if not access_request_in.roles or len(access_request_in.roles) == 0:
+            raise ValidationError(
+                errors=[
+                    {"roles": "At least 1 role must be assigned when approving an access request"}
+                ]
+            )
+        access_request.user.roles = access_request_in.roles
+        if access_request_in.unit_id:
+            unit = get_object_or_404(
+                Unit, organization=access_request.organization, unit_id=access_request_in.unit_id
+            )
+            access_request.user.unit = unit
+        else:
+            access_request.user.unit = None
+        access_request.user.save()
+
+    access_request.state = access_request_in.state
+    access_request.save()
+
+    return AccessRequestSchema(
+        id=access_request.access_request_id,
+        organization_id=access_request.organization.organization_id,
+        organization_acronym=get_translation(access_request.organization, "acronym", lang_to_use),
+        organization_name=get_translation(access_request.organization, "name", lang_to_use),
+        state=access_request.state,
+        created=access_request.created.isoformat(),
+        user=UserSchema(
+            id=access_request.user.sub,
+            email=access_request.user.email,
+            first_name=access_request.user.first_name,
+            last_name=access_request.user.last_name,
+            roles=map_role_ids_to_response(tuple(access_request.user.roles))
+            if access_request.user.roles
+            else [],
+            unit=unit_to_response(access_request.user.unit, lang=lang_to_use)
+            if access_request.user.unit
+            else None,
+        )
+        if access_request.user
+        else None,
+    )
