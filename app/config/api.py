@@ -6,11 +6,49 @@ from ninja.errors import AuthenticationError, HttpError
 from ninja.errors import ValidationError as NinjaValidationError
 
 from config.logging import LoggedNinjaAPI
+from config.version import APP_VERSION
 from organization.api import router as organization_router
 from user.api import router as user_router
 from utils.exceptions import ConflictError, contains_error_code, extract_error_messages
 
-api = LoggedNinjaAPI()
+api = LoggedNinjaAPI(
+    title="Service Control API",
+    description="API for managing users and organizations.",
+    version=APP_VERSION,
+    openapi_extra={
+        "contact": {"name": "swissgeo", "url": "https://www.swissgeo.ch"},
+        "license_info": {
+            "name": "BSD 3-Clause License",
+            "identifier": "BSD-3-Clause",
+        },
+        "tags": [
+            {
+                "name": "Organizations",
+                "description": "Manage organizations.",
+            },
+            {
+                "name": "Machine Users",
+                "description": """
+Manage machine users within organizations for secure machine-to-machine (M2M) communication.
+
+Machine users are non-human service identities used by external applications, integrations, or
+automated systems to authenticate and interact with the API on behalf of an organization.""",
+            },
+            {
+                "name": "Users",
+                "description": "Manage human users within organizations.",
+            },
+            {
+                "name": "Access Requests",
+                "description": "Manage access requests",
+            },
+            {
+                "name": "Auth",
+                "description": "Other authorization related endpoints.",
+            },
+        ],
+    },
+)
 
 api.add_router("", organization_router)
 api.add_router("", user_router)
