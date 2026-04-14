@@ -13,6 +13,10 @@ class Command(CustomBaseCommand):
         super().__init__()
         self.logger = MagicMock()
         self.exception = RuntimeError("RuntimeError")
+        try:
+            raise RuntimeError("RuntimeError") from KeyError("Root")  # noqa:TRY301
+        except RuntimeError as exception:
+            self.exception = exception
         self.raise_exception = raise_exception
 
     def handle(self, *args, **options) -> None:  # noqa: ARG002 unused arguments
@@ -84,6 +88,7 @@ def test_print_to_stdout_default_verbosity():
     assert "Warning 2" not in out.getvalue()
     assert "Error" in err.getvalue()
     assert "RuntimeError" in err.getvalue()
+    assert "KeyError" in err.getvalue()
 
 
 def test_print_to_stdout_verbosity_0():
@@ -101,6 +106,7 @@ def test_print_to_stdout_verbosity_0():
     assert "Warning 2" not in out.getvalue()
     assert "Error" in err.getvalue()
     assert "RuntimeError" in err.getvalue()
+    assert "KeyError" in err.getvalue()
 
 
 def test_print_to_stdout_verbosity_3():
@@ -118,6 +124,7 @@ def test_print_to_stdout_verbosity_3():
     assert "Warning 2" in out.getvalue()
     assert "Error" in err.getvalue()
     assert "RuntimeError" in err.getvalue()
+    assert "KeyError" in err.getvalue()
 
 
 def test_print_to_stdout_args_kwargs():
@@ -136,7 +143,8 @@ def test_print_to_stdout_args_kwargs():
     assert "Error JohnDoe" in err.getvalue()
     assert "Error\nextra={'n': 'JohnDoe'}" in err.getvalue()
     assert "Error John\nextra={'n': 'Doe'}" in err.getvalue()
-    assert "RuntimeError\nextra={'n': 'Doe'}" in err.getvalue()
+    assert "RuntimeError" in err.getvalue()
+    assert "KeyError" in err.getvalue()
 
 
 def test_print_to_log_default_verbosity():
