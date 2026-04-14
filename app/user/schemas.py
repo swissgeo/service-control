@@ -59,10 +59,13 @@ class AccessRequestSchema(Schema):
     organization_name: str
     state: AccessRequest.AccessRequestState
     created: str
+    user: UserSchema | None = None  # Only included when listing access requests for org admins
 
 
 class UpdateAccessRequestSchema(Schema):
     state: AccessRequest.AccessRequestState
+    roles: list[str] | None = None  # Only needed when approving an access request
+    unit_id: str | None = None  # Only needed when approving an access request
 
 
 class AccessRequestListSchema(Schema):
