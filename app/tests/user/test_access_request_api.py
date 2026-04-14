@@ -338,3 +338,107 @@ def test_approve_access_request(
     assert user_without_org.organization.organization_id == organization.organization_id
     assert user_without_org.roles == ["dataset_contributor"]
     assert user_without_org.unit.unit_id == unit.unit_id
+
+
+@patch("user.models.Client")
+def test_approve_access_request_status_not_pending(
+    mock_client, organization, unit, user_without_org, client, user_headers
+):
+    # Create access request
+    response = client.post(
+        "/api/v1/accessrequests",
+        content_type="application/json",
+        data={"organization_id": organization.organization_id},
+        headers=user_headers["user_without_org"],
+    )
+    assert response.status_code == 201
+    access_request_id = response.json()["id"]
+
+    # Approve access request as org admin
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "APPROVED", "roles": ["dataset_contributor"], "unit_id": unit.unit_id},
+        headers=user_headers["organization_admin"],
+    )
+    assert response.status_code == 200
+
+    # Try to approve access request without pending status
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "APPROVED", "roles": ["dataset_contributor"], "unit_id": unit.unit_id},
+        headers=user_headers["organization_admin"],
+    )
+    assert response.status_code == 409
+    assert response.json() == {
+        "code": 409,
+        "description": "Only pending access requests can be updated",
+    }
+
+
+def test_approve_access_request_to_bad_status(
+    organization, unit, user_without_org, client, user_headers
+):
+    # Create access request
+    response = client.post(
+        "/api/v1/accessrequests",
+        content_type="application/json",
+        data={"organization_id": organization.organization_id},
+        headers=user_headers["user_without_org"],
+    )
+    assert response.status_code == 201
+    access_request_id = response.json()["id"]
+
+    # Approve access request as org admin
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "PENDING", "roles": ["dataset_contributor"], "unit_id": unit.unit_id},
+        headers=user_headers["organization_admin"],
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "code": 400,
+        "description": ["Can only update state to approved or declined"],
+    }
+
+    # Try to approve access request without pending status
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "CANCELLED", "roles": ["dataset_contributor"], "unit_id": unit.unit_id},
+        headers=user_headers["organization_admin"],
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "code": 400,
+        "description": ["Can only update state to approved or declined"],
+    }
+
+
+def test_approve_access_request_without_roles(
+    organization, unit, user_without_org, client, user_headers
+):
+    # Create access request
+    response = client.post(
+        "/api/v1/accessrequests",
+        content_type="application/json",
+        data={"organization_id": organization.organization_id},
+        headers=user_headers["user_without_org"],
+    )
+    assert response.status_code == 201
+    access_request_id = response.json()["id"]
+
+    # Approve access request as org admin
+    response = client.put(
+        f"/api/v1/organizations/{organization.organization_id}/accessrequests/{access_request_id}",
+        content_type="application/json",
+        data={"state": "APPROVED", "roles": [], "unit_id": unit.unit_id},
+        headers=user_headers["organization_admin"],
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "code": 400,
+        "description": ["At least 1 role must be assigned when approving an access request"],
+    }

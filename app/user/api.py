@@ -27,6 +27,7 @@ from user.schemas import (
 )
 from utils import api_path
 from utils.auth import is_authenticated, vp_auth
+from utils.exceptions import ConflictError
 from utils.language import LanguageCode, get_language, get_translation
 
 router = Router(tags=["users"])
@@ -51,6 +52,17 @@ def role_to_response(model: Role) -> RoleSchema:
 def map_role_ids_to_response(role_ids: tuple[str, ...]) -> list[RoleSchema]:
     role_by_id = {role.role_id: role for role in Role.all()}
     return [role_to_response(role_by_id[role_id]) for role_id in role_ids if role_id in role_by_id]
+
+
+def user_to_response(model: HumanUser, lang: LanguageCode) -> UserSchema:
+    return UserSchema(
+        id=model.sub,
+        email=model.email,
+        first_name=model.first_name,
+        last_name=model.last_name,
+        roles=map_role_ids_to_response(tuple(model.roles)),
+        unit=unit_to_response(model.unit, lang=lang) if model.unit else None,
+    )
 
 
 @router.post(
@@ -180,18 +192,7 @@ def users(
     lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
     users = HumanUser.objects.filter(organization=org).order_by("last_name", "first_name")
-    response = [
-        UserSchema(
-            id=user.sub,
-            email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            roles=map_role_ids_to_response(tuple(user.roles)),
-            unit=unit_to_response(user.unit, lang=lang_to_use) if user.unit else None,
-        )
-        for user in users
-    ]
-    return UserListSchema(items=response)
+    return UserListSchema(items=[user_to_response(user, lang=lang_to_use) for user in users])
 
 
 @router.put(
@@ -220,14 +221,7 @@ def update_user(
     user.roles = user_in.roles
     user.save()
 
-    return UserSchema(
-        id=user.sub,
-        email=user.email,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        roles=map_role_ids_to_response(tuple(user.roles)),
-        unit=unit_to_response(user.unit, lang=lang_to_use) if user.unit else None,
-    )
+    return user_to_response(user, lang=lang_to_use)
 
 
 @router.delete(
@@ -388,16 +382,7 @@ def list_access_requests_for_organization(
                 organization_name=get_translation(ar.organization, "name", lang_to_use),
                 state=ar.state,
                 created=ar.created.isoformat(),
-                user=UserSchema(
-                    id=ar.user.sub,
-                    email=ar.user.email,
-                    first_name=ar.user.first_name,
-                    last_name=ar.user.last_name,
-                    roles=map_role_ids_to_response(tuple(ar.user.roles)),
-                    unit=unit_to_response(ar.user.unit, lang=lang_to_use) if ar.user.unit else None,
-                )
-                if ar.user
-                else None,
+                user=user_to_response(ar.user, lang=lang_to_use),
             )
             for ar in access_requests
         ]
@@ -428,7 +413,7 @@ def update_access_request_for_organization(
     )
 
     if access_request.state != AccessRequest.AccessRequestState.PENDING.value:
-        raise ValidationError(errors=[{"state": "Only pending access requests can be updated"}])
+        raise ConflictError("Only pending access requests can be updated")
     if access_request_in.state not in [
         AccessRequest.AccessRequestState.APPROVED.value,
         AccessRequest.AccessRequestState.DECLINED.value,
@@ -437,6 +422,7 @@ def update_access_request_for_organization(
 
     # At least for now we don't use a database transaction here as adding a user to and organization
     # triggers changes in cognito which should not be done within a database transaction.
+    # See GPS-632.
     if access_request_in.state == AccessRequest.AccessRequestState.APPROVED.value:
         access_request.user.organization = access_request.organization
         if not access_request_in.roles or len(access_request_in.roles) == 0:
@@ -465,18 +451,5 @@ def update_access_request_for_organization(
         organization_name=get_translation(access_request.organization, "name", lang_to_use),
         state=access_request.state,
         created=access_request.created.isoformat(),
-        user=UserSchema(
-            id=access_request.user.sub,
-            email=access_request.user.email,
-            first_name=access_request.user.first_name,
-            last_name=access_request.user.last_name,
-            roles=map_role_ids_to_response(tuple(access_request.user.roles))
-            if access_request.user.roles
-            else [],
-            unit=unit_to_response(access_request.user.unit, lang=lang_to_use)
-            if access_request.user.unit
-            else None,
-        )
-        if access_request.user
-        else None,
+        user=user_to_response(access_request.user, lang=lang_to_use),
     )
