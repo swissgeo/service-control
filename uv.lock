@@ -537,11 +537,11 @@ wheels = [
 
 [[package]]
 name = "logging-utilities"
-version = "5.3.0"
+version = "5.4.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b1/6d/8aa8cbfe0286fcee4dc580aab4488bf7ff0250bfcfd3e87c6bf1027ffedd/logging_utilities-5.3.0.tar.gz", hash = "sha256:8836871c3fab81ef938195c37d6af11a5dff5ffccf482be2e7889f2a4e76cd3b", size = 68849, upload-time = "2026-01-13T12:42:04.082Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/29/ab1360f6afba8c451dd211885f97ebe7c194f54e53a68f8f58bfef6935d5/logging_utilities-5.4.0.tar.gz", hash = "sha256:cef83c0fe9a09bc2db7e6d2fd498733c01c971f666b27627b9bb96214f9e01f8", size = 69438, upload-time = "2026-04-16T07:39:16.842Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/54/90293c71bab99cc5df1c11d6a93c07baa0915bf96a9a1552c88355ceec4d/logging_utilities-5.3.0-py3-none-any.whl", hash = "sha256:4adcc484527e602a313c0aea4c89f303e8b59f38509b47e77fdb84bd21717658", size = 34501, upload-time = "2026-01-13T12:42:02.388Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/ed/177c18d33b970675bdeb039c8bdaf7e423e9fdc876b41cfc3f35bb43b7a3/logging_utilities-5.4.0-py3-none-any.whl", hash = "sha256:3294748496c11b1dca001b87d7f531164d15209ba8e1253cefddeab92245b7bd", size = 34900, upload-time = "2026-04-16T07:39:15.262Z" },
 ]
 
 [[package]]
@@ -1301,7 +1301,7 @@ requires-dist = [
     { name = "ecs-logging", specifier = "~=2.2" },
     { name = "gevent", specifier = "~=25.4" },
     { name = "gunicorn", specifier = "~=25.1" },
-    { name = "logging-utilities", specifier = "~=5.3" },
+    { name = "logging-utilities", specifier = "~=5.4" },
     { name = "opentelemetry-exporter-otlp", specifier = "~=1.39" },
     { name = "opentelemetry-instrumentation", specifier = "==0.60b1" },
     { name = "opentelemetry-instrumentation-botocore", specifier = "==0.60b1" },

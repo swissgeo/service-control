@@ -14,7 +14,7 @@ dependencies = [
     "ecs-logging~=2.2",
     "gevent~=25.4",
     "gunicorn~=25.1",
-    "logging-utilities~=5.3",
+    "logging-utilities~=5.4",
     "opentelemetry-exporter-otlp~=1.39",
     "opentelemetry-instrumentation-botocore==0.60b1",
     "opentelemetry-instrumentation-django==0.60b1",
