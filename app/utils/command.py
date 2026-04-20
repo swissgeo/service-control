@@ -1,4 +1,5 @@
 import logging
+from traceback import format_exception
 from typing import Any, TextIO
 
 from django.core.management.base import BaseCommand, CommandParser
@@ -102,7 +103,10 @@ class CustomBaseCommand(BaseCommand):
         if self.options["logger"]:
             self.logger.error(message, *args, **kwargs)
         else:
-            message = str(message)
+            if isinstance(message, Exception):
+                message = "".join(format_exception(message))
+            else:
+                message = str(message)
             if len(kwargs) > 0:
                 message = (
                     message + "\n" + ", ".join(f"{key}={value}" for key, value in kwargs.items())
