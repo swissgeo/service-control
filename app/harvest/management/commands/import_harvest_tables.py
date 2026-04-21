@@ -23,7 +23,8 @@ from harvest.import_models import (
     OrganizationImport,
     ParsingError,
 )
-from organization.models import Contact, Organization
+from harvest.models import DatasetToUnitMapping
+from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
 
@@ -193,6 +194,8 @@ class Command(CustomBaseCommand):
             )
         }
 
+        mappings = DatasetToUnitMapping.table()
+
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
                 try:
@@ -239,18 +242,20 @@ class Command(CustomBaseCommand):
                 ds.save()
 
                 # Link unit
-                if not import_ds.provider:
-                    self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
-                    continue
+                unit = mappings.match(import_ds.dataset_id)
+                if not unit:
+                    if not import_ds.provider:
+                        self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
+                        continue
 
-                org_id = import_ds.provider[0]
-                if not (org := Organization.objects.filter(organization_id=org_id).first()):
-                    self.print_warning(f"No organization {org_id}")
-                    continue
+                    org_id = import_ds.provider[0]
+                    if not (org := Organization.objects.filter(organization_id=org_id).first()):
+                        self.print_warning(f"No organization {org_id}")
+                        continue
 
-                if not (unit := org.unit_set.filter(unit_id="default").first()):  # type:ignore[unresolved-attribute]
-                    self.print_warning(f"Organization {org_id} has no default unit")
-                    continue
+                    if not (unit := org.unit_set.filter(unit_id=Unit.DEFAULT_UNIT_ID).first()):  # type:ignore[unresolved-attribute]
+                        self.print_warning(f"Organization {org_id} has no default unit")
+                        continue
 
                 DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
                 DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
