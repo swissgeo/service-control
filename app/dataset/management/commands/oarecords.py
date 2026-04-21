@@ -388,7 +388,7 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"++++ WARNING: layer {layer_id} has no contact info")
             else:
                 contacts = getattr(ds, f"contacts_{lang}")
-                contacts.append(Contact(organisation=contact_name, country="CH", role="dataOwner"))
+                contacts.append(Contact(organization=contact_name, country="CH", role="dataOwner"))
 
             # Geocat ID
             if "idGeoCat" in mapserver_entry:
@@ -781,7 +781,7 @@ class Command(CustomBaseCommand):
             if not contact_name:
                 self.print_warning(f"++++ WARNING: layer {layer_id} has no contact info")
             else:
-                contact = {"organisation": contact_name}
+                contact = {"organization": contact_name}
                 contact["country"] = "CH"
                 contact["role"] = "dataOwner"
                 dataset.properties["contacts"] = [contact]
@@ -1563,7 +1563,7 @@ class OARCollection(BaseModel):
 
 
 class Contact(BaseModel):
-    organisation: str
+    organization: str
     country: str
     role: str
     # name: Optional[str] = None

@@ -402,7 +402,7 @@ class OAFeatureCollection(BaseModel):
 
 
 class Contact(BaseModel):
-    organisation: str
+    organization: str
     country: str
     role: str
     # name: Optional[str] = None

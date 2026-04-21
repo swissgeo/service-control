@@ -19,7 +19,7 @@ from harvest.import_models import (
     DatasetImport,
     KeywordList,
     LayersJSImport,
-    OrganisationImport,
+    OrganizationImport,
     ParsingError,
 )
 from organization.models import Contact, Organization
@@ -39,12 +39,12 @@ class Command(CustomBaseCommand):
     """Import data from DynamoDB harvesting tables.
 
     This command imports data from DynamoDB harvesting tables. It currently supports importing
-    organisations, but can be extended to import other entities in the future.
+    organizations, but can be extended to import other entities in the future.
 
     """
 
     help = "Importing data from DynamoDB harvesting tables. "
-    "Currently supports importing organisations."
+    "Currently supports importing organizations."
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -53,9 +53,9 @@ class Command(CustomBaseCommand):
 
         # Select entities to import
         parser.add_argument(
-            "--organisations",
+            "--organizations",
             action="store_true",
-            help="Import organisations",
+            help="Import organizations",
         )
         parser.add_argument(
             "--datasets",
@@ -107,8 +107,8 @@ class Command(CustomBaseCommand):
             self.print(f"Debug: parsed args = {json.dumps(options)}")
 
         # Handle sub-commands
-        if options["organisations"]:
-            self.import_organisations(*args, **options)
+        if options["organizations"]:
+            self.import_organizations(*args, **options)
         if options["datasets"]:
             self.import_datasets(*args, **options)
         if options["distributions"]:
@@ -119,9 +119,9 @@ class Command(CustomBaseCommand):
             self.import_contacts(*args, **options)
 
     # ##########################################################################
-    def import_organisations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+    def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
 
-        self.print_success("Importing organisations")
+        self.print_success("Importing organizations")
 
         dynamodb_client: DynamoDBClient = self.session.client(
             "dynamodb", region_name="eu-central-1"
@@ -131,9 +131,9 @@ class Command(CustomBaseCommand):
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 try:
-                    import_org = OrganisationImport.from_dynamodb_item(item)
+                    import_org = OrganizationImport.from_dynamodb_item(item)
                     self.print_success(
-                        f"Parsed organisation: {import_org.provider_id} - {import_org.name_de}"
+                        f"Parsed organization: {import_org.provider_id} - {import_org.name_de}"
                     )
                 except ParsingError as e:
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
@@ -145,13 +145,13 @@ class Command(CustomBaseCommand):
                     org = Organization.objects.get(organization_id=import_org.provider_id)
                 except Organization.DoesNotExist:
                     self.print(
-                        f"Organisation with provider_id {import_org.provider_id} does not exist yet"
+                        f"Organization with provider_id {import_org.provider_id} does not exist yet"
                         ", creating a new one."
                     )
                     org = Organization(**import_org.model_dump(by_alias=True))
                 else:
                     self.print(
-                        f"Organisation with provider_id {import_org.provider_id} already exists, "
+                        f"Organization with provider_id {import_org.provider_id} already exists, "
                         "updating."
                     )
                     for field in import_org:

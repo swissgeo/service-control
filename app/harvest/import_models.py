@@ -96,7 +96,7 @@ class DynamoDBParsableModel(BaseModel):
         return value
 
 
-class OrganisationImport(DynamoDBParsableModel):
+class OrganizationImport(DynamoDBParsableModel):
     provider_id: str = Field(serialization_alias="organization_id")
     name_de: str
     name_fr: str
