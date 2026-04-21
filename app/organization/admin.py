@@ -43,9 +43,9 @@ class OrganizationAdmin(admin.ModelAdmin):
 class UnitAdmin(admin.ModelAdmin):
     """Admin View for Organization Unit"""
 
-    list_display = ("unit_id", "name_en", "get_organization_name")
+    list_display = ("unit_id", "name_en", "get_organization_name", "number_of_datasets")
     list_filter = ("organization",)
-    readonly_fields = ("created", "updated")
+    readonly_fields = ("created", "updated", "dataset_list")
 
     def get_readonly_fields(
         self,
@@ -60,6 +60,29 @@ class UnitAdmin(admin.ModelAdmin):
     @admin.display(description="Organization", ordering="organization__name_en")
     def get_organization_name(self, obj: Unit) -> str:
         return obj.organization.name_en
+
+    @admin.display(description="Number of Datasets")
+    def number_of_datasets(self, obj: Contact) -> int:
+        return obj.number_of_datasets  # type:ignore[unresolved-attribute]
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Unit]:
+        qs = super().get_queryset(request)
+        return qs.annotate(number_of_datasets=Count("datasets"))
+
+    @admin.display(description="Datasets")
+    def dataset_list(self, obj: Unit) -> str:
+        # For performance reasons, related datasets are not shown inline
+        return format_html_join(
+            "\n",
+            '<a href="{}">{}</a><br>',
+            (
+                (
+                    reverse("admin:dataset_dataset_change", args=[dataset.pk]),
+                    str(dataset),
+                )
+                for dataset in obj.datasets.order_by("dataset_id").all()  # type:ignore[unresolved-attribute]
+            ),
+        )
 
     def delete_queryset(
         self,

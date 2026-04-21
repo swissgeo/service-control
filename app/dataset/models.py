@@ -42,6 +42,9 @@ class Dataset(models.Model):
 
     keywords = models.ManyToManyField("thesaurus.Keyword", related_name="keywords", blank=True)
 
+    units = models.ManyToManyField(
+        "organization.Unit", through="DatasetToUnit", related_name="datasets"
+    )
     contacts = models.ManyToManyField(
         "organization.Contact", through="DatasetContact", related_name="datasets"
     )
@@ -63,6 +66,28 @@ class Dataset(models.Model):
 
     def __str__(self) -> str:
         return self.dataset_id
+
+
+class DatasetToUnit(models.Model):
+    """Each dataset can be associated with organizational units in different roles."""
+
+    ROLES = (
+        ("owner", "Owner"),
+        ("maintainer", "Maintainer"),
+        ("contributor", "Contributor"),
+    )
+
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="dataset_units")
+    unit = models.ForeignKey(
+        "organization.Unit", on_delete=models.CASCADE, related_name="dataset_units"
+    )
+    role = models.CharField(max_length=100, choices=ROLES)
+
+    class Meta:
+        indexes = (models.Index(fields=["dataset", "unit"]),)
+
+    def __str__(self) -> str:
+        return f"{self.dataset}: {self.unit} ({self.role})"
 
 
 class DatasetContact(models.Model):

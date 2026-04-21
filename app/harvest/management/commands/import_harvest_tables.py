@@ -7,7 +7,7 @@ import environ
 from django.db.models import Q
 
 from dataservice.models import WMSDataservice, WMTSDataservice
-from dataset.models import Dataset, DatasetContact
+from dataset.models import Dataset, DatasetContact, DatasetToUnit
 from distribution.models import (
     Distribution,
     ExternalGeoJSONDistribution,
@@ -179,6 +179,7 @@ class Command(CustomBaseCommand):
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
 
+                # Create dataset
                 ds, _ = Dataset.objects.get_or_create(
                     dataset_id=import_ds.dataset_id,
                     defaults={
@@ -209,6 +210,23 @@ class Command(CustomBaseCommand):
                 ds.geocat_id = import_ds.geocat_id
 
                 ds.save()
+
+                # Link unit
+                if not import_ds.provider:
+                    self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
+                    continue
+
+                org_id = import_ds.provider[0]
+                if not (org := Organization.objects.filter(organization_id=org_id).first()):
+                    self.print_warning(f"No organization {org_id}")
+                    continue
+
+                if not (unit := org.unit_set.filter(unit_id="default").first()):  # type:ignore[unresolved-attribute]
+                    self.print_warning(f"Organization {org_id} has no default unit")
+                    continue
+
+                DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
+                DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
 
     # ##########################################################################
     def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901

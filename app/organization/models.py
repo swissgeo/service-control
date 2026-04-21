@@ -94,7 +94,7 @@ class Organization(models.Model):
             # Create initial unit for the organization
             Unit.objects.create(
                 organization=self,
-                unit_id="default",
+                unit_id=Unit.DEFAULT_UNIT_ID,
                 name_de="Default",
                 name_fr="Default",
                 name_en="Default",
@@ -131,10 +131,9 @@ class Organization(models.Model):
 class Unit(models.Model):
     _context = "Organization Unit model"
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-    )
+    DEFAULT_UNIT_ID = "default"
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     unit_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
@@ -173,6 +172,8 @@ class Unit(models.Model):
         ]
 
     def __str__(self) -> str:
+        if self.unit_id == self.DEFAULT_UNIT_ID:
+            return f"{self.organization} (default)"
         return str(self.unit_id)
 
     def save(
