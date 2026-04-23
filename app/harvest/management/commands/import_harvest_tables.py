@@ -7,7 +7,7 @@ import environ
 from django.db.models import Q
 
 from dataservice.models import WMSDataservice, WMTSDataservice
-from dataset.models import Dataset, DatasetContact, DatasetToUnit
+from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from distribution.models import (
     Distribution,
     ExternalGeoJSONDistribution,
@@ -451,7 +451,7 @@ class Command(CustomBaseCommand):
                 )
                 continue
 
-            DatasetContact.objects.filter(dataset=dataset).delete()
+            DatasetToContact.objects.filter(dataset=dataset).delete()
             for item_contact in item_contacts.contacts:
                 organization = self.find_organization(
                     acronym_de=item_contact.org_acronym_de,
@@ -512,7 +512,7 @@ class Command(CustomBaseCommand):
                         url_rm=getattr(online_resource, "url_rm", None),
                     )
 
-                DatasetContact.objects.create(
+                DatasetToContact.objects.create(
                     dataset=dataset, contact=contact, role=item_contact.role
                 )
 
