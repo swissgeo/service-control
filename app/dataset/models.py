@@ -46,7 +46,7 @@ class Dataset(models.Model):
         "organization.Unit", through="DatasetToUnit", related_name="datasets"
     )
     contacts = models.ManyToManyField(
-        "organization.Contact", through="DatasetContact", related_name="datasets"
+        "organization.Contact", through="DatasetToContact", related_name="datasets"
     )
 
     created_at = models.DateTimeField(
@@ -90,7 +90,7 @@ class DatasetToUnit(models.Model):
         return f"{self.dataset}: {self.unit} ({self.role})"
 
 
-class DatasetContact(models.Model):
+class DatasetToContact(models.Model):
     """A dataset can have different contacts with specific roles.
 
     See eCH-0271: CI_RoleCode.

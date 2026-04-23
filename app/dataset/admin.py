@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Dataset, DatasetContact, DatasetToUnit
+from .models import Dataset, DatasetToContact, DatasetToUnit
 
 
 class DatasetToUnitInline(admin.TabularInline):
@@ -8,8 +8,8 @@ class DatasetToUnitInline(admin.TabularInline):
     extra = 0
 
 
-class DatasetContactInline(admin.TabularInline):
-    model = DatasetContact
+class DatasetToContactInline(admin.TabularInline):
+    model = DatasetToContact
     extra = 0
 
 
@@ -25,5 +25,5 @@ class DatasetAdmin(admin.ModelAdmin):
     filter_horizontal = ("keywords",)
     inlines = (
         DatasetToUnitInline,
-        DatasetContactInline,
+        DatasetToContactInline,
     )
