@@ -61,7 +61,7 @@ def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
 
     default_unit = Unit.objects.first()
     assert default_unit is not None
-    assert default_unit.unit_id == "default"
+    assert default_unit.unit_id == default_unit.DEFAULT_UNIT_ID
     assert default_unit.organization == actual
 
 
@@ -117,7 +117,7 @@ def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
 
     default_unit = Unit.objects.first()
     assert default_unit is not None
-    assert default_unit.unit_id == "default"
+    assert default_unit.unit_id == default_unit.DEFAULT_UNIT_ID
     assert default_unit.organization == actual
 
 
