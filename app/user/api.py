@@ -30,7 +30,7 @@ from utils.auth import is_authenticated, vp_auth
 from utils.exceptions import ConflictError
 from utils.language import LanguageCode, get_language, get_translation
 
-router = Router(tags=["users"])
+router = Router(tags=["Auth"])
 
 
 def machine_user_to_response(model: MachineUser) -> MachineUserSchema:
@@ -67,6 +67,8 @@ def user_to_response(model: HumanUser, lang: LanguageCode) -> UserSchema:
 
 @router.post(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/machineusers",
+    summary="Create machine user",
+    tags=["Machine Users"],
     response={201: MachineUserSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.CREATE_MACHINE_USER),
@@ -124,6 +126,8 @@ def create_machine_user(
 
 @router.get(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/machineusers",
+    summary="List machine users",
+    tags=["Machine Users"],
     response={200: MachineUserListSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.LIST_MACHINE_USERS),
@@ -143,6 +147,8 @@ def machine_users(
 
 @router.delete(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/machineusers/{{{api_path.Machine_user.parameter_name}}}",
+    summary="Delete machine user",
+    tags=["Machine Users"],
     exclude_none=True,
     auth=vp_auth(VPAction.DELETE_MACHINE_USER, resource=api_path.Machine_user),
 )
@@ -162,6 +168,7 @@ def delete_machine_users(
 
 @router.get(
     "/roles",
+    summary="List roles",
     response={200: RoleListSchema},
     exclude_none=True,
     auth=is_authenticated,
@@ -178,6 +185,8 @@ def roles(
 
 @router.get(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/users",
+    summary="List users",
+    tags=["Users"],
     response={200: UserListSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.LIST_USERS),
@@ -197,6 +206,8 @@ def users(
 
 @router.put(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/users/{{{api_path.User.parameter_name}}}",
+    summary="Update user",
+    tags=["Users"],
     response={200: UserSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_USER),
@@ -226,6 +237,8 @@ def update_user(
 
 @router.delete(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/users/{{{api_path.User.parameter_name}}}",
+    summary="Remove user",
+    tags=["Users"],
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_USER),
 )
@@ -251,6 +264,8 @@ def remove_user(
 
 @router.post(
     "/accessrequests",
+    summary="Create access request",
+    tags=["Access Requests"],
     exclude_none=True,
     response={201: AccessRequestSchema},
     auth=is_authenticated,
@@ -286,6 +301,8 @@ def create_access_request(
 
 @router.get(
     "/accessrequests",
+    summary="List access requests of user",
+    tags=["Access Requests"],
     exclude_none=True,
     response={200: AccessRequestListSchema},
     auth=is_authenticated,
@@ -318,6 +335,8 @@ def list_access_requests(
 
 @router.put(
     "/accessrequests/{access_request_id}",
+    summary="Cancel access request",
+    tags=["Access Requests"],
     exclude_none=True,
     response={200: AccessRequestSchema},
     auth=is_authenticated,
@@ -356,6 +375,8 @@ def update_access_request(
 
 @router.get(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/accessrequests",
+    summary="List access requests for organization",
+    tags=["Access Requests"],
     response={200: AccessRequestListSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_USER),
@@ -391,6 +412,8 @@ def list_access_requests_for_organization(
 
 @router.put(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/accessrequests/{{access_request_id}}",
+    summary="Update access request for organization",
+    tags=["Access Requests"],
     response={200: AccessRequestSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_USER),

@@ -20,7 +20,7 @@ from .schemas import (
     UpdateUnitSchema,
 )
 
-router = Router(tags=["organizations"])
+router = Router(tags=["Organizations"])
 
 
 def organization_to_response(model: Organization, lang: LanguageCode) -> OrganizationSchema:
@@ -49,7 +49,11 @@ def organization_to_response(model: Organization, lang: LanguageCode) -> Organiz
 
 
 @router.post(
-    "/organizations", response={201: OrganizationSchema}, exclude_none=True, auth=superuser_auth
+    "/organizations",
+    summary="Create organization",
+    response={201: OrganizationSchema},
+    exclude_none=True,
+    auth=superuser_auth,
 )
 def create_organization(
     request: HttpRequest,
@@ -78,6 +82,7 @@ def create_organization(
 
 @router.put(
     f"/organizations/{{{api_path.Organization.parameter_name}}}",
+    summary="Update organization",
     response={200: OrganizationSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_ORGANIZATION),
@@ -111,6 +116,7 @@ def update_organization(
 
 @router.get(
     "/organizations",
+    summary="List organizations",
     response={200: OrganizationListSchema},
     exclude_none=True,
     auth=is_authenticated,
@@ -127,6 +133,7 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
 
 @router.get(
     f"/organizations/{{{api_path.Organization.parameter_name}}}",
+    summary="Get organization",
     response={200: OrganizationSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.GET_ORGANIZATION),
@@ -164,6 +171,7 @@ def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
 
 @router.post(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/units",
+    summary="Create unit",
     response={201: UnitSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.CREATE_UNIT),
@@ -193,6 +201,7 @@ def create_unit(
 
 @router.put(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/units/{{{api_path.Unit.parameter_name}}}",
+    summary="Update unit",
     response={200: UnitSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.UPDATE_UNIT, resource=api_path.Unit),
@@ -226,6 +235,7 @@ def update_unit(
 
 @router.get(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/units",
+    summary="List units",
     response={200: UnitListSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.LIST_UNITS),
@@ -244,6 +254,7 @@ def units(
 
 @router.get(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/units/{{{api_path.Unit.parameter_name}}}",
+    summary="Get unit",
     response={200: UnitSchema},
     exclude_none=True,
     auth=vp_auth(VPAction.GET_UNIT, resource=api_path.Unit),
@@ -268,6 +279,7 @@ def unit(
 
 @router.delete(
     f"/organizations/{{{api_path.Organization.parameter_name}}}/units/{{{api_path.Unit.parameter_name}}}",
+    summary="Delete unit",
     response={204: None},
     auth=vp_auth(VPAction.DELETE_UNIT, resource=api_path.Unit),
 )
