@@ -2,54 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from organization.api import unit_to_response
 from organization.models import Unit
-from organization.schemas import UnitSchema
-from schemas import TranslationsSchema
-
-
-def test_unit_to_response_returns_response_with_language_as_defined(unit):
-    actual = unit_to_response(unit, lang="de")
-
-    expected = UnitSchema(
-        id="ch.bafu.fauna",
-        organization_id="ch.bafu",
-        name="Fauna",
-        name_translations=TranslationsSchema(
-            de="Fauna",
-            fr="Faune",
-            en="Fauna",
-            it="Fauna",
-            rm="Fauna",
-        ),
-    )
-
-    assert actual == expected
-
-
-def test_unit_to_response_returns_response_with_default_language_if_undefined(
-    unit,
-):
-    unit.name_it = None
-    unit.name_rm = None
-
-    actual = unit_to_response(unit, lang="it")
-
-    expected = UnitSchema(
-        id="ch.bafu.fauna",
-        organization_id="ch.bafu",
-        name="Fauna",
-        name_translations=TranslationsSchema(
-            de="Fauna",
-            fr="Faune",
-            en="Fauna",
-            it=None,
-            rm=None,
-        ),
-    )
-
-    assert actual == expected
-
 
 # ==========  GET  ==========
 
