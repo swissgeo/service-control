@@ -56,7 +56,7 @@ class LinkTemplateAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         obj: Any | None = None,
     ) -> list[str] | tuple[Any, ...]:
         if obj:

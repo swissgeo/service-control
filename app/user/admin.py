@@ -118,14 +118,14 @@ class HumanUserAdmin(admin.ModelAdmin):
 
     def has_add_permission(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
     ) -> bool:
         # Disable creating human users via admin UI, cognito is the source of users.
         return False
 
     def has_delete_permission(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argumentrequest
+        request: HttpRequest,
         obj: HumanUser | None = None,  # noqa: ARG002 unused argumentrequest
     ) -> bool:
         # Disable deleting users, cognito is the source of users. If necessary, users can be

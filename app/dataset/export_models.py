@@ -250,7 +250,7 @@ class OARDataservice(OARRecord):
     properties: dict = {}
 
     @classmethod
-    def from_dataservice(cls, ds: Dataservice, lang: str = "de") -> OARDataservice:  # noqa: ARG003
+    def from_dataservice(cls, ds: Dataservice, lang: str = "de") -> OARDataservice:
 
         # Instantiate record with common properties
         record = OARDataservice(id=ds.dataservice_id)

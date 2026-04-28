@@ -21,7 +21,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         obj: Any | None = None,
     ) -> list[str] | tuple[Any, ...]:
         if obj:
@@ -31,7 +31,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     def delete_queryset(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         queryset: QuerySet[Organization],
     ) -> None:
         #  Make sure that the cognito group is deleted when batch deleting a organizations
@@ -49,7 +49,7 @@ class UnitAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         obj: Any | None = None,
     ) -> list[str] | tuple[Any, ...]:
         if obj:
@@ -86,7 +86,7 @@ class UnitAdmin(admin.ModelAdmin):
 
     def delete_queryset(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         queryset: QuerySet[Unit],
     ) -> None:
         #  Make sure that the cognito group is deleted when batch deleting a units

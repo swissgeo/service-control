@@ -104,7 +104,8 @@ unfixable = []
 
 fixable = ["ALL"]
 # Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+# Also allow request and lang as they are required by ninja but often unused in the function body.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?)|request|lang)$"
 
 #------------------------------------------------------------------------------
 # ruff ignore per files

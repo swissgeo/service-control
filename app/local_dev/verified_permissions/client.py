@@ -35,6 +35,6 @@ class Client(BaseClient):
         token: str,  # noqa: ARG002 ..
         action: str,  # noqa: ARG002 ..
         resource: Parameter,  # noqa: ARG002 ..
-        request: HttpRequest,  # noqa: ARG002 ..
+        request: HttpRequest,
     ) -> bool:
         return True
