@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from django.http import HttpRequest  # noqa:TC002
+from django.http import HttpRequest
 from ninja.errors import AuthorizationError
 
 from utils import api_path

@@ -42,8 +42,8 @@ initialize_tracing()
 
 from gunicorn.app.base import BaseApplication
 from django.core.wsgi import get_wsgi_application
-from gunicorn.arbiter import Arbiter  # noqa:TC002
-from gunicorn.workers.base import Worker  # noqa:TC002
+from gunicorn.arbiter import Arbiter
+from gunicorn.workers.base import Worker
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

@@ -36,7 +36,7 @@ dev = [
     "debugpy",
     "django_debug_toolbar",
     "django-extensions",
-    "django-stubs~=5.2",                                      # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
+    "django-stubs~=5.2",                                               # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
     "pre-commit",
     "pytest-cov",
     "pytest-django",
@@ -89,6 +89,14 @@ ignore = [
     "DJ001",  # Ignore nullable strings
     "TRY003", # Ignore long messages in exceptions
     "G004",   # Ignore rule for logging calls using f-strings
+
+    # Pydantic schemas uses type annotations at runtime to generate the openapi
+    # and do the validation. Putting the type annotation in a TYPE_CHECKING
+    # block creates weird hard to debug code.
+    # Same for ninja dependencies which also use type annotations at runtime.
+    "TC003", # Ignore type annotation not in TYPE_CHECKING block
+    "TC002", # Ignore type annotation not in TYPE_CHECKING block for third party import
+    "TC001", # Ignore type annotation not in TYPE_CHECKING block for first party import
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

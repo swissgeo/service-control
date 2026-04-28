@@ -1,13 +1,13 @@
 from typing import Any
 
-from django.http import HttpRequest  # noqa:TC002
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
 from config.authorization import VPAction
 from utils import api_path
 from utils.auth import is_authenticated, superuser_auth, vp_auth
-from utils.language import LanguageCode  # noqa: TC001
+from utils.language import LanguageCode
 
 from .models import Organization, Unit
 from .schemas import (

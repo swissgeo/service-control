@@ -28,7 +28,7 @@ from user.schemas import (
 from utils import api_path
 from utils.auth import is_authenticated, vp_auth
 from utils.exceptions import ConflictError
-from utils.language import LanguageCode  # noqa: TC001
+from utils.language import LanguageCode
 
 router = Router(tags=["Auth"])
 

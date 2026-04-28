@@ -1,6 +1,6 @@
 from ninja import Field, Schema
 
-from organization.models import Organization, Unit  # noqa: TC001
+from organization.models import Organization, Unit
 from schemas import ResolverContext, TranslationsSchema, build_translations
 from utils.language import get_language
 
