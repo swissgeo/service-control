@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.http import HttpRequest  # noqa:TC002
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -5,7 +7,7 @@ from ninja import Router
 from config.authorization import VPAction
 from utils import api_path
 from utils.auth import is_authenticated, superuser_auth, vp_auth
-from utils.language import LanguageCode, get_language, get_translation
+from utils.language import LanguageCode  # noqa: TC001
 
 from .models import Organization, Unit
 from .schemas import (
@@ -13,7 +15,6 @@ from .schemas import (
     CreateUnitSchema,
     OrganizationListSchema,
     OrganizationSchema,
-    TranslationsSchema,
     UnitListSchema,
     UnitSchema,
     UpdateOrganizationSchema,
@@ -21,31 +22,6 @@ from .schemas import (
 )
 
 router = Router(tags=["Organizations"])
-
-
-def organization_to_response(model: Organization, lang: LanguageCode) -> OrganizationSchema:
-    """
-    Transforms the given model using the given language into a response object.
-    """
-    return OrganizationSchema(
-        id=model.organization_id,
-        name=get_translation(model, "name", lang),
-        name_translations=TranslationsSchema(
-            de=model.name_de,
-            fr=model.name_fr,
-            en=model.name_en,
-            it=model.name_it,
-            rm=model.name_rm,
-        ),
-        acronym=get_translation(model, "acronym", lang),
-        acronym_translations=TranslationsSchema(
-            de=model.acronym_de,
-            fr=model.acronym_fr,
-            en=model.acronym_en,
-            it=model.acronym_it,
-            rm=model.acronym_rm,
-        ),
-    )
 
 
 @router.post(
@@ -56,15 +32,14 @@ def organization_to_response(model: Organization, lang: LanguageCode) -> Organiz
     auth=superuser_auth,
 )
 def create_organization(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_in: CreateOrganizationSchema,
-    lang: LanguageCode | None = None,
-) -> OrganizationSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> Organization:
     """
     Create an organization.
     """
-    lang_to_use = get_language(lang, request.headers)
-    org = Organization.objects.create(
+    return Organization.objects.create(
         organization_id=organization_in.id,
         name_de=organization_in.name_translations.de,
         name_fr=organization_in.name_translations.fr,
@@ -77,7 +52,6 @@ def create_organization(
         acronym_it=organization_in.acronym_translations.it,
         acronym_rm=organization_in.acronym_translations.rm,
     )
-    return organization_to_response(org, lang_to_use)
 
 
 @router.put(
@@ -88,15 +62,14 @@ def create_organization(
     auth=vp_auth(VPAction.UPDATE_ORGANIZATION),
 )
 def update_organization(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     organization_in: UpdateOrganizationSchema,
-    lang: LanguageCode | None = None,
-) -> OrganizationSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> Organization:
     """
     Update an organization.
     """
-    lang_to_use = get_language(lang, request.headers)
 
     org = get_object_or_404(Organization, organization_id=organization_id)
     org.name_de = organization_in.name_translations.de
@@ -111,7 +84,7 @@ def update_organization(
     org.acronym_rm = organization_in.acronym_translations.rm
     org.save()
 
-    return organization_to_response(org, lang_to_use)
+    return org
 
 
 @router.get(
@@ -121,14 +94,15 @@ def update_organization(
     exclude_none=True,
     auth=is_authenticated,
 )
-def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> OrganizationListSchema:
+def organizations(
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> dict[str, Any]:
     """
     List all organizations.
     """
     models = Organization.objects.order_by("id").all()
-    lang_to_use = get_language(lang, request.headers)
-    response = [organization_to_response(model, lang_to_use) for model in models]
-    return OrganizationListSchema(items=response)
+    return {"items": models}
 
 
 @router.get(
@@ -139,34 +113,14 @@ def organizations(request: HttpRequest, lang: LanguageCode | None = None) -> Org
     auth=vp_auth(VPAction.GET_ORGANIZATION),
 )
 def organization(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
-    lang: LanguageCode | None = None,
-) -> OrganizationSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> Organization:
     """
     Get details of an organization.
     """
-    model = get_object_or_404(Organization, organization_id=organization_id)
-    lang_to_use = get_language(lang, request.headers)
-    return organization_to_response(model, lang_to_use)
-
-
-def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
-    """
-    Transforms the given model using the given language into a response object.
-    """
-    return UnitSchema(
-        id=model.unit_id,
-        organization_id=model.organization.organization_id,
-        name=get_translation(model, "name", lang),
-        name_translations=TranslationsSchema(
-            de=model.name_de,
-            fr=model.name_fr,
-            en=model.name_en,
-            it=model.name_it,
-            rm=model.name_rm,
-        ),
-    )
+    return get_object_or_404(Organization, organization_id=organization_id)
 
 
 @router.post(
@@ -177,17 +131,16 @@ def unit_to_response(model: Unit, lang: LanguageCode) -> UnitSchema:
     auth=vp_auth(VPAction.CREATE_UNIT),
 )
 def create_unit(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     unit_in: CreateUnitSchema,
-    lang: LanguageCode | None = None,
-) -> UnitSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> Unit:
     """
     Create an organization unit.
     """
-    lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
-    unit = Unit.objects.create(
+    return Unit.objects.create(
         organization=org,
         unit_id=unit_in.id,
         name_de=unit_in.name_translations.de,
@@ -196,7 +149,6 @@ def create_unit(
         name_it=unit_in.name_translations.it,
         name_rm=unit_in.name_translations.rm,
     )
-    return unit_to_response(unit, lang_to_use)
 
 
 @router.put(
@@ -207,17 +159,15 @@ def create_unit(
     auth=vp_auth(VPAction.UPDATE_UNIT, resource=api_path.Unit),
 )
 def update_unit(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     unit_id: str,
     unit_in: UpdateUnitSchema,
-    lang: LanguageCode | None = None,
-) -> UnitSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> Unit:
     """
     Update an organization unit.
     """
-    lang_to_use = get_language(lang, request.headers)
-
     unit = get_object_or_404(
         Unit,
         organization__organization_id=organization_id,
@@ -230,7 +180,7 @@ def update_unit(
     unit.name_rm = unit_in.name_translations.rm
     unit.save()
 
-    return unit_to_response(unit, lang_to_use)
+    return unit
 
 
 @router.get(
@@ -241,15 +191,15 @@ def update_unit(
     auth=vp_auth(VPAction.LIST_UNITS),
 )
 def units(
-    request: HttpRequest, organization_id: str, lang: LanguageCode | None = None
-) -> UnitListSchema:
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    organization_id: str,
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> dict[str, Any]:
     """
     List all organization units for a given organization.
     """
     models = Unit.objects.filter(organization__organization_id=organization_id).order_by("id")
-    lang_to_use = get_language(lang, request.headers)
-    response = [unit_to_response(model, lang_to_use) for model in models]
-    return UnitListSchema(items=response)
+    return {"items": models}
 
 
 @router.get(
@@ -260,21 +210,19 @@ def units(
     auth=vp_auth(VPAction.GET_UNIT, resource=api_path.Unit),
 )
 def unit(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     unit_id: str,
-    lang: LanguageCode | None = None,
-) -> UnitSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> Unit:
     """
     Get details of an organization unit.
     """
-    model = get_object_or_404(
+    return get_object_or_404(
         Unit,
         organization__organization_id=organization_id,
         unit_id=unit_id,
     )
-    lang_to_use = get_language(lang, request.headers)
-    return unit_to_response(model, lang_to_use)
 
 
 @router.delete(

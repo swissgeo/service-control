@@ -2,68 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from organization.api import organization_to_response
 from organization.models import Organization
-from organization.schemas import OrganizationSchema
-from schemas import TranslationsSchema
-
-
-def test_organization_to_response_returns_response_with_language_as_defined(organization):
-    actual = organization_to_response(organization, lang="de")
-
-    expected = OrganizationSchema(
-        id="ch.bafu",
-        name="Bundesamt für Umwelt",
-        name_translations=TranslationsSchema(
-            de="Bundesamt für Umwelt",
-            fr="Office fédéral de l'environnement",
-            en="Federal Office for the Environment",
-            it="Ufficio federale dell'ambiente",
-            rm="Uffizi federal per l'ambient",
-        ),
-        acronym="BAFU",
-        acronym_translations=TranslationsSchema(
-            de="BAFU",
-            fr="OFEV",
-            en="FOEN",
-            it="UFAM",
-            rm="UFAM",
-        ),
-    )
-
-    assert actual == expected
-
-
-def test_organization_to_response_returns_response_with_default_language_if_undefined(organization):
-    organization.name_it = None
-    organization.name_rm = None
-    organization.acronym_it = None
-    organization.acronym_rm = None
-
-    actual = organization_to_response(organization, lang="it")
-
-    expected = OrganizationSchema(
-        id="ch.bafu",
-        name="Federal Office for the Environment",
-        name_translations=TranslationsSchema(
-            de="Bundesamt für Umwelt",
-            fr="Office fédéral de l'environnement",
-            en="Federal Office for the Environment",
-            it=None,
-            rm=None,
-        ),
-        acronym="FOEN",
-        acronym_translations=TranslationsSchema(
-            de="BAFU",
-            fr="OFEV",
-            en="FOEN",
-            it=None,
-            rm=None,
-        ),
-    )
-
-    assert actual == expected
-
 
 # ==========  GET (organization) ==========
 

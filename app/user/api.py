@@ -1,4 +1,4 @@
-from functools import lru_cache
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -7,7 +7,6 @@ from ninja.errors import ValidationError
 
 from cognito.utils.client import Client
 from config.authorization import VPAction
-from organization.api import unit_to_response
 from organization.models import Organization, Unit
 from user.extra_audience import add_extra_audience
 from user.models import AccessRequest, HumanUser, MachineUser, Role
@@ -19,50 +18,19 @@ from user.schemas import (
     MachineUserListSchema,
     MachineUserSchema,
     RoleListSchema,
-    RoleSchema,
     UpdateAccessRequestSchema,
     UpdateUserSchema,
+    UserAccessRequestListSchema,
+    UserAccessRequestSchema,
     UserListSchema,
     UserSchema,
 )
 from utils import api_path
 from utils.auth import is_authenticated, vp_auth
 from utils.exceptions import ConflictError
-from utils.language import LanguageCode, get_language, get_translation
+from utils.language import LanguageCode  # noqa: TC001
 
 router = Router(tags=["Auth"])
-
-
-def machine_user_to_response(model: MachineUser) -> MachineUserSchema:
-    return MachineUserSchema(
-        name=model.name,
-        client_id=model.sub,
-    )
-
-
-def role_to_response(model: Role) -> RoleSchema:
-    return RoleSchema(
-        id=model.role_id,
-        name=model.name,
-        description=model.description,
-    )
-
-
-@lru_cache(maxsize=2 ** len(Role.all()))  # all possible combinations of roles for caching
-def map_role_ids_to_response(role_ids: tuple[str, ...]) -> list[RoleSchema]:
-    role_by_id = {role.role_id: role for role in Role.all()}
-    return [role_to_response(role_by_id[role_id]) for role_id in role_ids if role_id in role_by_id]
-
-
-def user_to_response(model: HumanUser, lang: LanguageCode) -> UserSchema:
-    return UserSchema(
-        id=model.sub,
-        email=model.email,
-        first_name=model.first_name,
-        last_name=model.last_name,
-        roles=map_role_ids_to_response(tuple(model.roles)),
-        unit=unit_to_response(model.unit, lang=lang) if model.unit else None,
-    )
 
 
 @router.post(
@@ -119,8 +87,12 @@ def create_machine_user(
         cognito_client.delete_app_client(app_client.client_id)
         raise
 
-    return MachineUserSchema(
-        name=app_client.name, client_id=app_client.client_id, client_secret=app_client.client_secret
+    return MachineUserSchema.model_validate(
+        {
+            "name": app_client.name,
+            "client_id": app_client.client_id,
+            "client_secret": app_client.client_secret,
+        }
     )
 
 
@@ -135,14 +107,13 @@ def create_machine_user(
 def machine_users(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
-) -> MachineUserListSchema:
+) -> dict[str, Any]:
     """
     List machine users of organization.
     """
 
     models = MachineUser.objects.filter(organization__organization_id=organization_id)
-    response = [machine_user_to_response(model) for model in models]
-    return MachineUserListSchema(items=response)
+    return {"items": models}
 
 
 @router.delete(
@@ -175,12 +146,12 @@ def delete_machine_users(
 )
 def roles(
     request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
-) -> RoleListSchema:
+) -> dict[str, Any]:
     """List all available roles."""
 
     models = sorted(Role.all(), key=lambda role: role.name)
-    response = [role_to_response(model) for model in models]
-    return RoleListSchema(items=response)
+    # response = [role_to_response(model) for model in models]
+    return {"items": models}
 
 
 @router.get(
@@ -192,16 +163,15 @@ def roles(
     auth=vp_auth(VPAction.LIST_USERS),
 )
 def users(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
-    lang: LanguageCode | None = None,
-) -> UserListSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> dict[str, Any]:
     """List human users of organization."""
 
-    lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
     users = HumanUser.objects.filter(organization=org).order_by("last_name", "first_name")
-    return UserListSchema(items=[user_to_response(user, lang=lang_to_use) for user in users])
+    return {"items": users}
 
 
 @router.put(
@@ -213,15 +183,14 @@ def users(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def update_user(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     user_id: str,
     user_in: UpdateUserSchema,
-    lang: LanguageCode | None = None,
-) -> UserSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> HumanUser:
     """Update roles of human user."""
 
-    lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
     user = get_object_or_404(HumanUser, organization=org, sub=user_id)
     if user_in.unit_id:
@@ -232,7 +201,7 @@ def update_user(
     user.roles = user_in.roles
     user.save()
 
-    return user_to_response(user, lang=lang_to_use)
+    return user
 
 
 @router.delete(
@@ -267,35 +236,25 @@ def remove_user(
     summary="Create access request",
     tags=["Access Requests"],
     exclude_none=True,
-    response={201: AccessRequestSchema},
+    response={201: UserAccessRequestSchema},
     auth=is_authenticated,
 )
 def create_access_request(
     request: HttpRequest,
     access_request_in: CreateAccessRequestSchema,
-    lang: LanguageCode | None = None,
-) -> AccessRequestSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> AccessRequest:
     """
     Create an access request to an organization for the user.
     """
 
-    lang_to_use = get_language(lang, request.headers)
     organization = get_object_or_404(
         Organization, organization_id=access_request_in.organization_id
     )
-    access_request = AccessRequest.objects.create(
+    return AccessRequest.objects.create(
         user=request.user,
         organization=organization,
         state=AccessRequest.AccessRequestState.PENDING.value,
-    )
-
-    return AccessRequestSchema(
-        id=access_request.access_request_id,
-        organization_id=access_request.organization.organization_id,
-        organization_acronym=get_translation(access_request.organization, "acronym", lang_to_use),
-        organization_name=get_translation(access_request.organization, "name", lang_to_use),
-        state=access_request.state,
-        created=access_request.created.isoformat(),
     )
 
 
@@ -304,33 +263,20 @@ def create_access_request(
     summary="List access requests of user",
     tags=["Access Requests"],
     exclude_none=True,
-    response={200: AccessRequestListSchema},
+    response={200: UserAccessRequestListSchema},
     auth=is_authenticated,
 )
 def list_access_requests(
     request: HttpRequest,
-    lang: LanguageCode | None = None,
-) -> AccessRequestListSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> dict[str, Any]:
     """
     List all access requests for the authenticated user.
     """
 
-    lang_to_use = get_language(lang, request.headers)
     access_requests = AccessRequest.objects.filter(user=request.user)
 
-    return AccessRequestListSchema(
-        items=[
-            AccessRequestSchema(
-                id=ar.access_request_id,
-                organization_id=ar.organization.organization_id,
-                organization_acronym=get_translation(ar.organization, "acronym", lang_to_use),
-                organization_name=get_translation(ar.organization, "name", lang_to_use),
-                state=ar.state,
-                created=ar.created.isoformat(),
-            )
-            for ar in access_requests
-        ]
-    )
+    return {"items": access_requests}
 
 
 @router.put(
@@ -338,20 +284,19 @@ def list_access_requests(
     summary="Cancel access request",
     tags=["Access Requests"],
     exclude_none=True,
-    response={200: AccessRequestSchema},
+    response={200: UserAccessRequestSchema},
     auth=is_authenticated,
 )
 def update_access_request(
     request: HttpRequest,
     access_request_id: str,
     access_request_in: UpdateAccessRequestSchema,
-    lang: LanguageCode | None = None,
-) -> AccessRequestSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> AccessRequest:
     """
     Cancel an access request for the authenticated user.
     """
 
-    lang_to_use = get_language(lang, request.headers)
     access_request = get_object_or_404(
         AccessRequest, access_request_id=access_request_id, user=request.user
     )
@@ -363,14 +308,7 @@ def update_access_request(
     access_request.state = AccessRequest.AccessRequestState.CANCELLED.value
     access_request.save()
 
-    return AccessRequestSchema(
-        id=access_request.access_request_id,
-        organization_id=access_request.organization.organization_id,
-        organization_acronym=get_translation(access_request.organization, "acronym", lang_to_use),
-        organization_name=get_translation(access_request.organization, "name", lang_to_use),
-        state=access_request.state,
-        created=access_request.created.isoformat(),
-    )
+    return access_request
 
 
 @router.get(
@@ -382,32 +320,18 @@ def update_access_request(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def list_access_requests_for_organization(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
-    lang: LanguageCode | None = None,
-) -> AccessRequestListSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> dict[str, Any]:
     """
     List all access requests for an organization.
     """
 
-    lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
     access_requests = AccessRequest.objects.filter(organization=org).order_by("-created")
 
-    return AccessRequestListSchema(
-        items=[
-            AccessRequestSchema(
-                id=ar.access_request_id,
-                organization_id=ar.organization.organization_id,
-                organization_acronym=get_translation(ar.organization, "acronym", lang_to_use),
-                organization_name=get_translation(ar.organization, "name", lang_to_use),
-                state=ar.state,
-                created=ar.created.isoformat(),
-                user=user_to_response(ar.user, lang=lang_to_use),
-            )
-            for ar in access_requests
-        ]
-    )
+    return {"items": access_requests}
 
 
 @router.put(
@@ -419,17 +343,16 @@ def list_access_requests_for_organization(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def update_access_request_for_organization(
-    request: HttpRequest,
+    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
     organization_id: str,
     access_request_id: str,
     access_request_in: UpdateAccessRequestSchema,
-    lang: LanguageCode | None = None,
-) -> AccessRequestSchema:
+    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+) -> AccessRequest:
     """
     Approve or decline an access request for an organization.
     """
 
-    lang_to_use = get_language(lang, request.headers)
     org = get_object_or_404(Organization, organization_id=organization_id)
     access_request = get_object_or_404(
         AccessRequest, organization=org, access_request_id=access_request_id
@@ -467,12 +390,4 @@ def update_access_request_for_organization(
     access_request.state = access_request_in.state
     access_request.save()
 
-    return AccessRequestSchema(
-        id=access_request.access_request_id,
-        organization_id=access_request.organization.organization_id,
-        organization_acronym=get_translation(access_request.organization, "acronym", lang_to_use),
-        organization_name=get_translation(access_request.organization, "name", lang_to_use),
-        state=access_request.state,
-        created=access_request.created.isoformat(),
-        user=user_to_response(access_request.user, lang=lang_to_use),
-    )
+    return access_request
