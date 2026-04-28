@@ -1,10 +1,8 @@
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    from django.http import HttpRequest
+from django.http import HttpRequest
 
 
 class VPEntityType(StrEnum):

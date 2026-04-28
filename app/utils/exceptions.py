@@ -1,7 +1,4 @@
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 
 
 class ConflictError(Exception):

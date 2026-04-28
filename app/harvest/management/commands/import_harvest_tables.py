@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 import boto3
 import environ
 
+from django.core.management.base import CommandParser
 from django.db.models import Q
 
 from dataservice.models import WMSDataservice, WMTSDataservice
@@ -28,8 +29,6 @@ from utils.command import CustomBaseCommand
 
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBClient
-
-    from django.core.management.base import CommandParser
 
 
 env = environ.Env()

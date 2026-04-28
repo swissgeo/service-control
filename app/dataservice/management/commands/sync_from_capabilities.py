@@ -1,14 +1,13 @@
 import json
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import environ
+
+from django.core.management.base import CommandParser
 
 from dataservice.models import OGCAPIStacDataservice
 from dataset.models import Dataset
 from utils.command import CustomBaseCommand
-
-if TYPE_CHECKING:
-    from django.core.management.base import CommandParser
 
 env = environ.Env()
 

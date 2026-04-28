@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from django.contrib import admin
+from django.http.request import HttpRequest
 
 from .models import (
     DescribesLink,
@@ -9,9 +10,6 @@ from .models import (
     ServiceDescLink,
     ServiceDocLink,
 )
-
-if TYPE_CHECKING:
-    from django.http.request import HttpRequest
 
 
 @admin.register(ServiceDescLink)

@@ -1,15 +1,12 @@
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count, QuerySet
+from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html_join
 
 from .models import Contact, Organization, Unit
-
-if TYPE_CHECKING:
-    from django.db.models import QuerySet
-    from django.http.request import HttpRequest
 
 
 @admin.register(Organization)

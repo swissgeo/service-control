@@ -1,16 +1,14 @@
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.forms import ModelChoiceField, ModelForm, MultipleChoiceField, SelectMultiple
+from django.http import HttpRequest
 
 from config.authorization import VPRole
 from organization.models import Unit
 from user.models import AccessRequest, HumanUser, MachineUser
-
-if TYPE_CHECKING:
-    from django.http import HttpRequest
 
 
 class OrganizationScopedUnitForm(ModelForm):

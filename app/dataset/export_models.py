@@ -1,17 +1,10 @@
-from typing import TYPE_CHECKING, Annotated, Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
-from dataservice.models import (
-    Dataservice,
-    OGCAPIStacDataservice,
-    WMSDataservice,
-    WMTSDataservice,
-)
+from dataservice.models import Dataservice, OGCAPIStacDataservice, WMSDataservice, WMTSDataservice
+from dataset.models import Dataset
 from distribution.models import Distribution, ExternalGeoJSONDistribution
-
-if TYPE_CHECKING:
-    from dataset.models import Dataset
 
 
 class Lang(BaseModel):

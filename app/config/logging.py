@@ -1,17 +1,15 @@
 import sys
+from collections.abc import Callable
 from json import dumps, loads
 from logging import LogRecord, getLogger
 from time import time
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import Any, TypedDict
 
 from ecs_logging import StdlibFormatter
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from ninja import NinjaAPI
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
 logger = getLogger(__name__)
 

@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from django.http import HttpRequest
+from django.http import HttpRequest
 
-    from cognito.utils.client import OrganizationGroup, UnitGroup
-    from utils.api_path import Parameter
+from cognito.utils.client import OrganizationGroup, UnitGroup
+from utils.api_path import Parameter
 
 
 class BaseClient(ABC):

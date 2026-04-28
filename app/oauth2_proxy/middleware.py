@@ -1,19 +1,16 @@
 import logging
-from typing import TYPE_CHECKING, cast
+from collections.abc import Callable
+from typing import cast
 
 import jwt
 
 from django.conf import settings
 from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.auth.middleware import RemoteUserMiddleware
+from django.http import HttpRequest, HttpResponse
 from ninja.errors import AuthenticationError
 
 from user.models import CustomUser
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
 
