@@ -1,6 +1,7 @@
-from decimal import Decimal
+from decimal import Decimal  # noqa:TC003
 from typing import Any, Self
 
+from boto3.dynamodb.types import TypeDeserializer
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -28,72 +29,20 @@ class DynamoDBParsableModel(BaseModel):
         and that their types match. It will raise a ValidationError if parsing
         fails.
         """
+        deserializer = TypeDeserializer()
         parsed_data: dict[str, Any] = {}
         for field_name in cls.model_fields:
             if field_name not in item:
                 raise ParsingError(f"Missing field '{field_name}' in DynamoDB item")
             dynamo_value = item[field_name]
             try:
-                parsed_data[field_name] = cls.handle_item(dynamo_value)
+                parsed_data[field_name] = deserializer.deserialize(dynamo_value)
             except Exception as e:
                 raise ParsingError(
                     f"Error parsing field '{field_name}' with value '{dynamo_value}'"
                 ) from e
 
         return cls(**parsed_data)
-
-    @classmethod
-    def handle_item(cls, item: dict) -> Any:
-        if not isinstance(item, dict) or len(item) != 1:
-            raise TypeError(f"Invalid item type {type(item)}, expecting `dict`")
-        if len(item) != 1:
-            raise ValueError(f"I can only handle items with 1 key/value pair, got {len(item)}")
-        type_key, value = next(iter(item.items()))
-        if type_key == "S":
-            conv = cls.handle_S(value)
-        elif type_key == "N":
-            conv = cls.handle_N(value)
-        elif type_key == "L":
-            conv = cls.handle_L(value)
-        elif type_key == "M":
-            conv = cls.handle_M(value)
-        elif type_key == "NULL":
-            conv = None
-        elif type_key == "BOOL":
-            conv = cls.handle_BOOL(value)
-        else:
-            raise ValueError(f"Unsupported DynamoDB type '{type_key}' (value: '{value}'")
-
-        return conv
-
-    @classmethod
-    def handle_S(cls, value: str) -> str:  # noqa: N802
-        return value
-
-    @classmethod
-    def handle_N(cls, value: Any) -> Decimal:  # noqa: N802
-        """Convert DynamoDB N-type
-
-        We convert all N-type fields to Decimal in a first step.
-        Decimal input values are then automatically converted to
-        int/float when constructing pydantic objects, as long as
-        the number can be converted to the target type, so
-        - Decimal('3.5) can be casted to float, but not to int
-        - Decimal('3') can be casted to int and to float
-        """
-        return Decimal(value)
-
-    @classmethod
-    def handle_L(cls, value: list) -> list:  # noqa: N802
-        return [cls.handle_item(item) for item in value]
-
-    @classmethod
-    def handle_M(cls, value: dict) -> dict:  # noqa: N802
-        return {key: cls.handle_item(item) for key, item in value.items()}
-
-    @classmethod
-    def handle_BOOL(cls, value: bool) -> bool:  # noqa: N802
-        return value
 
 
 class OrganizationImport(DynamoDBParsableModel):
