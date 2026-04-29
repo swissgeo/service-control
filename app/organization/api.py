@@ -1,13 +1,13 @@
 from typing import Any
 
-from django.http import HttpRequest  # noqa:TC002
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
 from config.authorization import VPAction
 from utils import api_path
 from utils.auth import is_authenticated, superuser_auth, vp_auth
-from utils.language import LanguageCode  # noqa: TC001
+from utils.language import LanguageCode
 
 from .models import Organization, Unit
 from .schemas import (
@@ -32,9 +32,9 @@ router = Router(tags=["Organizations"])
     auth=superuser_auth,
 )
 def create_organization(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_in: CreateOrganizationSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> Organization:
     """
     Create an organization.
@@ -62,10 +62,10 @@ def create_organization(
     auth=vp_auth(VPAction.UPDATE_ORGANIZATION),
 )
 def update_organization(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     organization_in: UpdateOrganizationSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> Organization:
     """
     Update an organization.
@@ -95,8 +95,8 @@ def update_organization(
     auth=is_authenticated,
 )
 def organizations(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    request: HttpRequest,
+    lang: LanguageCode | None = None,
 ) -> dict[str, Any]:
     """
     List all organizations.
@@ -113,9 +113,9 @@ def organizations(
     auth=vp_auth(VPAction.GET_ORGANIZATION),
 )
 def organization(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> Organization:
     """
     Get details of an organization.
@@ -131,10 +131,10 @@ def organization(
     auth=vp_auth(VPAction.CREATE_UNIT),
 )
 def create_unit(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     unit_in: CreateUnitSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> Unit:
     """
     Create an organization unit.
@@ -159,11 +159,11 @@ def create_unit(
     auth=vp_auth(VPAction.UPDATE_UNIT, resource=api_path.Unit),
 )
 def update_unit(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     unit_id: str,
     unit_in: UpdateUnitSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> Unit:
     """
     Update an organization unit.
@@ -191,9 +191,9 @@ def update_unit(
     auth=vp_auth(VPAction.LIST_UNITS),
 )
 def units(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> dict[str, Any]:
     """
     List all organization units for a given organization.
@@ -210,10 +210,10 @@ def units(
     auth=vp_auth(VPAction.GET_UNIT, resource=api_path.Unit),
 )
 def unit(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     unit_id: str,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> Unit:
     """
     Get details of an organization unit.
@@ -232,7 +232,7 @@ def unit(
     auth=vp_auth(VPAction.DELETE_UNIT, resource=api_path.Unit),
 )
 def delete_unit(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     unit_id: str,
 ) -> None:

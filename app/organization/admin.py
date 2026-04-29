@@ -1,15 +1,12 @@
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count, QuerySet
+from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html_join
 
 from .models import Contact, Organization, Unit
-
-if TYPE_CHECKING:
-    from django.db.models import QuerySet
-    from django.http.request import HttpRequest
 
 
 @admin.register(Organization)
@@ -21,7 +18,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         obj: Any | None = None,
     ) -> list[str] | tuple[Any, ...]:
         if obj:
@@ -31,7 +28,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     def delete_queryset(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         queryset: QuerySet[Organization],
     ) -> None:
         #  Make sure that the cognito group is deleted when batch deleting a organizations
@@ -49,7 +46,7 @@ class UnitAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         obj: Any | None = None,
     ) -> list[str] | tuple[Any, ...]:
         if obj:
@@ -86,7 +83,7 @@ class UnitAdmin(admin.ModelAdmin):
 
     def delete_queryset(
         self,
-        request: HttpRequest,  # noqa: ARG002 unused argument
+        request: HttpRequest,
         queryset: QuerySet[Unit],
     ) -> None:
         #  Make sure that the cognito group is deleted when batch deleting a units

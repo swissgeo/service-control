@@ -4,18 +4,16 @@ from typing import TYPE_CHECKING
 from boto3 import client
 
 from django.conf import settings
+from django.http import HttpRequest
 
+from cognito.utils.client import OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from config.aws import config
+from utils.api_path import Parameter
 from verified_permissions.utils.base import BaseClient
 
 if TYPE_CHECKING:
     from mypy_boto3_verifiedpermissions import VerifiedPermissionsClient
-
-    from django.http import HttpRequest
-
-    from cognito.utils.client import OrganizationGroup, UnitGroup
-    from utils.api_path import Parameter
 
 
 @lru_cache(maxsize=1)

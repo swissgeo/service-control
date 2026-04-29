@@ -1,11 +1,13 @@
 import logging
-from typing import TYPE_CHECKING, Any, NamedTuple
+from collections.abc import Iterable
+from typing import Any, NamedTuple
 
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models.base import ModelBase
 from django.utils import timezone
 from django.utils.translation import pgettext_lazy as _
 
@@ -15,11 +17,6 @@ from user.extra_audience import remove_extra_audience
 from utils.exceptions import ConflictError
 from utils.fields import CustomSlugField
 from verified_permissions.utils.client import Client as VPClient
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from django.db.models.base import ModelBase
 
 logger = logging.getLogger(__name__)
 

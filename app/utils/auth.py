@@ -1,18 +1,14 @@
+from collections.abc import Callable
 from functools import lru_cache
-from typing import TYPE_CHECKING
 
-from django.http import HttpRequest  # noqa:TC002
+from django.http import HttpRequest
 from ninja.errors import AuthorizationError
 
+from config.authorization import VPAction
 from utils import api_path
+from utils.api_path import Parameter
+from verified_permissions.utils.base import BaseClient
 from verified_permissions.utils.client import Client
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from config.authorization import VPAction
-    from utils.api_path import Parameter
-    from verified_permissions.utils.base import BaseClient
 
 
 @lru_cache(maxsize=1)

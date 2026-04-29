@@ -1,10 +1,7 @@
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import Any, TypedDict
 
+from django.http import HttpRequest
 from ninja import Schema
-
-if TYPE_CHECKING:
-    from django.http import HttpRequest
-
 
 SUPPORTED_LANGS = ("de", "en", "fr", "it", "rm")
 

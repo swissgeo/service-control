@@ -28,7 +28,7 @@ from user.schemas import (
 from utils import api_path
 from utils.auth import is_authenticated, vp_auth
 from utils.exceptions import ConflictError
-from utils.language import LanguageCode  # noqa: TC001
+from utils.language import LanguageCode
 
 router = Router(tags=["Auth"])
 
@@ -105,7 +105,7 @@ def create_machine_user(
     auth=vp_auth(VPAction.LIST_MACHINE_USERS),
 )
 def machine_users(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
 ) -> dict[str, Any]:
     """
@@ -124,7 +124,7 @@ def machine_users(
     auth=vp_auth(VPAction.DELETE_MACHINE_USER, resource=api_path.Machine_user),
 )
 def delete_machine_users(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,  # noqa: ARG001  not used but in path
     machine_user_id: str,
 ) -> HttpResponse:
@@ -145,7 +145,7 @@ def delete_machine_users(
     auth=is_authenticated,
 )
 def roles(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
 ) -> dict[str, Any]:
     """List all available roles."""
 
@@ -163,9 +163,9 @@ def roles(
     auth=vp_auth(VPAction.LIST_USERS),
 )
 def users(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> dict[str, Any]:
     """List human users of organization."""
 
@@ -183,11 +183,11 @@ def users(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def update_user(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     user_id: str,
     user_in: UpdateUserSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> HumanUser:
     """Update roles of human user."""
 
@@ -212,7 +212,7 @@ def update_user(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def remove_user(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     user_id: str,
 ) -> HttpResponse:
@@ -242,7 +242,7 @@ def remove_user(
 def create_access_request(
     request: HttpRequest,
     access_request_in: CreateAccessRequestSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> AccessRequest:
     """
     Create an access request to an organization for the user.
@@ -268,7 +268,7 @@ def create_access_request(
 )
 def list_access_requests(
     request: HttpRequest,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> dict[str, Any]:
     """
     List all access requests for the authenticated user.
@@ -291,7 +291,7 @@ def update_access_request(
     request: HttpRequest,
     access_request_id: str,
     access_request_in: UpdateAccessRequestSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> AccessRequest:
     """
     Cancel an access request for the authenticated user.
@@ -320,9 +320,9 @@ def update_access_request(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def list_access_requests_for_organization(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> dict[str, Any]:
     """
     List all access requests for an organization.
@@ -343,11 +343,11 @@ def list_access_requests_for_organization(
     auth=vp_auth(VPAction.UPDATE_USER),
 )
 def update_access_request_for_organization(
-    request: HttpRequest,  # noqa: ARG001  request is not used but required by ninja
+    request: HttpRequest,
     organization_id: str,
     access_request_id: str,
     access_request_in: UpdateAccessRequestSchema,
-    lang: LanguageCode | None = None,  # noqa: ARG001  to show in api docs
+    lang: LanguageCode | None = None,
 ) -> AccessRequest:
     """
     Approve or decline an access request for an organization.

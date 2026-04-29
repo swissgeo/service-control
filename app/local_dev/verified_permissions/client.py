@@ -1,12 +1,8 @@
-from typing import TYPE_CHECKING
+from django.http import HttpRequest
 
+from cognito.utils.client import OrganizationGroup, UnitGroup
+from utils.api_path import Parameter
 from verified_permissions.utils.base import BaseClient
-
-if TYPE_CHECKING:
-    from django.http import HttpRequest
-
-    from cognito.utils.client import OrganizationGroup, UnitGroup
-    from utils.api_path import Parameter
 
 
 class Client(BaseClient):
@@ -35,6 +31,6 @@ class Client(BaseClient):
         token: str,  # noqa: ARG002 ..
         action: str,  # noqa: ARG002 ..
         resource: Parameter,  # noqa: ARG002 ..
-        request: HttpRequest,  # noqa: ARG002 ..
+        request: HttpRequest,
     ) -> bool:
         return True

@@ -1,18 +1,16 @@
 import json
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import boto3
 import environ
 from botocore.client import Config
 
+from django.core.management.base import CommandParser
+
 from dataservice.models import Dataservice
 from dataset.export_models import LANGS, OAFeatureCollection, OARDataservice, OARDistribution
 from dataset.models import Dataset
 from utils.command import CustomBaseCommand
-
-if TYPE_CHECKING:
-    from django.core.management.base import CommandParser
-
 
 env = environ.Env()
 
