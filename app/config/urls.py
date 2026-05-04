@@ -14,20 +14,21 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include
-from django.urls import path
+from django.urls import include, path
+from django.views.i18n import JavaScriptCatalog
 
-from .api import api
-from .api import root
+from .api import api, root
 
 urlpatterns = [
-    path(settings.ROOT_PATH_PREFIX + '', root.urls),
-    path(settings.ROOT_PATH_PREFIX + 'api/v1/', api.urls)
-]
-if settings.ENABLE_OAUTH2_PROXY:
+    path(settings.ROOT_PATH_PREFIX + "", root.urls),
+    path(settings.API_PATH_PREFIX + "v1/", api.urls),
+    # oauth2 urls are only for admin ui login
+    path(settings.ADMIN_PATH_PREFIX + "", include("oauth2_proxy.urls")),
     # NOTE: the oauth_proxy endpoints needs to be registered before the admin interface endpoints
     # because they overwrite the default django admin/logout endpoints
-    urlpatterns.append(path(settings.ROOT_PATH_PREFIX + '', include('oauth2_proxy.urls')))
-urlpatterns.append(path(settings.ROOT_PATH_PREFIX + 'admin/', admin.site.urls))
+    path(settings.ADMIN_PATH_PREFIX + "admin/jsi18n/", JavaScriptCatalog.as_view()),
+    path(settings.ADMIN_PATH_PREFIX + "admin/", admin.site.urls),
+]

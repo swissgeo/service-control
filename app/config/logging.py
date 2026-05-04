@@ -1,34 +1,42 @@
 import sys
-from logging import getLogger
-from typing import Any
-from typing import List
-from typing import Optional
-from typing import TypedDict
+from collections.abc import Callable
+from json import dumps, loads
+from logging import LogRecord, getLogger
+from time import time
+from typing import Any, TypedDict
 
-from ninja import NinjaAPI
+from ecs_logging import StdlibFormatter
 
 from django.conf import settings
-from django.http import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from ninja import NinjaAPI
 
 logger = getLogger(__name__)
 
-LogExtra = TypedDict(
-    'LogExtra',
-    {
-        'http': {
-            'request': {
-                'method': str, 'header': dict[str, str]
-            },
-            'response': {
-                'status_code': int, 'header': dict[str, str]
-            }
-        },
-        'url': {
-            'path': str, 'scheme': str
-        }
-    }
-)
+
+class LogExtraHttpRequest(TypedDict):
+    method: str
+    header: dict[str, str]
+
+
+class LogExtraHttpResponse(TypedDict):
+    status_code: int
+    header: dict[str, str]
+
+
+class LogExtraHttp(TypedDict):
+    request: LogExtraHttpRequest
+    response: LogExtraHttpResponse
+
+
+class LogExtraUrl(TypedDict):
+    path: str
+    scheme: str
+
+
+class LogExtra(TypedDict):
+    http: LogExtraHttp
+    url: LogExtraUrl
 
 
 def generate_log_extra(request: HttpRequest, response: HttpResponse) -> LogExtra:
@@ -57,27 +65,28 @@ def generate_log_extra(request: HttpRequest, response: HttpResponse) -> LogExtra
         dict: dict of extras
     """
     return {
-        'http': {
-            'request': {
-                'method': request.method or 'UNKNOWN',
-                'header': {
+        "http": {
+            "request": {
+                "method": request.method or "UNKNOWN",
+                "header": {
                     k.lower(): v
                     for k, v in request.headers.items()
                     if k.lower() in settings.LOG_ALLOWED_HEADERS
-                }
+                },
             },
-            'response': {
-                'status_code': response.status_code,
-                'header': {
+            "response": {
+                "status_code": response.status_code,
+                "header": {
                     k.lower(): v
                     for k, v in response.headers.items()
                     if k.lower() in settings.LOG_ALLOWED_HEADERS
                 },
-            }
+            },
         },
-        'url': {
-            'path': request.path or 'UNKNOWN', 'scheme': request.scheme or 'UNKNOWN'
-        }
+        "url": {
+            "path": request.path or "UNKNOWN",
+            "scheme": request.scheme or "UNKNOWN",
+        },
     }
 
 
@@ -92,29 +101,101 @@ class LoggedNinjaAPI(NinjaAPI):
         self,
         request: HttpRequest,
         data: Any,
-        *args: List[Any],
-        status: Optional[int] = None,
-        temporal_response: Optional[HttpResponse] = None,
+        *args: list[Any],
+        status: int | None = None,
+        temporal_response: HttpResponse | None = None,
     ) -> HttpResponse:
         response = super().create_response(
-            request, data, *args, status=status, temporal_response=temporal_response
+            request,
+            data,
+            *args,
+            status=status,
+            temporal_response=temporal_response,
         )
 
-        if response.status_code >= 200 and response.status_code < 400:
+        if response.status_code >= 200 and response.status_code < 400:  # noqa: PLR2004
             logger.info(
                 "Response %s on %s",
                 response.status_code,  # parameter for %s
                 request.path,  # parameter for %s
-                extra=generate_log_extra(request, response)
+                extra=generate_log_extra(request, response),
             )
-        elif response.status_code >= 400 and response.status_code < 500:
+        elif response.status_code >= 400 and response.status_code < 500:  # noqa: PLR2004
             logger.warning(
                 "Response %s on %s",
                 response.status_code,  # parameter for %s
                 request.path,  # parameter for %s
-                extra=generate_log_extra(request, response)
+                extra=generate_log_extra(request, response),
             )
         else:
             logger.exception(repr(sys.exc_info()[1]), extra=generate_log_extra(request, response))
 
         return response
+
+
+class RequestResponseLoggingMiddleware:
+    url_safe = ",:/"  # characters that should not be urlencoded in the log statements
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        # Do not log API calls, they are logged with the LoggedNinjaAPI above
+        if request.path.startswith("/api/"):
+            return self.get_response(request)
+
+        # Code to be executed for each request before the view (and later middlewares) are called.
+        method = (request.method or "").upper()
+        extra: dict[str, Any] = {
+            "request.request": request,
+            "request.query": request.GET.urlencode(self.url_safe),
+        }
+        add_payload = (
+            method in ("PATCH", "POST", "PUT") and request.content_type == "application/json"
+        )
+        if add_payload:
+            payload = request.body.decode()[: int(settings.LOGGING_MAX_REQUEST_PAYLOAD_SIZE)]
+            extra["request.payload"] = payload
+
+        logger.debug(
+            "Request %s %s?%s",
+            method,
+            request.path,
+            request.GET.urlencode(self.url_safe),
+            extra=extra,
+        )
+        start = time()
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after the view is called.
+        extra = {
+            "request": request,
+            "response": {
+                "code": response.status_code,
+                "headers": dict(response.items()),
+                "duration": time() - start,
+            },
+        }
+
+        # Not all response types have a 'content' attribute, HttpResponse and JSONResponse sure have
+        # (e.g. WhiteNoiseFileResponse doesn't)
+        if isinstance(response, (HttpResponse, JsonResponse)):
+            payload = response.content.decode()[: int(settings.LOGGING_MAX_RESPONSE_PAYLOAD_SIZE)]
+            extra["response"]["payload"] = payload
+
+        logger.info(
+            "Response %s %s %s?%s",
+            response.status_code,
+            method,
+            request.path,
+            request.GET.urlencode(RequestResponseLoggingMiddleware.url_safe),
+            extra=extra,
+        )
+
+        return response
+
+
+class PrettyStdlibFormatter(StdlibFormatter):
+    def format(self, record: LogRecord) -> str:
+        return dumps(loads(super().format(record)), indent=2, sort_keys=True)

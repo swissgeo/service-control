@@ -1,6 +1,7 @@
+name: service-control-swissgeo
 services:
   db:
-    image: postgres:16
+    image: postgres:18
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -13,3 +14,42 @@ services:
           create_host_path: true
     ports:
       - "${DB_PORT}:5432"
+
+  cognito:
+    image: jagregory/cognito-local:latest
+    environment:
+      - COGNITO_POOL_ID=${COGNITO_POOL_ID}
+    volumes:
+      - source: ${PWD}/.volumes/cognito
+        target: /app/.cognito
+        type: bind
+        bind:
+          create_host_path: true
+      - source: ${PWD}/default-pool.json
+        target: /app/default-pool.json
+        type: bind
+    ports:
+      - "${COGNITO_PORT}:9229"
+    # add an empty user pool json if not already existing, then run the service
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /app/.cognito/db
+        if [ ! -f "/app/.cognito/db/${COGNITO_POOL_ID}.json" ]; then
+          cp /app/default-pool.json "/app/.cognito/db/${COGNITO_POOL_ID}.json"
+        fi
+        exec node /app/start.js
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: --config otel-local-config.yaml
+    volumes:
+      - ./otel-local-config.yaml:/otel-local-config.yaml
+    ports:
+      - "4317:4317"
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"

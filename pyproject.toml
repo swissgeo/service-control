@@ -1,0 +1,176 @@
+[project]
+name = "service-control"
+version = "0.0.0" # NOTE: the version is not used
+description = "Swissgeo control service"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "boto3~=1.42",
+    "django-cors-headers~=4.9",
+    "django-environ~=0.12",
+    "django-ninja~=1.4",
+    "django-polymorphic~=4.11",
+    "django~=6.0",
+    "ecs-logging~=2.2",
+    "gevent~=25.4",
+    "gunicorn~=25.1",
+    "logging-utilities~=5.4",
+    "opentelemetry-exporter-otlp~=1.39",
+    "opentelemetry-instrumentation-botocore==0.60b1",
+    "opentelemetry-instrumentation-django==0.60b1",
+    "opentelemetry-instrumentation-logging==0.60b1",
+    "opentelemetry-instrumentation-psycopg==0.60b1",
+    "opentelemetry-instrumentation==0.60b1",
+    "opentelemetry-sdk~=1.39",
+    "psycopg[binary,pool]~=3.2",
+    "pyjwt~=2.11",
+    "pystac-client~=0.9",
+    "pyyaml~=6.0",
+    "tinydb~=4.8",
+    "whitenoise~=6.11",
+]
+
+[dependency-groups]
+dev = [
+    "boto3-stubs[cognito-idp,ssm,verifiedpermissions,dynamodb]~=1.42",
+    "debugpy",
+    "django_debug_toolbar",
+    "django-extensions",
+    "django-stubs~=5.2",                                               # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
+    "pre-commit",
+    "pytest-cov",
+    "pytest-django",
+    "pytest-xdist",
+    "pytest",
+    "ruff",
+    "ty",
+    "types-gevent~=25.4",
+    "types-gunicorn~=25.1",
+    "types-requests~=2.32",
+]
+
+[tool.uv]
+package = false # Do not install as a package
+
+
+#===============================================================================
+# Ruff configuration
+[tool.ruff]
+src = ["app"]
+
+# Same as Black.
+line-length = 100
+indent-width = 4
+
+# Assume Python 3.14
+target-version = "py314"
+
+#------------------------------------------------------------------------------
+# Linting configuration
+[tool.ruff.lint]
+exclude = [
+    "app/*/migrations/**",                          # Exclude django generated migrations files from linting
+    "app/dataset/management/commands/oarecords.py", # Exclude OAR stub generator during POC phase
+]
+select = ["ALL"]
+ignore = [
+    "ANN401", # Ignore Any typehint
+    "ANN002", # Ignore typehint for *args
+    "ANN003", # Ignore typehint for **kwargs
+    "D",      # Ignore pydocstyle
+    "EM",     # Ignore flake8-errmsg
+    "FBT001", # Ignore boolean-type-hint-positional-argument
+    "FBT002", # Ignore boolean-default-value-positional-argument
+    "PTH123", # Ignore builtin-open
+    "TD",     # Ignore flake8-todos
+    "FIX",    # Ignore fixme comments
+    "ERA001", # TODO remove this for production, ignore commented code
+    "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
+    "DJ001",  # Ignore nullable strings
+    "TRY003", # Ignore long messages in exceptions
+    "G004",   # Ignore rule for logging calls using f-strings
+
+    # Pydantic schemas uses type annotations at runtime to generate the openapi
+    # and do the validation. Putting the type annotation in a TYPE_CHECKING
+    # block creates weird hard to debug code.
+    # Same for ninja dependencies which also use type annotations at runtime.
+    "TC003", # Ignore type annotation not in TYPE_CHECKING block
+    "TC002", # Ignore type annotation not in TYPE_CHECKING block for third party import
+    "TC001", # Ignore type annotation not in TYPE_CHECKING block for first party import
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+unfixable = []
+
+fixable = ["ALL"]
+# Allow unused variables when underscore-prefixed.
+# Also allow request and lang as they are required by ninja but often unused in the function body.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?)|request|lang)$"
+
+#------------------------------------------------------------------------------
+# ruff ignore per files
+[tool.ruff.lint.per-file-ignores]
+
+"app/tests/**" = [
+    "S101",    # Ignore usage of assert statements in tests
+    "S106",    # Ignore hard coded passwords in tests
+    "ANN201",  # Ignore missing return type hints in tests
+    "INP001",  # Ignore implicit namespace packages in tests
+    "ANN001",  # Ignore missing type hints in tests
+    "ARG001",  # Ignore unused function arguments in tests
+    "ARG005",  # Ignore unused lambda argument in tests
+    "PLR2004", # Ignore magic number in tests
+    "PLR0913", # Ignore too many arguments in function in tests
+]
+
+"app/stubs/**" = [
+    "ANN", # Ignore flake8-annotations stubs
+]
+
+"app/*.py" = [
+    "INP001", # Ignore implicit namespace packages in root app files
+]
+
+#------------------------------------------------------------------------------
+# Isort configuration
+[tool.ruff.lint.isort]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "django-ninja",
+    "test",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+test = ["pytest"]
+django-ninja = ["django", "ninja"]
+
+#===============================================================================
+# ty configuration
+[tool.ty.environment]
+root = ["app"]
+
+[tool.ty.src]
+exclude = ["app/tests", "app/stubs", "**/__pycache__"]
+
+#===============================================================================
+# Pytest configuration
+[tool.pytest]
+pythonpath = ["app"]
+python_files = ["test_*.py"]
+addopts = [
+    # do not use DJANGO_SETTINGS_MODULE as this will be overwritten by the env variable
+    # https://pytest-django.readthedocs.io/en/latest/configuring_django.html
+    "--ds=config.settings_test",
+]
+
+#==============================================================================
+# Coverage configuration
+[tool.coverage.run]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["if TYPE_CHECKING:"]

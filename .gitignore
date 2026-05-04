@@ -175,8 +175,18 @@ cython_debug/
 .local
 .timestamps
 
-# visual studio code
-.vscode
+# vs code
+*.code-workspace
 
 # Sublime Text
 *.sublime-*
+
+# Zed Editor
+.zed/
+
+.ruff_cache
+# Local database files for TinyDB
+app/harvest/*.json
+
+# Temp files
+*.tmp

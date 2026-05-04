@@ -1,0 +1,23 @@
+{
+    "ruff.enable": true,
+    "pylint.enabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.experiments.enabled": false,
+    "python.testing.pytestPath": ".venv/bin/pytest",
+    "[python]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "pytest.command": "uv run pytest", // Avoid pipenv to create an empty Pipfile when opening the project, this project is managed by uv
+    "files.exclude": {
+        "__pycache__": true,
+        ".coverage": true,
+        ".pytest_cache": true,
+        ".ruff_cache": true,
+        ".volumes": true
+    }
+}
