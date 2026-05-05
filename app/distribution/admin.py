@@ -8,6 +8,7 @@ from django.contrib import admin
 
 from .models import (
     Distribution,
+    ExternalGeoadminFeaturesDistribution,
     ExternalGeoJSONDistribution,
     ExternalStacDistribution,
     ExternalWMSDistribution,
@@ -25,6 +26,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         ExternalWMTSDistribution,
         ExternalStacDistribution,
         ExternalGeoJSONDistribution,
+        ExternalGeoadminFeaturesDistribution,
     )
 
     list_filter = (
@@ -92,3 +94,8 @@ class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
         "data_source",
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
+
+
+@admin.register(ExternalGeoadminFeaturesDistribution)
+class ExternalGeoadminFeaturesDistributionAdmin(PolymorphicChildModelAdmin):
+    """Admin View for ExternalGeoadminFeaturesDistribution"""
