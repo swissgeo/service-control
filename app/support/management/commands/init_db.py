@@ -64,6 +64,15 @@ class Command(CustomBaseCommand):
                     (database_name,),
                 ).fetchone()
                 if result is None:
+                    # Grant role to current user
+                    # This is required to allow the current user to create the database with the new
+                    # role as owner
+                    cursor.execute(
+                        SQL("GRANT {} TO {}").format(
+                            Identifier(user_name),
+                            Identifier(admin_name),
+                        ),
+                    )
                     cursor.execute(
                         SQL(
                             "CREATE DATABASE {} OWNER {}",
