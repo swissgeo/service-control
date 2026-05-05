@@ -186,6 +186,13 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
+        obsolete = {
+            dataset.dataset_id
+            for dataset in Dataset.objects.filter(
+                data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+            )
+        }
+
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
                 try:
@@ -196,9 +203,12 @@ class Command(CustomBaseCommand):
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
 
+                obsolete.discard(import_ds.dataset_id)
+
                 # Create dataset
                 ds, _ = Dataset.objects.get_or_create(
                     dataset_id=import_ds.dataset_id,
+                    data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
                     defaults={
                         "title_short_de": import_ds.title_de,
                         "title_short_fr": import_ds.title_fr,
@@ -244,6 +254,9 @@ class Command(CustomBaseCommand):
 
                 DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
                 DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
+
+        if obsolete:
+            self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
 
     # ##########################################################################
     def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
