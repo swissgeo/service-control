@@ -17,7 +17,8 @@ class DatasetToContactInline(admin.TabularInline):
 class DatasetAdmin(admin.ModelAdmin):
     """Admin View for Dataset"""
 
-    list_display = ("dataset_id", "title_short_de")
+    list_display = ("dataset_id", "title_short_de", "data_source")
+    list_filter = ("data_source",)
     # TODO: depending on how we handle identifiers, we might want to make dataset_id read only in
     # edit or implement auto-generation for identifiers (probably preferrable)
     readonly_fields = ("created_at", "updated_at", "dataset_id")

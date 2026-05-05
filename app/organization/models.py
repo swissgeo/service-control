@@ -313,4 +313,4 @@ class Contact(models.Model):
         ordering = ("organization__organization_id", "name_en")
 
     def __str__(self) -> str:
-        return str(self.name_en or "-")
+        return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"

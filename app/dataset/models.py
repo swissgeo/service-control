@@ -99,9 +99,10 @@ class DatasetToUnit(models.Model):
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "unit"]),)
+        verbose_name = _("DatasetToUnit Model", "Dataset Unit")
 
     def __str__(self) -> str:
-        return f"{self.dataset}: {self.unit} ({self.role})"
+        return f"{self.unit} as {self.role} in {self.dataset}"
 
 
 class DatasetToContact(models.Model):
@@ -144,6 +145,7 @@ class DatasetToContact(models.Model):
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "contact"]),)
+        verbose_name = _("DatasetToContact Model", "Dataset Contact")
 
     def __str__(self) -> str:
-        return f"{self.dataset}: {self.contact} ({self.role})"
+        return f"{self.contact} as {self.role} in {self.dataset}"
