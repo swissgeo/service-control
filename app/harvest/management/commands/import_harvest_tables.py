@@ -23,7 +23,7 @@ from harvest.import_models import (
     OrganizationImport,
     ParsingError,
 )
-from harvest.models import DatasetToUnitMapping
+from harvest.models import DatasetToContactMapping, DatasetToUnitMapping
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
@@ -466,6 +466,8 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
+        mappings = DatasetToContactMapping.table()
+
         query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
@@ -490,24 +492,28 @@ class Command(CustomBaseCommand):
 
             DatasetToContact.objects.filter(dataset=dataset).delete()
             for item_contact in item_contacts.contacts:
-                organization = self.find_organization(
-                    acronym_de=item_contact.org_acronym_de,
-                    acronym_fr=item_contact.org_acronym_fr,
-                    name_de=item_contact.org_name_de,
-                    name_fr=item_contact.org_name_fr,
-                )
+                role = item_contact.role
 
-                if not organization:
-                    self.print_error(
-                        f"Organization of role {item_contact.role} not found for dataset {dataset}"
+                contact = mappings[role].match(dataset.dataset_id) if role in mappings else None
+                if not contact:
+                    organization = self.find_organization(
+                        acronym_de=item_contact.org_acronym_de,
+                        acronym_fr=item_contact.org_acronym_fr,
+                        name_de=item_contact.org_name_de,
+                        name_fr=item_contact.org_name_fr,
                     )
-                    continue
 
-                contact = self.find_contact(
-                    organization=organization,
-                    name_de=item_contact.position_name_de,
-                    name_fr=item_contact.position_name_fr,
-                )
+                    if not organization:
+                        self.print_error(
+                            f"Organization of role {role} not found for dataset {dataset}"
+                        )
+                        continue
+
+                    contact = self.find_contact(
+                        organization=organization,
+                        name_de=item_contact.position_name_de,
+                        name_fr=item_contact.position_name_fr,
+                    )
 
                 if not contact:
                     email = None
@@ -549,9 +555,7 @@ class Command(CustomBaseCommand):
                         url_rm=getattr(online_resource, "url_rm", None),
                     )
 
-                DatasetToContact.objects.create(
-                    dataset=dataset, contact=contact, role=item_contact.role
-                )
+                DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
 
     def find_organization(
         self,
