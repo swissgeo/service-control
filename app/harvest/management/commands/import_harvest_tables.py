@@ -407,7 +407,8 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
-        for dataset in Dataset.objects.iterator():
+        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
 
             response = dynamodb_client.get_item(
@@ -460,7 +461,8 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
-        for dataset in Dataset.objects.iterator():
+        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
 
             response = dynamodb_client.get_item(
