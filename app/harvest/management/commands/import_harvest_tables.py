@@ -24,7 +24,7 @@ from harvest.import_models import (
     OrganizationImport,
     ParsingError,
 )
-from harvest.models import DatasetToContactMapping, DatasetToUnitMapping
+from harvest.models import DatasetToContactMapping, DatasetToUnitMapping, OrganizationMapping
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
@@ -95,6 +95,12 @@ class Command(CustomBaseCommand):
             help="Specify the profile name (only needed locally)",
         )
 
+        parser.add_argument(
+            "--clean",
+            action="store_true",
+            help="Clean up",
+        )
+
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
         profile = options.get("profile")
@@ -121,6 +127,20 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+        """Imports organizations from the harvest table.
+
+        For every entry:
+        - Remove the provider ID reference from all existing organization
+        - Checks if a mapping for the given provider ID points to an existing organization
+          - Yes: Use it, but check if it should get updated
+          - No: Check if an organization with provider_id == organization_id exists
+            - Yes: Use it
+            - No: Create a new one
+        - Update the fields if necessary and add the provider ID reference to the organization
+
+        Cleans up organizations afterwards.
+
+        """
 
         self.print_success("Importing organizations")
 
@@ -129,11 +149,9 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
-        obsolete = set(
-            Organization.objects.filter(
-                data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
-            ).values_list("organization_id", flat=True)
-        )
+        processed = set()
+
+        mappings = OrganizationMapping.table()
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
@@ -144,38 +162,76 @@ class Command(CustomBaseCommand):
                     )
                 except ParsingError as e:
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
+                    continue
 
-                obsolete.discard(import_org.provider_id)
+                provider_id = import_org.provider_id
+                processed.add(provider_id)
+                Organization.objects.remove_data_source_id(provider_id)
 
-                # check if we have an existing object with the same provider_id
-                # if yes, get it from db and update values,
-                # if not, create a new object
-                try:
-                    org = Organization.objects.get(
-                        organization_id=import_org.provider_id,
-                        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
-                    )
-                except Organization.DoesNotExist:
-                    self.print(
-                        f"Organization with provider_id {import_org.provider_id} does not exist yet"
-                        ", creating a new one."
-                    )
-                    org = Organization(
-                        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
-                        **import_org.model_dump(by_alias=True),
-                    )
+                update = True
+                org, mapping = mappings.match(provider_id)
+                if org:
+                    self.print(f"Mapping found for provider_id {provider_id} : {org}")
+                    update = mapping.update_organization if mapping else True
                 else:
-                    self.print(
-                        f"Organization with provider_id {import_org.provider_id} already exists, "
-                        "updating."
-                    )
+                    try:
+                        org = Organization.objects.get(
+                            organization_id=provider_id,
+                            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                        )
+                        self.print(f"Organization with provider_id {provider_id} already exists")
+                    except Organization.DoesNotExist:
+                        self.print(
+                            f"Organization with provider_id {provider_id} does not exist"
+                            " yet, creating a new one."
+                        )
+                        update = False
+                        org = Organization(
+                            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                            **import_org.model_dump(by_alias=True),
+                        )
+
+                if update:
+                    self.print(f"Updating {org}")
                     for field in import_org:
                         setattr(org, field[0], field[1])
 
+                org.add_data_source_id(provider_id)
                 org.save()
 
+        self.cleanup_organizations(processed, **options)
+
+    def cleanup_organizations(self, processed: set[str], **options: Any) -> None:
+        """Cleanup organizations
+
+        - Check for provider IDs referenced in the organizations but not present anymore in the
+          harvest table; optionally clean them
+        - Check for obsolete organization, i.e. organizations created by this command but with no
+          provider ID reference; optionally delete them
+
+        """
+        existing = Organization.objects.existing_data_source_ids(
+            Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+        )
+        if removed := existing - processed:
+            if options["clean"]:
+                for provider_id in removed:
+                    self.print_warning(f"Removing obsolete provider_id {provider_id}")
+                    Organization.objects.remove_data_source_id(provider_id)
+            else:
+                self.print_warning(f"Removed providers found: {', '.join(removed)}")
+
+        obsolete = Organization.objects.filter(
+            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+            data_source_ids=[],
+        ).values_list("organization_id", flat=True)
         if obsolete:
-            self.print_warning(f"Obsolete organizations found: {', '.join(obsolete)}")
+            if options["clean"]:
+                for organization_id in obsolete:
+                    self.print_warning(f"Removing obsolete organization {organization_id}")
+                    Organization.objects.filter(organization_id=organization_id).delete()
+            else:
+                self.print_warning(f"Obsolete organizations found: {', '.join(obsolete)}")
 
     # ##########################################################################
     def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -241,7 +297,7 @@ class Command(CustomBaseCommand):
                 ds.save()
 
                 # Link unit
-                unit = mappings.match(import_ds.dataset_id)
+                unit, _ = mappings.match(import_ds.dataset_id)
                 if not unit:
                     if not import_ds.provider:
                         self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
@@ -252,7 +308,7 @@ class Command(CustomBaseCommand):
                         self.print_warning(f"No organization {org_id}")
                         continue
 
-                    if not (unit := org.unit_set.filter(unit_id=Unit.DEFAULT_UNIT_ID).first()):  # type:ignore[unresolved-attribute]
+                    if not (unit := org.unit_set.filter(unit_id=Unit.DEFAULT_UNIT_ID).first()):
                         self.print_warning(f"Organization {org_id} has no default unit")
                         continue
 
@@ -542,7 +598,9 @@ class Command(CustomBaseCommand):
             for item_contact in item_contacts.contacts:
                 role = item_contact.role
 
-                contact = mappings[role].match(dataset.dataset_id) if role in mappings else None
+                contact, _ = (
+                    mappings[role].match(dataset.dataset_id) if role in mappings else (None, None)
+                )
                 if not contact:
                     organization = self.find_organization(
                         acronym_de=item_contact.org_acronym_de,

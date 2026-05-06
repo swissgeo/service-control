@@ -323,3 +323,11 @@ def test_delete_deletes_related_records(
     assert user_client.return_value.delete_app_client.called
     assert ssm_client.return_value.get_parameter.called
     assert ssm_client.return_value.put_parameter.called
+
+
+def test_add_data_source_id(organization):
+    organization.add_data_source_id("b")
+    organization.add_data_source_id("a")
+    organization.add_data_source_id("a")
+
+    assert organization.data_source_ids == ["a", "b"]

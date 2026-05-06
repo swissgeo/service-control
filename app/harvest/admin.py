@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from harvest.models import DatasetToContactMapping, DatasetToUnitMapping
+from harvest.models import DatasetToContactMapping, DatasetToUnitMapping, OrganizationMapping
+
+
+@admin.register(OrganizationMapping)
+class OrganizationMappingAdmin(admin.ModelAdmin):
+    """Admin View for OrganizationMapping"""
+
+    list_display = ("provider_id_prefix", "organization_id", "update_organization")
 
 
 @admin.register(DatasetToUnitMapping)
