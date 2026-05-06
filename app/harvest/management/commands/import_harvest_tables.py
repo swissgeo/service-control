@@ -127,6 +127,13 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
+        obsolete = {
+            organization.organization_id
+            for organization in Organization.objects.filter(
+                data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+            )
+        }
+
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 try:
@@ -137,17 +144,25 @@ class Command(CustomBaseCommand):
                 except ParsingError as e:
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
 
+                obsolete.discard(import_org.provider_id)
+
                 # check if we have an existing object with the same provider_id
                 # if yes, get it from db and update values,
                 # if not, create a new object
                 try:
-                    org = Organization.objects.get(organization_id=import_org.provider_id)
+                    org = Organization.objects.get(
+                        organization_id=import_org.provider_id,
+                        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                    )
                 except Organization.DoesNotExist:
                     self.print(
                         f"Organization with provider_id {import_org.provider_id} does not exist yet"
                         ", creating a new one."
                     )
-                    org = Organization(**import_org.model_dump(by_alias=True))
+                    org = Organization(
+                        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                        **import_org.model_dump(by_alias=True),
+                    )
                 else:
                     self.print(
                         f"Organization with provider_id {import_org.provider_id} already exists, "
@@ -157,6 +172,9 @@ class Command(CustomBaseCommand):
                         setattr(org, field[0], field[1])
 
                 org.save()
+
+        if obsolete:
+            self.print_warning(f"Obsolete organizations found: {', '.join(obsolete)}")
 
     # ##########################################################################
     def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -168,6 +186,13 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
+        obsolete = {
+            dataset.dataset_id
+            for dataset in Dataset.objects.filter(
+                data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+            )
+        }
+
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
                 try:
@@ -178,9 +203,12 @@ class Command(CustomBaseCommand):
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
 
+                obsolete.discard(import_ds.dataset_id)
+
                 # Create dataset
                 ds, _ = Dataset.objects.get_or_create(
                     dataset_id=import_ds.dataset_id,
+                    data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
                     defaults={
                         "title_short_de": import_ds.title_de,
                         "title_short_fr": import_ds.title_fr,
@@ -227,6 +255,9 @@ class Command(CustomBaseCommand):
                 DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
                 DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
 
+        if obsolete:
+            self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
+
     # ##########################################################################
     def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
 
@@ -240,19 +271,19 @@ class Command(CustomBaseCommand):
         # Try to fetch the Geoadmin WMTS dataservice, which is needed to create WMTS distributions.
         try:
             wmts_dataservice = WMTSDataservice.objects.get(dataservice_id="wmts-geoadminch")
-        except Dataset.DoesNotExist:
+        except WMTSDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin WMTS Dataservice found, try to load fixtures first "
-                "(./manage.py loaddata fixtures/dataservice.json"
+                "(./manage.py loaddata fixtures/dataservice.json)"
             )
             return
 
         try:
             wms_dataservice = WMSDataservice.objects.get(dataservice_id="wms-geoadminch")
-        except Dataset.DoesNotExist:
+        except WMSDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin WMTS Dataservice found, try to load fixtures first "
-                "(./manage.py loaddata fixtures/dataservice.json"
+                "(./manage.py loaddata fixtures/dataservice.json)"
             )
             return
 
@@ -376,7 +407,8 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
-        for dataset in Dataset.objects.iterator():
+        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
 
             response = dynamodb_client.get_item(
@@ -429,7 +461,8 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
-        for dataset in Dataset.objects.iterator():
+        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
 
             response = dynamodb_client.get_item(

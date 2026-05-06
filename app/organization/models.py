@@ -29,6 +29,20 @@ class Organization(models.Model):
         unique=True,
         db_index=True,
     )
+
+    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
+    DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION: ClassVar[str] = "bod-contact-organization"
+    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION, "BOD (contactorganization)"),
+        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Admin UI/API)"),
+    ]
+    data_source = models.CharField(
+        _(_context, "Data Source"),
+        choices=DATA_SOURCE_CHOICES,
+        default=DATA_SOURCE_CHOICE_USER_INPUT,
+        max_length=255,
+    )
+
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
 
@@ -299,4 +313,4 @@ class Contact(models.Model):
         ordering = ("organization__organization_id", "name_en")
 
     def __str__(self) -> str:
-        return str(self.name_en or "-")
+        return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"

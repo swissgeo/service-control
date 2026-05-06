@@ -1,4 +1,5 @@
 import logging
+from typing import ClassVar
 
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
@@ -14,6 +15,19 @@ class Dataset(models.Model):
     _context = "Dataset Model"
 
     dataset_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
+
+    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
+    DATA_SOURCE_CHOICE_BOD_DATASET: ClassVar[str] = "bod-dataset"
+    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (DATA_SOURCE_CHOICE_BOD_DATASET, "BOD (dataset)"),
+        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Admin UI/API)"),
+    ]
+    data_source = models.CharField(
+        _(_context, "Data Source"),
+        choices=DATA_SOURCE_CHOICES,
+        default=DATA_SOURCE_CHOICE_USER_INPUT,
+        max_length=255,
+    )
 
     # The title we currently harvest from BOD and store here is actually a short
     # version of the original title. In a later iteration, we'll add the original
@@ -85,9 +99,10 @@ class DatasetToUnit(models.Model):
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "unit"]),)
+        verbose_name = _("DatasetToUnit Model", "Dataset Unit")
 
     def __str__(self) -> str:
-        return f"{self.dataset}: {self.unit} ({self.role})"
+        return f"{self.unit} as {self.role} in {self.dataset}"
 
 
 class DatasetToContact(models.Model):
@@ -130,6 +145,7 @@ class DatasetToContact(models.Model):
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "contact"]),)
+        verbose_name = _("DatasetToContact Model", "Dataset Contact")
 
     def __str__(self) -> str:
-        return f"{self.dataset}: {self.contact} ({self.role})"
+        return f"{self.contact} as {self.role} in {self.dataset}"
