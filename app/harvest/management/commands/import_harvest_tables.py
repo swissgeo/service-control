@@ -128,12 +128,11 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
-        obsolete = {
-            organization.organization_id
-            for organization in Organization.objects.filter(
+        obsolete = set(
+            Organization.objects.filter(
                 data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
-            )
-        }
+            ).values_list("organization_id", flat=True)
+        )
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
@@ -187,12 +186,11 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
-        obsolete = {
-            dataset.dataset_id
-            for dataset in Dataset.objects.filter(
-                data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+        obsolete = set(
+            Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET).values_list(
+                "dataset_id", flat=True
             )
-        }
+        )
 
         mappings = DatasetToUnitMapping.table()
 
