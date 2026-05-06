@@ -23,7 +23,8 @@ from harvest.import_models import (
     OrganizationImport,
     ParsingError,
 )
-from organization.models import Contact, Organization
+from harvest.models import DatasetToContactMapping, DatasetToUnitMapping
+from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
 
@@ -127,12 +128,11 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
-        obsolete = {
-            organization.organization_id
-            for organization in Organization.objects.filter(
+        obsolete = set(
+            Organization.objects.filter(
                 data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
-            )
-        }
+            ).values_list("organization_id", flat=True)
+        )
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
@@ -186,12 +186,13 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
-        obsolete = {
-            dataset.dataset_id
-            for dataset in Dataset.objects.filter(
-                data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+        obsolete = set(
+            Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET).values_list(
+                "dataset_id", flat=True
             )
-        }
+        )
+
+        mappings = DatasetToUnitMapping.table()
 
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
@@ -239,18 +240,20 @@ class Command(CustomBaseCommand):
                 ds.save()
 
                 # Link unit
-                if not import_ds.provider:
-                    self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
-                    continue
+                unit = mappings.match(import_ds.dataset_id)
+                if not unit:
+                    if not import_ds.provider:
+                        self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
+                        continue
 
-                org_id = import_ds.provider[0]
-                if not (org := Organization.objects.filter(organization_id=org_id).first()):
-                    self.print_warning(f"No organization {org_id}")
-                    continue
+                    org_id = import_ds.provider[0]
+                    if not (org := Organization.objects.filter(organization_id=org_id).first()):
+                        self.print_warning(f"No organization {org_id}")
+                        continue
 
-                if not (unit := org.unit_set.filter(unit_id="default").first()):  # type:ignore[unresolved-attribute]
-                    self.print_warning(f"Organization {org_id} has no default unit")
-                    continue
+                    if not (unit := org.unit_set.filter(unit_id=Unit.DEFAULT_UNIT_ID).first()):  # type:ignore[unresolved-attribute]
+                        self.print_warning(f"Organization {org_id} has no default unit")
+                        continue
 
                 DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
                 DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
@@ -461,6 +464,8 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
+        mappings = DatasetToContactMapping.table()
+
         query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
@@ -485,24 +490,28 @@ class Command(CustomBaseCommand):
 
             DatasetToContact.objects.filter(dataset=dataset).delete()
             for item_contact in item_contacts.contacts:
-                organization = self.find_organization(
-                    acronym_de=item_contact.org_acronym_de,
-                    acronym_fr=item_contact.org_acronym_fr,
-                    name_de=item_contact.org_name_de,
-                    name_fr=item_contact.org_name_fr,
-                )
+                role = item_contact.role
 
-                if not organization:
-                    self.print_error(
-                        f"Organization of role {item_contact.role} not found for dataset {dataset}"
+                contact = mappings[role].match(dataset.dataset_id) if role in mappings else None
+                if not contact:
+                    organization = self.find_organization(
+                        acronym_de=item_contact.org_acronym_de,
+                        acronym_fr=item_contact.org_acronym_fr,
+                        name_de=item_contact.org_name_de,
+                        name_fr=item_contact.org_name_fr,
                     )
-                    continue
 
-                contact = self.find_contact(
-                    organization=organization,
-                    name_de=item_contact.position_name_de,
-                    name_fr=item_contact.position_name_fr,
-                )
+                    if not organization:
+                        self.print_error(
+                            f"Organization of role {role} not found for dataset {dataset}"
+                        )
+                        continue
+
+                    contact = self.find_contact(
+                        organization=organization,
+                        name_de=item_contact.position_name_de,
+                        name_fr=item_contact.position_name_fr,
+                    )
 
                 if not contact:
                     email = None
@@ -544,9 +553,7 @@ class Command(CustomBaseCommand):
                         url_rm=getattr(online_resource, "url_rm", None),
                     )
 
-                DatasetToContact.objects.create(
-                    dataset=dataset, contact=contact, role=item_contact.role
-                )
+                DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
 
     def find_organization(
         self,
