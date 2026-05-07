@@ -271,6 +271,17 @@ class OGCAPIStacDataservice(Dataservice):
 
 
 class GeoadminFeaturesDataservice(Dataservice):
+    landing_page_url = models.URLField(
+        _(_context, "Landing Page URL"),
+        max_length=500,
+        default="https://api3.geo.admin.ch/rest/services/ech/MapServer",
+        help_text=_(
+            _context,
+            "URL to the landing page of the geoadmin features Dataservice (e.g. "
+            "'https://api3.geo.admin.ch/rest/services/ech/MapServer')",
+        ),
+    )
+
     class Meta:
         verbose_name = _("Geoadmin Features Dataservice", "Geoadmin Features Dataservices")
         verbose_name_plural = _("Geoadmin Features Dataservice", "Geoadmin Features Dataservices")

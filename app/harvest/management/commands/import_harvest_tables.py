@@ -7,10 +7,11 @@ import environ
 from django.core.management.base import CommandParser
 from django.db.models import Q
 
-from dataservice.models import WMSDataservice, WMTSDataservice
+from dataservice.models import GeoadminFeaturesDataservice, WMSDataservice, WMTSDataservice
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from distribution.models import (
     Distribution,
+    ExternalGeoadminFeaturesDistribution,
     ExternalGeoJSONDistribution,
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
@@ -262,7 +263,10 @@ class Command(CustomBaseCommand):
             self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
 
     # ##########################################################################
-    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
+    def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901, PLR0912
+        # Note: This method is quite complex (the linter complains about it).
+        # For now we prioritize having a working version to import the data,
+        # even if it's not perfectly clean.
 
         self.print_success("Importing distributions")
 
@@ -287,6 +291,17 @@ class Command(CustomBaseCommand):
             self.print_error(
                 "No Geoadmin WMTS Dataservice found, try to load fixtures first "
                 "(./manage.py loaddata fixtures/dataservice.json)"
+            )
+            return
+
+        try:
+            geoadminfeature_dataservice = GeoadminFeaturesDataservice.objects.get(
+                dataservice_id="api3features-geoadminch"
+            )
+        except Dataset.DoesNotExist:
+            self.print_error(
+                "No Geoadmin Features Dataservice found, try to load fixtures first "
+                "(./manage.py loaddata fixtures/dataservice.json"
             )
             return
 
@@ -328,6 +343,12 @@ class Command(CustomBaseCommand):
                     if not dataset.preferred_distribution:
                         dataset.preferred_distribution = dist
                         dataset.save()
+
+                if ljs.tooltip or ljs.searchable:
+                    # We also create a Geoadmin Features distribution for layers with tooltip=true
+                    dist = self.import_api3features_distribution(
+                        ljs, dataset, geoadminfeature_dataservice
+                    )
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
@@ -398,6 +419,35 @@ class Command(CustomBaseCommand):
         # (see https://github.com/geoadmin/mf-chsdi3/blob/master/chsdi/models/bod.py#L142)
         # Note: we always reference prod env here
         dist.style_url = "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json"
+        dist.save()
+        return dist
+
+    def import_api3features_distribution(
+        self,
+        ljs: LayersJSImport,
+        dataset: Dataset,
+        geoadminfeature_dataservice: GeoadminFeaturesDataservice,
+    ) -> Distribution:
+
+        geoadminfeature_distribution_id = ljs.layer_id + ":api3features"
+        self.print(f"Importing Geoadmin Features Distribution {geoadminfeature_distribution_id}")
+
+        dist, _ = ExternalGeoadminFeaturesDistribution.objects.get_or_create(
+            distribution_id=geoadminfeature_distribution_id,
+            dataset=dataset,
+            layer_id=ljs.layer_id,
+        )
+        dist.dataservice = geoadminfeature_dataservice
+        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.title = "Geoadmin Features"
+        # Note: This information is not relyable in the layers_js table. There are
+        # layers with searchable=true that return 404 for search requests on ../SearchServer
+        # with `type=features`, which indicates that they are not actually queryable.
+        dist.queryable = ljs.searchable
+        # Note: This distribution is only created if tooltip=true in layers_js
+        # so this automatically means the layer is 'renderable' (i.e. has a html tooltip),
+        # but we set it explicitly here for clarity.
+        dist.renderable = ljs.tooltip
         dist.save()
         return dist
 

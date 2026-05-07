@@ -2,9 +2,19 @@ from typing import Annotated, Any, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
-from dataservice.models import Dataservice, OGCAPIStacDataservice, WMSDataservice, WMTSDataservice
+from dataservice.models import (
+    Dataservice,
+    GeoadminFeaturesDataservice,
+    OGCAPIStacDataservice,
+    WMSDataservice,
+    WMTSDataservice,
+)
 from dataset.models import Dataset
-from distribution.models import Distribution, ExternalGeoJSONDistribution
+from distribution.models import (
+    Distribution,
+    ExternalGeoadminFeaturesDistribution,
+    ExternalGeoJSONDistribution,
+)
 
 
 class Lang(BaseModel):
@@ -231,6 +241,37 @@ class OARDistribution(OARRecord):
             )
             record.properties["externalIds"] = [dist.external_id]
 
+        if isinstance(dist, ExternalGeoadminFeaturesDistribution):
+            if dist.renderable:
+                # We use the relation `preview` here, as the HTML popup can be seen as a preview
+                # or human-readable representation of the data behind the distribution.
+                # htmlpopup_url = getattr(dist, f"htmlpopup_url_{lang}", None)
+                htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
+                record.linkTemplates.append(
+                    LinkTemplate(
+                        uriTemplate=f"{htmlpopup_url_base}{dist.external_id}/{{featureId}}/htmlPopup?lang={{lang}}",
+                        rel="preview",
+                        typ="application/html",
+                        title="HTML popup for a feature of this distribution",
+                        variables={
+                            "featureId": {
+                                "type": "string",
+                                "description": "Feature ID",
+                            },
+                            "lang": {
+                                "type": "string",
+                                "enum": ["de", "fr", "it", "en"],
+                                "default": "de",
+                                "description": "Language code",
+                            },
+                        },
+                    )
+                )
+            if dist.queryable:
+                record.properties["queryable"] = True
+            if dist.renderable:
+                record.properties["renderable"] = True
+
         return record
 
 
@@ -335,6 +376,15 @@ class OARDataservice(OARRecord):
                     rel="describes",
                     typ="application/json",
                     title="Landing Page of the OGC API Features/STAC Dataservice",
+                )
+            )
+        elif isinstance(ds, GeoadminFeaturesDataservice):
+            record.links.append(
+                Link(
+                    href=ds.landing_page_url,
+                    rel="describes",
+                    typ="application/json",
+                    title="Root URL of the Geoadmin Features Dataservice",
                 )
             )
 
