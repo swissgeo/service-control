@@ -127,19 +127,23 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
-        """Imports organizations from the harvest table.
+        """Import organizations from the harvest table.
 
-        For every entry:
-        - Remove the provider ID reference from all existing organization
-        - Checks if a mapping for the given provider ID points to an existing organization
-          - Yes: Use it, but check if it should get updated
-          - No: Check if an organization with provider_id == organization_id exists
-            - Yes: Use it
-            - No: Create a new one
-        - Update the fields if necessary and add the provider ID reference to the organization
+        Processes every organization entry in the harvest table.
 
-        Cleans up organizations afterwards.
+        For each entry:
 
+        1. Remove the provider ID reference from all existing organizations.
+        2. Resolve the target organization:
+        - If a mapping exists for the provider ID and points to an existing organization,
+            reuse that organization and determine whether its fields need updating.
+        - Otherwise, look for an organization where
+            ``provider_id == organization_id``.
+        - If no matching organization exists, create a new one.
+        3. Update organization fields as needed.
+        4. Reassign the provider ID reference to the resolved organization.
+
+        After processing all entries, perform organization cleanup.
         """
 
         self.print_success("Importing organizations")
@@ -235,6 +239,19 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+        """Imports datasets from the harvest table.
+
+        Processes every dataset entry in the harvest table.
+
+        For each entry:
+
+        1. Create/update the dataset
+        2. Resolve the unit
+        - If a mapping exists for the dataset ID and points to an existing unit, reuse that unit.
+        - Otherwise, derive the default unit from the dataset provider organization.
+        3. Replace the dataset's existing owner association with the resolved unit.
+
+        """
 
         self.print_success("Importing datasets")
 
@@ -320,6 +337,22 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901, PLR0912
+        """Import dataset distributions from the harvest table.
+
+        For each entry:
+
+        1. Resolve the matching dataset.
+        2. Create/update WM(T)S and GeoJSON distributions.
+        3. Set the preferred dataset distribution:
+        - WM(T): Use the WMTS if available, fallback to WMS.
+        - GeoJSON: Use GeoJSON.
+        4. Create/update the API3 distribution for searchable or tooltip-enabled layers.
+
+        The import requires the Geoadmin WMTS, WMS, and Geoadmin Features dataservices to exist
+        beforehand. These can be crated by loading the dataservice fixture
+        (./manage.py loaddata fixtures/dataservice.json).
+
+        """
         # Note: This method is quite complex (the linter complains about it).
         # For now we prioritize having a working version to import the data,
         # even if it's not perfectly clean.
@@ -345,7 +378,7 @@ class Command(CustomBaseCommand):
             wms_dataservice = WMSDataservice.objects.get(dataservice_id="wms-geoadminch")
         except WMSDataservice.DoesNotExist:
             self.print_error(
-                "No Geoadmin WMTS Dataservice found, try to load fixtures first "
+                "No Geoadmin WMS Dataservice found, try to load fixtures first "
                 "(./manage.py loaddata fixtures/dataservice.json)"
             )
             return
@@ -354,7 +387,7 @@ class Command(CustomBaseCommand):
             geoadminfeature_dataservice = GeoadminFeaturesDataservice.objects.get(
                 dataservice_id="api3features-geoadminch"
             )
-        except Dataset.DoesNotExist:
+        except GeoadminFeaturesDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin Features Dataservice found, try to load fixtures first "
                 "(./manage.py loaddata fixtures/dataservice.json"
@@ -509,6 +542,22 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def import_keywords(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+        """Imports keywords from the harvest table.
+
+        Processes all datasets that:
+
+        - originate from the BOD source, and
+        - have a corresponding keyword entry in the harvest table.
+
+        For each matching dataset:
+
+        1. Retrieve the harvested keyword list from DynamoDB.
+        2. Process each harvested keyword:
+        - Create the thesaurus if not yet existing.
+        - Create the keyword if not yet existing.
+        3. Replace the dataset's keyword associations with the harvested keywords.
+
+        """
 
         self.print_success("Importing keywords")
 
@@ -562,7 +611,26 @@ class Command(CustomBaseCommand):
             dataset.keywords.set(keywords)
 
     # ##########################################################################
-    def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901
+    def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0912
+        """Imports contacts from the harvest table.
+
+        Processes all datasets that:
+
+        - originate from the BOD source, and
+        - have a corresponding entry in the harvest table.
+
+        For each matching dataset:
+
+        1. Remove all existing dataset-contact associations.
+        2. Process each harvested contact:
+        - If a valid contact mapping exists, reuse the mapped contact.
+        - Otherwise, try to find an existing contact where:
+            - the organization matches one of the provided organization names or acronyms, and
+            - the contact matches the harvested position name.
+        - If no matching contact is found, create a new contact.
+        3. Assign the contact to the dataset using the harvested role.
+
+        """
 
         self.print_success("Importing contacts")
 
@@ -598,6 +666,31 @@ class Command(CustomBaseCommand):
             for item_contact in item_contacts.contacts:
                 role = item_contact.role
 
+                email = None
+                if item_contact.contact_electronic_mail_addresses:
+                    email = item_contact.contact_electronic_mail_addresses[0]
+                    if len(item_contact.contact_electronic_mail_addresses) > 1:
+                        self.print_warning(
+                            f"{dataset}: {role} contains multiple emails, using first entry"
+                        )
+
+                online_resource = None
+                if item_contact.online_resources:
+                    online_resource = item_contact.online_resources[0]
+                    if len(item_contact.online_resources) > 1:
+                        self.print_warning(
+                            f"{dataset}: {role} contains multiple online ressources, "
+                            "using first entry"
+                        )
+
+                country = item_contact.contact_country
+                country = country if country and len(country) == 2 else None  # noqa:PLR2004
+                if item_contact.contact_country and not country:
+                    self.print_warning(
+                        f"{dataset}: {role} contains invalid country code "
+                        f"{item_contact.contact_country}"
+                    )
+
                 contact, _ = (
                     mappings[role].match(dataset.dataset_id) if role in mappings else (None, None)
                 )
@@ -610,9 +703,7 @@ class Command(CustomBaseCommand):
                     )
 
                     if not organization:
-                        self.print_error(
-                            f"Organization of role {role} not found for dataset {dataset}"
-                        )
+                        self.print_error(f"{dataset}: organization for {role} not found")
                         continue
 
                     contact = self.find_contact(
@@ -621,24 +712,33 @@ class Command(CustomBaseCommand):
                         name_fr=item_contact.position_name_fr,
                     )
 
-                if not contact:
-                    email = None
-                    if item_contact.contact_electronic_mail_addresses:
-                        email = item_contact.contact_electronic_mail_addresses[0]
-                        if len(item_contact.contact_electronic_mail_addresses) > 1:
-                            self.print_warning("Multiple emails not supported")
-
-                    online_resource = None
-                    if item_contact.online_resources:
-                        online_resource = item_contact.online_resources[0]
-                        if len(item_contact.online_resources) > 1:
-                            self.print_warning("Multiple online ressources not supported")
-
-                    country = item_contact.contact_country
-                    country = country if country and len(country) == 2 else None  # noqa:PLR2004
-                    if item_contact.contact_country and not country:
-                        self.print_warning(f"Invalid country code {item_contact.contact_country}")
-
+                if contact:
+                    if any(
+                        (
+                            contact.name_de != item_contact.position_name_de,
+                            contact.name_fr != item_contact.position_name_fr,
+                            contact.name_en != item_contact.position_name_en,
+                            contact.name_it != item_contact.position_name_it,
+                            contact.name_rm != item_contact.position_name_rm,
+                            contact.email != email,
+                            contact.phone != item_contact.contact_voice,
+                            contact.address_administrative_area
+                            != item_contact.contact_administrative_area,
+                            contact.address_delivery_point != item_contact.contact_delivery_point,
+                            contact.address_postal_code != item_contact.contact_postal_code,
+                            contact.address_city != item_contact.contact_city,
+                            contact.address_country != country,
+                            contact.url_de != getattr(online_resource, "url_de", None),
+                            contact.url_fr != getattr(online_resource, "url_fr", None),
+                            contact.url_en != getattr(online_resource, "url_en", None),
+                            contact.url_it != getattr(online_resource, "url_it", None),
+                            contact.url_rm != getattr(online_resource, "url_rm", None),
+                        )
+                    ):
+                        self.print_warning(
+                            f"{dataset}: Existing contact {contact} for {role} differs"
+                        )
+                else:
                     self.print(f"Creating contact for organization {organization}")
                     contact = Contact.objects.create(
                         organization=organization,
