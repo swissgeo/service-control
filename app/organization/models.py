@@ -2,6 +2,7 @@ import logging
 from collections.abc import Iterable
 from typing import Any, ClassVar
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
@@ -14,6 +15,29 @@ from utils.fields import CustomSlugField
 from verified_permissions.utils.client import Client as VPClient
 
 logger = logging.getLogger(__name__)
+
+
+class OrganizationManager(models.Manager):
+    def remove_data_source_id(self, data_source_id: str) -> int:
+        """Remove the given data source ID from all organizations"""
+
+        return self.filter(data_source_ids__contains=[data_source_id]).update(
+            data_source_ids=models.Func(
+                models.F("data_source_ids"),
+                models.Value(data_source_id),
+                function="array_remove",
+            )
+        )
+
+    def existing_data_source_ids(self, data_source: str) -> set[str]:
+        """Return all data source ID of all organization with the given data source."""
+
+        return set(
+            self.filter(data_source=data_source)
+            .annotate(ids=models.Func("data_source_ids", function="unnest"))
+            .values_list("ids", flat=True)
+            .distinct()
+        )
 
 
 class Organization(models.Model):
@@ -42,6 +66,13 @@ class Organization(models.Model):
         default=DATA_SOURCE_CHOICE_USER_INPUT,
         max_length=255,
     )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
+    )
 
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
@@ -64,6 +95,8 @@ class Organization(models.Model):
         null=True,
         blank=True,
     )
+
+    objects = OrganizationManager()
 
     def __str__(self) -> str:
         return str(self.organization_id)
@@ -137,6 +170,11 @@ class Organization(models.Model):
         vp_client.delete_policy(self.vp_org_admin_policy_id)
 
         return result
+
+    def add_data_source_id(self, value: str) -> None:
+        values = set(self.data_source_ids)
+        values.add(value)
+        self.data_source_ids = sorted(values)
 
 
 class Unit(models.Model):
