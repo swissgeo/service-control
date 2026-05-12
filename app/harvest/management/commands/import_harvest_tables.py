@@ -662,6 +662,9 @@ class Command(CustomBaseCommand):
                 )
                 continue
 
+            dataset.legacy_contacts = item_contacts.model_dump().get("contacts")
+            dataset.save()
+
             DatasetToContact.objects.filter(dataset=dataset).delete()
             for item_contact in item_contacts.contacts:
                 role = item_contact.role
