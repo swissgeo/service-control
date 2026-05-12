@@ -74,6 +74,9 @@ class Dataset(models.Model):
         help_text=_(_context, "Date and time when the dataset was last updated"),
     )
 
+    # Stores the contacts as defined in geocat (until service-control becomes data master for these)
+    legacy_contacts = models.JSONField(_(_context, "Contacts (Legacy)"), default=list, blank=True)
+
     class Meta:
         verbose_name = _("Dataset Model", "Dataset")
         verbose_name_plural = _("Dataset Model", "Datasets")
