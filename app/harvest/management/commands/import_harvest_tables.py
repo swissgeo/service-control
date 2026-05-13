@@ -24,7 +24,12 @@ from harvest.import_models import (
     OrganizationImport,
     ParsingError,
 )
-from harvest.models import DatasetToContactMapping, DatasetToUnitMapping, OrganizationMapping
+from harvest.models import (
+    DatasetMapping,
+    DatasetToContactMapping,
+    DatasetToUnitMapping,
+    OrganizationMapping,
+)
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
 from utils.command import CustomBaseCommand
@@ -220,10 +225,12 @@ class Command(CustomBaseCommand):
         if removed := existing - processed:
             if options["clean"]:
                 for provider_id in removed:
-                    self.print_warning(f"Removing obsolete provider_id {provider_id}")
+                    self.print_warning(f"Removing obsolete data_source_id (provider) {provider_id}")
                     Organization.objects.remove_data_source_id(provider_id)
             else:
-                self.print_warning(f"Removed providers found: {', '.join(removed)}")
+                self.print_warning(
+                    f"Removed data_source_ids (provider) found: {', '.join(removed)}"
+                )
 
         obsolete = Organization.objects.filter(
             data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
@@ -238,18 +245,23 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"Obsolete organizations found: {', '.join(obsolete)}")
 
     # ##########################################################################
-    def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+    def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0915
         """Imports datasets from the harvest table.
 
         Processes every dataset entry in the harvest table.
 
         For each entry:
 
-        1. Create/update the dataset
-        2. Resolve the unit
-        - If a mapping exists for the dataset ID and points to an existing unit, reuse that unit.
-        - Otherwise, derive the default unit from the dataset provider organization.
-        3. Replace the dataset's existing owner association with the resolved unit.
+        1. Remove the dataset ID reference from all existing datasets.
+        2. Resolve the target dataset:
+        - If a mapping exists for the dataset ID and points to an existing dataset,
+            reuse that dataset and determine whether its fields need updating.
+        - Otherwise, look for an dataset where ``dataset_id`` matches.
+        - If no matching dataset exists, create a new one.
+        3. Update dataset fields as needed.
+        4. Reassign the dataset ID reference to the resolved dataset.
+
+        After processing all entries, perform dataset cleanup.
 
         """
 
@@ -260,13 +272,10 @@ class Command(CustomBaseCommand):
         )
         paginator = dynamodb_client.get_paginator("scan")
 
-        obsolete = set(
-            Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET).values_list(
-                "dataset_id", flat=True
-            )
-        )
+        processed = set()
 
-        mappings = DatasetToUnitMapping.table()
+        ds_mappings = DatasetMapping.table()
+        unit_mappings = DatasetToUnitMapping.table()
 
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
@@ -278,46 +287,65 @@ class Command(CustomBaseCommand):
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
 
-                obsolete.discard(import_ds.dataset_id)
+                dataset_id = import_ds.dataset_id
+                processed.add(dataset_id)
+                Dataset.objects.remove_data_source_id(dataset_id)
 
                 # Create dataset
-                ds, _ = Dataset.objects.get_or_create(
-                    dataset_id=import_ds.dataset_id,
-                    data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
-                    defaults={
-                        "title_short_de": import_ds.title_de,
-                        "title_short_fr": import_ds.title_fr,
-                        "title_short_en": import_ds.title_en,
-                        "title_short_it": import_ds.title_it,
-                        "title_short_rm": import_ds.title_rm,
-                        "description_de": import_ds.description_de,
-                        "description_fr": import_ds.description_fr,
-                        "description_en": import_ds.description_en,
-                        "description_it": import_ds.description_it,
-                        "description_rm": import_ds.description_rm,
-                        "geocat_id": import_ds.geocat_id,
-                    },
-                )
+                update = True
+                ds, mapping = ds_mappings.match(dataset_id)
+                if ds:
+                    self.print(f"Mapping found for dataset_id {dataset_id} : {ds}")
+                    update = mapping.update_dataset if mapping else True
+                else:
+                    ds, created = Dataset.objects.get_or_create(
+                        dataset_id=dataset_id,
+                        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+                        defaults={
+                            "title_short_de": import_ds.title_de,
+                            "title_short_fr": import_ds.title_fr,
+                            "title_short_en": import_ds.title_en,
+                            "title_short_it": import_ds.title_it,
+                            "title_short_rm": import_ds.title_rm,
+                            "description_de": import_ds.description_de,
+                            "description_fr": import_ds.description_fr,
+                            "description_en": import_ds.description_en,
+                            "description_it": import_ds.description_it,
+                            "description_rm": import_ds.description_rm,
+                            "geocat_id": import_ds.geocat_id,
+                        },
+                    )
+                    if created:
+                        self.print(
+                            f"Dataset with dataset_id {dataset_id} does not exist"
+                            " yet, creating a new one."
+                        )
+                        update = False
+                    else:
+                        self.print(f"Dataset with dataset_id {dataset_id} already exists")
 
-                ds.title_short_de = import_ds.title_de
-                ds.title_short_fr = import_ds.title_fr
-                ds.title_short_en = import_ds.title_en
-                ds.title_short_it = import_ds.title_it
-                ds.title_short_rm = import_ds.title_rm
-                ds.description_de = import_ds.description_de
-                ds.description_fr = import_ds.description_fr
-                ds.description_en = import_ds.description_en
-                ds.description_it = import_ds.description_it
-                ds.description_rm = import_ds.description_rm
-                ds.geocat_id = import_ds.geocat_id
+                if update:
+                    self.print(f"Updating {ds}")
+                    ds.title_short_de = import_ds.title_de
+                    ds.title_short_fr = import_ds.title_fr
+                    ds.title_short_en = import_ds.title_en
+                    ds.title_short_it = import_ds.title_it
+                    ds.title_short_rm = import_ds.title_rm
+                    ds.description_de = import_ds.description_de
+                    ds.description_fr = import_ds.description_fr
+                    ds.description_en = import_ds.description_en
+                    ds.description_it = import_ds.description_it
+                    ds.description_rm = import_ds.description_rm
+                    ds.geocat_id = import_ds.geocat_id
 
+                ds.add_data_source_id(dataset_id)
                 ds.save()
 
                 # Link unit
-                unit, _ = mappings.match(import_ds.dataset_id)
+                unit, _ = unit_mappings.match(dataset_id)
                 if not unit:
                     if not import_ds.provider:
-                        self.print_warning(f"Dataset {import_ds.dataset_id} has no provider")
+                        self.print_warning(f"Dataset {dataset_id} has no provider")
                         continue
 
                     org_id = import_ds.provider[0]
@@ -332,8 +360,37 @@ class Command(CustomBaseCommand):
                 DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
                 DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
 
+        self.cleanup_datasets(processed, **options)
+
+    def cleanup_datasets(self, processed: set[str], **options: Any) -> None:
+        """Cleanup datasets
+
+        - Check for provider IDs referenced in the organizations but not present anymore in the
+          harvest table; optionally clean them
+        - Check for obsolete organization, i.e. organizations created by this command but with no
+          provider ID reference; optionally delete them
+
+        """
+        existing = Dataset.objects.existing_data_source_ids(Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        if removed := existing - processed:
+            if options["clean"]:
+                for dataset_id in removed:
+                    self.print_warning(f"Removing obsolete data_source_id (dataset) {dataset_id}")
+                    Dataset.objects.remove_data_source_id(dataset_id)
+            else:
+                self.print_warning(f"Removed data_source_id (dataset) found: {', '.join(removed)}")
+
+        obsolete = Dataset.objects.filter(
+            data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+            data_source_ids=[],
+        ).values_list("dataset_id", flat=True)
         if obsolete:
-            self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
+            if options["clean"]:
+                for dataset_id in obsolete:
+                    self.print_warning(f"Removing obsolete dataset {dataset_id}")
+                    Dataset.objects.filter(dataset_id=dataset_id).delete()
+            else:
+                self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
 
     # ##########################################################################
     def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901, PLR0912

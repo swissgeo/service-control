@@ -1,12 +1,36 @@
 import logging
 from typing import ClassVar
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
 
 logger = logging.getLogger(__name__)
+
+
+class DatasetManager(models.Manager):
+    def remove_data_source_id(self, data_source_id: str) -> int:
+        """Remove the given data source ID from all datasets"""
+
+        return self.filter(data_source_ids__contains=[data_source_id]).update(
+            data_source_ids=models.Func(
+                models.F("data_source_ids"),
+                models.Value(data_source_id),
+                function="array_remove",
+            )
+        )
+
+    def existing_data_source_ids(self, data_source: str) -> set[str]:
+        """Return all data source ID of all organization with the given data source."""
+
+        return set(
+            self.filter(data_source=data_source)
+            .annotate(ids=models.Func("data_source_ids", function="unnest"))
+            .values_list("ids", flat=True)
+            .distinct()
+        )
 
 
 class Dataset(models.Model):
@@ -27,6 +51,13 @@ class Dataset(models.Model):
         choices=DATA_SOURCE_CHOICES,
         default=DATA_SOURCE_CHOICE_USER_INPUT,
         max_length=255,
+    )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
     )
 
     # The title we currently harvest from BOD and store here is actually a short
@@ -77,12 +108,19 @@ class Dataset(models.Model):
     # Stores the contacts as defined in geocat (until service-control becomes data master for these)
     legacy_contacts = models.JSONField(_(_context, "Contacts (Legacy)"), default=list, blank=True)
 
+    objects = DatasetManager()
+
     class Meta:
         verbose_name = _("Dataset Model", "Dataset")
         verbose_name_plural = _("Dataset Model", "Datasets")
 
     def __str__(self) -> str:
         return self.dataset_id
+
+    def add_data_source_id(self, value: str) -> None:
+        values = set(self.data_source_ids)
+        values.add(value)
+        self.data_source_ids = sorted(values)
 
 
 class DatasetToUnit(models.Model):

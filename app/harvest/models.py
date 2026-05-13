@@ -3,7 +3,7 @@ from typing import TypeVar
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
-from dataset.models import DatasetToContact
+from dataset.models import Dataset, DatasetToContact
 from organization.models import Contact, Organization, Unit
 
 T = TypeVar("T")
@@ -53,6 +53,41 @@ class OrganizationMapping(models.Model):
                 if (
                     organization := Organization.objects.filter(
                         organization_id=mapping.organization_id,
+                    ).first()
+                )
+            }
+        )
+
+
+class DatasetMapping(models.Model):
+    """Mapping used to map datasets during import of harvested datasets."""
+
+    _context = "DatasetMapping Model"
+
+    dataset_id_prefix = models.CharField(_(_context, "Dataset ID Prefix (Harvest)"), max_length=100)
+    dataset_id = models.CharField(_(_context, "Dataset ID (DB)"), max_length=100)
+    update_dataset = models.BooleanField(
+        _(_context, "Update dataset"),
+        default=False,
+        help_text=_(_context, "Whetever the matching entry should update the dataset"),
+    )
+
+    def __str__(self) -> str:
+        return f"{self.dataset_id_prefix} -> {self.dataset_id}"
+
+    @classmethod
+    def table(cls) -> PrefixLookupTable[Dataset, DatasetMapping]:
+        """Constructs a lookup table of prefixes and datasets, sorted by most specific
+        (i.e. longest) prefixes first.
+
+        """
+        return PrefixLookupTable(
+            {
+                mapping.dataset_id_prefix: (dataset, mapping)
+                for mapping in DatasetMapping.objects.all()
+                if (
+                    dataset := Dataset.objects.filter(
+                        dataset_id=mapping.dataset_id,
                     ).first()
                 )
             }
