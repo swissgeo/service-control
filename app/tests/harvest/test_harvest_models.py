@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
+from dataset.models import Dataset
 from harvest.models import (
+    DatasetMapping,
     DatasetToContactMapping,
     DatasetToUnitMapping,
     OrganizationMapping,
@@ -46,6 +48,31 @@ def test_organization_mapping(client, db):
     assert table.match("ch.a.b")[0].organization_id == "ch.b"
     assert table.match("ch.a.c")[0] is None
     assert table.match("ch.d.e")[0].organization_id == "ch.a"
+    assert table.match("ch.e.f")[0] is None
+
+
+def test_dataset_mapping(db):
+    attributes = {
+        "title_short_de": "title_short__de",
+        "title_short_fr": "title_short_fr",
+        "title_short_en": "title_short_en",
+        "description_de": "description_de",
+        "description_fr": "description_fr",
+        "description_en": "description_en",
+    }
+    Dataset(dataset_id="ch.a", geocat_id="ch.a", **attributes).save()
+    Dataset(dataset_id="ch.b", geocat_id="ch.b", **attributes).save()
+
+    DatasetMapping(dataset_id_prefix="ch.a.b", dataset_id="ch.b").save()
+    DatasetMapping(dataset_id_prefix="ch.a.c", dataset_id="ch.c").save()
+    DatasetMapping(dataset_id_prefix="ch.d", dataset_id="ch.a").save()
+    DatasetMapping(dataset_id_prefix="ch.e", dataset_id="ch.c").save()
+
+    table = DatasetMapping.table()
+
+    assert table.match("ch.a.b")[0].dataset_id == "ch.b"
+    assert table.match("ch.a.c")[0] is None
+    assert table.match("ch.d.e")[0].dataset_id == "ch.a"
     assert table.match("ch.e.f")[0] is None
 
 

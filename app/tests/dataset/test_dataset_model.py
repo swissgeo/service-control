@@ -115,3 +115,11 @@ def test_dataset_keywords(dataset):
     assert Dataset.objects.count() == 0
     assert Thesaurus.objects.count() > 0
     assert Keyword.objects.count() > 0
+
+
+def test_add_data_source_id(dataset):
+    dataset.add_data_source_id("b")
+    dataset.add_data_source_id("a")
+    dataset.add_data_source_id("a")
+
+    assert dataset.data_source_ids == ["a", "b"]
