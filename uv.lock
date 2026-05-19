@@ -1331,7 +1331,7 @@ dev = [
     { name = "pytest-xdist" },
     { name = "ruff" },
     { name = "ty" },
-    { name = "types-gevent", specifier = "~=25.4" },
+    { name = "types-gevent", specifier = "~=26.4" },
     { name = "types-gunicorn", specifier = "~=26.0" },
     { name = "types-requests", specifier = "~=2.32" },
 ]
@@ -1398,15 +1398,15 @@ wheels = [
 
 [[package]]
 name = "types-gevent"
-version = "25.9.0.20251228"
+version = "26.4.0.20260518"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "types-greenlet" },
     { name = "types-psutil" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/06/85/c5043c4472f82c8ee3d9e0673eb4093c7d16770a26541a137a53a1d096f6/types_gevent-25.9.0.20251228.tar.gz", hash = "sha256:423ef9891d25c5a3af236c3e9aace4c444c86ff773fe13ef22731bc61d59abef", size = 38063, upload-time = "2025-12-28T03:28:28.651Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/fd/6fce890808f93049b7206a54ae771a570d4da9550f9d42bb3f65b4734578/types_gevent-26.4.0.20260518.tar.gz", hash = "sha256:69634c49d5d973170d6fb3dc8292ab4c19bc2500143434d0804d92bb8574a1ec", size = 38518, upload-time = "2026-05-18T06:07:34.55Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/b7/a2d6b652ab5a26318b68cafd58c46fafb9b15c5313d2d76a70b838febb4b/types_gevent-25.9.0.20251228-py3-none-any.whl", hash = "sha256:e2e225af4fface9241c16044983eb2fc3993f2d13d801f55c2932848649b7f2f", size = 55486, upload-time = "2025-12-28T03:28:27.382Z" },
+    { url = "https://files.pythonhosted.org/packages/12/29/08ec2f541eddc2bf3db2d6a9121db5664ed8a9c7a4e99c5c8d9ecbc12731/types_gevent-26.4.0.20260518-py3-none-any.whl", hash = "sha256:c28a087073da74dd70ccf4ecfbd15e659413c4cb154f0181b9dbd3e8438fad32", size = 55470, upload-time = "2026-05-18T06:07:33.189Z" },
 ]
 
 [[package]]
