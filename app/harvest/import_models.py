@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Any, Self
 
-from boto3.dynamodb.types import TypeDeserializer
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -43,6 +43,16 @@ class DynamoDBParsableModel(BaseModel):
                 ) from e
 
         return cls(**parsed_data)
+
+    def as_dynamodb_item(self) -> dict[str, Any]:
+        """Convert the dataset to a DynamoDB item format
+
+        Returns:
+            dict[str, Any]: The dataset represented as a DynamoDB item.
+        """
+        serializer = TypeSerializer()
+        item = self.model_dump()
+        return {key: serializer.serialize(value) for key, value in item.items()}
 
 
 class OrganizationImport(DynamoDBParsableModel):

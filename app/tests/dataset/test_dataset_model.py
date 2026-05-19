@@ -87,7 +87,9 @@ def test_dataset_unique_fields(field, dataset):
 
 
 def test_dataset_unit(dataset, unit):
-    dataset_unit = DatasetToUnit.objects.create(dataset=dataset, unit=unit, role="owner")
+    dataset_unit = DatasetToUnit.objects.create(
+        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+    )
 
     assert unit.dataset_units.first() == dataset_unit
 
@@ -97,7 +99,9 @@ def test_dataset_unit(dataset, unit):
 
 
 def test_dataset_contact(dataset, unit):
-    dataset_unit = DatasetToUnit.objects.create(dataset=dataset, unit=unit, role="owner")
+    dataset_unit = DatasetToUnit.objects.create(
+        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+    )
     assert unit.dataset_units.first() == dataset_unit
 
     dataset.delete()
