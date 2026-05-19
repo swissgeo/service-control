@@ -1332,7 +1332,7 @@ dev = [
     { name = "ruff" },
     { name = "ty" },
     { name = "types-gevent", specifier = "~=25.4" },
-    { name = "types-gunicorn", specifier = "~=25.1" },
+    { name = "types-gunicorn", specifier = "~=26.0" },
     { name = "types-requests", specifier = "~=2.32" },
 ]
 
@@ -1420,14 +1420,14 @@ wheels = [
 
 [[package]]
 name = "types-gunicorn"
-version = "25.1.0.20260215"
+version = "26.0.0.20260518"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "types-gevent" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8a/92/0e5e58a871c59428481d964c740ad287851c8c8eb86b1a9b153c9a523276/types_gunicorn-25.1.0.20260215.tar.gz", hash = "sha256:a1cc9f59a3211d3048a22ba29ac5f54f8adb2230e87e90eb5860bdd9aaf822ea", size = 32097, upload-time = "2026-02-15T04:10:46.087Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/74/1c/a01ec531454c9b1904ac5164bc6fd1c5dfebe97b7976c8cb2135b90625ec/types_gunicorn-26.0.0.20260518.tar.gz", hash = "sha256:40d40019cd1798924f19c62b5fe96bc5a63a2051278706d788c39805fabdb306", size = 34157, upload-time = "2026-05-18T06:07:57.858Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/5a/30149601920587dfdb7b21a41716ae60545342f691d31941bf22d4cef1a9/types_gunicorn-25.1.0.20260215-py3-none-any.whl", hash = "sha256:fe548d19d0e3b1c98aa449f4f51074b3516c4405c17a73d4946fa3aa396f2628", size = 50887, upload-time = "2026-02-15T04:10:45.197Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/1a/07fa198168b4023286692d3df4db3232eb94c6815b516e5c5488abd15f71/types_gunicorn-26.0.0.20260518-py3-none-any.whl", hash = "sha256:5b5e1d9d43a1c56e90a380694106a9eba295d4d99e64abbdcbedee44c2c6dc50", size = 52182, upload-time = "2026-05-18T06:07:57.022Z" },
 ]
 
 [[package]]

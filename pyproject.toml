@@ -45,7 +45,7 @@ dev = [
     "ruff",
     "ty",
     "types-gevent~=25.4",
-    "types-gunicorn~=25.1",
+    "types-gunicorn~=26.0",
     "types-requests~=2.32",
 ]
 
