@@ -1,3 +1,4 @@
+from decimal import Decimal
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
@@ -6,12 +7,14 @@ from django.core.management import call_command
 import pytest
 
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
+from distribution.models import Distribution
 from harvest.import_models import (
     Contact,
     ContactList,
     DatasetImport,
     Keyword,
     KeywordList,
+    LayersJSImport,
     OnlineResource,
     OrganizationImport,
 )
@@ -939,7 +942,289 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
 # --------------------------------------------------------------------------------------------------
 # Distributions
 # --------------------------------------------------------------------------------------------------
-# FIXME: Add tests
+def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR0915
+
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    attributes = {
+        "title_short_de": "x",
+        "title_short_fr": "x",
+        "title_short_en": "x",
+        "title_short_it": "x",
+        "title_short_rm": "x",
+        "description_de": "x",
+        "description_fr": "x",
+        "description_en": "x",
+        "description_it": "x",
+        "description_rm": "x",
+    }
+
+    ds_wmts = Dataset(
+        dataset_id="ch.bafu.moose",
+        geocat_id="a",
+        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source_ids=["ch.bafu.moose"],
+        **attributes,
+    )
+    ds_wmts.save()
+
+    ds_wms = Dataset(
+        dataset_id="ch.bazl.luftfahrthindernis",
+        geocat_id="b",
+        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source_ids=["ch.bazl.luftfahrthindernis"],
+        **attributes,
+    )
+    ds_wms.save()
+
+    ds_geojson = Dataset(
+        dataset_id="ch.swisstopo.treasurehunt",
+        geocat_id="c",
+        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source_ids=["ch.swisstopo.treasurehunt"],
+        **attributes,
+    )
+    ds_geojson.save()
+
+    layer_wmts = LayersJSImport(
+        layer_id="ch.bafu.moose",
+        layertype="wmts",
+        opacity=Decimal("0.5"),
+        tooltip=True,
+        searchable=False,
+    )
+    layer_wms = LayersJSImport(
+        layer_id="ch.bazl.luftfahrthindernis",
+        layertype="wms",
+        opacity=Decimal("0.6"),
+        wms_gutter=1,
+        tooltip=False,
+        searchable=True,
+    )
+    layer_geojson = LayersJSImport(
+        layer_id="ch.swisstopo.treasurehunt",
+        layertype="geojson",
+        geojson_url_de="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json",
+        geojson_url_fr="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json",
+        geojson_url_it="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json",
+        geojson_url_en="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_en.json",
+        geojson_url_rm="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json",
+    )
+
+    dynamodb.get_paginator().paginate.return_value = [
+        {
+            "Items": [
+                layer_wmts.as_dynamodb_item(),
+                layer_wms.as_dynamodb_item(),
+                layer_geojson.as_dynamodb_item(),
+            ]
+        }
+    ]
+
+    # =========================
+    # Create
+    # =========================
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Importing WMTS Distribution ch.bafu.moose:wmts" in out
+    assert "Importing WMS Distribution ch.bafu.moose:wms" in out
+    assert "Importing Geoadmin Features Distribution ch.bafu.moose:api3features" in out
+    assert "Importing WMS Distribution ch.bazl.luftfahrthindernis:wms" in out
+    assert "Importing Geoadmin Features Distribution ch.bazl.luftfahrthindernis:api3features" in out
+    assert "Importing GeoJSON Distribution ch.swisstopo.treasurehunt:geojson" in out
+
+    assert Distribution.objects.count() == 6
+
+    ds_wmts.refresh_from_db()
+    assert ds_wmts.distribution_set.count() == 3
+    assert ds_wmts.preferred_distribution.protocol == "ogc:wmts"
+
+    dist_1 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wmts").first()
+    assert dist_1
+    assert dist_1.dataservice.service_type == "ogc:wmts"
+    assert dist_1.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_1.title == "WMTS Layer"
+    assert dist_1.opacity == Decimal("0.5")
+
+    dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
+    assert dist_2
+    assert dist_2.dataservice.service_type == "ogc:wms"
+    assert dist_2.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_2.title == "WMS Layer"
+    assert dist_2.opacity == Decimal("0.5")
+    assert dist_2.gutter == 0
+
+    dist_3 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:api3features").first()
+    assert dist_3
+    assert dist_3.dataservice.service_type == "geoadmin:features"
+    assert dist_3.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_3.title == "Geoadmin Features"
+    assert dist_3.renderable is True
+    assert dist_3.queryable is False
+
+    ds_wms.refresh_from_db()
+    assert ds_wms.distribution_set.count() == 2
+    assert ds_wms.preferred_distribution.protocol == "ogc:wms"
+
+    dist_4 = ds_wms.distribution_set.filter(
+        distribution_id="ch.bazl.luftfahrthindernis:wms"
+    ).first()
+    assert dist_4
+    assert dist_4.dataservice.service_type == "ogc:wms"
+    assert dist_4.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_4.title == "WMS Layer"
+    assert dist_4.opacity == Decimal("0.6")
+    assert dist_4.gutter == 1
+
+    dist_5 = ds_wms.distribution_set.filter(
+        distribution_id="ch.bazl.luftfahrthindernis:api3features"
+    ).first()
+    assert dist_5
+    assert dist_5.dataservice.service_type == "geoadmin:features"
+    assert dist_5.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_5.title == "Geoadmin Features"
+    assert dist_5.renderable is False
+    assert dist_5.queryable is True
+
+    ds_geojson.refresh_from_db()
+    assert ds_geojson.distribution_set.count() == 1
+    assert ds_geojson.preferred_distribution.protocol == "geojson"
+
+    dist_6 = ds_geojson.distribution_set.filter(
+        distribution_id="ch.swisstopo.treasurehunt:geojson"
+    ).first()
+    assert dist_6
+    assert dist_6.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_6.title == "GeoJSON Layer"
+    assert dist_6.geojson_url_de == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json"
+    assert dist_6.geojson_url_fr == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json"
+    assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"
+    assert dist_6.geojson_url_en == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_en.json"
+    assert dist_6.geojson_url_rm == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json"
+    assert (
+        dist_6.style_url
+        == "https://api3.geo.admin.ch/static/vectorStyles/ch.swisstopo.treasurehunt.json"
+    )
+
+    # =========================
+    # Update
+    # =========================
+    layer_wmts.opacity = Decimal("0.7")
+    layer_wmts.searchable = True
+    layer_wms.wms_gutter = 2
+    layer_wms.searchable = False
+    layer_geojson.geojson_url_rm = None
+
+    dynamodb.get_paginator().paginate.return_value = [
+        {
+            "Items": [
+                layer_wmts.as_dynamodb_item(),
+                layer_wms.as_dynamodb_item(),
+                layer_geojson.as_dynamodb_item(),
+            ]
+        }
+    ]
+
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert Distribution.objects.count() == 6
+
+    dist_1.refresh_from_db()
+    assert dist_1.opacity == Decimal("0.7")
+
+    dist_2.refresh_from_db()
+    assert dist_2.gutter == 0
+
+    dist_3.refresh_from_db()
+    assert dist_3.queryable is True
+
+    dist_4.refresh_from_db()
+    assert dist_4.gutter == 2
+
+    # TODO: enable once distribution cleanup has been implemented
+    # assert not ds_wms.distribution_set.filter(
+    #     distribution_id="ch.bazl.luftfahrthindernis:api3features"
+    # ).first()
+
+    dist_6.refresh_from_db()
+    assert dist_6.geojson_url_rm is None
+
+
+def test_command_uses_distribution_mapping(dynamodb, db):
+
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    dataset = Dataset(
+        dataset_id="ch.bazl.luftfahrthindernis",
+        geocat_id="c",
+        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source_ids=["ch.bazl.luftfahrthindernis"],
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+    )
+    dataset.save()
+
+    DatasetMapping(
+        dataset_id_prefix="ch.bazl.luftfahrthindernis-1",
+        dataset_id="ch.bazl.luftfahrthindernis",
+        update_dataset=True,
+    ).save()
+    DatasetMapping(
+        dataset_id_prefix="ch.bazl.luftfahrthindernis-2",
+        dataset_id="ch.bazl.luftfahrthindernis",
+        update_dataset=False,
+    ).save()
+
+    layer_1 = LayersJSImport(
+        layer_id="ch.bazl.luftfahrthindernis-1",
+        layertype="wms",
+    )
+    layer_2 = LayersJSImport(
+        layer_id="ch.bazl.luftfahrthindernis-2", layertype="wms", searchable=True
+    )
+
+    dynamodb.get_paginator().paginate.return_value = [
+        {"Items": [layer_1.as_dynamodb_item(), layer_2.as_dynamodb_item()]}
+    ]
+
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert (
+        "Mapping found for layer_id ch.bazl.luftfahrthindernis-1 : ch.bazl.luftfahrthindernis"
+        in out
+    )
+    assert (
+        "Mapping found for layer_id ch.bazl.luftfahrthindernis-2 : ch.bazl.luftfahrthindernis"
+        in out
+    )
+    assert "Importing WMS Distribution ch.bazl.luftfahrthindernis-1:wms" in out
+    assert "Importing WMS Distribution ch.bazl.luftfahrthindernis-2:wms" not in out
+
+    assert Distribution.objects.count() == 1
+
+    dataset.refresh_from_db()
+    assert dataset.distribution_set.count() == 1
+    assert dataset.preferred_distribution.protocol == "ogc:wms"
 
 
 # --------------------------------------------------------------------------------------------------

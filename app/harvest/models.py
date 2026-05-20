@@ -64,10 +64,12 @@ class DatasetMapping(models.Model):
 
     _context = "DatasetMapping Model"
 
-    dataset_id_prefix = models.CharField(_(_context, "Dataset ID Prefix (Harvest)"), max_length=100)
+    dataset_id_prefix = models.CharField(
+        _(_context, "Dataset ID / Layer ID Prefix (Harvest)"), max_length=100
+    )
     dataset_id = models.CharField(_(_context, "Dataset ID (DB)"), max_length=100)
     update_dataset = models.BooleanField(
-        _(_context, "Update dataset"),
+        _(_context, "Update dataset/distributions"),
         default=False,
         help_text=_(_context, "Whetever the matching entry should update the dataset"),
     )
