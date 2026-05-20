@@ -44,7 +44,7 @@ dev = [
     "pytest",
     "ruff",
     "ty",
-    "types-gevent~=25.4",
+    "types-gevent~=26.4",
     "types-gunicorn~=26.0",
     "types-requests~=2.32",
 ]
