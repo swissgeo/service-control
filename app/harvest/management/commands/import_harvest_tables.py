@@ -1,8 +1,8 @@
 import json
 from typing import TYPE_CHECKING, Any
 
-import boto3
 import environ
+from boto3 import Session
 
 from django.core.management.base import CommandParser
 from django.db.models import Q
@@ -110,13 +110,13 @@ class Command(CustomBaseCommand):
         """Main entry point of command."""
         profile = options.get("profile")
         if profile and profile != "default":
-            self.session = boto3.Session(profile_name=profile)
+            self.session = Session(profile_name=profile)
         else:
-            self.session = boto3.Session()
+            self.session = Session()
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
-            self.print(f"Debug: parsed args = {json.dumps(options)}")
+            self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
         # Handle sub-commands
         if options["organizations"]:
@@ -387,8 +387,8 @@ class Command(CustomBaseCommand):
                         self.print_warning(f"Organization {org_id} has no default unit")
                         continue
 
-                DatasetToUnit.objects.filter(dataset=ds, role="owner").delete()
-                DatasetToUnit.objects.create(dataset=ds, unit=unit, role="owner")
+                DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.ROLE_OWNER).delete()
+                DatasetToUnit.objects.create(dataset=ds, unit=unit, role=DatasetToUnit.ROLE_OWNER)
 
         metrics["removed_datasets"], metrics["obsolete_datasets"] = self.cleanup_datasets(
             processed, **options
