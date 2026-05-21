@@ -191,7 +191,7 @@ class OARDataset(OARRecord):
 
         contacts = [
             Contact(
-                organization=contact.get(f"org_name_{lang}", contact.get("org_name")),
+                organization=contact.get(f"org_name_{lang}") or contact.get("org_name"),
                 country=contact.get("contact_country"),
                 role=contact.get("role"),
             )
