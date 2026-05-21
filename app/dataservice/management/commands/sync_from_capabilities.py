@@ -45,7 +45,7 @@ class Command(CustomBaseCommand):
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
-            self.print(f"Debug: parsed args = {json.dumps(options)}")
+            self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
         # Ensure default dataset exists if required
         self.ensure_orphanage_dataset()
