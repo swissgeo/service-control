@@ -314,6 +314,7 @@ class Command(CustomBaseCommand):
                     metrics["parsed_datasets"] += 1
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
+                    continue
 
                 dataset_id = import_ds.dataset_id
                 processed.add(dataset_id)
@@ -485,6 +486,8 @@ class Command(CustomBaseCommand):
             )
             return
 
+        ds_mappings = DatasetMapping.table()
+
         metrics = {
             "total_dynamo_layers": 0,
             "parsed_layers": 0,
@@ -507,12 +510,22 @@ class Command(CustomBaseCommand):
                     metrics["parsed_layers"] += 1
                 except Exception as e:  # noqa: BLE001
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
-
-                try:
-                    dataset = Dataset.objects.get(dataset_id=ljs.layer_id)
-                except Dataset.DoesNotExist:
-                    self.print_error(f"No Dataset found for layer_id {ljs.layer_id}")
                     continue
+
+                layer_id = ljs.layer_id
+                dataset, mapping = ds_mappings.match(layer_id)
+                if dataset:
+                    self.print(f"Mapping found for layer_id {layer_id} : {dataset}")
+                    if mapping and not mapping.update_dataset:
+                        continue
+                else:
+                    try:
+                        dataset = Dataset.objects.get(
+                            dataset_id=layer_id, data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+                        )
+                    except Dataset.DoesNotExist:
+                        self.print_error(f"No Dataset found for layer_id {layer_id}")
+                        continue
 
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
