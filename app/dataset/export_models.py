@@ -192,7 +192,7 @@ class OARDataset(OARRecord):
         contacts = [
             Contact(
                 organization=contact.get(f"org_name_{lang}") or contact.get("org_name"),
-                country=contact.get("contact_country"),
+                country=contact.get("contact_country") or "CH",
                 role=contact.get("role"),
             )
             for contact in ds.legacy_contacts
@@ -488,12 +488,12 @@ class OAFeatureCollection(BaseModel):
 
 class Contact(BaseModel):
     organization: str
-    country: str | None
+    country: str
     role: str
-    # name: Optional[str] = None
-    # position: Optional[str] = None
-    # email: Optional[str] = None
-    # phone: Optional[str] = None
-    # address: Optional[str] = None
-    # city: Optional[str] = None
-    # postal_code: Optional[str] = None
+    # name: str | None
+    # position: str | None
+    # email: str | None
+    # phone: str | None
+    # address: str | None
+    # city: str | None
+    # postal_code: str | None
