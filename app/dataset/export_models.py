@@ -488,7 +488,7 @@ class OAFeatureCollection(BaseModel):
 
 class Contact(BaseModel):
     organization: str
-    country: str
+    country: str | None
     role: str
     # name: Optional[str] = None
     # position: Optional[str] = None
