@@ -31,6 +31,13 @@ LANGS = {
     "en": Lang(code="en", name="English", dir="ltr"),
 }
 
+LANGS_ISO_639_2_B = {
+    "de": "ger",
+    "fr": "fra",
+    "it": "ita",
+    "en": "eng",
+}
+
 
 def is_url(url: str) -> str:
     if not url.startswith("http"):
@@ -143,6 +150,7 @@ class OARDataset(OARRecord):
     properties: dict = Field(default_factory=lambda: {"type": "Dataset"})
     geometry: dict | None = {
         "type": "Polygon",
+        # coordinates of the bounOptional[str] = Noneding box of Switzerland
         "coordinates": [
             [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
         ],
@@ -150,22 +158,56 @@ class OARDataset(OARRecord):
 
     @classmethod
     def from_dataset(cls, ds: Dataset, lang: str) -> OARDataset:
-        record = OARDataset(id=ds.dataset_id)
+        links = [
+            OARRecordLink(
+                collectionId="swissgeo.catalog",
+                recordId=ds.dataset_id,
+                rel="self",
+                title="This Record",
+                hreflang=lang,
+            ),
+            OARCollectionLink(
+                collectionId="swissgeo.catalog",
+                rel="collection",
+                title="Swissgeo Catalog",
+            ),
+            OARCollectionLink(
+                collectionId=ds.dataset_id,
+                rel="distributions",
+                title="Distributions",
+            ),
+            # Needs clarification before it can be added
+            # Link(
+            #    href="https://www.some-external-website.ch",
+            #    rel="describedby",
+            #    title="Details"
+            # ),
+            Link(
+                href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_ISO_639_2_B[lang]}/catalog.search#/metadata/{ds.geocat_id}",
+                rel="alternate",
+                title="GeoCat Metadata",
+            ),
+        ]
 
-        # Set properties
-        record.properties["title"] = getattr(ds, f"title_short_{lang}", None)
-        record.properties["description"] = getattr(ds, f"description_{lang}", None)
-        # record.properties["preferredDistributionId"] = self.preferred_distribution_id
-        record.properties["language"] = LANGS[lang]
-        record.properties["languages"] = list(LANGS.values())
-        # record.properties["contacts"] = getattr(self, f"contacts_{lang}", [])
+        contacts = [
+            Contact(
+                organization=contact.get(f"org_name_{lang}", contact.get("org_name")),
+                country=contact.get("contact_country"),
+                role=contact.get("role"),
+            )
+            for contact in ds.legacy_contacts
+        ]
 
-        # Add links
-        # links = getattr(self, f"links_{lang}", [])
-        # for link in links:
-        #     record.links.append(link)
-
-        return record
+        properties = {
+            "contacts": contacts,
+            "description": getattr(ds, f"description_{lang}", None),
+            "language": LANGS[lang],
+            "languages": list(LANGS.values()),
+            "preferredDistributionId": None,  # needs further clarification
+            "title": getattr(ds, f"title_short_{lang}", None),
+            "type": "Dataset",
+        }
+        return OARDataset(id=ds.dataset_id, links=links, properties=properties)
 
 
 class OARDistribution(OARRecord):

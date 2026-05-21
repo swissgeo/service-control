@@ -8,7 +8,13 @@ from botocore.client import Config
 from django.core.management.base import CommandParser
 
 from dataservice.models import Dataservice
-from dataset.export_models import LANGS, OAFeatureCollection, OARDataservice, OARDistribution
+from dataset.export_models import (
+    LANGS,
+    OAFeatureCollection,
+    OARDataservice,
+    OARDataset,
+    OARDistribution,
+)
 from dataset.models import Dataset
 from utils.command import CustomBaseCommand
 
@@ -27,16 +33,6 @@ SAMPLE_IDS = [
     "ch.agroscope.korridore-feuchtgebietsarten_qualitaet",
     "ch.meteoschweiz.messwerte-pollen-buche-1h",
 ]
-
-
-# For some reason geocat uses a legacy 3-letter bibliographic code
-# that we need to map to ISO 639-1 codes
-LANGS_GEOCAT = {
-    "de": "ger",
-    "fr": "fra",
-    "it": "ita",
-    "en": "eng",
-}
 
 
 class Command(CustomBaseCommand):
@@ -89,7 +85,7 @@ class Command(CustomBaseCommand):
             type=str,
             nargs="+",
             default=[],
-            choices=["services", "distributions", "landing_page"],
+            choices=["services", "distributions", "datasets", "landing_page"],
             help="Select the type of records to export",
         )
 
@@ -135,13 +131,14 @@ class Command(CustomBaseCommand):
             self.do_export_services(*args, **options)
         if "distributions" in options["types"]:
             self.do_export_distributions(*args, **options)
+        if "datasets" in options["types"]:
+            self.do_export_datasets(*args, **options)
         if "landing_page" in options["types"]:
             self.do_export_landing_page(*args, **options)
 
         if options["command"] == "clean":
             self.do_clean(*args, **options)
 
-    # ##########################################################################
     def do_upload(self, snippets: dict[str, Any], prefix: str = OAR_PREFIX) -> None:
         """Helper function to upload a dict of OGC API Records snippets to S3.
 
@@ -160,7 +157,6 @@ class Command(CustomBaseCommand):
             )
             self.print(f" - {prefix}{key}")
 
-    # ##########################################################################
     def do_export_services(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
 
         services = {}
@@ -184,7 +180,6 @@ class Command(CustomBaseCommand):
             self.print_success("Starting to upload local OGC API Records to S3...")
             self.do_upload(services, prefix=OAR_PREFIX)
 
-    # ##########################################################################
     def do_export_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
 
         distribution_collections = {}
@@ -226,7 +221,32 @@ class Command(CustomBaseCommand):
             self.do_upload(distribution_collections, prefix=OAR_PREFIX)
             self.do_upload(distributions, prefix=OAR_PREFIX)
 
-    # ##########################################################################
+    def do_export_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+        self.print("Generating dataset records...")
+
+        if options["sample"]:
+            datasets = Dataset.objects.filter(dataset_id__in=SAMPLE_IDS)
+        else:
+            datasets = Dataset.objects.all()
+
+        dataset_snippets = {}
+
+        for dataset in datasets:
+            for lang in LANGS:
+                object_key = f"/collections/swissgeo.catalog/items/{dataset.dataset_id}.{lang}"
+                self.print(f"- {object_key}")
+                dataset_record = OARDataset.from_dataset(dataset, lang)
+                dataset_snippets[object_key] = dataset_record.model_dump(
+                    exclude_none=True, by_alias=True
+                )
+
+        if options["dump"]:
+            self.print(json.dumps(dataset_snippets, indent=2, ensure_ascii=False))
+
+        if options["upload"]:
+            self.print_success("Starting to upload local OGC API Records to S3...")
+            self.do_upload(dataset_snippets, prefix=OAR_PREFIX)
+
     def do_export_landing_page(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         # Landing page
         self.print("Uploading landing page...")
@@ -336,7 +356,6 @@ class Command(CustomBaseCommand):
         self.print_success("Export completed.")
         # endregion
 
-    # ##########################################################################
     def do_clean(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         buckets = []
         if options["records"]:
