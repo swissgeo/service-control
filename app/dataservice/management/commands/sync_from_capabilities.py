@@ -39,6 +39,11 @@ class Command(CustomBaseCommand):
             help="Add distributions that cannot be automatically"
             " matched to a dataset to this dataset",
         )
+        parser.add_argument(
+            "--clean",
+            action="store_true",
+            help="Clean up",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
@@ -87,7 +92,8 @@ class Command(CustomBaseCommand):
             self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")
             try:
                 service.sync_from_capabilities(
-                    orphanage_dataset_id=self.options["orphanage_dataset"]
+                    orphanage_dataset_id=self.options["orphanage_dataset"],
+                    clean=self.options["clean"],
                 )
                 self.print_success(
                     f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
