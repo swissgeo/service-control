@@ -499,6 +499,7 @@ class Command(CustomBaseCommand):
             "updated_geojson_distributions": 0,
             "created_api3feature_distributions": 0,
             "updated_api3feature_distributions": 0,
+            "removed_distributions": 0,
         }
 
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
@@ -527,10 +528,13 @@ class Command(CustomBaseCommand):
                         self.print_error(f"No Dataset found for layer_id {layer_id}")
                         continue
 
+                processed = set()
+
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
                     dist, created = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+                    processed.add(dist.distribution_id)
                     if created:
                         metrics["created_wmts_distributions"] += 1
                     else:
@@ -541,6 +545,7 @@ class Command(CustomBaseCommand):
 
                 if ljs.layertype in ["wms", "wmts"]:
                     dist, created = self.import_wms_distribution(ljs, dataset, wms_dataservice)
+                    processed.add(dist.distribution_id)
                     if created:
                         metrics["created_wms_distributions"] += 1
                     else:
@@ -553,6 +558,7 @@ class Command(CustomBaseCommand):
 
                 if ljs.layertype == "geojson":
                     dist, created = self.import_geojson_distribution(ljs, dataset)
+                    processed.add(dist.distribution_id)
                     if created:
                         metrics["created_geojson_distributions"] += 1
                     else:
@@ -569,10 +575,26 @@ class Command(CustomBaseCommand):
                     dist, created = self.import_api3features_distribution(
                         ljs, dataset, geoadminfeature_dataservice
                     )
+                    processed.add(dist.distribution_id)
                     if created:
                         metrics["created_api3feature_distributions"] += 1
                     else:
                         metrics["updated_api3feature_distributions"] += 1
+
+                obsolete = dataset.distribution_set.filter(  # type:ignore[unresolved-attribute]
+                    data_source=Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+                ).exclude(distribution_id__in=processed)
+                if obsolete:
+                    if options["clean"]:
+                        for distribution in obsolete:
+                            self.print_warning(f"Removing obsolete distribution {distribution}")
+                            distribution.delete()
+                    else:
+                        self.print_warning(
+                            f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
+                        )
+                    metrics["removed_distributions"] += len(obsolete)
+
         self.print_success(f"Distribution import completed. Metrics: {metrics}")
 
     def import_wmts_distribution(
