@@ -7,7 +7,7 @@ from django.core.management import call_command
 import pytest
 
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
-from distribution.models import Distribution
+from distribution.models import Distribution, ExternalGeoJSONDistribution, ExternalStacDistribution
 from harvest.import_models import (
     Contact,
     ContactList,
@@ -1134,6 +1134,8 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
+    assert "Obsolete distribution found: ch.bazl.luftfahrthindernis:api3features" in out
+
     assert Distribution.objects.count() == 6
 
     dist_1.refresh_from_db()
@@ -1148,13 +1150,70 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     dist_4.refresh_from_db()
     assert dist_4.gutter == 2
 
-    # TODO: enable once distribution cleanup has been implemented
-    # assert not ds_wms.distribution_set.filter(
-    #     distribution_id="ch.bazl.luftfahrthindernis:api3features"
-    # ).first()
+    # Note: dist_5 was not updated but became obsolete
 
     dist_6.refresh_from_db()
     assert dist_6.geojson_url_rm is None
+
+
+def test_command_cleans_distributions(dynamodb, db):
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    dataset = Dataset(
+        dataset_id="ch.bazl.luftfahrthindernis",
+        geocat_id="c",
+        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source_ids=["ch.bazl.luftfahrthindernis"],
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+    )
+    dataset.save()
+
+    ExternalGeoJSONDistribution(
+        distribution_id="ch.bazl.luftfahrthindernis:geojson",
+        dataset=dataset,
+        data_source=Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS,
+    ).save()
+
+    ExternalStacDistribution(
+        distribution_id="ch.bazl.luftfahrthindernis:stac",
+        dataset=dataset,
+        data_source=Distribution.DATA_SOURCE_CHOICE_USER_INPUT,
+    ).save()
+
+    layer = LayersJSImport(
+        layer_id="ch.bazl.luftfahrthindernis",
+        layertype="wmts",
+    )
+
+    dynamodb.get_paginator().paginate.return_value = [{"Items": [layer.as_dynamodb_item()]}]
+
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Importing WMTS Distribution ch.bazl.luftfahrthindernis:wmts" in out
+    assert "Importing WMS Distribution ch.bazl.luftfahrthindernis:wms" in out
+    assert "Obsolete distribution found: ch.bazl.luftfahrthindernis:geojson" in out
+    assert Distribution.objects.count() == 4
+
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, clean=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removing obsolete distribution ch.bazl.luftfahrthindernis:geojson" in out
+    assert Distribution.objects.count() == 3
 
 
 def test_command_uses_distribution_mapping(dynamodb, db):
