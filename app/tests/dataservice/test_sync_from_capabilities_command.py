@@ -8,7 +8,7 @@ from django.core.management import call_command
 import pytest
 
 from dataset.models import Dataset
-from distribution.models import Distribution, ExternalStacDistribution
+from distribution.models import Distribution, ExternalGeoJSONDistribution, ExternalStacDistribution
 
 
 @pytest.fixture(name="stac")
@@ -54,7 +54,7 @@ def test_command_creates_orphaned_dataset(db):
     assert Dataset.objects.filter(dataset_id="ods").first()
 
 
-def test_command_creates_stac_distributions_in_orphaned(stac, db):
+def test_command_creates_stac_distributions_in_orphaned(stac, db, caplog):
     out = StringIO()
     call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
     out = out.getvalue()
@@ -63,6 +63,11 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db):
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
 
     call_command("sync_from_capabilities", stac=True)
+
+    assert (
+        "Added distribution for collection_id ch.bafu.moose to dataset ORPHANAGE from "
+        "dataservice stac-api-landingpage." in caplog.messages
+    )
 
     dataset = Dataset.objects.filter(dataset_id="ORPHANAGE").first()
     assert dataset
@@ -76,7 +81,7 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db):
     assert dist.title == "STAC Download Collection"
 
 
-def test_command_creates_stac_distributions(stac, db):
+def test_command_creates_stac_distributions(stac, db, caplog):
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
         geocat_id="abcd",
@@ -102,6 +107,11 @@ def test_command_creates_stac_distributions(stac, db):
 
     call_command("sync_from_capabilities", stac=True)
 
+    assert (
+        "Added distribution for collection_id ch.bafu.moose to dataset ch.bafu.moose from "
+        "dataservice stac-api-landingpage." in caplog.messages
+    )
+
     dist = dataset.distribution_set.first()
     assert dist
     assert dist.protocol == "ogcapi:stac"
@@ -111,7 +121,7 @@ def test_command_creates_stac_distributions(stac, db):
     assert dist.title == "STAC Download Collection"
 
 
-def test_command_updates_distribution_dataset(stac, db):
+def test_command_updates_distribution_dataset(stac, db, caplog):
     out = StringIO()
     call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
     out = out.getvalue()
@@ -121,6 +131,10 @@ def test_command_updates_distribution_dataset(stac, db):
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
 
     call_command("sync_from_capabilities", stac=True)
+    assert (
+        "Added distribution for collection_id ch.bafu.moose to dataset ORPHANAGE from "
+        "dataservice stac-api-landingpage." in caplog.messages
+    )
 
     dist = ExternalStacDistribution.objects.first()
     assert dist
@@ -143,7 +157,58 @@ def test_command_updates_distribution_dataset(stac, db):
     ).save()
 
     call_command("sync_from_capabilities", stac=True)
+    assert (
+        "Updated distribution for collection_id ch.bafu.moose to dataset "
+        "ch.bafu.moose from dataservice stac-api-landingpage." in caplog.messages
+    )
 
     dist = ExternalStacDistribution.objects.first()
     assert dist
     assert dist.dataset.dataset_id == "ch.bafu.moose"
+
+
+def test_command_cleans_obsolete_stac_distributions(stac, db, caplog):
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    dataset = Dataset(
+        dataset_id="ch.bazl.luftfahrthindernis",
+        geocat_id="abcd",
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+    )
+    dataset.save()
+    ExternalGeoJSONDistribution(
+        distribution_id="ch.bazl.luftfahrthindernis:geojson", dataset=dataset
+    ).save()
+    ExternalStacDistribution(
+        distribution_id="ch.bazl.luftfahrthindernis:stac",
+        dataset=dataset,
+        data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
+    ).save()
+
+    stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
+
+    # Only report
+    call_command("sync_from_capabilities", stac=True)
+    assert "Obsolete distribution found: ch.bazl.luftfahrthindernis:stac" in caplog.messages
+    assert Distribution.objects.count() == 3
+
+    # Clean
+    call_command("sync_from_capabilities", stac=True, clean=True)
+    assert "Removing obsolete distribution ch.bazl.luftfahrthindernis:stac" in caplog.messages
+
+    assert {d.distribution_id for d in Distribution.objects.all()} == {
+        "ch.bazl.luftfahrthindernis:geojson",
+        "ch.bafu.moose:stac",
+    }

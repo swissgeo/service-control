@@ -189,7 +189,7 @@ class OGCAPIStacDataservice(Dataservice):
     def service_type(self) -> str:
         return "ogcapi:stac"
 
-    def sync_from_capabilities(self, orphanage_dataset_id: str) -> None:
+    def sync_from_capabilities(self, orphanage_dataset_id: str, clean: bool = False) -> None:  # noqa:C901
         """Evaluate the capabilities to detect distributions.
 
         We try to map STAC collection_ids automatically to datasets. If no matching
@@ -266,8 +266,22 @@ class OGCAPIStacDataservice(Dataservice):
                             f"dataset {dataset.dataset_id} from dataservice {self.dataservice_id}."
                         )
 
-        # Todo: handle existing distributions that are not in the capabilities anymore
-        # (e.g. mark them as deprecated or delete them)
+        obsolete = (
+            ExternalStacDistribution.objects.filter(
+                data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES
+            )
+            .exclude(stac_collection_id__in=processed)
+            .all()
+        )
+        if obsolete:
+            if clean:
+                for distribution in obsolete:
+                    logger.warning(f"Removing obsolete distribution {distribution}")
+                    distribution.delete()
+            else:
+                logger.warning(
+                    f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
+                )
 
 
 class GeoadminFeaturesDataservice(Dataservice):
