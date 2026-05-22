@@ -150,7 +150,7 @@ class OARDataset(OARRecord):
     properties: dict = Field(default_factory=lambda: {"type": "Dataset"})
     geometry: dict | None = {
         "type": "Polygon",
-        # coordinates of the bounOptional[str] = Noneding box of Switzerland
+        # coordinates of the bounding box of Switzerland
         "coordinates": [
             [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
         ],
@@ -176,7 +176,7 @@ class OARDataset(OARRecord):
                 rel="distributions",
                 title="Distributions",
             ),
-            # Needs clarification before it can be added
+            # TODO: Needs clarification before it can be added
             # Link(
             #    href="https://www.some-external-website.ch",
             #    rel="describedby",
@@ -203,7 +203,7 @@ class OARDataset(OARRecord):
             "description": getattr(ds, f"description_{lang}", None),
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
-            "preferredDistributionId": None,  # needs further clarification
+            "preferredDistributionId": None,  # TODO: needs further clarification
             "title": getattr(ds, f"title_short_{lang}", None),
             "type": "Dataset",
         }
