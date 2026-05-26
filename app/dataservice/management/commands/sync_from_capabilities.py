@@ -2,11 +2,13 @@ import json
 from typing import Any
 
 import environ
+from pystac_client import Client
 
 from django.core.management.base import CommandParser
 
 from dataservice.models import OGCAPIStacDataservice
 from dataset.models import Dataset
+from distribution.models import Distribution, ExternalStacDistribution
 from utils.command import CustomBaseCommand
 
 env = environ.Env()
@@ -88,17 +90,144 @@ class Command(CustomBaseCommand):
     def sync_stac(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Sync from STAC capabilities."""
 
+        self.print_success("Sync from STAC")
+
+        metrics = {
+            "processed_collections": 0,
+            "added_distributions": 0,
+            "updated_distributions": 0,
+            "obsolete_distributions": 0,
+            "removed_distributions": 0,
+        }
+        success = True
         for service in OGCAPIStacDataservice.objects.all():
             self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")
             try:
-                service.sync_from_capabilities(
-                    orphanage_dataset_id=self.options["orphanage_dataset"],
-                    clean=self.options["clean"],
+                processed, added, updated, obsolete = self.sync_stac_from_capabilities(
+                    service,
                 )
+                metrics["processed_collections"] += processed
+                metrics["added_distributions"] += added
+                metrics["updated_distributions"] += updated
+                metrics["obsolete_distributions"] += obsolete if not self.options["clean"] else 0
+                metrics["removed_distributions"] += obsolete if self.options["clean"] else 0
                 self.print_success(
                     f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
                 )
             except Exception as e:  # noqa: BLE001
+                success = False
                 self.print_error(
                     f"Error syncing dataservice '{service.dataservice_id}' from capabilities: {e}"
                 )
+
+        if success:
+            self.print_success(f"Sync from STAC completed. Metrics: {metrics}")
+        else:
+            self.print_warning(f"Sync from STAC completed with errors. Metrics: {metrics}")
+
+    def sync_stac_from_capabilities(  # noqa:C901
+        self, dataservice: OGCAPIStacDataservice
+    ) -> tuple[int, int, int, int]:
+        """Evaluate the capabilities to detect distributions.
+
+        We try to map STAC collection_ids automatically to datasets. If no matching
+        dataset is found, the distribution is added to the default dataset (if given).
+
+        Returns the number of STAC collections, number of added distributions, number of updated
+        distributions and the number of obsolete/removed distributions.
+        """
+
+        processed = set()
+        added = 0
+        updated = 0
+
+        try:
+            orphanage_dataset = Dataset.objects.get(dataset_id=self.options["orphanage_dataset"])
+        except Dataset.DoesNotExist:
+            self.print_error(
+                "Default dataset with ID %s not found. Please create this dataset before "
+                "running the sync or provide a different default dataset ID.",
+                self.options["orphanage_dataset"],
+            )
+            raise
+
+        # Get managed collections from STAC API
+        client = Client.open(dataservice.landing_page_url)
+        for collection in client.collection_search().collections():
+            collection_id = collection.id
+            processed.add(collection_id)
+            self.print(f"Processing collection {collection_id}")
+
+            # check if distribution with this collection_id already exists
+            try:
+                distribution = ExternalStacDistribution.objects.get(
+                    stac_collection_id=collection_id,
+                    dataservice=dataservice,
+                )
+                self.print(
+                    "Distribution for collection_id %s already exists, "
+                    "skipping creation for dataservice %s.",
+                    collection_id,
+                    dataservice.dataservice_id,
+                )
+            except ExternalStacDistribution.DoesNotExist:
+                # try to find a dataset with the same dataset_id as the collection_id
+                dataset = Dataset.objects.filter(dataset_id=collection_id).first()
+
+                if not dataset:
+                    self.print_warning(
+                        "No dataset found for collection_id %s, "
+                        "adding distribution to orphanage dataset %s.",
+                        collection_id,
+                        self.options["orphanage_dataset"],
+                    )
+                    dataset = orphanage_dataset
+
+                # create new distribution
+                ExternalStacDistribution.objects.create(
+                    distribution_id=f"{collection_id}:stac",
+                    dataset=dataset,
+                    title="STAC Download Collection",
+                    data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
+                    dataservice=dataservice,
+                    stac_collection_id=collection_id,
+                )
+                added += 1
+                self.print(
+                    f"Added distribution for collection_id {collection_id} to "
+                    f"dataset {dataset.dataset_id} from dataservice {dataservice.dataservice_id}."
+                )
+            else:
+                # If the distribution is linked to the orphanage dataset, we check if there's
+                # a dataset now matching the collection_id and link it to this dataset if found
+
+                if distribution.dataset == orphanage_dataset:
+                    dataset = Dataset.objects.filter(dataset_id=collection_id).first()
+                    if dataset:
+                        distribution.dataset = dataset
+                        distribution.save()
+                        updated += 1
+                        self.print(
+                            f"Updated distribution for collection_id {collection_id} to "
+                            f"dataset {dataset.dataset_id} from "
+                            f"dataservice {dataservice.dataservice_id}."
+                        )
+
+        obsolete = (
+            ExternalStacDistribution.objects.filter(
+                data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES
+            )
+            .exclude(stac_collection_id__in=processed)
+            .all()
+        )
+        if obsolete:
+            if self.options["clean"]:
+                for distribution in obsolete:
+                    self.print_warning(f"Removing obsolete distribution {distribution}")
+                    distribution.delete()
+            else:
+                self.print_warning(
+                    f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
+                )
+
+        return len(processed), added, updated, len(obsolete)

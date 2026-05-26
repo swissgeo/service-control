@@ -28,7 +28,7 @@ def fixture_stac():
 
     """
 
-    with patch("dataservice.models.Client") as client_cls:
+    with patch("dataservice.management.commands.sync_from_capabilities.Client") as client_cls:
         collections = MagicMock(name="collections")
         client = MagicMock(name="client")
         client.collection_search.return_value.collections = collections
@@ -54,7 +54,7 @@ def test_command_creates_orphaned_dataset(db):
     assert Dataset.objects.filter(dataset_id="ods").first()
 
 
-def test_command_creates_stac_distributions_in_orphaned(stac, db, caplog):
+def test_command_creates_stac_distributions_in_orphaned(stac, db):
     out = StringIO()
     call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
     out = out.getvalue()
@@ -62,11 +62,13 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db, caplog):
 
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
 
-    call_command("sync_from_capabilities", stac=True)
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
 
     assert (
         "Added distribution for collection_id ch.bafu.moose to dataset ORPHANAGE from "
-        "dataservice stac-api-landingpage." in caplog.messages
+        "dataservice stac-api-landingpage." in out
     )
 
     dataset = Dataset.objects.filter(dataset_id="ORPHANAGE").first()
@@ -81,7 +83,7 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db, caplog):
     assert dist.title == "STAC Download Collection"
 
 
-def test_command_creates_stac_distributions(stac, db, caplog):
+def test_command_creates_stac_distributions(stac, db):
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
         geocat_id="abcd",
@@ -105,11 +107,13 @@ def test_command_creates_stac_distributions(stac, db, caplog):
 
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
 
-    call_command("sync_from_capabilities", stac=True)
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
 
     assert (
         "Added distribution for collection_id ch.bafu.moose to dataset ch.bafu.moose from "
-        "dataservice stac-api-landingpage." in caplog.messages
+        "dataservice stac-api-landingpage." in out
     )
 
     dist = dataset.distribution_set.first()
@@ -121,7 +125,7 @@ def test_command_creates_stac_distributions(stac, db, caplog):
     assert dist.title == "STAC Download Collection"
 
 
-def test_command_updates_distribution_dataset(stac, db, caplog):
+def test_command_updates_distribution_dataset(stac, db):
     out = StringIO()
     call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
     out = out.getvalue()
@@ -130,10 +134,13 @@ def test_command_updates_distribution_dataset(stac, db, caplog):
     # Import to orphanage
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
 
-    call_command("sync_from_capabilities", stac=True)
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
     assert (
         "Added distribution for collection_id ch.bafu.moose to dataset ORPHANAGE from "
-        "dataservice stac-api-landingpage." in caplog.messages
+        "dataservice stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()
@@ -156,10 +163,13 @@ def test_command_updates_distribution_dataset(stac, db, caplog):
         description_rm="x",
     ).save()
 
-    call_command("sync_from_capabilities", stac=True)
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
     assert (
         "Updated distribution for collection_id ch.bafu.moose to dataset "
-        "ch.bafu.moose from dataservice stac-api-landingpage." in caplog.messages
+        "ch.bafu.moose from dataservice stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()
@@ -167,7 +177,7 @@ def test_command_updates_distribution_dataset(stac, db, caplog):
     assert dist.dataset.dataset_id == "ch.bafu.moose"
 
 
-def test_command_cleans_obsolete_stac_distributions(stac, db, caplog):
+def test_command_cleans_obsolete_stac_distributions(stac, db):
     out = StringIO()
     call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
     out = out.getvalue()
@@ -200,13 +210,19 @@ def test_command_cleans_obsolete_stac_distributions(stac, db, caplog):
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]
 
     # Only report
-    call_command("sync_from_capabilities", stac=True)
-    assert "Obsolete distribution found: ch.bazl.luftfahrthindernis:stac" in caplog.messages
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Obsolete distribution found: ch.bazl.luftfahrthindernis:stac" in out
     assert Distribution.objects.count() == 3
 
     # Clean
-    call_command("sync_from_capabilities", stac=True, clean=True)
-    assert "Removing obsolete distribution ch.bazl.luftfahrthindernis:stac" in caplog.messages
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, clean=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removing obsolete distribution ch.bazl.luftfahrthindernis:stac" in out
 
     assert {d.distribution_id for d in Distribution.objects.all()} == {
         "ch.bazl.luftfahrthindernis:geojson",
