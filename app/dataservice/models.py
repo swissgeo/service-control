@@ -189,14 +189,21 @@ class OGCAPIStacDataservice(Dataservice):
     def service_type(self) -> str:
         return "ogcapi:stac"
 
-    def sync_from_capabilities(self, orphanage_dataset_id: str, clean: bool = False) -> None:  # noqa:C901
+    def sync_from_capabilities(  # noqa:C901
+        self, orphanage_dataset_id: str, clean: bool = False
+    ) -> tuple[int, int, int, int]:
         """Evaluate the capabilities to detect distributions.
 
         We try to map STAC collection_ids automatically to datasets. If no matching
         dataset is found, the distribution is added to the default dataset (if given).
+
+        Returns the number of STAC collections, number of added distributions, number of updated
+        distributions and the number of obsoleteZremoved distributions.
         """
 
         processed = set()
+        added = 0
+        updated = 0
 
         try:
             orphanage_dataset = Dataset.objects.get(dataset_id=orphanage_dataset_id)
@@ -248,6 +255,7 @@ class OGCAPIStacDataservice(Dataservice):
                     dataservice=self,
                     stac_collection_id=collection_id,
                 )
+                added += 1
                 logger.info(
                     f"Added distribution for collection_id {collection_id} to "
                     f"dataset {dataset.dataset_id} from dataservice {self.dataservice_id}."
@@ -261,6 +269,7 @@ class OGCAPIStacDataservice(Dataservice):
                     if dataset:
                         distribution.dataset = dataset
                         distribution.save()
+                        updated += 1
                         logger.info(
                             f"Updated distribution for collection_id {collection_id} to "
                             f"dataset {dataset.dataset_id} from dataservice {self.dataservice_id}."
@@ -282,6 +291,8 @@ class OGCAPIStacDataservice(Dataservice):
                 logger.warning(
                     f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
                 )
+
+        return len(processed), added, updated, len(obsolete)
 
 
 class GeoadminFeaturesDataservice(Dataservice):

@@ -88,17 +88,37 @@ class Command(CustomBaseCommand):
     def sync_stac(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Sync from STAC capabilities."""
 
+        metrics = {
+            "processed_collections": 0,
+            "added_distributions": 0,
+            "updated_distributions": 0,
+            "obsolete_distributions": 0,
+            "removed_distributions": 0,
+        }
+        clean = self.options["clean"]
+        success = True
         for service in OGCAPIStacDataservice.objects.all():
             self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")
             try:
-                service.sync_from_capabilities(
+                processed, added, updated, obsolete = service.sync_from_capabilities(
                     orphanage_dataset_id=self.options["orphanage_dataset"],
-                    clean=self.options["clean"],
+                    clean=clean,
                 )
+                metrics["processed_collections"] += processed
+                metrics["added_distributions"] += added
+                metrics["updated_distributions"] += updated
+                metrics["obsolete_distributions"] += obsolete if not clean else 0
+                metrics["removed_distributions"] += obsolete if clean else 0
                 self.print_success(
                     f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
                 )
             except Exception as e:  # noqa: BLE001
+                success = False
                 self.print_error(
                     f"Error syncing dataservice '{service.dataservice_id}' from capabilities: {e}"
                 )
+
+        if success:
+            self.print_success(f"Sync from STAC completed. Metrics: {metrics}")
+        else:
+            self.print_warning(f"Sync from STAC completed with errors. Metrics: {metrics}")
