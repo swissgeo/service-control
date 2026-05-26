@@ -220,6 +220,7 @@ class OGCAPIStacDataservice(Dataservice):
         for collection in client.collection_search().collections():
             collection_id = collection.id
             processed.add(collection_id)
+            logger.info(f"Processing collection {collection_id}")
 
             # check if distribution with this collection_id already exists
             try:
@@ -227,7 +228,7 @@ class OGCAPIStacDataservice(Dataservice):
                     stac_collection_id=collection_id,
                     dataservice=self,
                 )
-                logger.debug(
+                logger.info(
                     "Distribution for collection_id %s already exists, "
                     "skipping creation for dataservice %s.",
                     collection_id,

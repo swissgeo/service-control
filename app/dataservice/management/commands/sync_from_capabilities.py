@@ -88,6 +88,8 @@ class Command(CustomBaseCommand):
     def sync_stac(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Sync from STAC capabilities."""
 
+        self.print_success("Sync from STAC")
+
         metrics = {
             "processed_collections": 0,
             "added_distributions": 0,
