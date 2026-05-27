@@ -12,8 +12,8 @@ dependencies = [
     "django-polymorphic~=4.11",
     "django~=6.0",
     "ecs-logging~=2.2",
-    "gevent~=25.4",
-    "gunicorn~=25.1",
+    "gevent~=26.4",
+    "gunicorn~=26.0",
     "logging-utilities~=5.4",
     "opentelemetry-exporter-otlp~=1.39",
     "opentelemetry-instrumentation-botocore==0.60b1",
@@ -36,7 +36,7 @@ dev = [
     "debugpy",
     "django_debug_toolbar",
     "django-extensions",
-    "django-stubs~=5.2",                                               # no 6.0 stubs yet, see github.com/typeddjango/django-stubs/issues/2944
+    "django-stubs~=6.0",
     "pre-commit",
     "pytest-cov",
     "pytest-django",
@@ -44,8 +44,8 @@ dev = [
     "pytest",
     "ruff",
     "ty",
-    "types-gevent~=25.4",
-    "types-gunicorn~=25.1",
+    "types-gevent~=26.4",
+    "types-gunicorn~=26.0",
     "types-requests~=2.32",
 ]
 

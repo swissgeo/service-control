@@ -21,7 +21,7 @@ class RemoteCustomUserBackend(RemoteUserBackend):
     preferred_username_header = "HTTP_X_AUTH_REQUEST_PREFERRED_USERNAME"
 
     def configure_user(
-        self, request: HttpRequest, user: CustomUser, created: bool = True
+        self, request: HttpRequest | None, user: CustomUser, created: bool = True
     ) -> CustomUser:
         """
         If a new user was created, add the cognito_username with the value from the
@@ -30,13 +30,12 @@ class RemoteCustomUserBackend(RemoteUserBackend):
         created separately. Machine users will also never have a cognito_username.
         """
         if created:
-            try:
-                cognito_username = request.META[self.preferred_username_header].strip()
-            except KeyError as error:
+            if cognito_username := getattr(request, "META", {}).get(self.preferred_username_header):
+                user.cognito_username = cognito_username
+                user.save()
+            else:
                 logger.exception("Failed to get preferred_username header")
-                raise AuthenticationError from error
-            user.cognito_username = cognito_username
-            user.save()
+                raise AuthenticationError
         return user
 
 

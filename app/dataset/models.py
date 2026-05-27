@@ -1,5 +1,7 @@
 import logging
+from typing import ClassVar
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
@@ -8,12 +10,55 @@ from utils.fields import CustomSlugField
 logger = logging.getLogger(__name__)
 
 
+class DatasetManager(models.Manager):
+    def remove_data_source_id(self, data_source_id: str) -> int:
+        """Remove the given data source ID from all datasets"""
+
+        return self.filter(data_source_ids__contains=[data_source_id]).update(
+            data_source_ids=models.Func(
+                models.F("data_source_ids"),
+                models.Value(data_source_id),
+                function="array_remove",
+            )
+        )
+
+    def existing_data_source_ids(self, data_source: str) -> set[str]:
+        """Return all data source ID of all organization with the given data source."""
+
+        return set(
+            self.filter(data_source=data_source)
+            .annotate(ids=models.Func("data_source_ids", function="unnest"))
+            .values_list("ids", flat=True)
+            .distinct()
+        )
+
+
 class Dataset(models.Model):
     """Dataset model."""
 
     _context = "Dataset Model"
 
     dataset_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
+
+    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
+    DATA_SOURCE_CHOICE_BOD_DATASET: ClassVar[str] = "bod-dataset"
+    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (DATA_SOURCE_CHOICE_BOD_DATASET, "BOD (dataset)"),
+        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Admin UI/API)"),
+    ]
+    data_source = models.CharField(
+        _(_context, "Data Source"),
+        choices=DATA_SOURCE_CHOICES,
+        default=DATA_SOURCE_CHOICE_USER_INPUT,
+        max_length=255,
+    )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
+    )
 
     # The title we currently harvest from BOD and store here is actually a short
     # version of the original title. In a later iteration, we'll add the original
@@ -60,6 +105,11 @@ class Dataset(models.Model):
         help_text=_(_context, "Date and time when the dataset was last updated"),
     )
 
+    # Stores the contacts as defined in geocat (until service-control becomes data master for these)
+    legacy_contacts = models.JSONField(_(_context, "Contacts (Legacy)"), default=list, blank=True)
+
+    objects = DatasetManager()
+
     class Meta:
         verbose_name = _("Dataset Model", "Dataset")
         verbose_name_plural = _("Dataset Model", "Datasets")
@@ -67,14 +117,23 @@ class Dataset(models.Model):
     def __str__(self) -> str:
         return self.dataset_id
 
+    def add_data_source_id(self, value: str) -> None:
+        values = set(self.data_source_ids)
+        values.add(value)
+        self.data_source_ids = sorted(values)
+
 
 class DatasetToUnit(models.Model):
     """Each dataset can be associated with organizational units in different roles."""
 
+    ROLE_OWNER = "owner"
+    ROLE_MAINTAINER = "maintainer"
+    ROLE_CONTRIBUTOR = "contributor"
+
     ROLES = (
-        ("owner", "Owner"),
-        ("maintainer", "Maintainer"),
-        ("contributor", "Contributor"),
+        (ROLE_OWNER, "Owner"),
+        (ROLE_MAINTAINER, "Maintainer"),
+        (ROLE_CONTRIBUTOR, "Contributor"),
     )
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="dataset_units")
@@ -85,9 +144,10 @@ class DatasetToUnit(models.Model):
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "unit"]),)
+        verbose_name = _("DatasetToUnit Model", "Dataset Unit")
 
     def __str__(self) -> str:
-        return f"{self.dataset}: {self.unit} ({self.role})"
+        return f"{self.unit} as {self.role} in {self.dataset}"
 
 
 class DatasetToContact(models.Model):
@@ -96,30 +156,51 @@ class DatasetToContact(models.Model):
     See eCH-0271: CI_RoleCode.
     """
 
+    ROLE_CUSTODIAN = "custodian"
+    ROLE_OWNER = "owner"
+    ROLE_DISTRIBUTOR = "distributor"
+    ROLE_POINT_OF_CONTACT = "pointOfContact"
+    ROLE_PUBLISHER = "publisher"
+    ROLE_RESOURCE_PROVIDER = "resourceProvider"
+    ROLE_USER = "user"
+    ROLE_ORIGINATOR = "originator"
+    ROLE_PRINCIPAL_INVESTIGATOR = "principalInvestigator"
+    ROLE_PROCESSOR = "processor"
+    ROLE_AUTHOR = "author"
+    ROLE_SPONSOR = "sponsor"
+    ROLE_CO_AUTHOR = "coAuthor"
+    ROLE_COLLABORATOR = "collaborator"
+    ROLE_EDITOR = "editor"
+    ROLE_MEDIATOR = "mediator"
+    ROLE_RIGHTS_HOLDER = "rightsHolder"
+    ROLE_CONTRIBUTOR = "contributor"
+    ROLE_FUNDER = "funder"
+    ROLE_STAKEHOLDER = "stakeholder"
+
     RECOMMENDED_ROLES = (
-        ("custodian", "Custodian"),
-        ("owner", "Owner"),
-        ("distributor", "Distributor"),
-        ("pointOfContact", "Point of Contact"),
-        ("publisher", "Publisher"),
+        (ROLE_CUSTODIAN, "Custodian"),
+        (ROLE_OWNER, "Owner"),
+        (ROLE_DISTRIBUTOR, "Distributor"),
+        (ROLE_POINT_OF_CONTACT, "Point of Contact"),
+        (ROLE_PUBLISHER, "Publisher"),
     )
 
     NOT_RECOMMENDED_ROLES = (
-        ("resourceProvider", "Resource Provider"),
-        ("user", "User"),
-        ("originator", "Originator"),
-        ("principalInvestigator", "Principal Investigator"),
-        ("processor", "Processor"),
-        ("author", "Author"),
-        ("sponsor", "Sponsor"),
-        ("coAuthor", "Co-Author"),
-        ("collaborator", "Collaborator"),
-        ("editor", "Editor"),
-        ("mediator", "Mediator"),
-        ("rightsHolder", "Rights Holder"),
-        ("contributor", "Contributor"),
-        ("funder", "Funder"),
-        ("stakeholder", "Stakeholder"),
+        (ROLE_RESOURCE_PROVIDER, "Resource Provider"),
+        (ROLE_USER, "User"),
+        (ROLE_ORIGINATOR, "Originator"),
+        (ROLE_PRINCIPAL_INVESTIGATOR, "Principal Investigator"),
+        (ROLE_PROCESSOR, "Processor"),
+        (ROLE_AUTHOR, "Author"),
+        (ROLE_SPONSOR, "Sponsor"),
+        (ROLE_CO_AUTHOR, "Co-Author"),
+        (ROLE_COLLABORATOR, "Collaborator"),
+        (ROLE_EDITOR, "Editor"),
+        (ROLE_MEDIATOR, "Mediator"),
+        (ROLE_RIGHTS_HOLDER, "Rights Holder"),
+        (ROLE_CONTRIBUTOR, "Contributor"),
+        (ROLE_FUNDER, "Funder"),
+        (ROLE_STAKEHOLDER, "Stakeholder"),
     )
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="dataset_contacts")
@@ -130,6 +211,7 @@ class DatasetToContact(models.Model):
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "contact"]),)
+        verbose_name = _("DatasetToContact Model", "Dataset Contact")
 
     def __str__(self) -> str:
-        return f"{self.dataset}: {self.contact} ({self.role})"
+        return f"{self.contact} as {self.role} in {self.dataset}"

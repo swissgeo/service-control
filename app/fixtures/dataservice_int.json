@@ -35,8 +35,8 @@
       "polymorphic_ctype": ["dataservice", "ogcapistacdataservice"],
       "dataservice_id": "stac-api-landingpage",
       "title": "STAC API Landingpage",
-      "openapi_spec_url": "https://data.geo.admin.ch/api/stac/static/spec/v1/openapi.yaml",
-      "documentation_url_de": "https://data.geo.admin.ch/api/stac/static/spec/v1/api.html",
+      "openapi_spec_url": "https://sys-data.int.bgdi.ch/api/stac/static/spec/v1/openapi.yaml",
+      "documentation_url_de": "https://sys-data.int.bgdi.ch/api/stac/static/spec/v1/api.html",
       "documentation_url_fr": null,
       "documentation_url_en": null,
       "documentation_url_it": null,
@@ -64,7 +64,7 @@
     "fields": {
       "dataservice_ptr": ["wms-geoadminch"],
       "languages": "[\"de\", \"fr\", \"en\", \"it\"]",
-      "capabilities_url": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}"
+      "capabilities_url": "https://sys-wms.int.bgdi.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}"
     }
   },
   {
@@ -72,21 +72,21 @@
     "fields": {
       "dataservice_ptr": ["wmts-geoadminch"],
       "variable_epsg_list": "[\"2056\", \"21781\", \"4326\"]",
-      "capabilities_url": "https://wmts.geo.admin.ch/EPSG/{epsg}/1.0.0/WMTSCapabilities.xml"
+      "capabilities_url": "https://sys-wmts.int.bgdi.ch/EPSG/{epsg}/1.0.0/WMTSCapabilities.xml"
     }
   },
   {
     "model": "dataservice.ogcapistacdataservice",
     "fields": {
       "dataservice_ptr": ["stac-api-landingpage"],
-      "landing_page_url": "https://data.geo.admin.ch/api/stac/v1/"
+      "landing_page_url": "https://sys-data.int.bgdi.ch/api/stac/v1/"
     }
   },
   {
     "model": "dataservice.geoadminfeaturesdataservice",
     "fields": {
       "dataservice_ptr": ["api3features-geoadminch"],
-      "landing_page_url": "https://api3.geo.admin.ch/rest/services/ech/MapServer"
+      "landing_page_url": "sys-api3.int.bgdi.ch/rest/services/ech/MapServer"
     }
   }
 ]

@@ -13,7 +13,8 @@ from .models import Contact, Organization, Unit
 class OrganizationAdmin(admin.ModelAdmin):
     """Admin View for Organization"""
 
-    list_display = ("organization_id", "acronym_en", "name_en")
+    list_display = ("organization_id", "acronym_en", "name_en", "data_source")
+    list_filter = ("data_source",)
     readonly_fields = ("created", "updated")
 
     def get_readonly_fields(

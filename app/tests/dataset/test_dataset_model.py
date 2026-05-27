@@ -87,7 +87,9 @@ def test_dataset_unique_fields(field, dataset):
 
 
 def test_dataset_unit(dataset, unit):
-    dataset_unit = DatasetToUnit.objects.create(dataset=dataset, unit=unit, role="owner")
+    dataset_unit = DatasetToUnit.objects.create(
+        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+    )
 
     assert unit.dataset_units.first() == dataset_unit
 
@@ -97,7 +99,9 @@ def test_dataset_unit(dataset, unit):
 
 
 def test_dataset_contact(dataset, unit):
-    dataset_unit = DatasetToUnit.objects.create(dataset=dataset, unit=unit, role="owner")
+    dataset_unit = DatasetToUnit.objects.create(
+        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+    )
     assert unit.dataset_units.first() == dataset_unit
 
     dataset.delete()
@@ -115,3 +119,11 @@ def test_dataset_keywords(dataset):
     assert Dataset.objects.count() == 0
     assert Thesaurus.objects.count() > 0
     assert Keyword.objects.count() > 0
+
+
+def test_add_data_source_id(dataset):
+    dataset.add_data_source_id("b")
+    dataset.add_data_source_id("a")
+    dataset.add_data_source_id("a")
+
+    assert dataset.data_source_ids == ["a", "b"]

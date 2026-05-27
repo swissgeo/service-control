@@ -134,6 +134,7 @@ def test_form_valid_for_blank_optional_field(db):
 
     data = {
         "organization_id": "ch.bafu",
+        "data_source": Organization.DATA_SOURCE_CHOICE_USER_INPUT,
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
         "name_en": "Federal Office for the Environment",
@@ -322,3 +323,11 @@ def test_delete_deletes_related_records(
     assert user_client.return_value.delete_app_client.called
     assert ssm_client.return_value.get_parameter.called
     assert ssm_client.return_value.put_parameter.called
+
+
+def test_add_data_source_id(organization):
+    organization.add_data_source_id("b")
+    organization.add_data_source_id("a")
+    organization.add_data_source_id("a")
+
+    assert organization.data_source_ids == ["a", "b"]

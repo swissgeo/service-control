@@ -234,3 +234,42 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
     @property
     def external_id(self) -> str:
         return self.geojson_url_de
+
+
+class ExternalGeoadminFeaturesDistribution(ExternalDistribution):
+    """Distribution model for geoadmin features (aka api3/identify) distributions."""
+
+    dataservice = models.ForeignKey(
+        "dataservice.GeoadminFeaturesDataservice", on_delete=models.SET_NULL, null=True
+    )
+    layer_id = models.CharField(_(_context, "Geoadmin Features Layer ID"), max_length=255)
+    queryable = models.BooleanField(
+        _(_context, "Queryable"),
+        default=True,
+        help_text=_(
+            _context, "Whether the layer is queryable (i.e. can be used in identify requests)"
+        ),
+    )
+    renderable = models.BooleanField(
+        _(_context, "Renderable"),
+        default=True,
+        help_text=_(_context, "Whether the layer is renderable (i.e. has a html tooltip)"),
+    )
+
+    class Meta:
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["dataservice", "layer_id"],
+                name="unique_layer_id_per_dataservice",
+            ),
+        ]
+        verbose_name = _(_context, "External Geoadmin Features Distributions")
+        verbose_name_plural = _(_context, "External Geoadmin Features Distributions")
+
+    @property
+    def protocol(self) -> str:
+        return "geoadmin:features"
+
+    @property
+    def external_id(self) -> str:
+        return self.layer_id

@@ -199,7 +199,7 @@ class Command(CustomBaseCommand):
         else:
             datasets = Dataset.objects.all()
         for dataset in datasets:
-            ds_distributions = list(dataset.distribution_set.all())  # ty:ignore[unresolved-attribute]
+            ds_distributions = list(dataset.distribution_set.all())
             for lang in LANGS:
                 distribution_collection = OAFeatureCollection()
                 for distribution in ds_distributions:
