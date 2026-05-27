@@ -9,6 +9,7 @@ from django.core.management.base import CommandParser
 from dataservice.models import OGCAPIStacDataservice
 from dataset.models import Dataset
 from distribution.models import Distribution, ExternalStacDistribution
+from harvest.models import DatasetMapping
 from utils.command import CustomBaseCommand
 
 env = environ.Env()
@@ -125,7 +126,7 @@ class Command(CustomBaseCommand):
         else:
             self.print_warning(f"Sync from STAC completed with errors. Metrics: {metrics}")
 
-    def sync_stac_from_capabilities(  # noqa:C901
+    def sync_stac_from_capabilities(  # noqa:C901,PLR0912,PLR0915
         self, dataservice: OGCAPIStacDataservice
     ) -> tuple[int, int, int, int]:
         """Evaluate the capabilities to detect distributions.
@@ -136,6 +137,8 @@ class Command(CustomBaseCommand):
         Returns the number of STAC collections, number of added distributions, number of updated
         distributions and the number of obsolete/removed distributions.
         """
+
+        mappings = DatasetMapping.table()
 
         processed = set()
         added = 0
@@ -158,6 +161,12 @@ class Command(CustomBaseCommand):
             processed.add(collection_id)
             self.print(f"Processing collection {collection_id}")
 
+            dataset, mapping = mappings.match(collection_id)
+            if mapping and not mapping.enabled_for_stac_distribution:
+                dataset = None
+            if dataset:
+                self.print(f"Mapping found for collection_id {collection_id}: {dataset}")
+
             # check if distribution with this collection_id already exists
             try:
                 distribution = ExternalStacDistribution.objects.get(
@@ -171,8 +180,9 @@ class Command(CustomBaseCommand):
                     dataservice.dataservice_id,
                 )
             except ExternalStacDistribution.DoesNotExist:
-                # try to find a dataset with the same dataset_id as the collection_id
-                dataset = Dataset.objects.filter(dataset_id=collection_id).first()
+                if not dataset:
+                    # try to find a dataset with the same dataset_id as the collection_id
+                    dataset = Dataset.objects.filter(dataset_id=collection_id).first()
 
                 if not dataset:
                     self.print_warning(
@@ -198,9 +208,19 @@ class Command(CustomBaseCommand):
                     f"dataset {dataset.dataset_id} from dataservice {dataservice.dataservice_id}."
                 )
             else:
+                # Use the dataset from the mapping if available
+                if dataset and mapping and mapping.update and distribution.dataset != dataset:
+                    distribution.dataset = dataset
+                    distribution.save()
+                    updated += 1
+                    self.print(
+                        f"Updated distribution for collection_id {collection_id} to "
+                        f"dataset {dataset.dataset_id} from "
+                        f"dataservice {dataservice.dataservice_id}."
+                    )
+
                 # If the distribution is linked to the orphanage dataset, we check if there's
                 # a dataset now matching the collection_id and link it to this dataset if found
-
                 if distribution.dataset == orphanage_dataset:
                     dataset = Dataset.objects.filter(dataset_id=collection_id).first()
                     if dataset:

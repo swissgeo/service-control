@@ -12,14 +12,14 @@ from harvest.models import (
 class OrganizationMappingAdmin(admin.ModelAdmin):
     """Admin View for OrganizationMapping"""
 
-    list_display = ("provider_id_prefix", "organization_id", "update_organization")
+    list_display = ("provider_id_prefix", "organization_id", "update")
 
 
 @admin.register(DatasetMapping)
 class DatasetMappingAdmin(admin.ModelAdmin):
     """Admin View for DatasetMapping"""
 
-    list_display = ("dataset_id_prefix", "dataset_id", "update_dataset")
+    list_display = ("dataset_id_prefix", "dataset_id", "update")
 
 
 @admin.register(DatasetToUnitMapping)
