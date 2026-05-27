@@ -85,6 +85,11 @@ def post_fork(server: Arbiter, worker: Worker) -> None:
 # We use the port 5000 as default, otherwise we set the HTTP_PORT env variable within the container.
 if __name__ == "__main__":
     HTTP_PORT = str(environ.get("HTTP_PORT", "8000"))
+
+    # Get TLS configuration
+    keyfile = environ.get("GUNICORN_KEYFILE")
+    certfile = environ.get("GUNICORN_CERTFILE")
+
     # Bind to 0.0.0.0 to let your app listen to all network interfaces.
     options = {
         "bind": f"{'0.0.0.0'}:{HTTP_PORT}",  # noqa: S104
@@ -98,4 +103,11 @@ if __name__ == "__main__":
         "logconfig_dict": get_logging_config(),
         "post_fork": post_fork,
     }
+
+    if keyfile and certfile:
+        options["keyfile"] = keyfile
+        options["certfile"] = certfile
+    elif keyfile or certfile:
+        raise RuntimeError("Both GUNICORN_KEYFILE and GUNICORN_CERTFILE must be set for TLS")
+
     StandaloneApplication(application, options).run()
