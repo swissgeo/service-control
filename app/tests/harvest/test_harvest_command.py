@@ -214,7 +214,7 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     )
 
     OrganizationMapping(
-        provider_id_prefix="ch.bafu", organization_id="ch.bafu1", update_organization=True
+        provider_id_prefix="ch.bafu", organization_id="ch.bafu1", update=True
     ).save()
 
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
@@ -292,10 +292,10 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     )
 
     OrganizationMapping(
-        provider_id_prefix="ch.bafu1", organization_id="ch.bafu", update_organization=False
+        provider_id_prefix="ch.bafu1", organization_id="ch.bafu", update=False
     ).save()
     OrganizationMapping(
-        provider_id_prefix="ch.bafu2", organization_id="ch.bafu", update_organization=True
+        provider_id_prefix="ch.bafu2", organization_id="ch.bafu", update=True
     ).save()
 
     dynamodb.get_paginator().paginate.return_value = [
@@ -522,7 +522,7 @@ def test_command_updates_dataset(dynamodb, db):
     assert ds_out.data_source_ids == ["ch.bafu.moose"]
 
 
-def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
+def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
     ds_1 = Dataset(
         dataset_id="ch.bafu.moose1",
         title_short_de="x",
@@ -575,17 +575,60 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
         geocat_id="abcd",
     )
 
-    DatasetMapping(
-        dataset_id_prefix="ch.bafu.moose", dataset_id="ch.bafu.moose1", update_dataset=True
-    ).save()
+    mapping = DatasetMapping(
+        dataset_id_prefix="ch.bafu.moose",
+        dataset_id="ch.bafu.moose1",
+        enabled_for_bod_dataset=False,
+        update=False,
+    )
+    mapping.save()
 
     dynamodb.get_paginator().paginate.return_value = [{"Items": [ds_in.as_dynamodb_item()]}]
+
+    # -------------------------------
+    # Mapping not used if not enabled
+    # -------------------------------
+    out = StringIO()
+    call_command("import_harvest_tables", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    ds_1.refresh_from_db()
+    assert ds_1.data_source_ids == []
+
+    # -------------------------------
+    # Update flag not yet set
+    # -------------------------------
+    mapping.enabled_for_bod_dataset = True
+    mapping.save()
 
     out = StringIO()
     call_command("import_harvest_tables", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     assert "Mapping found for dataset_id ch.bafu.moose : ch.bafu.moose1" in out
+    assert "Obsolete datasets found: ch.bafu.moose" in out
+    assert "Obsolete datasets found: ch.bafu.moose2" in out
+
+    ds_1.refresh_from_db()
+    assert ds_1.data_source_ids == ["ch.bafu.moose"]
+    assert ds_1.title_short_de == "x"
+
+    # -------------------------------
+    # Mapping used
+    # -------------------------------
+    mapping.update = True
+    mapping.save()
+
+    ds_3 = Dataset.objects.filter(dataset_id="ch.bafu.moose").first()
+    ds_3.geocat_id = "_obosolete_"
+    ds_3.save()
+
+    out = StringIO()
+    call_command("import_harvest_tables", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Mapping found for dataset_id ch.bafu.moose : ch.bafu.moose1" in out
+    assert "Obsolete datasets found: ch.bafu.moose" in out
     assert "Obsolete datasets found: ch.bafu.moose2" in out
 
     ds_1.refresh_from_db()
@@ -661,10 +704,10 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
     )
 
     DatasetMapping(
-        dataset_id_prefix="ch.bafu.moose1", dataset_id="ch.bafu.moose", update_dataset=False
+        dataset_id_prefix="ch.bafu.moose1", dataset_id="ch.bafu.moose", update=False
     ).save()
     DatasetMapping(
-        dataset_id_prefix="ch.bafu.moose2", dataset_id="ch.bafu.moose", update_dataset=True
+        dataset_id_prefix="ch.bafu.moose2", dataset_id="ch.bafu.moose", update=True
     ).save()
 
     dynamodb.get_paginator().paginate.return_value = [
@@ -1241,15 +1284,18 @@ def test_command_uses_distribution_mapping(dynamodb, db):
     )
     dataset.save()
 
-    DatasetMapping(
+    mapping = DatasetMapping(
         dataset_id_prefix="ch.bazl.luftfahrthindernis-1",
         dataset_id="ch.bazl.luftfahrthindernis",
-        update_dataset=True,
-    ).save()
+        enabled_for_bod_distribution=False,
+        update=True,
+    )
+    mapping.save()
     DatasetMapping(
         dataset_id_prefix="ch.bazl.luftfahrthindernis-2",
         dataset_id="ch.bazl.luftfahrthindernis",
-        update_dataset=False,
+        enabled_for_bod_distribution=True,
+        update=False,
     ).save()
 
     layer_1 = LayersJSImport(
@@ -1263,6 +1309,28 @@ def test_command_uses_distribution_mapping(dynamodb, db):
     dynamodb.get_paginator().paginate.return_value = [
         {"Items": [layer_1.as_dynamodb_item(), layer_2.as_dynamodb_item()]}
     ]
+
+    # -------------------------------
+    # Mapping not used if not enabled
+    # -------------------------------
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert (
+        "Mapping found for layer_id ch.bazl.luftfahrthindernis-2 : ch.bazl.luftfahrthindernis"
+        in out
+    )
+    # assert "Importing WMS Distribution ch.bazl.luftfahrthindernis-1:wms" in out
+    assert "Importing WMS Distribution ch.bazl.luftfahrthindernis-2:wms" not in out
+
+    assert Distribution.objects.count() == 0
+
+    # -------------------------------
+    # Mapping used if enabled
+    # -------------------------------
+    mapping.enabled_for_bod_distribution = True
+    mapping.save()
 
     out = StringIO()
     call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)

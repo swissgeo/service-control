@@ -29,10 +29,24 @@ class OrganizationMapping(models.Model):
 
     _context = "OrganizationMapping Model"
 
-    provider_id_prefix = models.CharField(_(_context, "Provider ID Prefix"), max_length=100)
-    organization_id = models.CharField(_(_context, "Organization ID"), max_length=100)
-    update_organization = models.BooleanField(
-        _(_context, "Update organization"),
+    provider_id_prefix = models.CharField(
+        _(_context, "Prefix"),
+        max_length=100,
+        help_text=_(
+            _context,
+            (
+                "Prefix used for matching provider ID during import of organizations from harvest "
+                "table/BOD"
+            ),
+        ),
+    )
+    organization_id = models.CharField(
+        _(_context, "Organization ID"),
+        max_length=100,
+        help_text=_(_context, "The ID of the organization in this database"),
+    )
+    update = models.BooleanField(
+        _(_context, "Update"),
         default=False,
         help_text=_(_context, "Whetever the matching entry should update the organization"),
     )
@@ -60,18 +74,67 @@ class OrganizationMapping(models.Model):
 
 
 class DatasetMapping(models.Model):
-    """Mapping used to map datasets during import of harvested datasets."""
+    """Mapping used to map datasets during import of harvested datasets and STAC sync."""
 
     _context = "DatasetMapping Model"
 
     dataset_id_prefix = models.CharField(
-        _(_context, "Dataset ID / Layer ID Prefix (Harvest)"), max_length=100
+        _(_context, "Prefix"),
+        max_length=100,
+        help_text=_(
+            _context,
+            "<br>".join(  # noqa:FLY002
+                (
+                    "Prefix used for matching:",
+                    "- Dataset ID during import of datasets from harvest table/BOD (if enabled)",
+                    "- Layer ID during import of distributions from harvest table/BOD (if enabled)",
+                    "- STAC Collection ID during syncing distributions from capabilities "
+                    "(if enabled)",
+                )
+            ),
+        ),
     )
-    dataset_id = models.CharField(_(_context, "Dataset ID (DB)"), max_length=100)
-    update_dataset = models.BooleanField(
-        _(_context, "Update dataset/distributions"),
+    dataset_id = models.CharField(
+        _(_context, "Dataset ID"),
+        max_length=100,
+        help_text=_(_context, "The ID of the dataset in this database"),
+    )
+    enabled_for_bod_dataset = models.BooleanField(
+        _(_context, "Datasets"),
+        default=True,
+        help_text=_(
+            _context,
+            (
+                "Whetever the matching entry should be used while importing datasets from "
+                "harvest tables/BOD"
+            ),
+        ),
+    )
+    enabled_for_bod_distribution = models.BooleanField(
+        _(_context, "Distributions (BOD)"),
+        default=True,
+        help_text=_(
+            _context,
+            (
+                "Whetever the matching entry should be used while importing distributions from "
+                "harvest tables/BOD"
+            ),
+        ),
+    )
+    enabled_for_stac_distribution = models.BooleanField(
+        _(_context, "Distributions (STAC)"),
+        default=True,
+        help_text=_(
+            _context,
+            "Whetever the matching entry should be used while importing distributions from STAC",
+        ),
+    )
+    update = models.BooleanField(
+        _(_context, "Update"),
         default=False,
-        help_text=_(_context, "Whetever the matching entry should update the dataset"),
+        help_text=_(
+            _context, "Whetever the matching entry should update the dataset or distribution"
+        ),
     )
 
     def __str__(self) -> str:
@@ -101,9 +164,25 @@ class DatasetToUnitMapping(models.Model):
 
     _context = "DatasetToUnitMapping Model"
 
-    dataset_id_prefix = models.CharField(_(_context, "Dataset ID Prefix"), max_length=100)
-    organization_id = models.CharField(_(_context, "Organization ID"), max_length=100)
-    unit_id = models.CharField(_(_context, "Unit ID"), default=Unit.DEFAULT_UNIT_ID, max_length=100)
+    dataset_id_prefix = models.CharField(
+        _(_context, "Prefix"),
+        max_length=100,
+        help_text=_(
+            _context,
+            "Prefix used for matching dataset ID during import of datasets from harvest/BOD",
+        ),
+    )
+    organization_id = models.CharField(
+        _(_context, "Organization ID"),
+        max_length=100,
+        help_text=_(_context, "The ID of the organization in this database"),
+    )
+    unit_id = models.CharField(
+        _(_context, "Unit ID"),
+        default=Unit.DEFAULT_UNIT_ID,
+        max_length=100,
+        help_text=_(_context, "The ID of the organization unit in this database"),
+    )
 
     def __str__(self) -> str:
         return f"{self.dataset_id_prefix} -> {self.organization_id}: {self.unit_id}"
@@ -133,13 +212,33 @@ class DatasetToContactMapping(models.Model):
 
     _context = "DatasetToContactMapping Model"
 
-    dataset_id_prefix = models.CharField(_(_context, "Dataset ID Prefix"), max_length=100)
+    dataset_id_prefix = models.CharField(
+        _(_context, "Dataset ID Prefix"),
+        max_length=100,
+        help_text=_(
+            _context,
+            "Prefix used for matching dataset ID during import of datasets from harvest/geocat",
+        ),
+    )
     role = models.CharField(
         max_length=100,
         choices=DatasetToContact.RECOMMENDED_ROLES + DatasetToContact.NOT_RECOMMENDED_ROLES,
+        help_text=_(
+            _context,
+            "Role used for matching during import of datasets from harvest/geocat",
+        ),
     )
-    organization_id = models.CharField(_(_context, "Organization ID"), max_length=100)
-    contact_name_en = models.CharField(_(_context, "Contact Name (EN)"), null=True, blank=True)
+    organization_id = models.CharField(
+        _(_context, "Organization ID"),
+        max_length=100,
+        help_text=_(_context, "The ID of the organization in this database"),
+    )
+    contact_name_en = models.CharField(
+        _(_context, "Contact Name (EN)"),
+        null=True,
+        blank=True,
+        help_text=_(_context, "The contact name (EN) of the organization contact in this database"),
+    )
 
     def __str__(self) -> str:
         return (

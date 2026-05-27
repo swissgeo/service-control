@@ -9,6 +9,7 @@ import pytest
 
 from dataset.models import Dataset
 from distribution.models import Distribution, ExternalGeoJSONDistribution, ExternalStacDistribution
+from harvest.models import DatasetMapping
 
 
 @pytest.fixture(name="stac")
@@ -228,3 +229,151 @@ def test_command_cleans_obsolete_stac_distributions(stac, db):
         "ch.bazl.luftfahrthindernis:geojson",
         "ch.bafu.moose:stac",
     }
+
+
+def test_command_uses_dataset_mapping_for_distribution(stac, db):
+    Dataset(
+        dataset_id="ch.bafu.moose",
+        geocat_id="abcd",
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+    ).save()
+
+    DatasetMapping(dataset_id_prefix="ch.bafu.moose", dataset_id="ch.bafu.moose").save()
+
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    stac.return_value = [Collection(id="ch.bafu.moose-stac", description="", extent="")]
+
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Mapping found for collection_id ch.bafu.moose-stac: ch.bafu.moose" in out
+    assert (
+        "Added distribution for collection_id ch.bafu.moose-stac to dataset ch.bafu.moose from "
+        "dataservice stac-api-landingpage." in out
+    )
+
+    dist = ExternalStacDistribution.objects.first()
+    assert dist
+    assert dist.dataset.dataset_id == "ch.bafu.moose"
+
+
+def test_command_updates_distribution_dataset_from_mapping(stac, db):
+    Dataset(
+        dataset_id="ch.bafu.moose-stac",
+        geocat_id="abcd",
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+    ).save()
+    Dataset(
+        dataset_id="ch.bafu.moose",
+        geocat_id="efgh",
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+    ).save()
+
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    # ------------------------------------------------
+    # Import to orphanage
+    # ------------------------------------------------
+    stac.return_value = [Collection(id="ch.bafu.moose-stac", description="", extent="")]
+
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert (
+        "Added distribution for collection_id ch.bafu.moose-stac to dataset ch.bafu.moose-stac "
+        "from dataservice stac-api-landingpage." in out
+    )
+
+    dist = ExternalStacDistribution.objects.first()
+    assert dist
+    assert dist.dataset.dataset_id == "ch.bafu.moose-stac"
+
+    # ------------------------------------------------
+    # Don't use the mapping if not enabled
+    # ------------------------------------------------
+    mapping = DatasetMapping(
+        dataset_id_prefix="ch.bafu.moose",
+        dataset_id="ch.bafu.moose",
+        enabled_for_stac_distribution=False,
+    )
+    mapping.save()
+
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    dist = ExternalStacDistribution.objects.first()
+    assert dist
+    assert dist.dataset.dataset_id == "ch.bafu.moose-stac"
+
+    # ------------------------------------------------
+    # Don't change to other dataset if flag not set
+    # ------------------------------------------------
+    mapping.enabled_for_stac_distribution = True
+    mapping.save()
+
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Mapping found for collection_id ch.bafu.moose-stac: ch.bafu.moose" in out
+
+    dist = ExternalStacDistribution.objects.first()
+    assert dist
+    assert dist.dataset.dataset_id == "ch.bafu.moose-stac"
+
+    # ------------------------------------------------
+    # Change to other dataset if enabled and update flag set
+    # ------------------------------------------------
+    mapping.update = True
+    mapping.save()
+
+    out = StringIO()
+    call_command("sync_from_capabilities", stac=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Mapping found for collection_id ch.bafu.moose-stac: ch.bafu.moose" in out
+    assert (
+        "Updated distribution for collection_id ch.bafu.moose-stac to dataset "
+        "ch.bafu.moose from dataservice stac-api-landingpage." in out
+    )
+
+    dist = ExternalStacDistribution.objects.first()
+    assert dist
+    assert dist.dataset.dataset_id == "ch.bafu.moose"

@@ -193,7 +193,7 @@ class Command(CustomBaseCommand):
                 org, mapping = mappings.match(provider_id)
                 if org:
                     self.print(f"Mapping found for provider_id {provider_id} : {org}")
-                    update = mapping.update_organization if mapping else True
+                    update = mapping.update if mapping else True
                 else:
                     try:
                         org = Organization.objects.get(
@@ -263,7 +263,7 @@ class Command(CustomBaseCommand):
         return len(removed), len(obsolete)
 
     # ##########################################################################
-    def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0915
+    def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0915,PLR0912
         """Imports datasets from the harvest table.
 
         Processes every dataset entry in the harvest table.
@@ -323,9 +323,11 @@ class Command(CustomBaseCommand):
                 # Create dataset
                 update = True
                 ds, mapping = ds_mappings.match(dataset_id)
+                if mapping and not mapping.enabled_for_bod_dataset:
+                    ds = None
                 if ds:
                     self.print(f"Mapping found for dataset_id {dataset_id} : {ds}")
-                    update = mapping.update_dataset if mapping else True
+                    update = mapping.update if mapping else True
                 else:
                     ds, created = Dataset.objects.get_or_create(
                         dataset_id=dataset_id,
@@ -515,9 +517,11 @@ class Command(CustomBaseCommand):
 
                 layer_id = ljs.layer_id
                 dataset, mapping = ds_mappings.match(layer_id)
+                if mapping and not mapping.enabled_for_bod_distribution:
+                    dataset = None
                 if dataset:
                     self.print(f"Mapping found for layer_id {layer_id} : {dataset}")
-                    if mapping and not mapping.update_dataset:
+                    if mapping and not mapping.update:
                         continue
                 else:
                     try:
