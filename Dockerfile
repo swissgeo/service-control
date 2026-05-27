@@ -13,8 +13,10 @@ ENV INSTALL_DIR=/opt/service-control
 RUN apt-get -qq update > /dev/null \
     && apt-get -qq clean \
     && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${INSTALL_DIR} \
     && groupadd -r ${GROUP} -g ${GID} \
-    && useradd -r -s /bin/false -g ${GROUP} -u ${UID} ${USER}
+    && useradd -r -s /bin/false -d ${INSTALL_DIR} -g ${GROUP} -u ${UID} ${USER} \
+    && chown -R ${USER}:${GROUP} ${INSTALL_DIR}
 
 ###########################################################
 # Builder container
