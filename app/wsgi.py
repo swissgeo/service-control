@@ -70,7 +70,7 @@ class StandaloneApplication(BaseApplication):
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
-    def load(self) -> WSGIHandler:  # type:ignore[override]
+    def load(self) -> WSGIHandler:  # ty: ignore[invalid-method-override]
         return self.application
 
 
@@ -110,4 +110,4 @@ if __name__ == "__main__":
     elif keyfile or certfile:
         raise RuntimeError("Both GUNICORN_KEYFILE and GUNICORN_CERTFILE must be set for TLS")
 
-    StandaloneApplication(application, options).run()
+    StandaloneApplication(application, options).run()  # ty: ignore[invalid-argument-type]

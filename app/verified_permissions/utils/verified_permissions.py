@@ -135,11 +135,11 @@ class Client(BaseClient):
         resp = self.client.create_policy(
             # clientToken='string', # Optional: set for idempotency on retries
             policyStoreId=self.policy_store_id,
-            definition={
+            definition={  # ty: ignore[invalid-argument-type]
                 "templateLinked": {
                     "policyTemplateId": template_id,
-                    "principal": principal,
-                    "resource": resource,
+                    "principal": principal,  # ty: ignore[invalid-argument-type]
+                    "resource": resource,  # ty: ignore[invalid-argument-type]
                 }
             },
         )
@@ -156,8 +156,8 @@ class Client(BaseClient):
             policyStoreId=self.policy_store_id,
             accessToken=token,
             action={"actionType": f"{self.namespace}::Action", "actionId": action},
-            resource=resource.vp_entity(request, self.namespace),
-            entities=self._build_entities(resource, request),
+            resource=resource.vp_entity(request, self.namespace),  # ty: ignore[invalid-argument-type]
+            entities=self._build_entities(resource, request),  # ty: ignore[invalid-argument-type]
         )
         return resp["decision"] == "ALLOW"
 

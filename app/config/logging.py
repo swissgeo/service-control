@@ -182,7 +182,7 @@ class RequestResponseLoggingMiddleware:
         # (e.g. WhiteNoiseFileResponse doesn't)
         if isinstance(response, (HttpResponse, JsonResponse)):
             payload = response.content.decode()[: int(settings.LOGGING_MAX_RESPONSE_PAYLOAD_SIZE)]
-            extra["response"]["payload"] = payload
+            extra["response"]["payload"] = payload  # ty: ignore[invalid-assignment]
 
         logger.info(
             "Response %s %s %s?%s",

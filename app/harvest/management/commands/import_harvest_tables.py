@@ -585,7 +585,7 @@ class Command(CustomBaseCommand):
                     else:
                         metrics["updated_api3feature_distributions"] += 1
 
-                obsolete = dataset.distribution_set.filter(  # type:ignore[unresolved-attribute]
+                obsolete = dataset.distribution_set.filter(  # ty: ignore[unresolved-attribute]
                     data_source=Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
                 ).exclude(distribution_id__in=processed)
                 if obsolete:
