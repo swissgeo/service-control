@@ -22,6 +22,8 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 # NOTE: We do this only if wsgi.py is the main program, when running django runserver
 # for local development, monkey patching creates the following error:
 #     `RuntimeError: cannot release un-acquired lock`
+from typing import Any
+
 if __name__ == "__main__":
     import gevent.monkey
 
@@ -56,8 +58,8 @@ application = get_wsgi_application()
 class StandaloneApplication(BaseApplication):
     cfg: Config
 
-    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:
-        self.options = options or {}
+    def __init__(self, app: WSGIHandler, options: dict[str, Any]) -> None:
+        self.options = options
         self.application = app
         super().__init__()
 
@@ -110,4 +112,4 @@ if __name__ == "__main__":
     elif keyfile or certfile:
         raise RuntimeError("Both GUNICORN_KEYFILE and GUNICORN_CERTFILE must be set for TLS")
 
-    StandaloneApplication(application, options).run()  # ty: ignore[invalid-argument-type]
+    StandaloneApplication(application, options).run()
