@@ -7,13 +7,17 @@ import sys
 from opentelemetry import trace
 
 from utils.logging import redirect_std_to_logger
-from utils.otel import initialize_tracing, setup_trace_provider
 
 
 def main() -> None:
     """Run administrative tasks."""
     # default to the setting that's being created in DOCKERFILE
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
+    # otel.py accesses Django settings at module level, so it must be imported
+    # only after DJANGO_SETTINGS_MODULE has been set.
+    from utils.otel import initialize_instrumentation  # noqa: PLC0415
+
     try:
         from django.core.management import execute_from_command_line  # noqa: PLC0415
     except ImportError as exc:
@@ -23,10 +27,9 @@ def main() -> None:
             "forget to activate a virtual environment?",
         ) from exc
 
-    tracing_enabled = initialize_tracing()
+    tracing_enabled = initialize_instrumentation()
     if tracing_enabled:
         name = sys.argv[1] if len(sys.argv) > 1 else sys.argv[0]
-        setup_trace_provider()
         tracer = trace.get_tracer(name)
         with tracer.start_as_current_span(name=name):
             execute_from_command_line(sys.argv)

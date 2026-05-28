@@ -18,6 +18,7 @@ import yaml
 from corsheaders.defaults import default_headers
 
 from config.authorization import VPRole
+from config.logging import Exporter
 
 env = environ.Env()
 
@@ -70,10 +71,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # Middleware to add request to thread variables, this should be far up in the chain so request
-    # information can be added to as many logs as possible.
-    "logging_utilities.django_middlewares.add_request_context.AddToThreadContextMiddleware",
-    "config.logging.RequestResponseLoggingMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -250,8 +247,6 @@ def get_logging_config() -> dict[str, object]:
 
 
 LOGGING = get_logging_config()
-LOGGING_MAX_REQUEST_PAYLOAD_SIZE = env.int("LOGGING_MAX_REQUEST_PAYLOAD_SIZE", default=200)
-LOGGING_MAX_RESPONSE_PAYLOAD_SIZE = env.int("LOGGING_MAX_RESPONSE_PAYLOAD_SIZE", default=200)
 
 # list of headers that are allowed to be logged
 _DEFAULT_LOG_ALLOWED_HEADERS = [
@@ -292,10 +287,33 @@ _DEFAULT_LOG_ALLOWED_HEADERS = [
     # API GW Headers
     "apigw-requestid",
 ]
+# TODO: Check if we log these headers in django tracing or remove config.
 LOG_ALLOWED_HEADERS = [
     str(header).lower()
     for header in env.list("LOG_ALLOWED_HEADERS", default=_DEFAULT_LOG_ALLOWED_HEADERS)
 ]
+
+# OTEL Settings
+OTEL_SDK_DISABLED = env.bool("OTEL_SDK_DISABLED", False)
+
+OTEL_ENABLE_OTLP_EXPORTER = env.bool("OTEL_ENABLE_OTLP_EXPORTER", True)
+OTEL_EXPORTER_OTLP_ENDPOINT = env.str("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
+OTEL_EXPORTER_OTLP_HEADERS = env.str("OTEL_EXPORTER_OTLP_HEADERS", default=None)
+OTEL_EXPORTER_OTLP_INSECURE = env.bool("OTEL_EXPORTER_OTLP_INSECURE", False)
+
+OTEL_ENABLE_CONSOLE_EXPORTER = env.bool("OTEL_ENABLE_CONSOLE_EXPORTER", False)
+
+OTEL_ENABLE_METRICS = env.bool("OTEL_ENABLE_METRICS", False)
+OTEL_METRIC_EXPORT_INTERVAL_MS = env.int("OTEL_METRIC_EXPORT_INTERVAL_MS", 60000)
+OTEL_METRIC_EXPORT_TIMEOUT_MS = env.int("OTEL_METRIC_EXPORT_TIMEOUT_MS", 30000)
+
+OTEL_TRACE_EXPORTERS = env.list("OTEL_TRACE_EXPORTERS", default=[Exporter.OTLP.value])
+OTEL_METRIC_EXPORTERS = env.list("OTEL_METRIC_EXPORTERS", default=[Exporter.OTLP.value])
+OTEL_LOGGING_EXPORTERS = env.list("OTEL_LOGGING_EXPORTERS", default=[Exporter.OTLP.value])
+
+OTEL_ENABLE_DJANGO = env.bool("OTEL_ENABLE_DJANGO", True)
+OTEL_ENABLE_BOTO = env.bool("OTEL_ENABLE_BOTO", True)
+OTEL_ENABLE_PSYCOPG = env.bool("OTEL_ENABLE_PSYCOPG", True)
 
 # Path prefix for root (checker). Useful if the service is deployed under a
 # specific path. Should end with a slash, for example  'service-control/'.

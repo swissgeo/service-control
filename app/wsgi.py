@@ -38,9 +38,9 @@ environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 # Initialize should be called as early as possible, but at least before the app is imported
 # The order has a impact on how the libraries are instrumented. If called after app import,
 # e.g. the django instrumentation has no effect.
-from utils.otel import initialize_tracing, setup_trace_provider
+from utils.otel import initialize_instrumentation, shutdown_otel
 
-initialize_tracing()
+initialize_instrumentation()
 
 from gunicorn.app.base import BaseApplication
 from django.core.wsgi import get_wsgi_application
@@ -76,12 +76,10 @@ class StandaloneApplication(BaseApplication):
         return self.application
 
 
-def post_fork(server: Arbiter, worker: Worker) -> None:
-    if server.log:
-        server.log.info("Worker spawned (pid: %s)", worker.pid)
-
-    # Setup OTEL providers for this worker
-    setup_trace_provider()
+def worker_exit(_server: Arbiter, _worker: Worker) -> None:
+    # Flush and shut down OTEL providers before the worker process exits
+    # to ensure no spans, logs, or metrics are lost.
+    shutdown_otel()
 
 
 # We use the port 5000 as default, otherwise we set the HTTP_PORT env variable within the container.
@@ -103,7 +101,7 @@ if __name__ == "__main__":
         "keepalive": int(environ.get("GUNICORN_KEEPALIVE", "2")),
         "timeout": 60,
         "logconfig_dict": get_logging_config(),
-        "post_fork": post_fork,
+        "worker_exit": worker_exit,
     }
 
     if keyfile and certfile:

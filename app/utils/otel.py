@@ -1,57 +1,212 @@
-from os import getenv
+import logging
 
-from opentelemetry import trace
+from opentelemetry import metrics, trace
+from opentelemetry._logs import set_logger_provider
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
 from opentelemetry.instrumentation.django import DjangoInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs.export import (
+    BatchLogRecordProcessor,
+    ConsoleLogRecordExporter,
+    LogRecordExporter,
+)
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import (
+    ConsoleMetricExporter,
+    MetricExporter,
+    PeriodicExportingMetricReader,
+)
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter, SpanExporter
+
+from django.conf import settings
+
+from config.logging import Exporter
+
+_resource = Resource.create({"service.name": "service-control"})
 
 
-def strtobool(value: str) -> bool:
-    """Convert a string representation of truth to true (1) or false (0).
-    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
-    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
-    'val' is anything else.
-    """
-    value = value.lower()
-    if value in ("y", "yes", "t", "true", "on", "1"):
-        return True
-    if value in ("n", "no", "f", "false", "off", "0"):
-        return False
-    raise ValueError(f"invalid truth value '{value}'")
+def _get_providers() -> tuple[LoggerProvider | None, TracerProvider | None]:
+    if settings.OTEL_SDK_DISABLED:
+        return None, None
+    # Log provider can be used together with logging instrumentation to send logs to the OTEL
+    # configured exporter in the correct OTEL format
+    log_provider = LoggerProvider(resource=_resource)
+    set_logger_provider(log_provider)
+
+    # Trace provider
+    trace_provider = TracerProvider(resource=_resource)
+    trace.set_tracer_provider(trace_provider)
+
+    return log_provider, trace_provider
 
 
-def initialize_tracing() -> bool:
-    tracing_enabled = not strtobool(getenv("OTEL_SDK_DISABLED", "false"))
-    if tracing_enabled:
-        if strtobool(getenv("OTEL_ENABLE_DJANGO", "false")):
-            DjangoInstrumentor().instrument()
-        if strtobool(getenv("OTEL_ENABLE_BOTO", "false")):
-            BotocoreInstrumentor().instrument()
-        if strtobool(getenv("OTEL_ENABLE_PSYCOPG", "false")):
-            PsycopgInstrumentor().instrument()
-        if strtobool(getenv("OTEL_ENABLE_LOGGING", "false")):
-            LoggingInstrumentor().instrument()
-    return tracing_enabled
+def _get_exporters() -> tuple[
+    list[LogRecordExporter],
+    list[SpanExporter],
+    list[MetricExporter],
+]:
+    if settings.OTEL_SDK_DISABLED:
+        return [], [], []
+
+    metric_exporters = []
+    span_exporters = []
+    log_exporters = []
+
+    # OTLP exporters
+    if settings.OTEL_ENABLE_OTLP_EXPORTER:
+        # Tracing OTLP exporter
+        if Exporter.OTLP in settings.OTEL_TRACE_EXPORTERS:
+            span_exporters.append(
+                OTLPSpanExporter(
+                    endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
+                    headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
+                    insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
+                )
+            )
+        # Metrics OTLP exporter
+        if Exporter.OTLP in settings.OTEL_METRIC_EXPORTERS:
+            metric_exporters.append(
+                OTLPMetricExporter(
+                    endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
+                    headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
+                    insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
+                )
+            )
+        # Logs OTLP exporter
+        if Exporter.OTLP in settings.OTEL_LOGGING_EXPORTERS:
+            log_exporters.append(
+                OTLPLogExporter(
+                    endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
+                    headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
+                    insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
+                )
+            )
+
+    # Console exporters
+    if settings.OTEL_ENABLE_CONSOLE_EXPORTER:
+        if Exporter.CONSOLE in settings.OTEL_TRACE_EXPORTERS:
+            span_exporters.append(ConsoleSpanExporter())
+        if Exporter.CONSOLE in settings.OTEL_METRIC_EXPORTERS:
+            metric_exporters.append(ConsoleMetricExporter())
+        if Exporter.CONSOLE in settings.OTEL_LOGGING_EXPORTERS:
+            log_exporters.append(ConsoleLogRecordExporter())
+
+    return log_exporters, span_exporters, metric_exporters
 
 
-def setup_trace_provider() -> None:
-    tracing_enabled = not strtobool(getenv("OTEL_SDK_DISABLED", "false"))
-    if tracing_enabled:
-        # Since we created a new tracer, the default span processor is gone. We need to
-        # create a new one using the default OTEL env variables and ad it to the tracer.
-        span_processor = BatchSpanProcessor(
-            OTLPSpanExporter(
-                endpoint=getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
-                headers=getenv("OTEL_EXPORTER_OTLP_HEADERS"),
-                insecure=strtobool(getenv("OTEL_EXPORTER_OTLP_INSECURE", "false")),
-            ),
+def _setup_log_processors(
+    provider: LoggerProvider | None,
+    exporters: list[LogRecordExporter],
+) -> None:
+    if provider is None:
+        return
+
+    for exporter in exporters:
+        provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
+
+
+def _setup_span_processors(
+    provider: TracerProvider | None,
+    exporters: list[SpanExporter],
+) -> None:
+    if provider is None:
+        return
+
+    for exporter in exporters:
+        provider.add_span_processor(BatchSpanProcessor(exporter))
+
+
+def _setup_metrics(exporters: list[MetricExporter]) -> MeterProvider | None:
+    if settings.OTEL_SDK_DISABLED or not settings.OTEL_ENABLE_METRICS:
+        return None
+
+    metrics_readers = [
+        PeriodicExportingMetricReader(
+            exporter=exporter,
+            export_interval_millis=settings.OTEL_METRIC_EXPORT_INTERVAL_MS,
+            export_timeout_millis=settings.OTEL_METRIC_EXPORT_TIMEOUT_MS,
         )
+        for exporter in exporters
+    ]
+    meter_provider = MeterProvider(metric_readers=metrics_readers, resource=_resource)
+    metrics.set_meter_provider(meter_provider)
+    return meter_provider
 
-        provider = TracerProvider(resource=Resource.create())
-        provider.add_span_processor(span_processor)
-        trace.set_tracer_provider(provider)
+
+# ------------------------------------------------------------------------------
+# NOTE: Import-time setup is intentional.
+#
+# This allows gunicorn's logging.dictConfig() to resolve:
+#
+#   handlers:
+#     otel:
+#       (): app.otel.get_otel_handler
+#
+# At that point, get_otel_handler() must be importable and must already have access
+# to an initialized LoggerProvider.
+
+log_provider, trace_provider = _get_providers()
+
+log_exporters, span_exporters, metric_exporters = _get_exporters()
+
+_setup_log_processors(log_provider, log_exporters)
+_setup_span_processors(trace_provider, span_exporters)
+
+meter_provider = _setup_metrics(metric_exporters)
+
+
+def get_otel_handler() -> logging.Handler:
+    """Get the OTEL handler for logging
+
+    This will return a handler that can be used to send logs to OTEL. The handler will be configured
+    based on the OTEL settings.
+
+    Returns:
+        logging.Handler: OTEL handler for logging
+    """
+
+    if settings.OTEL_SDK_DISABLED:
+        raise ValueError(
+            "Cannot use OTEL handler in logging configuration when OTEL_SDK_DISABLED is true"
+        )
+    if log_provider is None:
+        raise ValueError("OTEL LoggerProvider is not initialized")
+
+    return LoggingHandler(logger_provider=log_provider)
+
+
+def initialize_instrumentation() -> bool:
+    """Initialize OTEL instrumentation
+
+    Setup OTEL tracing functionalities for third party libraries
+    """
+    if settings.OTEL_SDK_DISABLED:
+        return False
+
+    if settings.OTEL_ENABLE_DJANGO and not DjangoInstrumentor().is_instrumented_by_opentelemetry:
+        DjangoInstrumentor().instrument()
+    if settings.OTEL_ENABLE_BOTO and not BotocoreInstrumentor().is_instrumented_by_opentelemetry:
+        BotocoreInstrumentor().instrument()
+    if settings.OTEL_ENABLE_PSYCOPG and not PsycopgInstrumentor().is_instrumented_by_opentelemetry:
+        PsycopgInstrumentor().instrument()
+
+    return True
+
+
+def shutdown_otel() -> None:
+    """Flush and shutdown OTEL providers/processors on application shutdown."""
+
+    if trace_provider is not None:
+        trace_provider.shutdown()
+
+    if log_provider is not None:
+        log_provider.shutdown()
+
+    if meter_provider is not None:
+        meter_provider.shutdown()

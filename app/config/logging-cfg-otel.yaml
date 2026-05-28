@@ -1,0 +1,18 @@
+version: 1
+disable_existing_loggers: False
+
+root:
+  handlers:
+    - otel
+  level: DEBUG
+  propagate: True
+
+handlers:
+  otel:
+    (): utils.otel.get_otel_handler
+
+loggers:
+  django.request:
+    # setting this to ERROR prevents from logging too much
+    # we do the logging ourselves
+    level: ERROR
