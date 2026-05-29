@@ -157,7 +157,7 @@ class Organization(models.Model):
         for machine_user in MachineUser.objects.filter(organization=self):
             machine_user.delete()
 
-        for unit in self.unit_set.all():  # type:ignore[unresolved-attribute]
+        for unit in self.unit_set.all():  # ty: ignore[unresolved-attribute]
             unit.delete()
 
         result = super().delete(using=using, keep_parents=keep_parents)

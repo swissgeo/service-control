@@ -22,6 +22,8 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 # NOTE: We do this only if wsgi.py is the main program, when running django runserver
 # for local development, monkey patching creates the following error:
 #     `RuntimeError: cannot release un-acquired lock`
+from typing import Any
+
 if __name__ == "__main__":
     import gevent.monkey
 
@@ -56,8 +58,8 @@ application = get_wsgi_application()
 class StandaloneApplication(BaseApplication):
     cfg: Config
 
-    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:
-        self.options = options or {}
+    def __init__(self, app: WSGIHandler, options: dict[str, Any]) -> None:
+        self.options = options
         self.application = app
         super().__init__()
 
@@ -70,7 +72,7 @@ class StandaloneApplication(BaseApplication):
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
-    def load(self) -> WSGIHandler:  # type:ignore[override]
+    def load(self) -> WSGIHandler:  # ty: ignore[invalid-method-override]
         return self.application
 
 

@@ -1,8 +1,12 @@
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
 from django.http import HttpRequest
+
+if TYPE_CHECKING:
+    from mypy_boto3_verifiedpermissions.type_defs import EntityIdentifierTypeDef
 
 
 class VPEntityType(StrEnum):
@@ -21,7 +25,7 @@ class Parameter(BaseModel):
     vp_entity_type: VPEntityType
     parents: list[Parameter] = []
 
-    def vp_entity(self, request: HttpRequest, namespace: str) -> dict:
+    def vp_entity(self, request: HttpRequest, namespace: str) -> EntityIdentifierTypeDef | None:
         """Verified permissions entity representation for the parameter in the request."""
         if (resolver_match := request.resolver_match) and (
             resource_id := resolver_match.kwargs.get(self.parameter_name)
@@ -30,7 +34,7 @@ class Parameter(BaseModel):
                 "entityType": f"{namespace}::{self.vp_entity_type}",
                 "entityId": resource_id,
             }
-        return {}
+        return None
 
     def vp_entity_with_parents(self, request: HttpRequest, namespace: str) -> dict:
         """Verified permissions entity representation for the parameter in the request,

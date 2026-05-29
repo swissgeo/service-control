@@ -14,6 +14,10 @@ from verified_permissions.utils.base import BaseClient
 
 if TYPE_CHECKING:
     from mypy_boto3_verifiedpermissions import VerifiedPermissionsClient
+    from mypy_boto3_verifiedpermissions.type_defs import (
+        EntitiesDefinitionTypeDef,
+        EntityIdentifierTypeDef,
+    )
 
 
 @lru_cache(maxsize=1)
@@ -130,7 +134,10 @@ class Client(BaseClient):
         return resp["policyId"]
 
     def _create_policy_from_template(
-        self, template_id: str, principal: dict, resource: dict
+        self,
+        template_id: str,
+        principal: EntityIdentifierTypeDef,
+        resource: EntityIdentifierTypeDef,
     ) -> str:
         resp = self.client.create_policy(
             # clientToken='string', # Optional: set for idempotency on retries
@@ -152,16 +159,22 @@ class Client(BaseClient):
         resource: Parameter,
         request: HttpRequest,
     ) -> bool:
+        vp_entity = resource.vp_entity(request, self.namespace)
+        if not vp_entity:
+            return False
+
         resp = self.client.is_authorized_with_token(
             policyStoreId=self.policy_store_id,
             accessToken=token,
             action={"actionType": f"{self.namespace}::Action", "actionId": action},
-            resource=resource.vp_entity(request, self.namespace),
+            resource=vp_entity,
             entities=self._build_entities(resource, request),
         )
         return resp["decision"] == "ALLOW"
 
-    def _build_entities(self, resource: Parameter, request: HttpRequest) -> dict:
+    def _build_entities(
+        self, resource: Parameter, request: HttpRequest
+    ) -> EntitiesDefinitionTypeDef:
         entity_list: list = []
         seen: set[str] = set()
 
