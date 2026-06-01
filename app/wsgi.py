@@ -80,10 +80,10 @@ class StandaloneApplication(BaseApplication):
 
 def post_fork(_server: Arbiter, _worker: Worker) -> None:
     # After forking, all background exporter threads (BatchSpanProcessor,
-    # BatchLogRecordProcessor, PeriodicExportingMetricReader) are dead in the
+    # BatchLogRecordProcessor) are dead in the
     # worker process.
     reinitialize_otel()
-    # Register shutdown in the worker process itself so spans, logs, and metrics
+    # Register shutdown in the worker process itself so spans and logs
     # are flushed before the worker exits.
     atexit.register(shutdown_otel)
 
