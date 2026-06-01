@@ -161,6 +161,52 @@ _setup_span_processors(trace_provider, span_exporters)
 meter_provider = _setup_metrics(metric_exporters)
 
 
+def _update_otel_logging_handlers(new_log_provider: LoggerProvider) -> None:
+    """Update all LoggingHandler instances in Python's logging system to use the new provider.
+
+    After a process fork, LoggingHandler instances inherited from the parent hold a reference
+    to the old LoggerProvider with dead background threads. This patches them in-place to point
+    to the newly-created provider so log records are actually exported.
+    """
+
+    def _patch(handler: logging.Handler) -> None:
+        if isinstance(handler, LoggingHandler):
+            handler._logger_provider = new_log_provider  # noqa: SLF001
+
+    for handler in logging.root.handlers:
+        _patch(handler)
+
+    for logger_or_placeholder in logging.root.manager.loggerDict.values():
+        if isinstance(logger_or_placeholder, logging.Logger):
+            for handler in logger_or_placeholder.handlers:
+                _patch(handler)
+
+
+def reinitialize_otel() -> None:
+    """Reinitialize OTEL providers after a process fork (e.g. Gunicorn post_fork).
+
+    After forking, all background threads used by BatchSpanProcessor,
+    BatchLogRecordProcessor, and PeriodicExportingMetricReader are dead in the
+    child process. This function creates fresh ones with new background threads.
+    """
+    global log_provider, trace_provider, meter_provider  # noqa: PLW0603
+
+    new_log_provider, new_trace_provider = _get_providers()
+    new_log_exporters, new_span_exporters, new_metric_exporters = _get_exporters()
+
+    _setup_log_processors(new_log_provider, new_log_exporters)
+    _setup_span_processors(new_trace_provider, new_span_exporters)
+    new_meter_provider = _setup_metrics(new_metric_exporters)
+
+    log_provider = new_log_provider
+    trace_provider = new_trace_provider
+    meter_provider = new_meter_provider
+
+    # Patch existing LoggingHandler instances so they emit to the new provider.
+    if new_log_provider is not None:
+        _update_otel_logging_handlers(new_log_provider)
+
+
 def get_otel_handler() -> logging.Handler:
     """Get the OTEL handler for logging
 

@@ -38,7 +38,9 @@ environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 # Initialize should be called as early as possible, but at least before the app is imported
 # The order has a impact on how the libraries are instrumented. If called after app import,
 # e.g. the django instrumentation has no effect.
-from utils.otel import initialize_instrumentation, shutdown_otel
+from utils.otel import initialize_instrumentation, reinitialize_otel, shutdown_otel
+
+import atexit
 
 initialize_instrumentation()
 
@@ -76,9 +78,18 @@ class StandaloneApplication(BaseApplication):
         return self.application
 
 
-def worker_exit(_server: Arbiter, _worker: Worker) -> None:
-    # Flush and shut down OTEL providers before the worker process exits
-    # to ensure no spans, logs, or metrics are lost.
+def post_fork(_server: Arbiter, _worker: Worker) -> None:
+    # After forking, all background exporter threads (BatchSpanProcessor,
+    # BatchLogRecordProcessor, PeriodicExportingMetricReader) are dead in the
+    # worker process.
+    reinitialize_otel()
+    # Register shutdown in the worker process itself so spans, logs, and metrics
+    # are flushed before the worker exits.
+    atexit.register(shutdown_otel)
+
+
+def on_exit(_server: Arbiter) -> None:
+    # Flush and shut down the master process's own OTEL providers.
     shutdown_otel()
 
 
@@ -101,7 +112,8 @@ if __name__ == "__main__":
         "keepalive": int(environ.get("GUNICORN_KEEPALIVE", "2")),
         "timeout": 60,
         "logconfig_dict": get_logging_config(),
-        "worker_exit": worker_exit,
+        "post_fork": post_fork,
+        "on_exit": on_exit,
     }
 
     if keyfile and certfile:
