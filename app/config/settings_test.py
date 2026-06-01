@@ -24,8 +24,6 @@ def get_logging_config() -> dict[str, object]:
     Note: LOGGING_CFG is relative to the root of the repo
     """
     log_config_file = "config/logging-cfg-local.yaml"
-    if log_config_file.lower() in ["none", "0", "", "false", "no"]:
-        return {}
     log_config = {}
     with open(BASE_DIR / log_config_file, encoding="utf-8") as fd:  # noqa: F405
         log_config = yaml.safe_load(os.path.expandvars(fd.read()))

@@ -14,5 +14,4 @@ handlers:
 loggers:
   django.request:
     # setting this to ERROR prevents from logging too much
-    # we do the logging ourselves
     level: ERROR
