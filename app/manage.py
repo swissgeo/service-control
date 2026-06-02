@@ -16,7 +16,7 @@ def main() -> None:
 
     # otel.py accesses Django settings at module level, so it must be imported
     # only after DJANGO_SETTINGS_MODULE has been set.
-    from utils.otel import initialize_instrumentation  # noqa: PLC0415
+    from utils.otel import initialize_instrumentation, setup_trace_provider  # noqa: PLC0415
 
     try:
         from django.core.management import execute_from_command_line  # noqa: PLC0415
@@ -29,6 +29,7 @@ def main() -> None:
 
     tracing_enabled = initialize_instrumentation()
     if tracing_enabled:
+        setup_trace_provider()
         name = sys.argv[1] if len(sys.argv) > 1 else sys.argv[0]
         tracer = trace.get_tracer(name)
         with tracer.start_as_current_span(name=name):

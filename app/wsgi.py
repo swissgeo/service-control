@@ -38,9 +38,7 @@ environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 # Initialize should be called as early as possible, but at least before the app is imported
 # The order has a impact on how the libraries are instrumented. If called after app import,
 # e.g. the django instrumentation has no effect.
-from utils.otel import initialize_instrumentation, reinitialize_otel, shutdown_otel
-
-import atexit
+from utils.otel import initialize_instrumentation, setup_trace_provider
 
 initialize_instrumentation()
 
@@ -79,18 +77,9 @@ class StandaloneApplication(BaseApplication):
 
 
 def post_fork(_server: Arbiter, _worker: Worker) -> None:
-    # After forking, all background exporter threads (BatchSpanProcessor,
-    # BatchLogRecordProcessor) are dead in the
-    # worker process.
-    reinitialize_otel()
-    # Register shutdown in the worker process itself so spans and logs
-    # are flushed before the worker exits.
-    atexit.register(shutdown_otel)
-
-
-def on_exit(_server: Arbiter) -> None:
-    # Flush and shut down the master process's own OTEL providers.
-    shutdown_otel()
+    # Setup OTEL trace provider for this worker process after fork. This is necessary because the
+    # trace provider cannot be shared across processes.
+    setup_trace_provider()
 
 
 # We use the port 5000 as default, otherwise we set the HTTP_PORT env variable within the container.
@@ -113,7 +102,6 @@ if __name__ == "__main__":
         "timeout": 60,
         "logconfig_dict": get_logging_config(),
         "post_fork": post_fork,
-        "on_exit": on_exit,
     }
 
     if keyfile and certfile:
