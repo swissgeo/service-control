@@ -1,13 +1,33 @@
 import os
 
+import yaml
+
 # for tests, we want to always use the the postgres superuser from the docker container in order to
 # be able to create new test databases
 os.environ["DB_USER"] = "postgres"
 os.environ["DB_PW"] = "postgres"
-
 from .settings_dev import *  # noqa: F403
 
 TESTING = True
 SECRET_KEY = "django-insecure-6-72r#zx=sv6v@-4k@uf1gv32me@%yr*oqa*fu8&5l&a!ws)5#"  # noqa: S105
 
 os.environ["NINJA_SKIP_REGISTRY"] = "yes"
+
+OTEL_SDK_DISABLED = True
+
+
+# Always use the logging-cfg-local.yaml for tests.
+def get_logging_config() -> dict[str, object]:
+    """Read logging configuration
+    Read and parse the yaml logging configuration file passed in the environment variable
+    LOGGING_CFG and return it as dictionary
+    Note: LOGGING_CFG is relative to the root of the repo
+    """
+    log_config_file = "config/logging-cfg-local.yaml"
+    log_config = {}
+    with open(BASE_DIR / log_config_file, encoding="utf-8") as fd:  # noqa: F405
+        log_config = yaml.safe_load(os.path.expandvars(fd.read()))
+    return log_config or {}
+
+
+LOGGING = get_logging_config()

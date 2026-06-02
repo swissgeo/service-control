@@ -38,9 +38,9 @@ environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 # Initialize should be called as early as possible, but at least before the app is imported
 # The order has a impact on how the libraries are instrumented. If called after app import,
 # e.g. the django instrumentation has no effect.
-from utils.otel import initialize_tracing, setup_trace_provider
+from utils.otel import initialize_instrumentation, setup_trace_provider
 
-initialize_tracing()
+initialize_instrumentation()
 
 from gunicorn.app.base import BaseApplication
 from django.core.wsgi import get_wsgi_application
@@ -76,11 +76,9 @@ class StandaloneApplication(BaseApplication):
         return self.application
 
 
-def post_fork(server: Arbiter, worker: Worker) -> None:
-    if server.log:
-        server.log.info("Worker spawned (pid: %s)", worker.pid)
-
-    # Setup OTEL providers for this worker
+def post_fork(_server: Arbiter, _worker: Worker) -> None:
+    # Setup OTEL trace provider for this worker process after fork. This is necessary because the
+    # trace provider cannot be shared across processes.
     setup_trace_provider()
 
 

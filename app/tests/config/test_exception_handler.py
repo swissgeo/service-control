@@ -1,3 +1,9 @@
+# Import mock_api to register its test routes on the shared `api` instance.
+# mock_api uses api.add_router() as a side effect at import time, so it must
+# be imported before any test client request is made.
+import tests.config.mock_api  # noqa: F401
+
+
 def test_handle_404_not_found(client):
     response = client.get("/api/v1/trigger-not-found")
     assert response.status_code == 404

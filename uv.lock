@@ -358,15 +358,6 @@ wheels = [
 ]
 
 [[package]]
-name = "ecs-logging"
-version = "2.3.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/41/9e/ea78919dd88d06a4bf622717e0127c763d3017bdb550e42d9f4b3e4007b1/ecs_logging-2.3.0.tar.gz", hash = "sha256:be7f618e71e10c33a61165aea58813ebd702f6c0044538155871cb9a1609ab4e", size = 11498, upload-time = "2026-01-19T10:28:29.032Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/6f/187826c34511e73c7b9f9595465fd8a029ed467c8c2e57ef76f7dbc8a810/ecs_logging-2.3.0-py3-none-any.whl", hash = "sha256:42da72191a98bd724d105e126ca8d7c81fc82b0d7bbbe4bb1584c34e61042cfc", size = 14791, upload-time = "2026-01-19T10:28:27.408Z" },
-]
-
-[[package]]
 name = "execnet"
 version = "2.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -584,15 +575,6 @@ wheels = [
 ]
 
 [[package]]
-name = "logging-utilities"
-version = "5.4.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/dd/8d/5704ca2b246c9692e5189a6ccccf8ec76b6cfca10385905ecb70132d9e3e/logging_utilities-5.4.1.tar.gz", hash = "sha256:1c26cadfd7b7e8320d7fcade91234bad2a1787f861b2141e8e92c52e6b07501b", size = 69727, upload-time = "2026-04-21T06:06:38.654Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/c3/6c70fd6ea2b056061034d0a61813d8f8e8a401322df2514357380f9302fb/logging_utilities-5.4.1-py3-none-any.whl", hash = "sha256:de9619fc30aee332f8bcf8bbb5de12cc064285e3467e3384d275cb5e2c5b4e90", size = 34925, upload-time = "2026-04-21T06:06:37.13Z" },
-]
-
-[[package]]
 name = "mypy-boto3-cognito-idp"
 version = "1.43.0"
 source = { registry = "https://pypi.org/simple" }
@@ -770,19 +752,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/56/dc/a42fb5ff5c4ea8128d7c61a322e0cfbeae0fd204fc63a679f73caeec266e/opentelemetry_instrumentation_django-0.60b1.tar.gz", hash = "sha256:765b69c7ccdea7e9ebfd0b9e68387956b8f74816f3e39775d5b06a20f16b0522", size = 26599, upload-time = "2025-12-11T13:36:56.293Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bc/05/6b348ea989f7a9e1e6311fa653e113bd39f4506771323e27a639c2a1ea54/opentelemetry_instrumentation_django-0.60b1-py3-none-any.whl", hash = "sha256:3f6b4ba201eee35406dab965b254eed0c64fa1ef42e4a7b0296ad1b30e8e3f81", size = 21172, upload-time = "2025-12-11T13:35:57.365Z" },
-]
-
-[[package]]
-name = "opentelemetry-instrumentation-logging"
-version = "0.60b1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "opentelemetry-api" },
-    { name = "opentelemetry-instrumentation" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/60/a6/4515895b383113677fd2ad21813df5e56108a2df14ebb7916c962c9a0234/opentelemetry_instrumentation_logging-0.60b1.tar.gz", hash = "sha256:98f4b9c7aeb9314a30feee7c002c7ea9abea07c90df5f97fb058b850bc45b89a", size = 9968, upload-time = "2025-12-11T13:37:03.974Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/f9/8a4ce3901bc52277794e4b18c4ac43dc5929806eff01d22812364132f45f/opentelemetry_instrumentation_logging-0.60b1-py3-none-any.whl", hash = "sha256:f2e18cbc7e1dd3628c80e30d243897fdc93c5b7e0c8ae60abd2b9b6a99f82343", size = 12577, upload-time = "2025-12-11T13:36:08.123Z" },
 ]
 
 [[package]]
@@ -1344,15 +1313,12 @@ dependencies = [
     { name = "django-environ" },
     { name = "django-ninja" },
     { name = "django-polymorphic" },
-    { name = "ecs-logging" },
     { name = "gevent" },
     { name = "gunicorn" },
-    { name = "logging-utilities" },
     { name = "opentelemetry-exporter-otlp" },
     { name = "opentelemetry-instrumentation" },
     { name = "opentelemetry-instrumentation-botocore" },
     { name = "opentelemetry-instrumentation-django" },
-    { name = "opentelemetry-instrumentation-logging" },
     { name = "opentelemetry-instrumentation-psycopg" },
     { name = "opentelemetry-sdk" },
     { name = "psycopg", extra = ["binary", "pool"] },
@@ -1390,15 +1356,12 @@ requires-dist = [
     { name = "django-environ", specifier = "~=0.12" },
     { name = "django-ninja", specifier = "~=1.4" },
     { name = "django-polymorphic", specifier = "~=4.11" },
-    { name = "ecs-logging", specifier = "~=2.2" },
     { name = "gevent", specifier = "~=26.4" },
     { name = "gunicorn", specifier = "~=26.0" },
-    { name = "logging-utilities", specifier = "~=5.4" },
     { name = "opentelemetry-exporter-otlp", specifier = "~=1.39" },
     { name = "opentelemetry-instrumentation", specifier = "==0.60b1" },
     { name = "opentelemetry-instrumentation-botocore", specifier = "==0.60b1" },
     { name = "opentelemetry-instrumentation-django", specifier = "==0.60b1" },
-    { name = "opentelemetry-instrumentation-logging", specifier = "==0.60b1" },
     { name = "opentelemetry-instrumentation-psycopg", specifier = "==0.60b1" },
     { name = "opentelemetry-sdk", specifier = "~=1.39" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = "~=3.2" },
