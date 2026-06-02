@@ -278,7 +278,7 @@ or
 make dockerrun
 ```
 
-and visiting the Zipkin dashboard at [http://localhost:9411](http://localhost:9411).
+and visiting the Jaeger dashboard at [http://localhost:16686](http://localhost:16686).
 
 ## Type Checking
 
