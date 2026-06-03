@@ -10,7 +10,7 @@ from django.core.management.base import CommandParser
 from dataservice.models import Dataservice
 from dataset.export_models import (
     LANGS,
-    OAFeatureCollection,
+    OARCollection,
     OARDataservice,
     OARDataset,
     OARDistribution,
@@ -20,7 +20,7 @@ from utils.command import CustomBaseCommand
 
 env = environ.Env()
 
-OAR_PREFIX = "api/oar/v0"
+OAR_PREFIX = "api/oar/staticv2"
 OAS_PREFIX = "api/oas/v0"
 ENV_HOSTNAME_POSTFIX = "dev.sgdi.tech"
 OAR_BASE_URL = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAR_PREFIX}"
@@ -120,7 +120,7 @@ class Command(CustomBaseCommand):
         self.s3_client = self.session.client("s3", **client_access_kwargs)  # ty:ignore[no-matching-overload]
 
         # derive bucket names from target environment
-        self.oarecords_s3_bucket = f"oa-records-static-{options['target_env']}-swissgeo"
+        self.oarecords_s3_bucket = f"oa-records-static-v2-{options['target_env']}-swissgeo"
         self.oastyles_s3_bucket = f"oa-styles-static-{options['target_env']}-swissgeo"
 
         # Show parsed arguments (useful for debugging)
@@ -139,23 +139,68 @@ class Command(CustomBaseCommand):
         if options["command"] == "clean":
             self.do_clean(*args, **options)
 
-    def do_upload(self, snippets: dict[str, Any], prefix: str = OAR_PREFIX) -> None:
-        """Helper function to upload a dict of OGC API Records snippets to S3.
+    def upload_object(self, key: str, obj: dict) -> None:
+        """Helper function to upload a single OGC API Record object to S3."""
+        self.s3_client.put_object(
+            Bucket=self.oarecords_s3_bucket,
+            Key=f"{key}",
+            Body=json.dumps(obj, indent=2, ensure_ascii=False).encode("utf-8"),
+            ContentType="application/json",
+        )
+        self.print_success(f" ↑ {key}")
 
-        Args:
-            snippets: A dict where the key is the relative path (after the base URL,
-                      e.g. "/collections/{collection_id}/items/{item_id}.{lang}")
-                      and the value is the JSON content to upload.
-            prefix: The prefix to use for the S3 object keys (default: OAR_PREFIX)
-        """
-        for key, snippet in snippets.items():
-            self.s3_client.put_object(
-                Bucket=self.oarecords_s3_bucket,
-                Key=f"{prefix}{key}",
-                Body=json.dumps(snippet, indent=2, ensure_ascii=False).encode("utf-8"),
-                ContentType="application/json",
+    def upload_collection(self, collection: OARCollection, prefix: str = OAR_PREFIX) -> None:
+        """Helper function to upload an OARCollection
+        (including its feature collection and features) to S3."""
+        # Upload the collection itself
+        self.upload_object(
+            key=f"{prefix}{collection.get_key()}",
+            obj=collection.model_dump(exclude_none=True, by_alias=True),
+        )
+
+        # Upload the feature collection
+        self.upload_object(
+            key=f"{prefix}{collection.feature_collection.get_key()}",
+            obj=collection.feature_collection.model_dump(exclude_none=True, by_alias=True),
+        )
+
+        # Upload each feature in the collection
+        for feature in collection.feature_collection.features:
+            self.upload_object(
+                key=f"{prefix}{feature.get_key()}",
+                obj=feature.model_dump(exclude_none=True, by_alias=True),
             )
-            self.print(f" - {prefix}{key}")
+
+    def dump_collection(self, collection: OARCollection) -> None:
+        """Helper function to dump an OARCollection
+        (including its feature collection and features) to the console."""
+        self.print(collection.get_key())
+        self.print(
+            json.dumps(
+                collection.model_dump(exclude_none=True, by_alias=True),
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        self.print(collection.feature_collection.get_key())
+        self.print(
+            json.dumps(
+                collection.feature_collection.model_dump(exclude_none=True, by_alias=True),
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        # Probably too verbose to dump each feature in the collection,
+        # but can be uncommented for debugging
+        # for feature in collection.feature_collection.features:
+        #     self.print(feature.get_key())
+        #     self.print(
+        #         json.dumps(
+        #             feature.model_dump(exclude_none=True, by_alias=True),
+        #             indent=2,
+        #             ensure_ascii=False,
+        #         )
+        #     )
 
     def do_export_services(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
 
@@ -165,25 +210,29 @@ class Command(CustomBaseCommand):
         # Note: these snippets are not localised (yet), but we still need to upload
         # 4 lang versions to please the CF function language hack
         self.print("Generating service records...")
-        for service in Dataservice.objects.all():
-            for lang in LANGS:
+        services = Dataservice.objects.all()
+        for lang in LANGS:
+            collection_id = "geoadmin.services"
+            service_collection = OARCollection(
+                id=collection_id, title="Geoadmin Services", lang=lang
+            )
+            for service in services:
                 self.print(f" - {service.dataservice_id}")
-                service_record = OARDataservice.from_dataservice(service)
-                services[
-                    f"/collections/geoadmin.services/items/{service.dataservice_id}.{lang}"
-                ] = service_record.model_dump(exclude_none=True, by_alias=True)
+                service_record = OARDataservice.from_dataservice(
+                    service, lang, collection_id=collection_id
+                )
+                service_collection.feature_collection.features.append(service_record)
 
-        if options["dump"]:
-            self.print(json.dumps(services, indent=2, ensure_ascii=False))
+            if options["dump"]:
+                self.dump_collection(service_collection)
 
-        if options["upload"]:
-            self.print_success("Starting to upload local OGC API Records to S3...")
-            self.do_upload(services, prefix=OAR_PREFIX)
+            if options["upload"]:
+                self.upload_collection(
+                    service_collection,
+                    prefix=OAR_PREFIX,
+                )
 
     def do_export_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
-
-        distribution_collections = {}
-        distributions = {}
 
         # Aggregate distribution collection and distribution snippets
         # Note: these snippets are not localised (yet), but we still need to upload
@@ -194,32 +243,34 @@ class Command(CustomBaseCommand):
         else:
             datasets = Dataset.objects.all()
         for dataset in datasets:
+            self.print_success(f"Processing dataset: {dataset.dataset_id}")
             ds_distributions = list(dataset.distribution_set.all())
             for lang in LANGS:
-                distribution_collection = OAFeatureCollection()
-                for distribution in ds_distributions:
-                    self.print(f" - {distribution.distribution_id}.{lang}")
-                    distribution_record = OARDistribution.from_distribution(distribution, lang=lang)
-                    distribution_collection.features.append(distribution_record)
-                    distributions[
-                        f"/collections/{dataset.dataset_id}/items/{distribution.distribution_id}.{lang}"
-                    ] = distribution_record.model_dump(
-                        exclude_none=True,
-                        by_alias=True,
-                    )
-                distribution_collections[f"/collections/{dataset.dataset_id}/items.{lang}"] = (
-                    distribution_collection.model_dump(exclude_none=True, by_alias=True)
+                collection_id = f"{dataset.dataset_id}.distributions"
+                distribution_collection = OARCollection(
+                    id=collection_id,
+                    title=f"Distribution Collection for {collection_id}",
+                    lang=lang,
                 )
+                for distribution in ds_distributions:
+                    distribution_record = OARDistribution.from_distribution(
+                        distribution,
+                        lang=lang,
+                        collection_id=collection_id,
+                    )
+                    self.print_success(f" - {distribution_record.get_key()}")
+                    distribution_collection.feature_collection.features.append(distribution_record)
 
-        # Dump the generated records (for debugging)
-        if options["dump"]:
-            self.print(json.dumps(distribution_collections, indent=2, ensure_ascii=False))
+                # Dump the generated record collections (for debugging)
+                if options["dump"]:
+                    self.dump_collection(distribution_collection)
 
-        # Upload the generated records to S3
-        if options["upload"]:
-            self.print_success("Starting to upload local OGC API Records to S3...")
-            self.do_upload(distribution_collections, prefix=OAR_PREFIX)
-            self.do_upload(distributions, prefix=OAR_PREFIX)
+                # Upload the record collections to S3
+                if options["upload"]:
+                    self.upload_collection(
+                        distribution_collection,
+                        prefix=OAR_PREFIX,
+                    )
 
     def do_export_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         self.print("Generating dataset records...")
@@ -229,23 +280,30 @@ class Command(CustomBaseCommand):
         else:
             datasets = Dataset.objects.all()
 
-        dataset_snippets = {}
+        dataset_collections = []
+        for lang in LANGS:
+            collection_id = "swissgeo.catalog"
+            dataset_collection = OARCollection(
+                id=collection_id, title="Swissgeo Catalog", lang=lang
+            )
 
-        for dataset in datasets:
-            for lang in LANGS:
-                object_key = f"/collections/swissgeo.catalog/items/{dataset.dataset_id}.{lang}"
-                self.print(f"- {object_key}")
-                dataset_record = OARDataset.from_dataset(dataset, lang)
-                dataset_snippets[object_key] = dataset_record.model_dump(
-                    exclude_none=True, by_alias=True
+            for dataset in datasets:
+                dataset_record = OARDataset.from_dataset(dataset, lang, collection_id=collection_id)
+                self.print(f"- {dataset_record.get_key()}")
+                dataset_collection.feature_collection.features.append(dataset_record)
+
+            # Dump the generated record collections (for debugging)
+            if options["dump"]:
+                self.dump_collection(dataset_collection)
+
+            # Upload the record collections to S3
+            if options["upload"]:
+                self.upload_collection(
+                    dataset_collection,
+                    prefix=OAR_PREFIX,
                 )
 
-        if options["dump"]:
-            self.print(json.dumps(dataset_snippets, indent=2, ensure_ascii=False))
-
-        if options["upload"]:
-            self.print_success("Starting to upload local OGC API Records to S3...")
-            self.do_upload(dataset_snippets, prefix=OAR_PREFIX)
+            dataset_collections.append(dataset_collection)
 
     def do_export_landing_page(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         # Landing page
@@ -255,10 +313,10 @@ class Command(CustomBaseCommand):
             "description": "OGC API Records implementation for swissgeo datasets and services.",
             "links": [
                 {
-                    "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog",
-                    "rel": "service-desc",
+                    "href": "https://swissgeo-services.apidog.io",
+                    "rel": "service-doc",
                     "type": "application/json",
-                    "title": "OGC API Records - swissgeo - OpenAPI Description",
+                    "title": "OGC API Records - swissgeo - Documentation",
                 },
                 {
                     "href": f"{OAR_BASE_URL}/collections",
@@ -274,12 +332,7 @@ class Command(CustomBaseCommand):
                 },
             ],
         }
-        self.s3_client.put_object(
-            Bucket=self.oarecords_s3_bucket,
-            Key=f"{OAR_PREFIX}/landingpage",
-            Body=json.dumps(landing_page, indent=2, ensure_ascii=False).encode("utf-8"),
-            ContentType="application/json",
-        )
+        self.upload_object(key=f"{OAR_PREFIX}/landingpage", obj=landing_page)
 
         # conformance declaration
         self.print("Uploading conformance declaration...")
@@ -291,66 +344,60 @@ class Command(CustomBaseCommand):
             ]
         }
         for lang in LANGS:
-            self.s3_client.put_object(
-                Bucket=self.oarecords_s3_bucket,
-                Key=f"{OAR_PREFIX}/conformance.{lang}",
-                Body=json.dumps(conformance_declaration, indent=2, ensure_ascii=False).encode(
-                    "utf-8"
-                ),
-                ContentType="application/json",
+            self.upload_object(
+                key=f"{OAR_PREFIX}/conformance.{lang}",
+                obj=conformance_declaration,
             )
 
         # /collections endpoint
         self.print("Uploading collections endpoint...")
-        collections = {
-            "collections": [
-                {
-                    "id": "swissgeo.catalog",
-                    "title": "Swissgeo Catalog",
-                    "description": "Collection of all swissgeo datasets",
-                    "itemType": "record",
-                    "links": [
-                        {
-                            "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog",
-                            "rel": "self",
-                            "type": "application/json",
-                        },
-                        {
-                            "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog/items",
-                            "rel": "items",
-                            "type": "application/json",
-                        },
-                    ],
-                },
-                {
-                    "id": "geoadmin.services",
-                    "title": "Geoadmin Services",
-                    "description": "Collection of geoadmin services",
-                    "itemType": "record",
-                    "links": [
-                        {
-                            "href": f"{OAR_BASE_URL}/collections/geoadmin.services",
-                            "rel": "self",
-                            "type": "application/json",
-                        }
-                    ],
-                },
-            ],
-            "links": [
-                {
-                    "href": f"{OAR_BASE_URL}/collections",
-                    "rel": "self",
-                    "description": "This document",
-                    "type": "application/json",
-                }
-            ],
-        }
         for lang in LANGS:
-            self.s3_client.put_object(
-                Bucket=self.oarecords_s3_bucket,
-                Key=f"{OAR_PREFIX}/collections.{lang}",
-                Body=json.dumps(collections, indent=2, ensure_ascii=False).encode("utf-8"),
-                ContentType="application/json",
+            collections = {
+                "collections": [
+                    {
+                        "id": "swissgeo.catalog",
+                        "title": "Swissgeo Catalog",
+                        "description": "Collection of all swissgeo datasets",
+                        "itemType": "record",
+                        "links": [
+                            {
+                                "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog",
+                                "rel": "self",
+                                "type": "application/json",
+                            },
+                            {
+                                "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog/items",
+                                "rel": "items",
+                                "type": "application/json",
+                            },
+                        ],
+                    },
+                    {
+                        "id": "geoadmin.services",
+                        "title": "Geoadmin Services",
+                        "description": "Collection of geoadmin services",
+                        "itemType": "record",
+                        "links": [
+                            {
+                                "href": f"{OAR_BASE_URL}/collections/geoadmin.services",
+                                "rel": "self",
+                                "type": "application/json",
+                            }
+                        ],
+                    },
+                ],
+                "links": [
+                    {
+                        "href": f"{OAR_BASE_URL}/collections",
+                        "rel": "self",
+                        "description": "This document",
+                        "type": "application/json",
+                    }
+                ],
+            }
+            self.upload_object(
+                key=f"{OAR_PREFIX}/collections.{lang}",
+                obj=collections,
             )
 
         self.print_success("Export completed.")
