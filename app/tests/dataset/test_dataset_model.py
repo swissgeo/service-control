@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 
 import pytest
 
-from dataset.models import Dataset, DatasetToUnit
+from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
 from organization.models import Unit
 from thesaurus.models import Keyword, Thesaurus
 
@@ -84,6 +84,41 @@ def test_dataset_unique_fields(field, dataset):
     setattr(new_dataset, field, getattr(dataset, field))
     with pytest.raises(ValidationError):
         new_dataset.full_clean()
+
+
+def test_dataset_to_dataset(db):
+    parent = Dataset.objects.create(
+        dataset_id="parent",
+        title_short_de="Title (DE)",
+        title_short_fr="Title (FR)",
+        title_short_en="Title (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_en="Description (EN)",
+        geocat_id="parent",
+    )
+
+    child = Dataset.objects.create(
+        dataset_id="child",
+        title_short_de="Title (DE)",
+        title_short_fr="Title (FR)",
+        title_short_en="Title (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_en="Description (EN)",
+        geocat_id="child",
+    )
+
+    relation = DatasetToDataset(subject=parent, role=DatasetToDataset.ROLE_PARENT, object=child)
+    relation.save()
+
+    assert str(relation) == "parent is a parent of child"
+
+    assert parent.related_datasets(DatasetToDataset.ROLE_PARENT).first() is None
+    assert parent.related_datasets(DatasetToDataset.ROLE_PARENT, reverse=True).first() == child
+
+    assert child.related_datasets(DatasetToDataset.ROLE_PARENT).first() == parent
+    assert child.related_datasets(DatasetToDataset.ROLE_PARENT, reverse=True).first() is None
 
 
 def test_dataset_unit(dataset, unit):

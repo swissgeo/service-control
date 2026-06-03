@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
@@ -121,6 +122,49 @@ class Dataset(models.Model):
         values = set(self.data_source_ids)
         values.add(value)
         self.data_source_ids = sorted(values)
+
+    def related_datasets(self, role: str, reverse: bool = False) -> QuerySet[Dataset]:
+        if reverse:
+            return Dataset.objects.filter(
+                dataset_relations_as_object__role=role, dataset_relations_as_object__subject=self
+            )
+        return Dataset.objects.filter(
+            dataset_relations_as_subject__role=role, dataset_relations_as_subject__object=self
+        )
+
+
+class DatasetToDataset(models.Model):
+    """Each dataset can be associated with another dataset in different roles.
+
+    These are unidirectional relations in the form of [subject] is [role] of [object].
+    """
+
+    ROLE_PARENT = "parent"
+    ROLE_AGGREGATE = "aggregate"
+    ROLE_DERIVATE = "derivate"
+    ROLE_CLIPPAGE = "clippage"
+
+    ROLES = (
+        (ROLE_PARENT, "Parent"),
+        (ROLE_AGGREGATE, "Aggregate"),
+        (ROLE_DERIVATE, "Derivate"),
+        (ROLE_CLIPPAGE, "Clippage"),
+    )
+
+    subject = models.ForeignKey(
+        Dataset, on_delete=models.CASCADE, related_name="dataset_relations_as_subject"
+    )
+    object = models.ForeignKey(
+        Dataset, on_delete=models.CASCADE, related_name="dataset_relations_as_object"
+    )
+    role = models.CharField(max_length=100, choices=ROLES)
+
+    class Meta:
+        indexes = (models.Index(fields=["subject", "object"]),)
+        verbose_name = _("DatasetToDataset Model", "Dataset Relation")
+
+    def __str__(self) -> str:
+        return f"{self.subject} is a {self.role} of {self.object}"
 
 
 class DatasetToUnit(models.Model):
