@@ -22,6 +22,8 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 # NOTE: We do this only if wsgi.py is the main program, when running django runserver
 # for local development, monkey patching creates the following error:
 #     `RuntimeError: cannot release un-acquired lock`
+from typing import Any
+
 if __name__ == "__main__":
     import gevent.monkey
 
@@ -36,9 +38,9 @@ environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 # Initialize should be called as early as possible, but at least before the app is imported
 # The order has a impact on how the libraries are instrumented. If called after app import,
 # e.g. the django instrumentation has no effect.
-from utils.otel import initialize_tracing, setup_trace_provider
+from utils.otel import initialize_instrumentation, setup_trace_provider
 
-initialize_tracing()
+initialize_instrumentation()
 
 from gunicorn.app.base import BaseApplication
 from django.core.wsgi import get_wsgi_application
@@ -56,8 +58,8 @@ application = get_wsgi_application()
 class StandaloneApplication(BaseApplication):
     cfg: Config
 
-    def __init__(self, app: WSGIHandler, options: dict[str, object] | None = None) -> None:
-        self.options = options or {}
+    def __init__(self, app: WSGIHandler, options: dict[str, Any]) -> None:
+        self.options = options
         self.application = app
         super().__init__()
 
@@ -70,15 +72,13 @@ class StandaloneApplication(BaseApplication):
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
-    def load(self) -> WSGIHandler:  # type:ignore[override]
+    def load(self) -> WSGIHandler:  # ty: ignore[invalid-method-override]
         return self.application
 
 
-def post_fork(server: Arbiter, worker: Worker) -> None:
-    if server.log:
-        server.log.info("Worker spawned (pid: %s)", worker.pid)
-
-    # Setup OTEL providers for this worker
+def post_fork(_server: Arbiter, _worker: Worker) -> None:
+    # Setup OTEL trace provider for this worker process after fork. This is necessary because the
+    # trace provider cannot be shared across processes.
     setup_trace_provider()
 
 

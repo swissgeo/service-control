@@ -61,7 +61,7 @@ class UnitAdmin(admin.ModelAdmin):
 
     @admin.display(description="Number of Datasets")
     def number_of_datasets(self, obj: Contact) -> int:
-        return obj.number_of_datasets  # type:ignore[unresolved-attribute]
+        return obj.number_of_datasets  # ty: ignore[unresolved-attribute]
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Unit]:
         qs = super().get_queryset(request)
@@ -78,7 +78,7 @@ class UnitAdmin(admin.ModelAdmin):
                     reverse("admin:dataset_dataset_change", args=[dataset.pk]),
                     str(dataset),
                 )
-                for dataset in obj.datasets.order_by("dataset_id").all()  # type:ignore[unresolved-attribute]
+                for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
             ),
         )
 
@@ -106,7 +106,7 @@ class ContactAdmin(admin.ModelAdmin):
 
     @admin.display(description="Number of Datasets")
     def number_of_datasets(self, obj: Contact) -> int:
-        return obj.number_of_datasets  # type:ignore[unresolved-attribute]
+        return obj.number_of_datasets  # ty: ignore[unresolved-attribute]
 
     @admin.display(description="Datasets")
     def dataset_list(self, obj: Contact) -> str:
@@ -119,6 +119,6 @@ class ContactAdmin(admin.ModelAdmin):
                     reverse("admin:dataset_dataset_change", args=[dataset.pk]),
                     str(dataset),
                 )
-                for dataset in obj.datasets.order_by("dataset_id").all()  # type:ignore[unresolved-attribute]
+                for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
             ),
         )

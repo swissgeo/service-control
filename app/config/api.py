@@ -5,13 +5,12 @@ from ninja import NinjaAPI
 from ninja.errors import AuthenticationError, HttpError
 from ninja.errors import ValidationError as NinjaValidationError
 
-from config.logging import LoggedNinjaAPI
 from config.version import APP_VERSION
 from organization.api import router as organization_router
 from user.api import router as user_router
 from utils.exceptions import ConflictError, contains_error_code, extract_error_messages
 
-api = LoggedNinjaAPI(
+api = NinjaAPI(
     title="Service Control API",
     description="API for managing users and organizations.",
     version=APP_VERSION,
