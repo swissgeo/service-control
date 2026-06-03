@@ -50,9 +50,8 @@ LANGS = {
     "it": Lang(code="it", name="Italiano", dir="ltr", alternate="Italian"),
     "en": Lang(code="en", name="English", dir="ltr"),
 }
-# For some reason geocat uses a legacy 3-letter bibliographic code
-# that we need to map to ISO 639-1 codes
-LANGS_GEOCAT = {
+
+LANGS_ISO_639_2_B = {
     "de": "ger",
     "fr": "fra",
     "it": "ita",
@@ -448,7 +447,7 @@ class Command(CustomBaseCommand):
             if "idGeoCat" in mapserver_entry:
                 links.append(
                     Link(
-                        href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_GEOCAT[lang]}/catalog.search#/metadata/{mapserver_entry.get('idGeoCat')}",
+                        href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_ISO_639_2_B[lang]}/catalog.search#/metadata/{mapserver_entry.get('idGeoCat')}",
                         rel="alternate",
                         title="GeoCat Metadata",
                         typ="text/html",
