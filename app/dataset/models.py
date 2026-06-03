@@ -6,34 +6,16 @@ from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
+from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 
 logger = logging.getLogger(__name__)
 
 
-class DatasetManager(models.Manager):
-    def remove_data_source_id(self, data_source_id: str) -> int:
-        """Remove the given data source ID from all datasets"""
-
-        return self.filter(data_source_ids__contains=[data_source_id]).update(
-            data_source_ids=models.Func(
-                models.F("data_source_ids"),
-                models.Value(data_source_id),
-                function="array_remove",
-            )
-        )
-
-    def existing_data_source_ids(self, data_source: str) -> set[str]:
-        """Return all data source ID of all organization with the given data source."""
-
-        return set(
-            self.filter(data_source=data_source)
-            .annotate(ids=models.Func("data_source_ids", function="unnest"))
-            .values_list("ids", flat=True)
-            .distinct()
-        )
+class DatasetManager(DataSourceIdManagerMixin, models.Manager):
+    pass
 
 
-class Dataset(models.Model):
+class Dataset(DataSourceIdModelMixin, models.Model):
     """Dataset model."""
 
     _context = "Dataset Model"
@@ -120,11 +102,6 @@ class Dataset(models.Model):
 
     def __str__(self) -> str:
         return self.dataset_id
-
-    def add_data_source_id(self, value: str) -> None:
-        values = set(self.data_source_ids)
-        values.add(value)
-        self.data_source_ids = sorted(values)
 
     def related_datasets(
         self, role: DatasetToDataset.Role, reverse: bool = False

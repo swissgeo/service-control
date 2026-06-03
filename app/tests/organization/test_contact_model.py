@@ -77,9 +77,7 @@ def test_form_valid_for_blank_optional_field(organization):
             model = Contact
             fields = "__all__"  # noqa: DJ007
 
-    data = {
-        "organization": organization,
-    }
+    data = {"organization": organization, "data_source": Contact.DataSource.USER_INPUT}
     form = ContactForm(data)
 
     assert form.is_valid() is True

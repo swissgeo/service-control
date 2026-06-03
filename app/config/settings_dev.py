@@ -14,3 +14,6 @@ if DEBUG:
 
 if DEBUG:
     MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware", *MIDDLEWARE]
+
+# Allow to select as many items in the admin UI as needed, e.g. when batch-deleting nested objects
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None

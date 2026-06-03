@@ -44,15 +44,9 @@ env = environ.Env()
 
 
 class Command(CustomBaseCommand):
-    """Import data from DynamoDB harvesting tables.
+    """Import data from DynamoDB harvesting tables."""
 
-    This command imports data from DynamoDB harvesting tables. It currently supports importing
-    organizations, but can be extended to import other entities in the future.
-
-    """
-
-    help = "Importing data from DynamoDB harvesting tables. "
-    "Currently supports importing organizations."
+    help = "Import data from DynamoDB harvesting tables."
 
     # job_id is used as a common attribute in metrics to link different metrics related to the same
     # import run
@@ -949,6 +943,7 @@ class Command(CustomBaseCommand):
                     metrics["contacts_created"] += 1
                     contact = Contact.objects.create(
                         organization=organization,
+                        data_source=Contact.DataSource.GEOCAT,
                         name_de=item_contact.position_name_de,
                         name_fr=item_contact.position_name_fr,
                         name_en=item_contact.position_name_en,
