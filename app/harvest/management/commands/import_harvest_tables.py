@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import TYPE_CHECKING, Any
 
 import environ
@@ -53,6 +54,10 @@ class Command(CustomBaseCommand):
 
     help = "Importing data from DynamoDB harvesting tables. "
     "Currently supports importing organizations."
+
+    # job_id is used as a common attribute in metrics to link different metrics related to the same
+    # import run
+    job_id = str(uuid.uuid4())
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -210,6 +215,24 @@ class Command(CustomBaseCommand):
             "harvest.import_organizations.removed",
             description="Count of organizations removed during import process",
         )
+        # Add all possible attributes with 0 value at the beginning to ensure they are present in
+        # metrics with correct labels even if no organization falls into a specific state.
+        meter_import.add(0, {"job_id": self.job_id, "state": "failed"})
+        meter_import.add(0, {"job_id": self.job_id, "state": "updated"})
+        meter_import.add(0, {"job_id": self.job_id, "state": "created"})
+        meter_removed.add(0, {"job_id": self.job_id, "reason": "obsolete data source"})
+        meter_removed.add(0, {"job_id": self.job_id, "reason": "obsolete organization"})
+
+        log_metrics = {
+            "job_id": self.job_id,
+            "total_dynamo_orgs": 0,
+            "failed_orgs": 0,
+            "created_orgs": 0,
+            "updated_orgs": 0,
+            "clean_flag_set": options["clean"],
+            "removed_orgs": 0,
+            "obsolete_orgs": 0,
+        }
 
         self.print_success("Importing organizations")
 
@@ -224,15 +247,46 @@ class Command(CustomBaseCommand):
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
+                log_metrics["total_dynamo_orgs"] += 1
                 provider_id, state = self._import_organization(item, mappings)
                 if provider_id:
                     processed.add(provider_id)
-                meter_import.add(1, {"provider_id": provider_id or "unknown", "state": state})
+                meter_import.add(
+                    1,
+                    {
+                        "job_id": self.job_id,
+                        "provider_id": provider_id or "unknown",
+                        "state": state,
+                    },
+                )
+                match state:
+                    case "created":
+                        log_metrics["created_orgs"] += 1
+                    case "updated":
+                        log_metrics["updated_orgs"] += 1
+                    case "failed":
+                        log_metrics["failed_orgs"] += 1
 
         removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
-        meter_removed.add(removed_count, {"type": "removed", "cleaned": str(options["clean"])})
-        meter_removed.add(obsolete_count, {"type": "obsolete", "cleaned": str(options["clean"])})
-        self.print_success("Organization import completed")
+        meter_removed.add(
+            removed_count,
+            {
+                "job_id": self.job_id,
+                "reason": "obsolete data source",
+                "cleaned": str(options["clean"]),
+            },
+        )
+        meter_removed.add(
+            obsolete_count,
+            {
+                "job_id": self.job_id,
+                "reason": "obsolete organization",
+                "cleaned": str(options["clean"]),
+            },
+        )
+        log_metrics["removed_orgs"] = removed_count
+        log_metrics["obsolete_orgs"] = obsolete_count
+        self.print_success(f"Organization import completed. Metrics: {log_metrics}")
 
     def cleanup_organizations(self, processed: set[str], **options: Any) -> tuple[int, int]:
         """Cleanup organizations
