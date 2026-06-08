@@ -9,98 +9,52 @@ from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
 from opentelemetry.instrumentation.django import DjangoInstrumentor
 from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-from opentelemetry.sdk._logs.export import (
-    BatchLogRecordProcessor,
-    ConsoleLogRecordExporter,
-    LogRecordExporter,
-)
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor, LogRecordExporter
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
-    MetricExporter,
-    PeriodicExportingMetricReader,
-)
+from opentelemetry.sdk.metrics.export import MetricExporter, PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter, SpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExporter
 
 from django.conf import settings
-
-from config.logging import Exporter
 
 _resource = Resource.create({"service.name": "service-control"})
 
 
 def _get_span_exporters() -> list[SpanExporter]:
-    if settings.OTEL_SDK_DISABLED:
+    if not settings.OTEL_ENABLE_OTLP_EXPORTER:
         return []
-
-    span_exporters = []
-
-    # OTLP exporter
-    if settings.OTEL_ENABLE_OTLP_EXPORTER and Exporter.OTLP in settings.OTEL_TRACE_EXPORTERS:
-        span_exporters.append(
-            OTLPSpanExporter(
-                endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
-                headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
-                insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
-            )
+    return [
+        OTLPSpanExporter(
+            endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
+            headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
+            insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
         )
-
-    # Console exporter
-    if settings.OTEL_ENABLE_CONSOLE_EXPORTER and Exporter.CONSOLE in settings.OTEL_TRACE_EXPORTERS:
-        span_exporters.append(ConsoleSpanExporter())
-
-    return span_exporters
+    ]
 
 
 def _get_log_exporters() -> list[LogRecordExporter]:
-    if settings.OTEL_SDK_DISABLED:
+    if not settings.OTEL_ENABLE_OTLP_EXPORTER:
         return []
-
-    log_exporters = []
-
-    # OTLP exporter
-    if settings.OTEL_ENABLE_OTLP_EXPORTER and Exporter.OTLP in settings.OTEL_LOGGING_EXPORTERS:
-        log_exporters.append(
-            OTLPLogExporter(
-                endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
-                headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
-                insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
-            )
+    return [
+        OTLPLogExporter(
+            endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
+            headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
+            insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
         )
-
-    # Console exporter
-    if (
-        settings.OTEL_ENABLE_CONSOLE_EXPORTER
-        and Exporter.CONSOLE in settings.OTEL_LOGGING_EXPORTERS
-    ):
-        log_exporters.append(ConsoleLogRecordExporter())
-
-    return log_exporters
+    ]
 
 
 def _get_metric_exporters() -> list[MetricExporter]:
-    if settings.OTEL_SDK_DISABLED:
+    if not settings.OTEL_ENABLE_OTLP_EXPORTER:
         return []
-
-    metric_exporters = []
-
-    # OTLP exporter
-    if settings.OTEL_ENABLE_OTLP_EXPORTER and Exporter.OTLP in settings.OTEL_METRIC_EXPORTERS:
-        metric_exporters.append(
-            OTLPMetricExporter(
-                endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
-                headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
-                insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
-            )
+    return [
+        OTLPMetricExporter(
+            endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
+            headers=settings.OTEL_EXPORTER_OTLP_HEADERS,
+            insecure=settings.OTEL_EXPORTER_OTLP_INSECURE,
         )
-
-    # Console exporter
-    if settings.OTEL_ENABLE_CONSOLE_EXPORTER and Exporter.CONSOLE in settings.OTEL_METRIC_EXPORTERS:
-        metric_exporters.append(ConsoleMetricExporter())
-
-    return metric_exporters
+    ]
 
 
 def _setup_log_processors(

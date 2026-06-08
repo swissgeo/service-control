@@ -138,7 +138,7 @@ class Command(CustomBaseCommand):
             self.import_contacts(*args, **options)
 
     # ##########################################################################
-    def _import_organization(
+    def import_organization(
         self, item: dict[str, Any], mappings: PrefixLookupTable
     ) -> tuple[str | None, str]:
         """Import a single organization from a dynamoDB item.
@@ -248,7 +248,7 @@ class Command(CustomBaseCommand):
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 log_metrics["total_dynamo_orgs"] += 1
-                provider_id, state = self._import_organization(item, mappings)
+                provider_id, state = self.import_organization(item, mappings)
                 if provider_id:
                     processed.add(provider_id)
                 meter_import.add(
