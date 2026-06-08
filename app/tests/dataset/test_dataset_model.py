@@ -109,21 +109,21 @@ def test_dataset_to_dataset(db):
         geocat_id="child",
     )
 
-    relation = DatasetToDataset(subject=parent, role=DatasetToDataset.ROLE_PARENT, object=child)
+    relation = DatasetToDataset(subject=parent, role=DatasetToDataset.Role.PARENT, object=child)
     relation.save()
 
     assert str(relation) == "parent is a parent of child"
 
-    assert parent.related_datasets(DatasetToDataset.ROLE_PARENT).first() is None
-    assert parent.related_datasets(DatasetToDataset.ROLE_PARENT, reverse=True).first() == child
+    assert parent.related_datasets(DatasetToDataset.Role.PARENT).first() is None
+    assert parent.related_datasets(DatasetToDataset.Role.PARENT, reverse=True).first() == child
 
-    assert child.related_datasets(DatasetToDataset.ROLE_PARENT).first() == parent
-    assert child.related_datasets(DatasetToDataset.ROLE_PARENT, reverse=True).first() is None
+    assert child.related_datasets(DatasetToDataset.Role.PARENT).first() == parent
+    assert child.related_datasets(DatasetToDataset.Role.PARENT, reverse=True).first() is None
 
 
 def test_dataset_unit(dataset, unit):
     dataset_unit = DatasetToUnit.objects.create(
-        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+        dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER
     )
 
     assert unit.dataset_units.first() == dataset_unit
@@ -135,7 +135,7 @@ def test_dataset_unit(dataset, unit):
 
 def test_dataset_contact(dataset, unit):
     dataset_unit = DatasetToUnit.objects.create(
-        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+        dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER
     )
     assert unit.dataset_units.first() == dataset_unit
 

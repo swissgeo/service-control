@@ -80,7 +80,7 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db):
     assert dist.protocol == "ogcapi:stac"
     assert dist.distribution_id == "ch.bafu.moose:stac"
     assert dist.stac_collection_id == "ch.bafu.moose"
-    assert dist.data_source == Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES
+    assert dist.data_source == Distribution.DataSource.SERVICE_CAPABILITIES
     assert dist.title == "STAC Download Collection"
 
 
@@ -122,7 +122,7 @@ def test_command_creates_stac_distributions(stac, db):
     assert dist.protocol == "ogcapi:stac"
     assert dist.distribution_id == "ch.bafu.moose:stac"
     assert dist.stac_collection_id == "ch.bafu.moose"
-    assert dist.data_source == Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES
+    assert dist.data_source == Distribution.DataSource.SERVICE_CAPABILITIES
     assert dist.title == "STAC Download Collection"
 
 
@@ -205,7 +205,7 @@ def test_command_cleans_obsolete_stac_distributions(stac, db):
     ExternalStacDistribution(
         distribution_id="ch.bazl.luftfahrthindernis:stac",
         dataset=dataset,
-        data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
+        data_source=Distribution.DataSource.SERVICE_CAPABILITIES,
     ).save()
 
     stac.return_value = [Collection(id="ch.bafu.moose", description="", extent="")]

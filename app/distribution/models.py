@@ -25,19 +25,19 @@ class Distribution(PolymorphicModel):
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
     title = models.CharField(_(_context, "Title"), max_length=255)
 
-    DATA_SOURCE_CHOICE_BOD_LAYERS_JS: ClassVar[str] = "bod-layers-js"
-    DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES: ClassVar[str] = "service-capabilities"
-    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
-    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (DATA_SOURCE_CHOICE_BOD_LAYERS_JS, "BOD (Layers JS)"),
-        (
-            DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
-            "Service Capabilities (e.g. WMS GetCapabilities, STAC API)",
-        ),
-        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Via Admin Interface)"),
-    ]
+    class DataSource(models.TextChoices):
+        BOD_LAYERS_JS = "bod-layers-js", _("Distribution DataSource", "BOD (Layers JS)")
+        SERVICE_CAPABILITIES = (
+            "service-capabilities",
+            _(
+                "Distribution DataSource",
+                "Service Capabilities (e.g. WMS GetCapabilities, STAC API)",
+            ),
+        )
+        USER_INPUT = "user-input", _("Distribution DataSource", "User Input (Via Admin Interface)")
+
     data_source = models.CharField(
-        _(_context, "Data Source"), choices=DATA_SOURCE_CHOICES, max_length=255
+        _(_context, "Data Source"), choices=DataSource.choices, max_length=255
     )
 
     created_at = models.DateTimeField(
