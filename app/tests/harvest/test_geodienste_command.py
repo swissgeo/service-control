@@ -14,7 +14,9 @@ from organization.models import Contact, Organization
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_cantonal_organization(mock, client, db):
-    mock.return_value.json.return_value = {"services": [{"canton": "LU"}]}
+    mock.return_value.json.return_value = {
+        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
+    }
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -48,7 +50,9 @@ def test_command_creates_cantonal_organization(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_broker_organization(mock, client, db):
-    mock.return_value.json.return_value = {"services": [{"broker": "BFE"}]}
+    mock.return_value.json.return_value = {
+        "services": [{"base_topic": "av", "canton": "Broker", "broker": "BFE"}]
+    }
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -75,12 +79,14 @@ def test_command_creates_broker_organization(mock, client, db):
 
 @patch("organization.models.Client")
 def test_command_creates_organization_from_file(client, db, tmp_path):
-    file = tmp_path / "services.json"
-    file.write_text(dumps({"services": [{"broker": "BFE"}]}))
+    file = tmp_path / "services_de.json"
+    file.write_text(
+        dumps({"services": [{"base_topic": "av", "canton": "Broker", "broker": "BFE"}]})
+    )
 
     out = StringIO()
     call_command(
-        "import_geodienste", organizations=True, services_endpoint=file, verbosity=2, stdout=out
+        "import_geodienste", organizations=True, services_endpoint=tmp_path, verbosity=2, stdout=out
     )
     out = out.getvalue()
 
@@ -125,7 +131,9 @@ def test_command_uses_organization_mapping(mock, client, db):
 
     OrganizationMapping(provider_id_prefix="LU", organization_id="ch.lu-new", update=True).save()
 
-    mock.return_value.json.return_value = {"services": [{"canton": "LU"}]}
+    mock.return_value.json.return_value = {
+        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
+    }
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -185,17 +193,20 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
         "services": [
             {
                 "canton": "LU",
+                "broker": None,
                 "base_topic": "av",
                 "contact_geo": "Foo",
                 "contact_specialist_department": "Bar",
             },
             {
                 "canton": "LU",
+                "broker": None,
                 "base_topic": "gefahrenkarten",
                 "contact_geo": "Foo",
                 "contact_specialist_department": "Baz",
             },
             {
+                "canton": "Broker",
                 "broker": "missing",
                 "base_topic": "missing",
                 "contact_geo": "Qux",
@@ -236,6 +247,7 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
         "services": [
             {
                 "canton": "LU",
+                "broker": None,
                 "base_topic": "av",
                 "contact_geo": "Foobar",
                 "contact_specialist_department": "Quux",
@@ -315,6 +327,7 @@ def test_command_organization_mapping_for_contact(mock, client, db):
         "services": [
             {
                 "canton": "LU",
+                "broker": None,
                 "base_topic": "av",
                 "contact_geo": "Foo",
             }
