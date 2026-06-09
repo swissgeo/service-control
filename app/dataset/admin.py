@@ -1,6 +1,17 @@
-from django.contrib import admin
+from typing import Any
 
-from .models import Dataset, DatasetToContact, DatasetToUnit
+from django.contrib import admin
+from django.http.request import HttpRequest
+from django.urls import reverse
+from django.utils.html import format_html_join
+
+from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
+
+
+class DatasetToDatasetInline(admin.TabularInline):
+    model = DatasetToDataset
+    fk_name = "object"
+    extra = 0
 
 
 class DatasetToUnitInline(admin.TabularInline):
@@ -19,12 +30,37 @@ class DatasetAdmin(admin.ModelAdmin):
 
     list_display = ("dataset_id", "title_short_de", "data_source")
     list_filter = ("data_source",)
-    # TODO: depending on how we handle identifiers, we might want to make dataset_id read only in
-    # edit or implement auto-generation for identifiers (probably preferrable)
-    readonly_fields = ("created_at", "updated_at", "dataset_id")
+    readonly_fields = ("created_at", "updated_at", "dataset_list")
     search_fields = ("dataset_id", "title_short_de")
     filter_horizontal = ("keywords",)
     inlines = (
+        DatasetToDatasetInline,
         DatasetToUnitInline,
         DatasetToContactInline,
     )
+
+    @admin.display(description="Reverse Dataset Relations")
+    def dataset_list(self, obj: Dataset) -> str:
+        return format_html_join(
+            "\n",
+            '<a href="{}">{}</a><br>',
+            (
+                (
+                    reverse("admin:dataset_dataset_change", args=[relation.object_id]),
+                    str(relation),
+                )
+                for relation in obj.dataset_relations_as_subject.all()  # ty: ignore[unresolved-attribute]
+            ),
+        )
+
+    def get_readonly_fields(
+        self,
+        request: HttpRequest,
+        obj: Any | None = None,
+    ) -> list[str] | tuple[Any, ...]:
+        if obj:
+            # Dataset id cannot be updated
+            # TODO: depending on how we handle identifiers, we might want implement auto-generation
+            # for identifiers (probably preferrable than making it readonly in edit)
+            return ("dataset_id", *self.readonly_fields)
+        return self.readonly_fields

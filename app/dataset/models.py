@@ -1,8 +1,8 @@
 import logging
-from typing import ClassVar
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
@@ -40,16 +40,14 @@ class Dataset(models.Model):
 
     dataset_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
-    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
-    DATA_SOURCE_CHOICE_BOD_DATASET: ClassVar[str] = "bod-dataset"
-    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (DATA_SOURCE_CHOICE_BOD_DATASET, "BOD (dataset)"),
-        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Admin UI/API)"),
-    ]
+    class DataSource(models.TextChoices):
+        BOD_DATASET = "bod-dataset", _("Dataset DataSource", "BOD (dataset)")
+        USER_INPUT = "user-input", _("Dataset DataSource", "User Input (Admin UI/API)")
+
     data_source = models.CharField(
         _(_context, "Data Source"),
-        choices=DATA_SOURCE_CHOICES,
-        default=DATA_SOURCE_CHOICE_USER_INPUT,
+        choices=DataSource.choices,
+        default=DataSource.USER_INPUT,
         max_length=255,
     )
     data_source_ids = ArrayField(
@@ -105,6 +103,12 @@ class Dataset(models.Model):
         help_text=_(_context, "Date and time when the dataset was last updated"),
     )
 
+    class Role(models.TextChoices):
+        PARENT = "parent", _("DatasetToDataset Role", "Parent")
+        AGGREGATE = "aggregate", _("DatasetToDataset Role", "Aggregate")
+        DERIVATE = "derivate", _("DatasetToDataset Role", "Derivate")
+        CLIPPAGE = "clippage", _("DatasetToDataset Role", "Clippage")
+
     # Stores the contacts as defined in geocat (until service-control becomes data master for these)
     legacy_contacts = models.JSONField(_(_context, "Contacts (Legacy)"), default=list, blank=True)
 
@@ -122,25 +126,60 @@ class Dataset(models.Model):
         values.add(value)
         self.data_source_ids = sorted(values)
 
+    def related_datasets(
+        self, role: DatasetToDataset.Role, reverse: bool = False
+    ) -> QuerySet[Dataset]:
+        if reverse:
+            return Dataset.objects.filter(
+                dataset_relations_as_object__role=role,
+                dataset_relations_as_object__subject=self,
+            )
+        return Dataset.objects.filter(
+            dataset_relations_as_subject__role=role.value, dataset_relations_as_subject__object=self
+        )
+
+
+class DatasetToDataset(models.Model):
+    """Each dataset can be associated with another dataset in different roles.
+
+    These are unidirectional relations in the form of [subject] is [role] of [object].
+    """
+
+    class Role(models.TextChoices):
+        CHILD = "child", _("DatasetToDataset Role", "Child")
+        PART = "part", _("DatasetToDataset Role", "Part")
+        DERIVATE = "derivate", _("DatasetToDataset Role", "Derivate")
+        CLIPPAGE = "clippage", _("DatasetToDataset Role", "Clippage")
+
+    subject = models.ForeignKey(
+        Dataset, on_delete=models.CASCADE, related_name="dataset_relations_as_subject"
+    )
+    object = models.ForeignKey(
+        Dataset, on_delete=models.CASCADE, related_name="dataset_relations_as_object"
+    )
+    role = models.CharField(max_length=100, choices=Role.choices)
+
+    class Meta:
+        indexes = (models.Index(fields=["subject", "object"]),)
+        verbose_name = _("DatasetToDataset Model", "Dataset Relation")
+
+    def __str__(self) -> str:
+        return f"{self.subject} is a {self.role} of {self.object}"
+
 
 class DatasetToUnit(models.Model):
     """Each dataset can be associated with organizational units in different roles."""
 
-    ROLE_OWNER = "owner"
-    ROLE_MAINTAINER = "maintainer"
-    ROLE_CONTRIBUTOR = "contributor"
-
-    ROLES = (
-        (ROLE_OWNER, "Owner"),
-        (ROLE_MAINTAINER, "Maintainer"),
-        (ROLE_CONTRIBUTOR, "Contributor"),
-    )
+    class Role(models.TextChoices):
+        OWNER = "owner", _("DatasetToUnit Role", "Owner")
+        MAINTAINER = "maintainer", _("DatasetToUnit Role", "Maintainer")
+        CONTRIBUTOR = "contributor", _("DatasetToUnit Role", "Contributor")
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="dataset_units")
     unit = models.ForeignKey(
         "organization.Unit", on_delete=models.CASCADE, related_name="dataset_units"
     )
-    role = models.CharField(max_length=100, choices=ROLES)
+    role = models.CharField(max_length=100, choices=Role.choices)
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "unit"]),)
@@ -156,58 +195,38 @@ class DatasetToContact(models.Model):
     See eCH-0271: CI_RoleCode.
     """
 
-    ROLE_CUSTODIAN = "custodian"
-    ROLE_OWNER = "owner"
-    ROLE_DISTRIBUTOR = "distributor"
-    ROLE_POINT_OF_CONTACT = "pointOfContact"
-    ROLE_PUBLISHER = "publisher"
-    ROLE_RESOURCE_PROVIDER = "resourceProvider"
-    ROLE_USER = "user"
-    ROLE_ORIGINATOR = "originator"
-    ROLE_PRINCIPAL_INVESTIGATOR = "principalInvestigator"
-    ROLE_PROCESSOR = "processor"
-    ROLE_AUTHOR = "author"
-    ROLE_SPONSOR = "sponsor"
-    ROLE_CO_AUTHOR = "coAuthor"
-    ROLE_COLLABORATOR = "collaborator"
-    ROLE_EDITOR = "editor"
-    ROLE_MEDIATOR = "mediator"
-    ROLE_RIGHTS_HOLDER = "rightsHolder"
-    ROLE_CONTRIBUTOR = "contributor"
-    ROLE_FUNDER = "funder"
-    ROLE_STAKEHOLDER = "stakeholder"
-
-    RECOMMENDED_ROLES = (
-        (ROLE_CUSTODIAN, "Custodian"),
-        (ROLE_OWNER, "Owner"),
-        (ROLE_DISTRIBUTOR, "Distributor"),
-        (ROLE_POINT_OF_CONTACT, "Point of Contact"),
-        (ROLE_PUBLISHER, "Publisher"),
-    )
-
-    NOT_RECOMMENDED_ROLES = (
-        (ROLE_RESOURCE_PROVIDER, "Resource Provider"),
-        (ROLE_USER, "User"),
-        (ROLE_ORIGINATOR, "Originator"),
-        (ROLE_PRINCIPAL_INVESTIGATOR, "Principal Investigator"),
-        (ROLE_PROCESSOR, "Processor"),
-        (ROLE_AUTHOR, "Author"),
-        (ROLE_SPONSOR, "Sponsor"),
-        (ROLE_CO_AUTHOR, "Co-Author"),
-        (ROLE_COLLABORATOR, "Collaborator"),
-        (ROLE_EDITOR, "Editor"),
-        (ROLE_MEDIATOR, "Mediator"),
-        (ROLE_RIGHTS_HOLDER, "Rights Holder"),
-        (ROLE_CONTRIBUTOR, "Contributor"),
-        (ROLE_FUNDER, "Funder"),
-        (ROLE_STAKEHOLDER, "Stakeholder"),
-    )
+    class Role(models.TextChoices):
+        # Recommended
+        CUSTODIAN = "custodian", _("DatasetToContact Role", "Custodian")
+        OWNER = "owner", _("DatasetToContact Role", "Owner")
+        DISTRIBUTOR = "distributor", _("DatasetToContact Role", "Distributor")
+        POINT_OF_CONTACT = "pointOfContact", _("DatasetToContact Role", "Point of Contact")
+        PUBLISHER = "publisher", _("DatasetToContact Role", "Publisher")
+        # Not recommended
+        RESOURCE_PROVIDER = "resourceProvider", _("DatasetToContact Role", "Resource Provider")
+        USER = "user", _("DatasetToContact Role", "User")
+        ORIGINATOR = "originator", _("DatasetToContact Role", "Originator")
+        PRINCIPAL_INVESTIGATOR = (
+            "principalInvestigator",
+            _("DatasetToContact Role", "Principal Investigator"),
+        )
+        PROCESSOR = "processor", _("DatasetToContact Role", "Processor")
+        AUTHOR = "author", _("DatasetToContact Role", "Author")
+        SPONSOR = "sponsor", _("DatasetToContact Role", "Sponsor")
+        CO_AUTHOR = "coAuthor", _("DatasetToContact Role", "Co-Author")
+        COLLABORATOR = "collaborator", _("DatasetToContact Role", "Collaborator")
+        EDITOR = "editor", _("DatasetToContact Role", "Editor")
+        MEDIATOR = "mediator", _("DatasetToContact Role", "Mediator")
+        RIGHTS_HOLDER = "rightsHolder", _("DatasetToContact Role", "Rights Holder")
+        CONTRIBUTOR = "contributor", _("DatasetToContact Role", "Contributor")
+        FUNDER = "funder", _("DatasetToContact Role", "Funder")
+        STAKEHOLDER = "stakeholder", _("DatasetToContact Role", "Stakeholder")
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="dataset_contacts")
     contact = models.ForeignKey(
         "organization.Contact", on_delete=models.CASCADE, related_name="dataset_contacts"
     )
-    role = models.CharField(max_length=100, choices=RECOMMENDED_ROLES + NOT_RECOMMENDED_ROLES)
+    role = models.CharField(max_length=100, choices=Role.choices)
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "contact"]),)

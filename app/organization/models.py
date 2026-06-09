@@ -54,16 +54,17 @@ class Organization(models.Model):
         db_index=True,
     )
 
-    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
-    DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION: ClassVar[str] = "bod-contact-organization"
-    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION, "BOD (contactorganization)"),
-        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Admin UI/API)"),
-    ]
+    class DataSource(models.TextChoices):
+        BOD_CONTACT_ORGANIZATION = (
+            "bod-contact-organization",
+            _("Organization DataSource", "BOD (contactorganization)"),
+        )
+        USER_INPUT = "user-input", _("Organization DataSource", "User Input (Admin UI/API)")
+
     data_source = models.CharField(
         _(_context, "Data Source"),
-        choices=DATA_SOURCE_CHOICES,
-        default=DATA_SOURCE_CHOICE_USER_INPUT,
+        choices=DataSource.choices,
+        default=DataSource.USER_INPUT,
         max_length=255,
     )
     data_source_ids = ArrayField(

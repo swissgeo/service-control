@@ -198,7 +198,7 @@ class Command(CustomBaseCommand):
                     distribution_id=f"{collection_id}:stac",
                     dataset=dataset,
                     title="STAC Download Collection",
-                    data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
+                    data_source=Distribution.DataSource.SERVICE_CAPABILITIES,
                     dataservice=dataservice,
                     stac_collection_id=collection_id,
                 )
@@ -235,7 +235,7 @@ class Command(CustomBaseCommand):
 
         obsolete = (
             ExternalStacDistribution.objects.filter(
-                data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES
+                data_source=Distribution.DataSource.SERVICE_CAPABILITIES
             )
             .exclude(stac_collection_id__in=processed)
             .all()

@@ -163,7 +163,7 @@ class Command(CustomBaseCommand):
             try:
                 org = Organization.objects.get(
                     organization_id=provider_id,
-                    data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                    data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
                 )
                 self.print(f"Organization with provider_id {provider_id} already exists")
             except Organization.DoesNotExist:
@@ -173,7 +173,7 @@ class Command(CustomBaseCommand):
                 )
                 update = False
                 org = Organization(
-                    data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                    data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
                     **import_org.model_dump(by_alias=True),
                 )
 
@@ -255,7 +255,7 @@ class Command(CustomBaseCommand):
 
         """
         existing = Organization.objects.existing_data_source_ids(
-            Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+            Organization.DataSource.BOD_CONTACT_ORGANIZATION
         )
         if removed := existing - processed:
             if options["clean"]:
@@ -268,7 +268,7 @@ class Command(CustomBaseCommand):
                 )
 
         obsolete = Organization.objects.filter(
-            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+            data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
             data_source_ids=[],
         ).values_list("organization_id", flat=True)
         if obsolete:
@@ -349,7 +349,7 @@ class Command(CustomBaseCommand):
                 else:
                     ds, created = Dataset.objects.get_or_create(
                         dataset_id=dataset_id,
-                        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+                        data_source=Dataset.DataSource.BOD_DATASET,
                         defaults={
                             "title_short_de": import_ds.title_de,
                             "title_short_fr": import_ds.title_fr,
@@ -408,8 +408,8 @@ class Command(CustomBaseCommand):
                         self.print_warning(f"Organization {org_id} has no default unit")
                         continue
 
-                DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.ROLE_OWNER).delete()
-                DatasetToUnit.objects.create(dataset=ds, unit=unit, role=DatasetToUnit.ROLE_OWNER)
+                DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.Role.OWNER).delete()
+                DatasetToUnit.objects.create(dataset=ds, unit=unit, role=DatasetToUnit.Role.OWNER)
 
         metrics["removed_datasets"], metrics["obsolete_datasets"] = self.cleanup_datasets(
             processed, **options
@@ -425,7 +425,7 @@ class Command(CustomBaseCommand):
           provider ID reference; optionally delete them
 
         """
-        existing = Dataset.objects.existing_data_source_ids(Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        existing = Dataset.objects.existing_data_source_ids(Dataset.DataSource.BOD_DATASET)
         if removed := existing - processed:
             if options["clean"]:
                 for dataset_id in removed:
@@ -435,7 +435,7 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"Removed data_source_id (dataset) found: {', '.join(removed)}")
 
         obsolete = Dataset.objects.filter(
-            data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+            data_source=Dataset.DataSource.BOD_DATASET,
             data_source_ids=[],
         ).values_list("dataset_id", flat=True)
         if obsolete:
@@ -544,7 +544,7 @@ class Command(CustomBaseCommand):
                 else:
                     try:
                         dataset = Dataset.objects.get(
-                            dataset_id=layer_id, data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+                            dataset_id=layer_id, data_source=Dataset.DataSource.BOD_DATASET
                         )
                     except Dataset.DoesNotExist:
                         self.print_error(f"No Dataset found for layer_id {layer_id}")
@@ -604,7 +604,7 @@ class Command(CustomBaseCommand):
                         metrics["updated_api3feature_distributions"] += 1
 
                 obsolete = dataset.distribution_set.filter(  # ty: ignore[unresolved-attribute]
-                    data_source=Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+                    data_source=Distribution.DataSource.BOD_LAYERS_JS
                 ).exclude(distribution_id__in=processed)
                 if obsolete:
                     if options["clean"]:
@@ -632,7 +632,7 @@ class Command(CustomBaseCommand):
             wmts_layer_name=ljs.layer_id,
         )
         dist.dataservice = wmts_dataservice
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
         dist.title = "WMTS Layer"
 
         # opacity must be between 0 (excluded) and 1 (included)
@@ -654,7 +654,7 @@ class Command(CustomBaseCommand):
             wms_layer_name=ljs.layer_id,
         )
         dist.dataservice = wms_dataservice
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
         dist.title = "WMS Layer"
 
         # opacity must be between 0 (excluded) and 1 (included)
@@ -678,7 +678,7 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             defaults={"geojson_url_de": ljs.geojson_url_de},
         )
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
         dist.title = "GeoJSON Layer"
         dist.geojson_url_de = ljs.geojson_url_de
         dist.geojson_url_fr = ljs.geojson_url_fr
@@ -709,7 +709,7 @@ class Command(CustomBaseCommand):
             layer_id=ljs.layer_id,
         )
         dist.dataservice = geoadminfeature_dataservice
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
         dist.title = "Geoadmin Features"
         # Note: This information is not relyable in the layers_js table. There are
         # layers with searchable=true that return 404 for search requests on ../SearchServer
@@ -754,7 +754,7 @@ class Command(CustomBaseCommand):
             "datasets_updated": 0,
         }
 
-        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
             metrics["datasets_processed"] += 1
@@ -842,7 +842,7 @@ class Command(CustomBaseCommand):
             "datasets_updated": 0,
         }
 
-        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
             metrics["datasets_processed"] += 1

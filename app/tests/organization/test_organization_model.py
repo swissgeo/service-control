@@ -134,7 +134,7 @@ def test_form_valid_for_blank_optional_field(db):
 
     data = {
         "organization_id": "ch.bafu",
-        "data_source": Organization.DATA_SOURCE_CHOICE_USER_INPUT,
+        "data_source": Organization.DataSource.USER_INPUT,
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
         "name_en": "Federal Office for the Environment",

@@ -103,7 +103,7 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert org_out.acronym_en == "FOEN"
     assert org_out.acronym_it == "UFAM"
     assert org_out.acronym_rm == "UFAM"
-    assert org_out.data_source == Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+    assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
 
 
@@ -121,7 +121,7 @@ def test_command_updates_organizations(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
     ).save()
 
@@ -160,7 +160,7 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.acronym_en == "FOEN"
     assert org_out.acronym_it == "UFAM"
     assert org_out.acronym_rm == "UFAM"
-    assert org_out.data_source == Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+    assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
 
 
@@ -178,7 +178,7 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     )
     org_1.save()
@@ -194,7 +194,7 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     )
     org_2.save()
@@ -238,7 +238,7 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     assert org_1.acronym_en == "FOEN"
     assert org_1.acronym_it == "UFAM"
     assert org_1.acronym_rm == "UFAM"
-    assert org_1.data_source == Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+    assert org_1.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_1.data_source_ids == ["ch.bafu"]
 
     org_2.refresh_from_db()
@@ -259,7 +259,7 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
     )
     org.save()
@@ -321,7 +321,7 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     assert org.acronym_en == "FOEN"
     assert org.acronym_it == "UFAM"
     assert org.acronym_rm == "UFAM"
-    assert org.data_source == Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+    assert org.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org.data_source_ids == ["ch.bafu1", "ch.bafu2"]
 
 
@@ -339,7 +339,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.unused"],
     ).save()
     Organization(
@@ -354,7 +354,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
     Organization(
@@ -369,7 +369,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         acronym_en="x",
         acronym_it="x",
         acronym_rm="x",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
 
@@ -457,7 +457,7 @@ def test_command_creates_dataset(dynamodb, db):
     assert ds_out.description_it == "Description (IT)"
     assert ds_out.description_rm == "Description (RM)"
     assert ds_out.geocat_id == "abcd"
-    assert ds_out.data_source == Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+    assert ds_out.data_source == Dataset.DataSource.BOD_DATASET
     assert ds_out.data_source_ids == ["ch.bafu.moose"]
 
 
@@ -475,7 +475,7 @@ def test_command_updates_dataset(dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="x",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=[],
     ).save()
 
@@ -518,7 +518,7 @@ def test_command_updates_dataset(dynamodb, db):
     assert ds_out.description_it == "Description (IT)"
     assert ds_out.description_rm == "Description (RM)"
     assert ds_out.geocat_id == "abcd"
-    assert ds_out.data_source == Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+    assert ds_out.data_source == Dataset.DataSource.BOD_DATASET
     assert ds_out.data_source_ids == ["ch.bafu.moose"]
 
 
@@ -536,7 +536,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
         description_it="x",
         description_rm="x",
         geocat_id="x1",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
     )
     ds_1.save()
@@ -553,7 +553,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
         description_it="x",
         description_rm="x",
         geocat_id="x2",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
     )
     ds_2.save()
@@ -644,7 +644,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
     assert ds_1.description_it == "Description (IT)"
     assert ds_1.description_rm == "Description (RM)"
     assert ds_1.geocat_id == "abcd"
-    assert ds_1.data_source == Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+    assert ds_1.data_source == Dataset.DataSource.BOD_DATASET
     assert ds_1.data_source_ids == ["ch.bafu.moose"]
 
     ds_2.refresh_from_db()
@@ -665,7 +665,7 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="x",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=[],
     )
     ds.save()
@@ -734,7 +734,7 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
     assert ds.description_it == "Description (IT)"
     assert ds.description_rm == "Description (RM)"
     assert ds.geocat_id == "abcd"
-    assert ds.data_source == Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+    assert ds.data_source == Dataset.DataSource.BOD_DATASET
     assert ds.data_source_ids == ["ch.bafu.moose1", "ch.bafu.moose2"]
 
 
@@ -752,7 +752,7 @@ def test_command_cleans_datasets(dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="x",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.unused"],
     ).save()
     Dataset(
@@ -768,7 +768,7 @@ def test_command_cleans_datasets(dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="y",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
     ).save()
     Dataset(
@@ -784,7 +784,7 @@ def test_command_cleans_datasets(dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="z",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
     ).save()
 
@@ -863,13 +863,13 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="y",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
     )
     ds.save()
 
-    DatasetToUnit(dataset=ds, unit=unit, role=DatasetToUnit.ROLE_OWNER).save()
-    DatasetToUnit(dataset=ds, unit=unit, role=DatasetToUnit.ROLE_MAINTAINER).save()
+    DatasetToUnit(dataset=ds, unit=unit, role=DatasetToUnit.Role.OWNER).save()
+    DatasetToUnit(dataset=ds, unit=unit, role=DatasetToUnit.Role.MAINTAINER).save()
 
     ds_in = DatasetImport(
         dataset_id="ch.bafu.moose",
@@ -896,14 +896,14 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
 
     ds.refresh_from_db()
     assert ds.dataset_id == "ch.bafu.moose"
-    assert ds.data_source == Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+    assert ds.data_source == Dataset.DataSource.BOD_DATASET
     assert ds.data_source_ids == ["ch.bafu.moose"]
     assert {
         ds_unit.role: (ds_unit.unit.organization.organization_id, ds_unit.unit.unit_id)
         for ds_unit in ds.dataset_units.all()
     } == {
         "maintainer": ("ch.bafu", "ch.bafu.unit"),
-        DatasetToUnit.ROLE_OWNER: ("ch.bafu", Unit.DEFAULT_UNIT_ID),
+        DatasetToUnit.Role.OWNER: ("ch.bafu", Unit.DEFAULT_UNIT_ID),
     }
 
 
@@ -940,7 +940,7 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="y",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
     )
     ds.save()
@@ -974,12 +974,12 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
 
     ds.refresh_from_db()
     assert ds.dataset_id == "ch.bafu.moose"
-    assert ds.data_source == Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+    assert ds.data_source == Dataset.DataSource.BOD_DATASET
     assert ds.data_source_ids == ["ch.bafu.moose"]
     assert {
         ds_unit.role: (ds_unit.unit.organization.organization_id, ds_unit.unit.unit_id)
         for ds_unit in ds.dataset_units.all()
-    } == {DatasetToUnit.ROLE_OWNER: ("ch.bafu", "ch.bafu.unit")}
+    } == {DatasetToUnit.Role.OWNER: ("ch.bafu", "ch.bafu.unit")}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -1008,7 +1008,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_wmts = Dataset(
         dataset_id="ch.bafu.moose",
         geocat_id="a",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bafu.moose"],
         **attributes,
     )
@@ -1017,7 +1017,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_wms = Dataset(
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="b",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bazl.luftfahrthindernis"],
         **attributes,
     )
@@ -1026,7 +1026,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_geojson = Dataset(
         dataset_id="ch.swisstopo.treasurehunt",
         geocat_id="c",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.swisstopo.treasurehunt"],
         **attributes,
     )
@@ -1090,14 +1090,14 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     dist_1 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wmts").first()
     assert dist_1
     assert dist_1.dataservice.service_type == "ogc:wmts"
-    assert dist_1.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_1.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_1.title == "WMTS Layer"
     assert dist_1.opacity == Decimal("0.5")
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
     assert dist_2
     assert dist_2.dataservice.service_type == "ogc:wms"
-    assert dist_2.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_2.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_2.title == "WMS Layer"
     assert dist_2.opacity == Decimal("0.5")
     assert dist_2.gutter == 0
@@ -1105,7 +1105,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     dist_3 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:api3features").first()
     assert dist_3
     assert dist_3.dataservice.service_type == "geoadmin:features"
-    assert dist_3.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_3.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_3.title == "Geoadmin Features"
     assert dist_3.renderable is True
     assert dist_3.queryable is False
@@ -1119,7 +1119,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ).first()
     assert dist_4
     assert dist_4.dataservice.service_type == "ogc:wms"
-    assert dist_4.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_4.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_4.title == "WMS Layer"
     assert dist_4.opacity == Decimal("0.6")
     assert dist_4.gutter == 1
@@ -1129,7 +1129,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ).first()
     assert dist_5
     assert dist_5.dataservice.service_type == "geoadmin:features"
-    assert dist_5.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_5.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_5.title == "Geoadmin Features"
     assert dist_5.renderable is False
     assert dist_5.queryable is True
@@ -1142,7 +1142,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         distribution_id="ch.swisstopo.treasurehunt:geojson"
     ).first()
     assert dist_6
-    assert dist_6.data_source == Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
+    assert dist_6.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_6.title == "GeoJSON Layer"
     assert dist_6.geojson_url_de == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json"
     assert dist_6.geojson_url_fr == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json"
@@ -1208,7 +1208,7 @@ def test_command_cleans_distributions(dynamodb, db):
     dataset = Dataset(
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="c",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bazl.luftfahrthindernis"],
         title_short_de="x",
         title_short_fr="x",
@@ -1226,13 +1226,13 @@ def test_command_cleans_distributions(dynamodb, db):
     ExternalGeoJSONDistribution(
         distribution_id="ch.bazl.luftfahrthindernis:geojson",
         dataset=dataset,
-        data_source=Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS,
+        data_source=Distribution.DataSource.BOD_LAYERS_JS,
     ).save()
 
     ExternalStacDistribution(
         distribution_id="ch.bazl.luftfahrthindernis:stac",
         dataset=dataset,
-        data_source=Distribution.DATA_SOURCE_CHOICE_USER_INPUT,
+        data_source=Distribution.DataSource.USER_INPUT,
     ).save()
 
     layer = LayersJSImport(
@@ -1269,7 +1269,7 @@ def test_command_uses_distribution_mapping(dynamodb, db):
     dataset = Dataset(
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="c",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bazl.luftfahrthindernis"],
         title_short_de="x",
         title_short_fr="x",
@@ -1371,7 +1371,7 @@ def test_command_creates_and_updates_keywords(dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="abcd",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
     )
     ds.save()
 
@@ -1480,7 +1480,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="abcd",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
     )
     ds.save()
 
@@ -1500,7 +1500,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     org.save()
 
     contact = Contact(
-        role=DatasetToContact.ROLE_POINT_OF_CONTACT,
+        role=DatasetToContact.Role.POINT_OF_CONTACT,
         org_name="Bundesamt für Umwelt",
         org_name_de="Bundesamt für Umwelt",
         org_name_fr="Office fédéral de l'environnement",
@@ -1563,7 +1563,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     ds.refresh_from_db()
     assert ds.legacy_contacts == [
         {
-            "role": DatasetToContact.ROLE_POINT_OF_CONTACT,
+            "role": DatasetToContact.Role.POINT_OF_CONTACT,
             "org_name": "Bundesamt für Umwelt",
             "contact_sms": "789",
             "org_acronym": "BAFU",
@@ -1617,7 +1617,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
 
     ds_contact = ds.dataset_contacts.first()
     assert ds_contact
-    assert ds_contact.role == DatasetToContact.ROLE_POINT_OF_CONTACT
+    assert ds_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
     assert ds_contact.contact.organization == org
     assert ds_contact.contact.name_de == "Abteilung Luftreinhaltung und Chemikalien"
     assert ds_contact.contact.name_fr == "Division Protection de l'air et produits chimiques"
@@ -1638,7 +1638,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     assert ds_contact.contact.url_rm == "https://www.bafu.admin.ch/rm/"
 
     # Update
-    contact.role = DatasetToContact.ROLE_OWNER
+    contact.role = DatasetToContact.Role.OWNER
     contact.position_name_rm = None
     contacts = ContactList(dataset_id="ch.bafu.moose", geocat_id="abcd", contacts=[contact])
     dynamodb.get_item.return_value = {"Item": contacts.as_dynamodb_item()}
@@ -1653,14 +1653,14 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     )
 
     ds.refresh_from_db()
-    assert ds.legacy_contacts[0]["role"] == DatasetToContact.ROLE_OWNER
+    assert ds.legacy_contacts[0]["role"] == DatasetToContact.Role.OWNER
     assert ds.legacy_contacts[0]["position_name_rm"] is None
 
     assert DatasetToContact.objects.count() == 1
 
     ds_contact = ds.dataset_contacts.first()
     assert ds_contact
-    assert ds_contact.role == DatasetToContact.ROLE_OWNER
+    assert ds_contact.role == DatasetToContact.Role.OWNER
     assert ds_contact.contact.name_rm == "-Missing-"
 
 
@@ -1679,7 +1679,7 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
         description_it="x",
         description_rm="x",
         geocat_id="abcd",
-        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+        data_source=Dataset.DataSource.BOD_DATASET,
     )
     ds.save()
 
@@ -1702,13 +1702,13 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
 
     DatasetToContactMapping(
         dataset_id_prefix="ch.bafu.moo",
-        role=DatasetToContact.ROLE_POINT_OF_CONTACT,
+        role=DatasetToContact.Role.POINT_OF_CONTACT,
         organization_id="ch.bafu",
         contact_name_en="contact",
     ).save()
 
     contact = Contact(
-        role=DatasetToContact.ROLE_POINT_OF_CONTACT,
+        role=DatasetToContact.Role.POINT_OF_CONTACT,
         org_name="Bundesamt für Umwelt",
         org_name_de="Bundesamt für Umwelt",
         org_name_fr="Office fédéral de l'environnement",
@@ -1772,7 +1772,7 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
     ds.refresh_from_db()
     assert ds.legacy_contacts == [
         {
-            "role": DatasetToContact.ROLE_POINT_OF_CONTACT,
+            "role": DatasetToContact.Role.POINT_OF_CONTACT,
             "org_name": "Bundesamt für Umwelt",
             "contact_sms": "789",
             "org_acronym": "BAFU",
@@ -1826,7 +1826,7 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
 
     ds_contact = ds.dataset_contacts.first()
     assert ds_contact
-    assert ds_contact.role == DatasetToContact.ROLE_POINT_OF_CONTACT
+    assert ds_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
     assert ds_contact.contact.organization == org
     assert ds_contact.contact.name_de is None
     assert ds_contact.contact.name_fr is None

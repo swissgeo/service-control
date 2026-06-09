@@ -222,7 +222,7 @@ class DatasetToContactMapping(models.Model):
     )
     role = models.CharField(
         max_length=100,
-        choices=DatasetToContact.RECOMMENDED_ROLES + DatasetToContact.NOT_RECOMMENDED_ROLES,
+        choices=DatasetToContact.Role.choices,
         help_text=_(
             _context,
             "Role used for matching during import of datasets from harvest/geocat",
