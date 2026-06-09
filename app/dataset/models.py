@@ -146,8 +146,8 @@ class DatasetToDataset(models.Model):
     """
 
     class Role(models.TextChoices):
-        PARENT = "parent", _("DatasetToDataset Role", "Parent")
-        AGGREGATE = "aggregate", _("DatasetToDataset Role", "Aggregate")
+        CHILD = "child", _("DatasetToDataset Role", "Child")
+        PART = "part", _("DatasetToDataset Role", "Part")
         DERIVATE = "derivate", _("DatasetToDataset Role", "Derivate")
         CLIPPAGE = "clippage", _("DatasetToDataset Role", "Clippage")
 

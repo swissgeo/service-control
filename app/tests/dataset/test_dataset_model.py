@@ -109,16 +109,16 @@ def test_dataset_to_dataset(db):
         geocat_id="child",
     )
 
-    relation = DatasetToDataset(subject=parent, role=DatasetToDataset.Role.PARENT, object=child)
+    relation = DatasetToDataset(subject=child, role=DatasetToDataset.Role.CHILD, object=parent)
     relation.save()
 
-    assert str(relation) == "parent is a parent of child"
+    assert str(relation) == "child is a child of parent"
 
-    assert parent.related_datasets(DatasetToDataset.Role.PARENT).first() is None
-    assert parent.related_datasets(DatasetToDataset.Role.PARENT, reverse=True).first() == child
+    assert parent.related_datasets(DatasetToDataset.Role.CHILD).first() == child
+    assert parent.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first() is None
 
-    assert child.related_datasets(DatasetToDataset.Role.PARENT).first() == parent
-    assert child.related_datasets(DatasetToDataset.Role.PARENT, reverse=True).first() is None
+    assert child.related_datasets(DatasetToDataset.Role.CHILD).first() is None
+    assert child.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first() == parent
 
 
 def test_dataset_unit(dataset, unit):
