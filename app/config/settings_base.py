@@ -18,7 +18,6 @@ import yaml
 from corsheaders.defaults import default_headers
 
 from config.authorization import VPRole
-from config.logging import Exporter
 
 env = environ.Env()
 
@@ -255,11 +254,6 @@ OTEL_ENABLE_OTLP_EXPORTER = env.bool("OTEL_ENABLE_OTLP_EXPORTER", True)
 OTEL_EXPORTER_OTLP_ENDPOINT = env.str("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 OTEL_EXPORTER_OTLP_HEADERS = env.str("OTEL_EXPORTER_OTLP_HEADERS", default=None)
 OTEL_EXPORTER_OTLP_INSECURE = env.bool("OTEL_EXPORTER_OTLP_INSECURE", False)
-
-OTEL_ENABLE_CONSOLE_EXPORTER = env.bool("OTEL_ENABLE_CONSOLE_EXPORTER", False)
-
-OTEL_TRACE_EXPORTERS = env.list("OTEL_TRACE_EXPORTERS", default=[Exporter.OTLP.value])
-OTEL_LOGGING_EXPORTERS = env.list("OTEL_LOGGING_EXPORTERS", default=[Exporter.OTLP.value])
 
 OTEL_ENABLE_DJANGO = env.bool("OTEL_ENABLE_DJANGO", True)
 OTEL_ENABLE_BOTO = env.bool("OTEL_ENABLE_BOTO", True)

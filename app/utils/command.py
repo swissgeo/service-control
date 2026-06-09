@@ -2,6 +2,8 @@ import logging
 from traceback import format_exception
 from typing import Any, TextIO
 
+from opentelemetry import metrics
+
 from django.core.management.base import BaseCommand, CommandParser
 
 
@@ -112,3 +114,13 @@ class CustomBaseCommand(BaseCommand):
                     message + "\n" + ", ".join(f"{key}={value}" for key, value in kwargs.items())
                 )
             self.stderr.write(self.style.ERROR(message % (args)))
+
+    def write_command_metrics(self, job_id: str, log_metrics: dict[str, int]) -> None:
+        """Emit OTel metrics from a metrics dict.
+
+        For each key (used as the metrics name), integer values are emitted as
+        individual gauges. job_id is added as an attribute to each gauge.
+        """
+        meter = metrics.get_meter(__name__)
+        for counter_name, value in log_metrics.items():
+            meter.create_gauge(counter_name).set(value, {"job_id": job_id})

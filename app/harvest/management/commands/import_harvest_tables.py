@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import TYPE_CHECKING, Any
 
 import environ
@@ -29,6 +30,7 @@ from harvest.models import (
     DatasetToContactMapping,
     DatasetToUnitMapping,
     OrganizationMapping,
+    PrefixLookupTable,
 )
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
@@ -51,6 +53,10 @@ class Command(CustomBaseCommand):
 
     help = "Importing data from DynamoDB harvesting tables. "
     "Currently supports importing organizations."
+
+    # job_id is used as a common attribute in metrics to link different metrics related to the same
+    # import run
+    job_id = str(uuid.uuid4())
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -131,6 +137,55 @@ class Command(CustomBaseCommand):
             self.import_contacts(*args, **options)
 
     # ##########################################################################
+    def import_organization(
+        self, item: dict[str, Any], mappings: PrefixLookupTable
+    ) -> tuple[str | None, str]:
+        """Import a single organization from a dynamoDB item.
+
+        Returns the provider_id and the state of the import (created, updated, failed)
+        """
+        try:
+            import_org = OrganizationImport.from_dynamodb_item(item)
+            self.print(f"Parsed organization: {import_org.provider_id} - {import_org.name_de}")
+        except ParsingError as e:
+            self.print_error(f"Failed to parse item: {item}. Error: {e}")
+            return None, "failed"
+
+        provider_id = import_org.provider_id
+        Organization.objects.remove_data_source_id(provider_id)
+
+        update = True
+        org, mapping = mappings.match(provider_id)
+        if org:
+            self.print(f"Mapping found for provider_id {provider_id} : {org}")
+            update = mapping.update if mapping else True
+        else:
+            try:
+                org = Organization.objects.get(
+                    organization_id=provider_id,
+                    data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                )
+                self.print(f"Organization with provider_id {provider_id} already exists")
+            except Organization.DoesNotExist:
+                self.print(
+                    f"Organization with provider_id {provider_id} does not exist"
+                    " yet, creating a new one."
+                )
+                update = False
+                org = Organization(
+                    data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+                    **import_org.model_dump(by_alias=True),
+                )
+
+        if update:
+            self.print(f"Updating {org}")
+            for field in import_org:
+                setattr(org, field[0], field[1])
+
+        org.add_data_source_id(provider_id)
+        org.save()
+        return provider_id, "updated" if update else "created"
+
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
 
@@ -151,6 +206,15 @@ class Command(CustomBaseCommand):
         After processing all entries, perform organization cleanup.
         """
 
+        log_metrics: dict[str, Any] = {
+            "harvest.imported_organizations.total": 0,
+            "harvest.imported_organizations.failed": 0,
+            "harvest.imported_organizations.created": 0,
+            "harvest.imported_organizations.updated": 0,
+            "harvest.removed_organizations.removed": 0,
+            "harvest.removed_organizations.obsolete": 0,
+        }
+
         self.print_success("Importing organizations")
 
         dynamodb_client: DynamoDBClient = self.session.client(
@@ -162,70 +226,24 @@ class Command(CustomBaseCommand):
 
         mappings = OrganizationMapping.table()
 
-        metrics = {
-            "total_dynamo_orgs": 0,
-            "parsed_orgs": 0,
-            "created_orgs": 0,
-            "updated_orgs": 0,
-            "clean_flag_set": options["clean"],
-            "removed_orgs": 0,
-            "obsolete_orgs": 0,
-        }
-
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
-                metrics["total_dynamo_orgs"] += 1
-                try:
-                    import_org = OrganizationImport.from_dynamodb_item(item)
-                    metrics["parsed_orgs"] += 1
-                    self.print(
-                        f"Parsed organization: {import_org.provider_id} - {import_org.name_de}"
-                    )
-                except ParsingError as e:
-                    self.print_error(f"Failed to parse item: {item}. Error: {e}")
-                    continue
+                log_metrics["harvest.imported_organizations.total"] += 1
+                provider_id, state = self.import_organization(item, mappings)
+                if provider_id:
+                    processed.add(provider_id)
+                match state:
+                    case "created" | "updated" | "failed":
+                        log_metrics[f"harvest.imported_organizations.{state}"] += 1
 
-                provider_id = import_org.provider_id
-                processed.add(provider_id)
-                Organization.objects.remove_data_source_id(provider_id)
+        removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
+        log_metrics["harvest.removed_organizations.removed"] = removed_count
+        log_metrics["harvest.removed_organizations.obsolete"] = obsolete_count
 
-                update = True
-                org, mapping = mappings.match(provider_id)
-                if org:
-                    self.print(f"Mapping found for provider_id {provider_id} : {org}")
-                    update = mapping.update if mapping else True
-                else:
-                    try:
-                        org = Organization.objects.get(
-                            organization_id=provider_id,
-                            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
-                        )
-                        self.print(f"Organization with provider_id {provider_id} already exists")
-                    except Organization.DoesNotExist:
-                        self.print(
-                            f"Organization with provider_id {provider_id} does not exist"
-                            " yet, creating a new one."
-                        )
-                        update = False
-                        org = Organization(
-                            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
-                            **import_org.model_dump(by_alias=True),
-                        )
-                        metrics["created_orgs"] += 1
-
-                if update:
-                    self.print(f"Updating {org}")
-                    metrics["updated_orgs"] += 1
-                    for field in import_org:
-                        setattr(org, field[0], field[1])
-
-                org.add_data_source_id(provider_id)
-                org.save()
-
-        metrics["removed_orgs"], metrics["obsolete_orgs"] = self.cleanup_organizations(
-            processed, **options
+        self.write_command_metrics(self.job_id, log_metrics)
+        self.print_success(
+            f"Organization import completed. Job ID: {self.job_id}, Metrics: {log_metrics}"
         )
-        self.print_success(f"Organization import completed. Metrics: {metrics}")
 
     def cleanup_organizations(self, processed: set[str], **options: Any) -> tuple[int, int]:
         """Cleanup organizations
