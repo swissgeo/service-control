@@ -323,25 +323,25 @@ class Contact(models.Model):
         null=True,
     )
     url_fr = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (French)"),
         max_length=500,
         blank=True,
         null=True,
     )
     url_en = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (English)"),
         max_length=500,
         blank=True,
         null=True,
     )
     url_it = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (Italian)"),
         max_length=500,
         blank=True,
         null=True,
     )
     url_rm = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (Romansh)"),
         max_length=500,
         blank=True,
         null=True,
