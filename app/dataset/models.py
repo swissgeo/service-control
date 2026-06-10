@@ -55,7 +55,7 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     description_it = models.TextField(_(_context, "Description (Italian)"), null=True, blank=True)
     description_rm = models.TextField(_(_context, "Description (Romansh)"), null=True, blank=True)
 
-    geocat_id = models.CharField(_(_context, "Geocat ID"), unique=True, max_length=100)
+    geocat_id = models.CharField(_(_context, "Geocat ID"), max_length=100, null=True, blank=True)
 
     preferred_distribution = models.ForeignKey(
         "distribution.Distribution",
