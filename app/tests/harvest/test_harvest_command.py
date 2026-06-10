@@ -1618,6 +1618,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     ds_contact = ds.dataset_contacts.first()
     assert ds_contact
     assert ds_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
+    assert ds_contact.contact.data_source == ContactModel.DataSource.GEOCAT
     assert ds_contact.contact.organization == org
     assert ds_contact.contact.name_de == "Abteilung Luftreinhaltung und Chemikalien"
     assert ds_contact.contact.name_fr == "Division Protection de l'air et produits chimiques"
@@ -1827,6 +1828,7 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
     ds_contact = ds.dataset_contacts.first()
     assert ds_contact
     assert ds_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
+    assert ds_contact.contact.data_source == ContactModel.DataSource.USER_INPUT
     assert ds_contact.contact.organization == org
     assert ds_contact.contact.name_de is None
     assert ds_contact.contact.name_fr is None
