@@ -94,11 +94,11 @@ class Command(CustomBaseCommand):
         self.print_success("Sync from STAC")
 
         metrics = {
-            "processed_collections": 0,
-            "added_distributions": 0,
-            "updated_distributions": 0,
-            "obsolete_distributions": 0,
-            "removed_distributions": 0,
+            "collections.processed": 0,
+            "distributions.added": 0,
+            "distributions.updated": 0,
+            "distributions.obsolete": 0,
+            "distributions.removed": 0,
         }
         success = True
         for service in OGCAPIStacDataservice.objects.all():
@@ -107,11 +107,11 @@ class Command(CustomBaseCommand):
                 processed, added, updated, obsolete = self.sync_stac_from_capabilities(
                     service,
                 )
-                metrics["processed_collections"] += processed
-                metrics["added_distributions"] += added
-                metrics["updated_distributions"] += updated
-                metrics["obsolete_distributions"] += obsolete if not self.options["clean"] else 0
-                metrics["removed_distributions"] += obsolete if self.options["clean"] else 0
+                metrics["collections.processed"] += processed
+                metrics["distributions.added"] += added
+                metrics["distributions.updated"] += updated
+                metrics["distributions.obsolete"] += obsolete if not self.options["clean"] else 0
+                metrics["distributions.removed"] += obsolete if self.options["clean"] else 0
                 self.print_success(
                     f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
                 )
@@ -121,6 +121,7 @@ class Command(CustomBaseCommand):
                     f"Error syncing dataservice '{service.dataservice_id}' from capabilities: {e}"
                 )
 
+        self.write_command_metrics(metrics)
         if success:
             self.print_success(f"Sync from STAC completed. Metrics: {metrics}")
         else:
