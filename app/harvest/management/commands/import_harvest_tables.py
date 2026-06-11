@@ -1,5 +1,4 @@
 import json
-import uuid
 from typing import TYPE_CHECKING, Any
 
 import environ
@@ -47,10 +46,6 @@ class Command(CustomBaseCommand):
     """Import data from DynamoDB harvesting tables."""
 
     help = "Import data from DynamoDB harvesting tables."
-
-    # job_id is used as a common attribute in metrics to link different metrics related to the same
-    # import run
-    job_id = str(uuid.uuid4())
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -108,6 +103,7 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
+
         profile = options.get("profile")
         if profile and profile != "default":
             self.session = Session(profile_name=profile)
@@ -200,13 +196,13 @@ class Command(CustomBaseCommand):
         After processing all entries, perform organization cleanup.
         """
 
-        log_metrics: dict[str, Any] = {
-            "harvest.imported_organizations.total": 0,
-            "harvest.imported_organizations.failed": 0,
-            "harvest.imported_organizations.created": 0,
-            "harvest.imported_organizations.updated": 0,
-            "harvest.removed_organizations.removed": 0,
-            "harvest.removed_organizations.obsolete": 0,
+        log_metrics = {
+            "organizations.total": 0,
+            "organizations.failed": 0,
+            "organizations.created": 0,
+            "organizations.updated": 0,
+            "organizations.removed": 0,
+            "organizations.obsolete": 0,
         }
 
         self.print_success("Importing organizations")
@@ -222,22 +218,20 @@ class Command(CustomBaseCommand):
 
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
-                log_metrics["harvest.imported_organizations.total"] += 1
+                log_metrics["organizations.total"] += 1
                 provider_id, state = self.import_organization(item, mappings)
                 if provider_id:
                     processed.add(provider_id)
                 match state:
                     case "created" | "updated" | "failed":
-                        log_metrics[f"harvest.imported_organizations.{state}"] += 1
+                        log_metrics[f"organizations.{state}"] += 1
 
         removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
-        log_metrics["harvest.removed_organizations.removed"] = removed_count
-        log_metrics["harvest.removed_organizations.obsolete"] = obsolete_count
+        log_metrics["organizations.removed"] = removed_count
+        log_metrics["organizations.obsolete"] = obsolete_count
 
-        self.write_command_metrics(self.job_id, log_metrics)
-        self.print_success(
-            f"Organization import completed. Job ID: {self.job_id}, Metrics: {log_metrics}"
-        )
+        self.write_command_metrics(log_metrics)
+        self.print_success(f"Organization import completed. Metrics: {log_metrics}")
 
     def cleanup_organizations(self, processed: set[str], **options: Any) -> tuple[int, int]:
         """Cleanup organizations
@@ -307,24 +301,23 @@ class Command(CustomBaseCommand):
         ds_mappings = DatasetMapping.table()
         unit_mappings = DatasetToUnitMapping.table()
 
-        metrics = {
-            "total_dynamo_datasets": 0,
-            "parsed_datasets": 0,
-            "created_datasets": 0,
-            "updated_datasets": 0,
-            "clean_flag_set": False,
-            "removed_datasets": 0,
-            "obsolete_datasets": 0,
+        log_metrics = {
+            "datasets.total": 0,
+            "datasets.failed": 0,
+            "datasets.created": 0,
+            "datasets.updated": 0,
+            "datasets.removed": 0,
+            "datasets.obsolete": 0,
         }
 
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
-                metrics["total_dynamo_datasets"] += 1
+                log_metrics["datasets.total"] += 1
                 try:
                     import_ds = DatasetImport.from_dynamodb_item(item)
                     self.print(f"Parsed dataset: {import_ds.dataset_id} - {import_ds.title_de}")
-                    metrics["parsed_datasets"] += 1
                 except Exception as e:  # noqa: BLE001
+                    log_metrics["datasets.failed"] += 1
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
                     continue
 
@@ -363,14 +356,14 @@ class Command(CustomBaseCommand):
                             f"Dataset with dataset_id {dataset_id} does not exist"
                             " yet, creating a new one."
                         )
-                        metrics["created_datasets"] += 1
+                        log_metrics["datasets.created"] += 1
                         update = False
                     else:
                         self.print(f"Dataset with dataset_id {dataset_id} already exists")
 
                 if update:
                     self.print(f"Updating {ds}")
-                    metrics["updated_datasets"] += 1
+                    log_metrics["datasets.updated"] += 1
                     ds.title_short_de = import_ds.title_de
                     ds.title_short_fr = import_ds.title_fr
                     ds.title_short_en = import_ds.title_en
@@ -405,10 +398,12 @@ class Command(CustomBaseCommand):
                 DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.Role.OWNER).delete()
                 DatasetToUnit.objects.create(dataset=ds, unit=unit, role=DatasetToUnit.Role.OWNER)
 
-        metrics["removed_datasets"], metrics["obsolete_datasets"] = self.cleanup_datasets(
-            processed, **options
-        )
-        self.print_success(f"Dataset import completed. Metrics: {metrics}")
+        (
+            log_metrics["datasets.removed"],
+            log_metrics["datasets.obsolete"],
+        ) = self.cleanup_datasets(processed, **options)
+        self.write_command_metrics(log_metrics)
+        self.print_success(f"Dataset import completed. Metrics: {log_metrics}")
 
     def cleanup_datasets(self, processed: set[str], **options: Any) -> tuple[int, int]:
         """Cleanup datasets
@@ -496,34 +491,34 @@ class Command(CustomBaseCommand):
         except GeoadminFeaturesDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin Features Dataservice found, try to load fixtures first "
-                "(./manage.py loaddata fixtures/dataservice.json"
+                "(./manage.py loaddata fixtures/dataservice.json)"
             )
             return
 
         ds_mappings = DatasetMapping.table()
 
-        metrics = {
-            "total_dynamo_layers": 0,
-            "parsed_layers": 0,
-            "created_wmts_distributions": 0,
-            "updated_wmts_distributions": 0,
-            "created_wms_distributions": 0,
-            "updated_wms_distributions": 0,
-            "created_geojson_distributions": 0,
-            "updated_geojson_distributions": 0,
-            "created_api3feature_distributions": 0,
-            "updated_api3feature_distributions": 0,
-            "removed_distributions": 0,
+        log_metrics = {
+            "distributions.total": 0,
+            "distributions.failed": 0,
+            "distributions.created.wmts": 0,
+            "distributions.updated.wmts": 0,
+            "distributions.created.wms": 0,
+            "distributions.updated.wms": 0,
+            "distributions.created.geojson": 0,
+            "distributions.updated.geojson": 0,
+            "distributions.created.api3feature": 0,
+            "distributions.updated.api3feature": 0,
+            "distributions.removed": 0,
         }
 
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
             for item in page["Items"]:
-                metrics["total_dynamo_layers"] += 1
+                log_metrics["distributions.total"] += 1
                 try:
                     ljs = LayersJSImport.from_dynamodb_item(item)
                     self.print(f"Parsed layers_js: {ljs.layer_id}")
-                    metrics["parsed_layers"] += 1
                 except Exception as e:  # noqa: BLE001
+                    log_metrics["distributions.failed"] += 1
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
                     continue
 
@@ -552,9 +547,9 @@ class Command(CustomBaseCommand):
                     dist, created = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
                     processed.add(dist.distribution_id)
                     if created:
-                        metrics["created_wmts_distributions"] += 1
+                        log_metrics["distributions.created.wmts"] += 1
                     else:
-                        metrics["updated_wmts_distributions"] += 1
+                        log_metrics["distributions.updated.wmts"] += 1
                     # Set the preferred distribution to WMTS for WMTS layers
                     dataset.preferred_distribution = dist
                     dataset.save()
@@ -563,9 +558,9 @@ class Command(CustomBaseCommand):
                     dist, created = self.import_wms_distribution(ljs, dataset, wms_dataservice)
                     processed.add(dist.distribution_id)
                     if created:
-                        metrics["created_wms_distributions"] += 1
+                        log_metrics["distributions.created.wms"] += 1
                     else:
-                        metrics["updated_wms_distributions"] += 1
+                        log_metrics["distributions.updated.wms"] += 1
                     # If the preferred distribution is not set yet, we set it to the WMS
                     # distribution
                     if not dataset.preferred_distribution:
@@ -576,9 +571,9 @@ class Command(CustomBaseCommand):
                     dist, created = self.import_geojson_distribution(ljs, dataset)
                     processed.add(dist.distribution_id)
                     if created:
-                        metrics["created_geojson_distributions"] += 1
+                        log_metrics["distributions.created.geojson"] += 1
                     else:
-                        metrics["updated_geojson_distributions"] += 1
+                        log_metrics["distributions.updated.geojson"] += 1
                     # If the preferred distribution is not set yet,
                     # we set it to the GeoJSON distribution. Currently,
                     # layers of type geojson only have a GeoJSON distribution.
@@ -593,9 +588,9 @@ class Command(CustomBaseCommand):
                     )
                     processed.add(dist.distribution_id)
                     if created:
-                        metrics["created_api3feature_distributions"] += 1
+                        log_metrics["distributions.created.api3feature"] += 1
                     else:
-                        metrics["updated_api3feature_distributions"] += 1
+                        log_metrics["distributions.updated.api3feature"] += 1
 
                 obsolete = dataset.distribution_set.filter(  # ty: ignore[unresolved-attribute]
                     data_source=Distribution.DataSource.BOD_LAYERS_JS
@@ -609,9 +604,10 @@ class Command(CustomBaseCommand):
                         self.print_warning(
                             f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
                         )
-                    metrics["removed_distributions"] += len(obsolete)
+                    log_metrics["distributions.removed"] += len(obsolete)
 
-        self.print_success(f"Distribution import completed. Metrics: {metrics}")
+        self.write_command_metrics(log_metrics)
+        self.print_success(f"Distribution import completed. Metrics: {log_metrics}")
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
@@ -741,17 +737,17 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
-        metrics = {
-            "datasets_processed": 0,
-            "thesaurus_created": 0,
-            "keywords_created": 0,
-            "datasets_updated": 0,
+        log_metrics = {
+            "keywords.datasets_processed": 0,
+            "keywords.thesaurus_created": 0,
+            "keywords.keywords_created": 0,
+            "keywords.datasets_updated": 0,
         }
 
         query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
-            metrics["datasets_processed"] += 1
+            log_metrics["keywords.datasets_processed"] += 1
 
             response = dynamodb_client.get_item(
                 TableName=f"harvest-keywords-{options['target_env']}",
@@ -780,7 +776,7 @@ class Command(CustomBaseCommand):
                     thesaurus_id=item_keyword.thesaurus_id
                 )
                 if created:
-                    metrics["thesaurus_created"] += 1
+                    log_metrics["keywords.thesaurus_created"] += 1
                 keyword, created = Keyword.objects.get_or_create(
                     thesaurus=thesaurus,
                     keyword_id=item_keyword.concept,
@@ -793,12 +789,13 @@ class Command(CustomBaseCommand):
                     },
                 )
                 if created:
-                    metrics["keywords_created"] += 1
+                    log_metrics["keywords.keywords_created"] += 1
                 keywords.add(keyword)
 
             dataset.keywords.set(keywords)
-            metrics["datasets_updated"] += 1
-        self.print_success(f"Keyword import completed. Metrics: {metrics}")
+            log_metrics["keywords.datasets_updated"] += 1
+        self.write_command_metrics(log_metrics)
+        self.print_success(f"Keyword import completed. Metrics: {log_metrics}")
 
     # ##########################################################################
     def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0912, PLR0915
@@ -830,16 +827,16 @@ class Command(CustomBaseCommand):
 
         mappings = DatasetToContactMapping.table()
 
-        metrics = {
-            "datasets_processed": 0,
-            "contacts_created": 0,
-            "datasets_updated": 0,
+        log_metrics = {
+            "contacts.datasets_processed": 0,
+            "contacts.contacts_created": 0,
+            "contacts.datasets_updated": 0,
         }
 
         query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
-            metrics["datasets_processed"] += 1
+            log_metrics["contacts.datasets_processed"] += 1
 
             response = dynamodb_client.get_item(
                 TableName=f"harvest-contacts-{options['target_env']}",
@@ -940,7 +937,7 @@ class Command(CustomBaseCommand):
                         )
                 else:
                     self.print(f"Creating contact for organization {organization}")
-                    metrics["contacts_created"] += 1
+                    log_metrics["contacts.contacts_created"] += 1
                     contact = Contact.objects.create(
                         organization=organization,
                         data_source=Contact.DataSource.GEOCAT,
@@ -964,8 +961,9 @@ class Command(CustomBaseCommand):
                     )
 
                 DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
-                metrics["datasets_updated"] += 1
-        self.print_success(f"Contact import completed. Metrics: {metrics}")
+                log_metrics["contacts.datasets_updated"] += 1
+        self.write_command_metrics(log_metrics)
+        self.print_success(f"Contact import completed. Metrics: {log_metrics}")
 
     def find_organization(
         self,

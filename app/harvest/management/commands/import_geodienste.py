@@ -1,7 +1,6 @@
 import json
 from json import loads
 from typing import Any
-from uuid import uuid4
 
 from requests import get
 
@@ -17,8 +16,6 @@ class Command(CustomBaseCommand):
     """Import data from geodienste.ch."""
 
     help = "Import data from geodienste.ch."
-
-    job_id = str(uuid4())
 
     def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
@@ -105,7 +102,7 @@ class Command(CustomBaseCommand):
 
         mappings = OrganizationMapping.table()
 
-        metrics = {"swissgeo.service_control.import_geodienste.organizations.created": 0}
+        metrics = {"organizations.created": 0}
 
         provider_ids = {
             service.get("broker") or service.get("canton")
@@ -159,12 +156,12 @@ class Command(CustomBaseCommand):
                         acronym_rm=provider_id,
                     )
                     org.save()
-                    metrics["swissgeo.service_control.import_geodienste.organizations.created"] += 1
+                    metrics["organizations.created"] += 1
 
             org.add_data_source_id(provider_id)
             org.save()
 
-        self.write_command_metrics(self.job_id, metrics)
+        self.write_command_metrics(metrics)
         self.print_success(f"Organization import completed. Metrics: {metrics}")
 
     # ##########################################################################
@@ -182,10 +179,10 @@ class Command(CustomBaseCommand):
         mappings = OrganizationMapping.table()
 
         metrics = {
-            "swissgeo.service_control.import_geodienste.contacts.created": 0,
-            "swissgeo.service_control.import_geodienste.contacts.updated": 0,
-            "swissgeo.service_control.import_geodienste.contacts.removed": 0,
-            "swissgeo.service_control.import_geodienste.contacts.obsoleted": 0,
+            "contacts.created": 0,
+            "contacts.updated": 0,
+            "contacts.removed": 0,
+            "contacts.obsoleted": 0,
         }
 
         processed = set()
@@ -237,24 +234,24 @@ class Command(CustomBaseCommand):
                             data_source=Contact.DataSource.GEODIENSTE,
                             legacy_contact=text,
                         )
-                        metrics["swissgeo.service_control.import_geodienste.contacts.created"] += 1
+                        metrics["contacts.created"] += 1
                     if contact.legacy_contact != text:
                         self.print(
                             f"Contact {data_source_id} for organization {org} changed, updating"
                         )
                         contact.legacy_contact = text
-                        metrics["swissgeo.service_control.import_geodienste.contacts.updated"] += 1
+                        metrics["contacts.updated"] += 1
 
                     Contact.objects.remove_data_source_id(data_source_id)
                     contact.add_data_source_id(data_source_id)
                     contact.save()
 
         (
-            metrics["swissgeo.service_control.import_geodienste.contacts.removed"],
-            metrics["swissgeo.service_control.import_geodienste.contacts.obsoleted"],
+            metrics["contacts.removed"],
+            metrics["contacts.obsoleted"],
         ) = self.cleanup_contacts(processed, clean)
 
-        self.write_command_metrics(self.job_id, metrics)
+        self.write_command_metrics(metrics)
         self.print_success(f"Contact import completed. Metrics: {metrics}")
 
     def cleanup_contacts(self, processed: set, clean: bool) -> tuple[int, int]:
