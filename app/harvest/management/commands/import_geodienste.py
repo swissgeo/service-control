@@ -7,14 +7,21 @@ from requests import get
 
 from django.core.management.base import CommandParser
 
-from harvest.models import OrganizationMapping, PrefixLookupTable
+from dataset.models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
+from harvest.models import (
+    DatasetMapping,
+    DatasetToContactMapping,
+    DatasetToUnitMapping,
+    OrganizationMapping,
+    PrefixLookupTable,
+)
 from harvest.utils import (
     AGGREGATE_PROVIDER_CONTACT,
     AGGREGATE_PROVIDER_ID,
     AGGREGATE_PROVIDER_ORGANIZATION,
     CANTONAL_PROVIDER_ORGANIZATIONS,
 )
-from organization.models import Contact, Organization
+from organization.models import Contact, Organization, Unit
 from utils.command import CustomBaseCommand
 
 Language = Literal["de", "fr", "it"]
@@ -37,6 +44,11 @@ class Command(CustomBaseCommand):
             "--contacts",
             action="store_true",
             help="Import contacts",
+        )
+        parser.add_argument(
+            "--datasets",
+            action="store_true",
+            help="Import datasets",
         )
 
         parser.add_argument(
@@ -72,6 +84,8 @@ class Command(CustomBaseCommand):
 
         if options["organizations"] or options["contacts"]:
             languages.add("de")
+        if options["datasets"]:
+            languages.update({"de", "fr", "it"})
 
         services = {}
         if languages:
@@ -87,6 +101,8 @@ class Command(CustomBaseCommand):
             self.import_organizations(services, options["clean"])
         if options["contacts"]:
             self.import_contacts(services, options["clean"])
+        if options["datasets"]:
+            self.import_datasets(services, options["clean"])
 
     # ##########################################################################
     def get_services(self, services_endpoint: str, languages: set[Language], timeout: int) -> dict:
@@ -97,7 +113,7 @@ class Command(CustomBaseCommand):
         """
 
         result = {}
-        for language in languages:
+        for language in sorted(languages):
             try:
                 filename = Path(services_endpoint) / f"services_{language}.json"
                 with open(filename) as file:
@@ -159,6 +175,20 @@ class Command(CustomBaseCommand):
             return f"ch.geodienste-{provider_id.lower()}"
 
         return f"ch.{provider_id.lower()}"
+
+    def dataset_id(self, service: dict, aggregate: bool = False) -> str:
+        """Returns the dataset ID for the given service entry. Returns the dataset ID for the
+        aggregate dataset of the given service entry if aggregate=True.
+
+        The dataset ID is:
+        - for cantonal providers: "ch.geodienste-lu.av", "ch.geodienste-be.av", etc.
+        - for brokers: "ch.rohrleitungsanlagen", etc.
+        - for aggregate providers: "ch.kgk.av", etc.
+
+        """
+        provider_id = self.provider_id(None if aggregate else service)
+        organization_id = self.organization_id(provider_id)
+        return "{}.{}".format(organization_id, service["base_topic"].lower())
 
     # ##########################################################################
     def import_organizations(self, services: dict, clean: bool) -> None:
@@ -492,5 +522,344 @@ class Command(CustomBaseCommand):
             else:
                 ids = sorted(str(c) for c in obsolete)
                 self.print_warning(f"Obsolete contacts found: {', '.join(ids)}")
+
+        return len(removed), len(obsolete)
+
+    # ##########################################################################
+    def import_datasets(self, services: dict, clean: bool) -> None:
+        """Imports datasets.
+
+        For each basic topic,
+        - there is an aggregate dataset and one dataset for each provider
+        - both datasets are connected via a dataset to dataset relationship (part)
+        - for both datasets, the default unit of the aggregation/cantonal/broker organization is
+          added as maintainer.
+        - for the aggregate dataset, the aggregate contact as added as custodian. For the part
+          dataset, there is optionally a custodian and a owner contact.
+
+        Uses a combination of provider ID and base topic as provided by the API as data source ID,
+        e.g. "KGK.av" for the aggregate dataset and "LU.av" for the part dataset.
+        """
+        self.print_success("Importing dataset")
+
+        dataset_mappings = DatasetMapping.table()
+        organization_mappings = OrganizationMapping.table()
+        unit_mappings = DatasetToUnitMapping.table()
+        contact_mappings = DatasetToContactMapping.table()
+
+        aggregated = {}
+
+        metrics = {
+            "datasets.created": 0,
+            "datasets.updated": 0,
+            "datasets.removed": 0,
+            "datasets.obsoleted": 0,
+            "datasets.connected": 0,
+            "dataset_units.created": 0,
+            "dataset_units.removed": 0,
+            "dataset_contacts.created": 0,
+            "dataset_contacts.removed": 0,
+        }
+
+        processed = set()
+
+        for key, service in services["de"].items():
+            common = {
+                "title_short_de": service["topic_title"],
+                "title_short_en": service["topic_title"],
+                "title_short_fr": services["fr"][key]["topic_title"],
+                "title_short_it": services["it"][key]["topic_title"],
+                "description_de": service["abstract"],
+                "description_en": service["abstract"],
+                "description_fr": services["fr"][key]["abstract"],
+                "description_it": services["it"][key]["abstract"],
+            }
+
+            # Dataset: Aggregate
+            base_topic = service["base_topic"]
+            aggregate_dataset_id = self.dataset_id(service, aggregate=True)
+            aggregate = aggregated.get(aggregate_dataset_id)
+            if not aggregate:
+                provider_id = self.provider_id()
+                data_source_id = f"{provider_id}.{base_topic}"
+                processed.add(data_source_id)
+                aggregate, created, updated = self.import_dataset(
+                    aggregate_dataset_id,
+                    data_source_id,
+                    dataset_mappings,
+                    geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
+                    **common,
+                )
+                aggregated[aggregate_dataset_id] = aggregate
+                metrics["datasets.created"] += created
+                metrics["datasets.updated"] += updated
+
+                # Unit: Maintainer of Aggregate
+                created, removed = self.import_dataset_unit(
+                    aggregate,
+                    provider_id,
+                    DatasetToUnit.Role.MAINTAINER,
+                    unit_mappings,
+                    organization_mappings,
+                )
+                metrics["dataset_units.created"] += created
+                metrics["dataset_units.removed"] += removed
+
+                # Contact: Custodian of Aggregate
+                created, removed = self.import_dataset_contact(
+                    aggregate,
+                    provider_id,
+                    DatasetToContact.Role.CUSTODIAN,
+                    contact_mappings.get(DatasetToContact.Role.CUSTODIAN),
+                )
+                metrics["dataset_contacts.created"] += created
+                metrics["dataset_contacts.removed"] += removed
+
+            # Dataset: Part
+            provider_id = self.provider_id(service)
+            data_source_id = f"{provider_id}.{base_topic}"
+            processed.add(data_source_id)
+            part, created, updated = self.import_dataset(
+                self.dataset_id(service),
+                data_source_id,
+                dataset_mappings,
+                **common,
+            )
+            metrics["datasets.created"] += created
+            metrics["datasets.updated"] += updated
+
+            # Relationship: Part --Child--> Aggregate
+            if not part.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first():
+                relationship = DatasetToDataset(
+                    subject=part, role=DatasetToDataset.Role.CHILD, object=aggregate
+                )
+                relationship.save()
+                self.print(f"Adding relationship '{relationship}'")
+                metrics["datasets.connected"] += 1
+
+            # Unit: Maintainer of Part
+            created, removed = self.import_dataset_unit(
+                part,
+                provider_id,
+                DatasetToUnit.Role.MAINTAINER,
+                unit_mappings,
+                organization_mappings,
+            )
+            metrics["dataset_units.created"] += created
+            metrics["dataset_units.removed"] += removed
+
+            # Contact: Owner of Part
+            created, removed = self.import_dataset_contact(
+                part,
+                data_source_id,
+                DatasetToContact.Role.OWNER,
+                contact_mappings.get(DatasetToContact.Role.OWNER),
+            )
+            metrics["dataset_contacts.created"] += created
+            metrics["dataset_contacts.removed"] += removed
+
+            # Contact: Custodian of Part
+            created, removed = self.import_dataset_contact(
+                part,
+                provider_id,
+                DatasetToContact.Role.CUSTODIAN,
+                contact_mappings.get(DatasetToContact.Role.CUSTODIAN),
+            )
+            metrics["dataset_contacts.created"] += created
+            metrics["dataset_contacts.removed"] += removed
+
+            # TODO: preferred_distribution
+            # TODO: keywords
+
+        (
+            metrics["datasets.removed"],
+            metrics["datasets.obsoleted"],
+        ) = self.cleanup_datasets(processed, clean)
+
+        self.write_command_metrics(metrics)
+        self.print_success(f"Dataset import completed. Metrics: {metrics}")
+
+    def import_dataset(
+        self,
+        dataset_id: str,
+        data_source_id: str,
+        dataset_mappings: PrefixLookupTable,
+        **kwargs: dict,
+    ) -> tuple[Dataset, int, int]:
+        """Create a dataset with the given values if not yet existing, or update if necessary.
+
+        Returns the dataset and number of created and updated datasets.
+        """
+
+        dataset, mapping = dataset_mappings.match(dataset_id)
+        update = mapping.update if mapping else True
+        if dataset:
+            self.print(f"Dataset mapping found for dataset_id {dataset_id}: {dataset}")
+        else:
+            dataset = Dataset.objects.filter(
+                dataset_id=dataset_id, data_source=Dataset.DataSource.GEODIENSTE
+            ).first()
+            if dataset:
+                self.print(f"Dataset with dataset_id {dataset_id} already exists")
+            if not dataset:
+                self.print(
+                    f"Dataset with dataset_id {dataset_id} does not exist yet, creating a new one"
+                )
+                dataset = Dataset(
+                    dataset_id=dataset_id,
+                    data_source_ids=[data_source_id],
+                    data_source=Dataset.DataSource.GEODIENSTE,
+                    **kwargs,
+                )
+                dataset.save()
+                return dataset, 1, 0
+
+        updated = False
+        if update:
+            for key, value in kwargs.items():
+                if value != getattr(dataset, key):
+                    updated = True
+                    setattr(dataset, key, value)
+        if updated:
+            self.print(f"Dataset with dataset_id {dataset_id} changed, updating")
+            dataset.save()
+        return dataset, 0, 1 if updated else 0
+
+    def import_dataset_unit(
+        self,
+        dataset: Dataset,
+        provider_id: str,
+        role: DatasetToUnit.Role,
+        unit_mappings: PrefixLookupTable,
+        organization_mappings: PrefixLookupTable,
+    ) -> tuple[int, int]:
+        """Create dataset unit with the given values if not yet existing.
+
+        Returns a tuple (number of created dataset units, number of removed dataset units).
+        """
+
+        organization_id = self.organization_id(provider_id)
+        dataset_id = dataset.dataset_id
+        unit, _ = unit_mappings.match(dataset_id)
+        if unit:
+            self.print(f"Unit mapping found for dataset_id {dataset_id}: {unit}")
+        else:
+            organization, _ = organization_mappings.match(provider_id)
+            if organization:
+                self.print(f"Mapping found for provider_id {provider_id}: {organization}")
+            else:
+                organization = Organization.objects.filter(organization_id=organization_id).first()
+            if not organization:
+                self.print_warning(
+                    f"Organization with organization_id {organization_id} does not exist"
+                )
+                return 0, 0
+
+            unit = Unit.objects.filter(
+                organization=organization, unit_id=Unit.DEFAULT_UNIT_ID
+            ).first()
+            if not unit:
+                self.print_warning(f"Organization {organization} has no default unit")
+                return 0, 0
+
+        found = False
+        added, removed = 0, 0
+        existing = DatasetToUnit.objects.filter(dataset=dataset, role=role).all()
+        for dataset_unit in existing:
+            if dataset_unit.unit == unit:
+                self.print(f"Dataset unit {dataset_unit} already exists")
+                found = True
+            else:
+                self.print(f"Removing obsolete dataset unit {dataset_unit}")
+                dataset_unit.delete()
+                removed += 1
+        if not found:
+            dataset_unit = DatasetToUnit(dataset=dataset, unit=unit, role=role)
+            dataset_unit.save()
+            self.print(f"Creating dataset unit {dataset_unit}")
+            added += 1
+
+        return added, removed
+
+    def import_dataset_contact(
+        self,
+        dataset: Dataset,
+        data_source_id: str,
+        role: DatasetToContact.Role,
+        contact_mappings: PrefixLookupTable | None,
+    ) -> tuple[int, int]:
+        """Create dataset contacts with the given values if not yet existing, or update if
+        necessary.
+
+        Returns a tuple (number of created dataset contacts, number of removed dataset contacts).
+        """
+
+        dataset_id = dataset.dataset_id
+        contact = None
+        if contact_mappings:
+            contact, _ = contact_mappings.match(dataset_id)
+        if contact:
+            self.print(
+                f"Contact mapping found for dataset_id {dataset_id} and role {role}: {contact}"
+            )
+        else:
+            contact = Contact.objects.filter(data_source_ids__contains=[data_source_id]).first()
+            if not contact:
+                return 0, 0
+
+        found = False
+        added, removed = 0, 0
+        existing = set(DatasetToContact.objects.filter(dataset=dataset, role=role).all())
+        for dataset_contact in existing:
+            if dataset_contact.contact == contact:
+                self.print(f"Dataset contact {dataset_contact} already exists")
+                found = True
+            else:
+                self.print(f"Removing obsolete dataset contact {dataset_contact}")
+                dataset_contact.delete()
+                removed += 1
+        if not found:
+            dataset_contact = DatasetToContact(dataset=dataset, contact=contact, role=role)
+            dataset_contact.save()
+            self.print(f"Creating dataset contact {dataset_contact}")
+            added += 1
+
+        return added, removed
+
+    def cleanup_datasets(self, processed: set[str], clean: bool) -> tuple[int, int]:
+        """Cleanup datasets
+
+        - Check for data source IDs referenced in the datasets but not present anymore in the
+          geodienste Services Information API; optionally clean them
+        - Check for obsolete datasets, i.e. datasets created by this command but with no
+          data source ID reference; optionally delete them
+
+        """
+
+        existing = Dataset.objects.existing_data_source_ids(Dataset.DataSource.GEODIENSTE)
+
+        if removed := existing - processed:
+            if clean:
+                for data_source_id in removed:
+                    self.print_warning(
+                        f"Removing obsolete data_source_id (dataset) {data_source_id}"
+                    )
+                    Dataset.objects.remove_data_source_id(data_source_id)
+            else:
+                ids = sorted(str(r) for r in removed)
+                self.print_warning(f"Removed data_source_ids (dataset) found: {', '.join(ids)}")
+
+        obsolete = Dataset.objects.filter(
+            data_source=Dataset.DataSource.GEODIENSTE,
+            data_source_ids=[],
+        )
+        if obsolete.count():
+            if clean:
+                for dataset in obsolete:
+                    self.print_warning(f"Removing obsolete dataset {dataset}")
+                    dataset.delete()
+            else:
+                ids = sorted(str(c) for c in obsolete)
+                self.print_warning(f"Obsolete datasets found: {', '.join(ids)}")
 
         return len(removed), len(obsolete)

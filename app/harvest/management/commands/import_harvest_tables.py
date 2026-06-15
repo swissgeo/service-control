@@ -433,7 +433,7 @@ class Command(CustomBaseCommand):
                     self.print_warning(f"Removing obsolete dataset {dataset_id}")
                     Dataset.objects.filter(dataset_id=dataset_id).delete()
             else:
-                self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
+                self.print_warning(f"Obsolete datasets found: {', '.join(sorted(obsolete))}")
         return len(removed), len(obsolete)
 
     # ##########################################################################
