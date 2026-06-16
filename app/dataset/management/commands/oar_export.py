@@ -22,9 +22,18 @@ env = environ.Env()
 
 OAR_PREFIX = "api/oar/staticv2"
 OAS_PREFIX = "api/oas/v0"
-ENV_HOSTNAME_POSTFIX = "dev.sgdi.tech"
-OAR_BASE_URL = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAR_PREFIX}"
-OAS_BASE_URL = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAS_PREFIX}"
+OAR_BASE_URL = {
+    "dev": f"https://services.dev.sgdi.tech/{OAR_PREFIX}",
+    "int": f"https://services.int.sgdi.tech/{OAR_PREFIX}",
+    "prod": f"https://services.swissgeo.ch/{OAR_PREFIX}",
+    "local": f"http://localhost:5001/oa-records-static-v2-local-swissgeo/{OAR_PREFIX}",
+}
+OAS_BASE_URL = {
+    "dev": f"https://services.dev.sgdi.tech/{OAS_PREFIX}",
+    "int": f"https://services.int.sgdi.tech/{OAS_PREFIX}",
+    "prod": f"https://services.swissgeo.ch/{OAS_PREFIX}",
+    "local": f"http://localhost:5001/oa-styles-static-local-swissgeo/{OAS_PREFIX}",
+}
 
 SAMPLE_IDS = [
     "ch.bafu.schutzgebiete-luftfahrt",
@@ -65,7 +74,7 @@ class Command(CustomBaseCommand):
         parser.add_argument(
             "--target-env",
             type=str,
-            choices=["dev", "int", "prod"],
+            choices=["dev", "int", "prod", "local"],
             default="dev",
             help="Specify the target environment",
         )
@@ -108,20 +117,28 @@ class Command(CustomBaseCommand):
         """Main entry point of command."""
         profile = options.get("profile")
         if profile and profile != "default":
-            self.session = boto3.Session(profile_name=profile)  # pylint: disable=attribute-defined-outside-init
+            self.session = boto3.Session(profile_name=profile)
         else:
-            self.session = boto3.Session()  # pylint: disable=attribute-defined-outside-init
+            self.session = boto3.Session()
 
         # S3 client configuration
         client_access_kwargs = {
             "region_name": "eu-central-1",
             "config": Config(signature_version="s3v4"),
         }
+        target_env = options["target_env"]
+        if target_env == "local":
+            client_access_kwargs["region_name"] = env.str("AWS_DEFAULT_REGION")
+            client_access_kwargs["endpoint_url"] = "http://localhost:5000"
         self.s3_client = self.session.client("s3", **client_access_kwargs)  # ty:ignore[no-matching-overload]
 
         # derive bucket names from target environment
-        self.oarecords_s3_bucket = f"oa-records-static-v2-{options['target_env']}-swissgeo"
-        self.oastyles_s3_bucket = f"oa-styles-static-{options['target_env']}-swissgeo"
+        self.oarecords_s3_bucket = f"oa-records-static-v2-{target_env}-swissgeo"
+        self.oastyles_s3_bucket = f"oa-styles-static-{target_env}-swissgeo"
+
+        # urls
+        self.oar_base_url = OAR_BASE_URL[target_env]
+        self.oas_base_url = OAS_BASE_URL[target_env]
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
@@ -214,12 +231,12 @@ class Command(CustomBaseCommand):
         for lang in LANGS:
             collection_id = "geoadmin.services"
             service_collection = OARCollection(
-                id=collection_id, title="Geoadmin Services", lang=lang
+                id=collection_id, title="Geoadmin Services", lang=lang, base_url=self.oar_base_url
             )
             for service in services:
                 self.print(f" - {service.dataservice_id}")
                 service_record = OARDataservice.from_dataservice(
-                    service, lang, collection_id=collection_id
+                    service, lang, collection_id=collection_id, base_url=self.oar_base_url
                 )
                 service_collection.feature_collection.features.append(service_record)
 
@@ -251,12 +268,14 @@ class Command(CustomBaseCommand):
                     id=collection_id,
                     title=f"Distribution Collection for {collection_id}",
                     lang=lang,
+                    base_url=self.oar_base_url,
                 )
                 for distribution in ds_distributions:
                     distribution_record = OARDistribution.from_distribution(
                         distribution,
                         lang=lang,
                         collection_id=collection_id,
+                        base_url=self.oar_base_url,
                     )
                     self.print_success(f" - {distribution_record.get_key()}")
                     distribution_collection.feature_collection.features.append(distribution_record)
@@ -284,11 +303,13 @@ class Command(CustomBaseCommand):
         for lang in LANGS:
             collection_id = "swissgeo.catalog"
             dataset_collection = OARCollection(
-                id=collection_id, title="Swissgeo Catalog", lang=lang
+                id=collection_id, title="Swissgeo Catalog", lang=lang, base_url=self.oar_base_url
             )
 
             for dataset in datasets:
-                dataset_record = OARDataset.from_dataset(dataset, lang, collection_id=collection_id)
+                dataset_record = OARDataset.from_dataset(
+                    dataset, lang, collection_id=collection_id, base_url=self.oar_base_url
+                )
                 self.print(f"- {dataset_record.get_key()}")
                 dataset_collection.feature_collection.features.append(dataset_record)
 
@@ -319,13 +340,13 @@ class Command(CustomBaseCommand):
                     "title": "OGC API Records - swissgeo - Documentation",
                 },
                 {
-                    "href": f"{OAR_BASE_URL}/collections",
+                    "href": f"{self.oar_base_url}/collections",
                     "rel": "data",
                     "type": "application/json",
                     "title": "Swissgeo Catalog Collection",
                 },
                 {
-                    "href": f"{OAR_BASE_URL}/conformance",
+                    "href": f"{self.oar_base_url}/conformance",
                     "rel": "conformance",
                     "type": "application/json",
                     "title": "Conformance Declaration",
@@ -361,12 +382,12 @@ class Command(CustomBaseCommand):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog",
+                                "href": f"{self.oar_base_url}/collections/swissgeo.catalog",
                                 "rel": "self",
                                 "type": "application/json",
                             },
                             {
-                                "href": f"{OAR_BASE_URL}/collections/swissgeo.catalog/items",
+                                "href": f"{self.oar_base_url}/collections/swissgeo.catalog/items",
                                 "rel": "items",
                                 "type": "application/json",
                             },
@@ -379,7 +400,7 @@ class Command(CustomBaseCommand):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": f"{OAR_BASE_URL}/collections/geoadmin.services",
+                                "href": f"{self.oar_base_url}/collections/geoadmin.services",
                                 "rel": "self",
                                 "type": "application/json",
                             }
@@ -388,7 +409,7 @@ class Command(CustomBaseCommand):
                 ],
                 "links": [
                     {
-                        "href": f"{OAR_BASE_URL}/collections",
+                        "href": f"{self.oar_base_url}/collections",
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
