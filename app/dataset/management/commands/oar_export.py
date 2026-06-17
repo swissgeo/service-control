@@ -382,12 +382,16 @@ class Command(CustomBaseCommand):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": f"{self.oar_base_url}/collections/swissgeo.catalog",
+                                "href": (
+                                    f"{self.oar_base_url}/collections/swissgeo.catalog?language={lang}"
+                                ),
                                 "rel": "self",
                                 "type": "application/json",
                             },
                             {
-                                "href": f"{self.oar_base_url}/collections/swissgeo.catalog/items",
+                                "href": (
+                                    f"{self.oar_base_url}/collections/swissgeo.catalog/items?language={lang}"
+                                ),
                                 "rel": "items",
                                 "type": "application/json",
                             },
@@ -400,7 +404,9 @@ class Command(CustomBaseCommand):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": f"{self.oar_base_url}/collections/geoadmin.services",
+                                "href": (
+                                    f"{self.oar_base_url}/collections/geoadmin.services?language={lang}"
+                                ),
                                 "rel": "self",
                                 "type": "application/json",
                             }
