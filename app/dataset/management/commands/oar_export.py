@@ -1,8 +1,8 @@
 import json
 from typing import Any
 
-import boto3
 import environ
+from boto3 import Session
 from botocore.client import Config
 
 from django.core.management.base import CommandParser
@@ -117,9 +117,9 @@ class Command(CustomBaseCommand):
         """Main entry point of command."""
         profile = options.get("profile")
         if profile and profile != "default":
-            self.session = boto3.Session(profile_name=profile)
+            self.session = Session(profile_name=profile)
         else:
-            self.session = boto3.Session()
+            self.session = Session()
 
         # S3 client configuration
         client_access_kwargs = {
@@ -142,7 +142,7 @@ class Command(CustomBaseCommand):
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
-            self.print(f"Debug: parsed args = {json.dumps(options)}")
+            self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
         if "services" in options["types"]:
             self.do_export_services(*args, **options)
