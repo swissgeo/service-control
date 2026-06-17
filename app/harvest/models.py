@@ -34,9 +34,12 @@ class OrganizationMapping(models.Model):
         max_length=100,
         help_text=_(
             _context,
-            (
-                "Prefix used for matching provider ID during import of organizations from harvest "
-                "table/BOD"
+            "<br>".join(  # noqa:FLY002
+                (
+                    "Prefix used for matching:",
+                    "- Provider ID during import of organizations from harvest table/BOD",
+                    "- Canton/Broker during import of geodienste organizations, contacts, datasets",
+                )
             ),
         ),
     )
@@ -50,6 +53,7 @@ class OrganizationMapping(models.Model):
         default=False,
         help_text=_(_context, "Whetever the matching entry should update the organization"),
     )
+    description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.provider_id_prefix} -> {self.organization_id}"
@@ -90,6 +94,7 @@ class DatasetMapping(models.Model):
                     "- Layer ID during import of distributions from harvest table/BOD (if enabled)",
                     "- STAC Collection ID during syncing distributions from capabilities "
                     "(if enabled)",
+                    "- Base topic during import of datasets from geodienste",
                 )
             ),
         ),
@@ -136,6 +141,7 @@ class DatasetMapping(models.Model):
             _context, "Whetever the matching entry should update the dataset or distribution"
         ),
     )
+    description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.dataset_id_prefix} -> {self.dataset_id}"
@@ -169,7 +175,13 @@ class DatasetToUnitMapping(models.Model):
         max_length=100,
         help_text=_(
             _context,
-            "Prefix used for matching dataset ID during import of datasets from harvest/BOD",
+            "<br>".join(  # noqa:FLY002
+                (
+                    "Prefix used for matching:",
+                    "- Dataset ID during import of dataset units from harvest/BOD",
+                    "- Dataset ID during import of dataset units from geodienste",
+                )
+            ),
         ),
     )
     organization_id = models.CharField(
@@ -183,6 +195,7 @@ class DatasetToUnitMapping(models.Model):
         max_length=100,
         help_text=_(_context, "The ID of the organization unit in this database"),
     )
+    description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.dataset_id_prefix} -> {self.organization_id}: {self.unit_id}"
@@ -217,7 +230,13 @@ class DatasetToContactMapping(models.Model):
         max_length=100,
         help_text=_(
             _context,
-            "Prefix used for matching dataset ID during import of datasets from harvest/geocat",
+            "<br>".join(  # noqa:FLY002
+                (
+                    "Prefix used for matching:",
+                    "- Dataset ID during import of dataset contacts from harvest/geocat",
+                    "- Dataset ID during import of dataset contacts from geodienste",
+                )
+            ),
         ),
     )
     role = models.CharField(
@@ -239,6 +258,7 @@ class DatasetToContactMapping(models.Model):
         blank=True,
         help_text=_(_context, "The contact name (EN) of the organization contact in this database"),
     )
+    description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
     def __str__(self) -> str:
         return (
