@@ -80,15 +80,13 @@ class OARLink(BaseLink):
     """Link object for endpoints within the OAR service
 
     This is a base class for links that point to endpoints within the OAR service itself.
-    - fqdn (string): The fully qualified domain name of the OAR service
-      (e.g. "services.dev.sgdi.tech")
-    - basepath (string): The base path of the OAR API (e.g. "/api/oar/v0")
+    - base_url (string): The base URL of the OAR service
+      (e.g. "http://services.dev.sgdi.tech/api/oar/staticv2")
 
     """
 
     # These are "private" fields that should not be included in a model_dump
-    fqdn: str = Field(exclude=True, default="services.dev.sgdi.tech")
-    basepath: str = Field(exclude=True, default="/api/oar/staticv2")
+    base_url: str = Field(exclude=True)
 
 
 class OARCollectionLink(OARLink):
@@ -99,9 +97,9 @@ class OARCollectionLink(OARLink):
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
-        based on the fqdn, basepath, collectionId and recordId.
+        based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}"
+        self.href = f"{self.base_url}/collections/{self.collectionId}"
         if self.hreflang:
             self.href += f"?language={self.hreflang}"
         return self
@@ -115,9 +113,9 @@ class OARCollectionItemsLink(OARLink):
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
-        based on the fqdn, basepath, collectionId and recordId.
+        based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}/items"
+        self.href = f"{self.base_url}/collections/{self.collectionId}/items"
         if self.hreflang:
             self.href += f"?language={self.hreflang}"
         return self
@@ -132,9 +130,9 @@ class OARRecordLink(OARCollectionLink):
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
-        based on the fqdn, basepath, collectionId and recordId.
+        based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}/items/{self.recordId}"
+        self.href = f"{self.base_url}/collections/{self.collectionId}/items/{self.recordId}"
         if self.hreflang:
             self.href += f"?language={self.hreflang}"
         return self
@@ -156,6 +154,7 @@ class OARRecord(BaseModel):
     geometry: dict | None = None
     lang: str = Field(default="de", exclude=True)
     collection_id: str = Field(default="MISSING", exclude=True)
+    base_url: str = Field(exclude=True)
 
     @model_validator(mode="after")
     def add_links(self) -> OARRecord:
@@ -166,6 +165,7 @@ class OARRecord(BaseModel):
                 rel="self",
                 title="This Record",
                 hreflang=self.lang,
+                base_url=self.base_url,
             )
         )
         self.links.append(
@@ -174,6 +174,7 @@ class OARRecord(BaseModel):
                 rel="collection",
                 title="Link to the collection this item belongs to",
                 hreflang=self.lang,
+                base_url=self.base_url,
             )
         )
         return self
@@ -199,7 +200,7 @@ class OARDataset(OARRecord):
     }
 
     @classmethod
-    def from_dataset(cls, ds: Dataset, lang: str, collection_id: str) -> OARDataset:
+    def from_dataset(cls, ds: Dataset, lang: str, collection_id: str, base_url: str) -> OARDataset:
 
         contacts = [
             Contact(
@@ -222,13 +223,18 @@ class OARDataset(OARRecord):
             "type": "Dataset",
         }
         dataset = OARDataset(
-            id=ds.dataset_id, properties=properties, collection_id=collection_id, lang=lang
+            id=ds.dataset_id,
+            properties=properties,
+            collection_id=collection_id,
+            lang=lang,
+            base_url=base_url,
         )
         dataset.links.append(
             OARCollectionItemsLink(
                 collectionId=f"{ds.dataset_id}.distributions",
                 rel="distributions",
                 title="Distributions",
+                base_url=base_url,
             )
         )
         dataset.links.append(
@@ -259,9 +265,11 @@ class OARDistribution(OARRecord):
 
     @classmethod
     def from_distribution(
-        cls, dist: Distribution, lang: str, collection_id: str
+        cls, dist: Distribution, lang: str, collection_id: str, base_url: str
     ) -> OARDistribution:
-        record = OARDistribution(id=dist.distribution_id, collection_id=collection_id, lang=lang)
+        record = OARDistribution(
+            id=dist.distribution_id, collection_id=collection_id, lang=lang, base_url=base_url
+        )
 
         # Set properties
         record.properties["title"] = dist.title
@@ -273,6 +281,7 @@ class OARDistribution(OARRecord):
                 rel="dataset",
                 hreflang=lang,
                 title=f"Link to parent dataset {dist.dataset.dataset_id}",
+                base_url=base_url,
             )
         )
         record.properties["protocol"] = dist.protocol
@@ -311,6 +320,7 @@ class OARDistribution(OARRecord):
                     collectionId="geoadmin.services",
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
+                    base_url=base_url,
                 )
             )
             record.properties["externalIds"] = [dist.external_id]
@@ -358,10 +368,14 @@ class OARDataservice(OARRecord):
     properties: dict = {}
 
     @classmethod
-    def from_dataservice(cls, ds: Dataservice, lang: str, collection_id: str) -> OARDataservice:
+    def from_dataservice(
+        cls, ds: Dataservice, lang: str, collection_id: str, base_url: str
+    ) -> OARDataservice:
 
         # Instantiate record with common properties
-        record = OARDataservice(id=ds.dataservice_id, lang=lang, collection_id=collection_id)
+        record = OARDataservice(
+            id=ds.dataservice_id, lang=lang, collection_id=collection_id, base_url=base_url
+        )
 
         # Set common properties
         record.properties["title"] = getattr(ds, "title", None)
@@ -471,6 +485,7 @@ class OAFeatureCollection(BaseModel):
     links: list[BaseLink] = Field(default_factory=list)
     collection_id: str = Field(exclude=True)
     lang: str = Field(default="de", exclude=True)
+    base_url: str = Field(exclude=True)
 
     @model_validator(mode="after")
     def add_links(self) -> OAFeatureCollection:
@@ -480,6 +495,7 @@ class OAFeatureCollection(BaseModel):
                 rel="self",
                 title="Link to this resource",
                 hreflang=self.lang,
+                base_url=self.base_url,
             )
         )
         self.links.append(
@@ -488,6 +504,7 @@ class OAFeatureCollection(BaseModel):
                 rel="collection",
                 title="Link to the collection these items belong to",
                 hreflang=self.lang,
+                base_url=self.base_url,
             )
         )
         return self
@@ -539,6 +556,7 @@ class OARCollection(BaseModel):
     type: str = "Collection"
     itemType: str = "record"  # noqa: N815
     lang: str = Field(default="de", exclude=True)
+    base_url: str = Field(exclude=True)
     # We don't encode records inline anymore but use the /items endpoint instead,
     # and include a link to the /items endpoint in the collection links.
     # recordsArrayName: str = "records"
@@ -548,7 +566,7 @@ class OARCollection(BaseModel):
     # and therefore set `exclude=True`.
     feature_collection: OAFeatureCollection = Field(
         default_factory=lambda data: OAFeatureCollection(
-            collection_id=data["id"], lang=data["lang"]
+            collection_id=data["id"], lang=data["lang"], base_url=data["base_url"]
         ),
         exclude=True,
     )
@@ -561,6 +579,7 @@ class OARCollection(BaseModel):
                 rel="items",
                 title="Link to the items of this collection",
                 hreflang=self.lang,
+                base_url=self.base_url,
             )
         )
         self.links.append(
@@ -569,6 +588,7 @@ class OARCollection(BaseModel):
                 rel="self",
                 title="Link to this resource",
                 hreflang=self.lang,
+                base_url=self.base_url,
             )
         )
         return self
