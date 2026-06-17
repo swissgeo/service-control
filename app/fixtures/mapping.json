@@ -1,0 +1,11 @@
+[
+    {
+        "fields": {
+            "description": "Used to map the geodienste broker BFE to the organization created by the BOD provider ch.bfe",
+            "organization_id": "ch.bfe",
+            "provider_id_prefix": "BFE",
+            "update": false
+        },
+        "model": "harvest.organizationmapping"
+    }
+]
