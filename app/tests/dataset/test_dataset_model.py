@@ -35,7 +35,6 @@ def test_dataset_all_required_fields(dataset):
         "description_de",
         "description_fr",
         "description_en",
-        "geocat_id",
     ],
 )
 def test_dataset_required_field_empty(field, dataset):
@@ -54,7 +53,6 @@ def test_dataset_required_field_empty(field, dataset):
         "description_de",
         "description_fr",
         "description_en",
-        "geocat_id",
     ],
 )
 def test_dataset_required_field_null(field, dataset):
@@ -65,10 +63,7 @@ def test_dataset_required_field_null(field, dataset):
 
 @pytest.mark.parametrize(
     "field",
-    [
-        "dataset_id",
-        "geocat_id",
-    ],
+    ["dataset_id"],
 )
 def test_dataset_unique_fields(field, dataset):
     new_dataset = Dataset(
