@@ -265,7 +265,9 @@ def test_command_updates_cantonal_organization(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_broker_organization(mock, client, db):
-    mock.return_value.json.return_value = {"services": [{"broker": "BFE"}]}
+    mock.return_value.json.return_value = {
+        "services": [{"canton": "Broker", "broker": "BFE", "base_topic": "av"}]
+    }
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -342,12 +344,14 @@ def test_command_updates_broker_organization(mock, client, db):
 
 @patch("organization.models.Client")
 def test_command_creates_organization_from_file(client, db, tmp_path):
-    file = tmp_path / "services.json"
-    file.write_text(dumps({"services": [{"broker": "BFE"}]}))
+    file = tmp_path / "services_de.json"
+    file.write_text(
+        dumps({"services": [{"base_topic": "av", "canton": "Broker", "broker": "BFE"}]})
+    )
 
     out = StringIO()
     call_command(
-        "import_geodienste", organizations=True, services_endpoint=file, verbosity=2, stdout=out
+        "import_geodienste", organizations=True, services_endpoint=tmp_path, verbosity=2, stdout=out
     )
     out = out.getvalue()
 

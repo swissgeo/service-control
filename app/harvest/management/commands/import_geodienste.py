@@ -1,6 +1,7 @@
 import json
 from json import loads
-from typing import Any
+from pathlib import Path
+from typing import Any, Literal
 
 from requests import get
 
@@ -15,6 +16,8 @@ from harvest.utils import (
 )
 from organization.models import Contact, Organization
 from utils.command import CustomBaseCommand
+
+Language = Literal["de", "fr", "it"]
 
 
 class Command(CustomBaseCommand):
@@ -39,7 +42,11 @@ class Command(CustomBaseCommand):
         parser.add_argument(
             "--services-endpoint",
             default="https://geodienste.ch/info/services.json",
-            help="Services information (JSON) endpoint URL. Can also be a path to a local file.",
+            help=(
+                "Services information (JSON) endpoint URL. Can also be a path to a local folder "
+                "with one JSON file per language: services_de.json, services_fr.json, "
+                "services_it.json"
+            ),
         )
         parser.add_argument(
             "--timeout",
@@ -61,9 +68,16 @@ class Command(CustomBaseCommand):
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
             self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
-        services = {}
+        languages = set()
+
         if options["organizations"] or options["contacts"]:
-            services = self.get_services(options["services_endpoint"], options["timeout"])
+            languages.add("de")
+
+        services = {}
+        if languages:
+            services = self.get_services(
+                options["services_endpoint"], languages, options["timeout"]
+            )
         if not services:
             self.print_warning("No services available, aborting")
             return
@@ -75,26 +89,47 @@ class Command(CustomBaseCommand):
             self.import_contacts(services, options["clean"])
 
     # ##########################################################################
-    def get_services(self, services_endpoint: str, timeout: int) -> dict:
-        """Download the service information as JSON from the provided endpoint URL.
+    def get_services(self, services_endpoint: str, languages: set[Language], timeout: int) -> dict:
+        """Download the service information as JSON from the provided endpoint URL for each
+        requested language. Transform the result to be indexable by provider and base topic.
 
         The URL might alternatively be a path to a local JSON file.
         """
 
-        try:
-            with open(services_endpoint) as f:
-                return loads(f.read())
-        except:  # noqa: E722, S110
-            pass
+        result = {}
+        for language in languages:
+            try:
+                filename = Path(services_endpoint) / f"services_{language}.json"
+                with open(filename) as file:
+                    result[language] = loads(file.read())
+                continue
+            except:  # noqa: E722, S110
+                pass
 
-        try:
-            response = get(services_endpoint, timeout=timeout)
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:  # noqa: BLE001
-            self.print_error(f"Failed to retreive services: {e}")
+            try:
+                url = f"{services_endpoint}?language={language}"
+                response = get(url, timeout=timeout)
+                response.raise_for_status()
+                result[language] = response.json()
+            except Exception as e:  # noqa: BLE001
+                self.print_error(f"Failed to retreive services: {e}")
+                return {}
 
-        return {}
+        for language in languages:
+            result[language] = {
+                self.service_key(service): service for service in result[language]["services"]
+            }
+
+        return result
+
+    def service_key(self, service: dict) -> str:
+        """Returns the key under which the given service entry will be available in the transformed
+        services dict.
+
+        See also get_services.
+        """
+
+        return "{}.{}".format(self.provider_id(service), service["base_topic"])
 
     def provider_id(self, service: dict | None = None) -> str:
         """Returns the provider ID from the given service entry or aggregate provider if no service
@@ -170,7 +205,9 @@ class Command(CustomBaseCommand):
             processed.add(provider_id)
 
         # Broker
-        provider_ids = {service["broker"] for service in services["services"] if service["broker"]}
+        provider_ids = {
+            service["broker"] for service in services["de"].values() if service["broker"]
+        }
         for provider_id in provider_ids:
             attributes = {
                 "name_de": provider_id,
@@ -330,7 +367,7 @@ class Command(CustomBaseCommand):
         processed.add(data_source_id)
 
         # Cantonal and broker
-        for service in services.get("services", []):
+        for service in services["de"].values():
             provider_id = self.provider_id(service)
 
             # canton-wide contact
