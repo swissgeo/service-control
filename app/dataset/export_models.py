@@ -14,6 +14,8 @@ from distribution.models import (
     Distribution,
     ExternalGeoadminFeaturesDistribution,
     ExternalGeoJSONDistribution,
+    ExternalWMSDistribution,
+    ExternalWMTSDistribution,
 )
 
 
@@ -339,6 +341,28 @@ class OARDistribution(OARRecord):
                 )
             )
             record.properties["externalIds"] = [dist.external_id]
+
+        # Add featureinfo relation. Prefer a GeoadminFeatures distribution sibling within the
+        # dataset; fall back to the WMS distribution (self for WMS, sibling for WMTS).
+        info_dist = (
+            dist.dataset.distribution_set.instance_of(ExternalGeoadminFeaturesDistribution).first()
+            or (dist if isinstance(dist, ExternalWMSDistribution) else None)
+            or (
+                dist.dataset.distribution_set.instance_of(ExternalWMSDistribution).first()
+                if isinstance(dist, ExternalWMTSDistribution)
+                else None
+            )
+        )
+        if info_dist:
+            record.links.append(
+                OARRecordLink(
+                    collectionId=f"{info_dist.dataset.dataset_id}.distributions",
+                    recordId=info_dist.distribution_id,
+                    rel="featureinfo",
+                    base_url=base_url,
+                    hreflang=lang,
+                )
+            )
 
         if isinstance(dist, ExternalGeoadminFeaturesDistribution):
             if dist.renderable:

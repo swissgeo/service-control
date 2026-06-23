@@ -1045,6 +1045,12 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "de",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                                "rel": "featureinfo",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1147,6 +1153,12 @@ def test_command_exports_distributions(session, db):
                     {
                         "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=de",
                         "rel": "dataservice",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                        "rel": "featureinfo",
                         "type": "application/json",
                         "hreflang": "de",
                     },
@@ -1267,6 +1279,12 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "fr",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                                "rel": "featureinfo",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1369,6 +1387,12 @@ def test_command_exports_distributions(session, db):
                     {
                         "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=fr",
                         "rel": "dataservice",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                        "rel": "featureinfo",
                         "type": "application/json",
                         "hreflang": "fr",
                     },
@@ -1489,6 +1513,12 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "it",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                                "rel": "featureinfo",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1591,6 +1621,12 @@ def test_command_exports_distributions(session, db):
                     {
                         "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=it",
                         "rel": "dataservice",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                        "rel": "featureinfo",
                         "type": "application/json",
                         "hreflang": "it",
                     },
@@ -1711,6 +1747,12 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "en",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                                "rel": "featureinfo",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1813,6 +1855,12 @@ def test_command_exports_distributions(session, db):
                     {
                         "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=en",
                         "rel": "dataservice",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                        "rel": "featureinfo",
                         "type": "application/json",
                         "hreflang": "en",
                     },
