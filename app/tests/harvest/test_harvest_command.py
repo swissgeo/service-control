@@ -522,7 +522,7 @@ def test_command_updates_dataset(dynamodb, db):
     assert ds_out.data_source_ids == ["ch.bafu.moose"]
 
 
-def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
+def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     ds_1 = Dataset(
         dataset_id="ch.bafu.moose1",
         title_short_de="x",
@@ -606,8 +606,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
     out = out.getvalue()
 
     assert "Mapping found for dataset_id ch.bafu.moose : ch.bafu.moose1" in out
-    assert "Obsolete datasets found: ch.bafu.moose" in out
-    assert "Obsolete datasets found: ch.bafu.moose2" in out
+    assert "Obsolete datasets found: ch.bafu.moose, ch.bafu.moose2" in out
 
     ds_1.refresh_from_db()
     assert ds_1.data_source_ids == ["ch.bafu.moose"]
@@ -628,8 +627,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):  # noqa:PLR0915
     out = out.getvalue()
 
     assert "Mapping found for dataset_id ch.bafu.moose : ch.bafu.moose1" in out
-    assert "Obsolete datasets found: ch.bafu.moose" in out
-    assert "Obsolete datasets found: ch.bafu.moose2" in out
+    assert "Obsolete datasets found: ch.bafu.moose, ch.bafu.moose2" in out
 
     ds_1.refresh_from_db()
     assert ds_1.dataset_id == "ch.bafu.moose1"

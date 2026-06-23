@@ -25,6 +25,7 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     class DataSource(models.TextChoices):
         BOD_DATASET = "bod-dataset", _("Dataset DataSource", "BOD (dataset)")
         USER_INPUT = "user-input", _("Dataset DataSource", "User Input (Admin UI/API)")
+        GEODIENSTE = "geodienste", _("Dataset DataSource", "geodienste.ch")
 
     data_source = models.CharField(
         _(_context, "Data Source"),

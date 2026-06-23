@@ -4,8 +4,14 @@ from unittest.mock import patch
 
 from django.core.management import call_command
 
-from harvest.models import OrganizationMapping
-from organization.models import Contact, Organization
+from dataset.models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
+from harvest.models import (
+    DatasetMapping,
+    DatasetToContactMapping,
+    DatasetToUnitMapping,
+    OrganizationMapping,
+)
+from organization.models import Contact, Organization, Unit
 
 
 # --------------------------------------------------------------------------------------------------
@@ -265,7 +271,9 @@ def test_command_updates_cantonal_organization(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_broker_organization(mock, client, db):
-    mock.return_value.json.return_value = {"services": [{"broker": "BFE"}]}
+    mock.return_value.json.return_value = {
+        "services": [{"canton": "Broker", "broker": "BFE", "base_topic": "av"}]
+    }
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -342,12 +350,18 @@ def test_command_updates_broker_organization(mock, client, db):
 
 @patch("organization.models.Client")
 def test_command_creates_organization_from_file(client, db, tmp_path):
-    file = tmp_path / "services.json"
-    file.write_text(dumps({"services": [{"broker": "BFE"}]}))
+    file = tmp_path / "services_de.json"
+    file.write_text(
+        dumps({"services": [{"base_topic": "av", "canton": "Broker", "broker": "BFE"}]})
+    )
 
     out = StringIO()
     call_command(
-        "import_geodienste", organizations=True, services_endpoint=file, verbosity=2, stdout=out
+        "import_geodienste",
+        organizations=True,
+        services_directory=tmp_path,
+        verbosity=2,
+        stdout=out,
     )
     out = out.getvalue()
 
@@ -997,3 +1011,1165 @@ def test_command_organization_mapping_for_contact(mock, client, db):
         (tuple(contact.data_source_ids), contact.legacy_contact)
         for contact in org.contact_set.all()
     } == {(("LU",), "Foo")}
+
+
+# --------------------------------------------------------------------------------------------------
+# Datasets
+# --------------------------------------------------------------------------------------------------
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_datasets(mock, db):
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    # ------
+    # Create
+    # ------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset with dataset_id ch.kgk.av does not exist yet, creating a new one" in out
+    assert (
+        "Dataset with dataset_id ch.geodienste-lu.av does not exist yet, creating a new one" in out
+    )
+    assert "Adding relationship 'ch.geodienste-lu.av is a child of ch.kgk.av'" in out
+
+    assert Dataset.objects.count() == 2
+
+    aggregate = Dataset.objects.get(dataset_id="ch.kgk.av")
+    assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
+    assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.description_de == "Abstract DE"
+    assert aggregate.description_en == "Abstract DE"
+    assert aggregate.description_fr == "Abstract FR"
+    assert aggregate.description_it == "Abstract IT"
+    assert aggregate.description_rm is None
+    assert aggregate.geocat_id == "d929eef4-791d-4728-9d56-226b6952cf1f"
+    assert aggregate.title_short_de == "Title DE"
+    assert aggregate.title_short_en == "Title DE"
+    assert aggregate.title_short_fr == "Title FR"
+    assert aggregate.title_short_it == "Title IT"
+    assert aggregate.title_short_rm is None
+
+    part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
+    assert part.data_source == Dataset.DataSource.GEODIENSTE
+    assert part.data_source_ids == ["LU.av"]
+    assert part.description_de == "Abstract DE"
+    assert part.description_en == "Abstract DE"
+    assert part.description_fr == "Abstract FR"
+    assert part.description_it == "Abstract IT"
+    assert part.description_rm is None
+    assert part.geocat_id is None
+    assert part.title_short_de == "Title DE"
+    assert part.title_short_en == "Title DE"
+    assert part.title_short_fr == "Title FR"
+    assert part.title_short_it == "Title IT"
+    assert part.title_short_rm is None
+
+    assert aggregate.related_datasets(DatasetToDataset.Role.CHILD).first() == part
+
+    # ------
+    # Re-Run
+    # ------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset with dataset_id ch.kgk.av already exists" in out
+    assert "Dataset with dataset_id ch.geodienste-lu.av already exists" in out
+
+
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_updates_datasets(mock, db):  # noqa:PLR0915
+    aggregate = Dataset(
+        dataset_id="ch.kgk.av",
+        data_source=Dataset.DataSource.GEODIENSTE,
+        data_source_ids=["KGK.av"],
+        description_de="Abstract DE",
+        description_en="Abstract DE",
+        description_fr="Abstract FR",
+        description_it="Abstract IT",
+        description_rm=None,
+        geocat_id="d929eef4-791d-4728-9d56-226b6952cf1f",
+        title_short_de="Title DE",
+        title_short_en="",
+        title_short_fr="Title FR",
+        title_short_it="Title IT",
+        title_short_rm=None,
+    )
+    aggregate.save()
+
+    part = Dataset(
+        dataset_id="ch.geodienste-lu.av",
+        data_source=Dataset.DataSource.GEODIENSTE,
+        data_source_ids=["LU.av"],
+        description_de="Abstract DE",
+        description_en="Abstract DE",
+        description_fr="",
+        description_it="Abstract IT",
+        description_rm=None,
+        geocat_id=None,
+        title_short_de="Title DE",
+        title_short_en="Title DE",
+        title_short_fr="Title FR",
+        title_short_it="Title IT",
+        title_short_rm=None,
+    )
+    part.save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    # ------
+    # Create
+    # ------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset with dataset_id ch.kgk.av already exists" in out
+    assert "Dataset with dataset_id ch.geodienste-lu.av already exists" in out
+    assert "Dataset with dataset_id ch.kgk.av changed, updating" in out
+    assert "Dataset with dataset_id ch.geodienste-lu.av changed, updating" in out
+    assert "Adding relationship 'ch.geodienste-lu.av is a child of ch.kgk.av'" in out
+
+    aggregate.refresh_from_db()
+    assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
+    assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.description_de == "Abstract DE"
+    assert aggregate.description_en == "Abstract DE"
+    assert aggregate.description_fr == "Abstract FR"
+    assert aggregate.description_it == "Abstract IT"
+    assert aggregate.description_rm is None
+    assert aggregate.geocat_id == "d929eef4-791d-4728-9d56-226b6952cf1f"
+    assert aggregate.title_short_de == "Title DE"
+    assert aggregate.title_short_en == "Title DE"
+    assert aggregate.title_short_fr == "Title FR"
+    assert aggregate.title_short_it == "Title IT"
+    assert aggregate.title_short_rm is None
+
+    part.refresh_from_db()
+    assert part.data_source == Dataset.DataSource.GEODIENSTE
+    assert part.data_source_ids == ["LU.av"]
+    assert part.dataset_id == "ch.geodienste-lu.av"
+    assert part.description_de == "Abstract DE"
+    assert part.description_en == "Abstract DE"
+    assert part.description_fr == "Abstract FR"
+    assert part.description_it == "Abstract IT"
+    assert part.description_rm is None
+    assert part.geocat_id is None
+    assert part.preferred_distribution_id is None
+    assert part.title_short_de == "Title DE"
+    assert part.title_short_en == "Title DE"
+    assert part.title_short_fr == "Title FR"
+    assert part.title_short_it == "Title IT"
+    assert part.title_short_rm is None
+
+    assert aggregate.related_datasets(DatasetToDataset.Role.CHILD).first() == part
+
+    # ------
+    # Re-Run
+    # ------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "updating" not in out
+
+
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_uses_dataset_mapping(mock, db):
+    aggregate = Dataset(
+        dataset_id="ch.kgk-cgc.av",
+        data_source=Dataset.DataSource.USER_INPUT,
+        data_source_ids=[],
+        description_de="x",
+        description_en="x",
+        description_fr="x",
+        description_it="x",
+        description_rm="x",
+        geocat_id="x",
+        title_short_de="x",
+        title_short_en="x",
+        title_short_fr="x",
+        title_short_it="x",
+        title_short_rm="x",
+    )
+    aggregate.save()
+
+    part = Dataset(
+        dataset_id="ch.rawi.av",
+        data_source=Dataset.DataSource.USER_INPUT,
+        data_source_ids=[],
+        description_de="x",
+        description_en="x",
+        description_fr="x",
+        description_it="x",
+        description_rm="x",
+        geocat_id=None,
+        title_short_de="x",
+        title_short_en="x",
+        title_short_fr="x",
+        title_short_it="x",
+        title_short_rm="x",
+    )
+    part.save()
+
+    aggregate_mapping = DatasetMapping(
+        dataset_id_prefix="ch.kgk.av", dataset_id="ch.kgk-cgc.av", update=False
+    )
+    aggregate_mapping.save()
+    part_mapping = DatasetMapping(
+        dataset_id_prefix="ch.geodienste-lu.av", dataset_id="ch.rawi.av", update=False
+    )
+    part_mapping.save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    # ---------
+    # No update
+    # ---------
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset mapping found for dataset_id ch.kgk.av: ch.kgk-cgc.av" in out
+    assert "Dataset mapping found for dataset_id ch.geodienste-lu.av: ch.rawi.av" in out
+
+    aggregate.refresh_from_db()
+    assert aggregate.title_short_de == "x"
+
+    part.refresh_from_db()
+    assert aggregate.title_short_de == "x"
+
+    # ---------
+    # Update
+    # ---------
+    aggregate_mapping.update = True
+    aggregate_mapping.save()
+    part_mapping.update = True
+    part_mapping.save()
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset mapping found for dataset_id ch.kgk.av: ch.kgk-cgc.av" in out
+    assert "Dataset mapping found for dataset_id ch.geodienste-lu.av: ch.rawi.av" in out
+    assert "Dataset with dataset_id ch.kgk.av changed, updating" in out
+    assert "Dataset with dataset_id ch.geodienste-lu.av changed, updating" in out
+
+    aggregate.refresh_from_db()
+    assert aggregate.data_source == Dataset.DataSource.USER_INPUT
+    assert aggregate.data_source_ids == []
+    assert aggregate.title_short_de == "Title DE"
+
+    part.refresh_from_db()
+    assert part.data_source == Dataset.DataSource.USER_INPUT
+    assert part.data_source_ids == []
+    assert part.title_short_de == "Title DE"
+
+    assert aggregate.related_datasets(DatasetToDataset.Role.CHILD).first() == part
+
+
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_cleans_datasets(mock, db):
+    Dataset(
+        dataset_id="obsolete",
+        data_source=Dataset.DataSource.GEODIENSTE,
+        data_source_ids=[],
+        description_de="Obsolete",
+        description_en="Obsolete",
+        description_fr="Obsolete",
+        title_short_de="Obsolete",
+        title_short_en="Obsolete",
+        title_short_fr="Obsolete",
+    ).save()
+    Dataset(
+        dataset_id="removed",
+        data_source=Dataset.DataSource.GEODIENSTE,
+        data_source_ids=["KGK.removed"],
+        description_de="Removed",
+        description_en="Removed",
+        description_fr="Removed",
+        title_short_de="Removed",
+        title_short_en="Removed",
+        title_short_fr="Removed",
+    ).save()
+
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": {},
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": {},
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": {},
+                }
+            ]
+        },
+    ]
+
+    # ---------
+    # No clean
+    # --------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removed data_source_ids (dataset) found: KGK.removed" in out
+    assert "Obsolete datasets found: obsolete" in out
+
+    assert Dataset.objects.count() == 4
+
+    # ------
+    # Clean
+    # ------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, clean=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removing obsolete data_source_id (dataset) KGK.removed" in out
+    assert "Removing obsolete dataset obsolete" in out
+    assert "Removing obsolete dataset removed" in out
+
+    assert Dataset.objects.count() == 2
+
+
+# --------------------------------------------------------------------------------------------------
+# Dataset Units
+# --------------------------------------------------------------------------------------------------
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_removes_dataset_unit(mock, client, db):
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    # ------
+    # No org
+    # ------
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Organization with organization_id ch.kgk does not exist" in out
+    assert "Organization with organization_id ch.geodienste-lu does not exist" in out
+
+    # ------
+    # Create
+    # ------
+    org_aggregate = Organization(
+        organization_id="ch.kgk",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+        data_source=Organization.DataSource.GEODIENSTE,
+        data_source_ids=["KGK"],
+    )
+    org_aggregate.save()
+
+    org_part = Organization(
+        organization_id="ch.geodienste-lu",
+        name_de="Kanton Luzern",
+        name_en="Canton of Lucerne",
+        name_fr="Canton de Lucerne",
+        name_it="Cantone di Lucerna",
+        name_rm="Chantun Lucerna",
+        acronym_de="LU",
+        acronym_fr="LU",
+        acronym_en="LU",
+        acronym_it="LU",
+        acronym_rm="LU",
+        data_source=Organization.DataSource.GEODIENSTE,
+    )
+    org_part.save()
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Creating dataset unit ch.kgk (default) as maintainer in ch.kgk.av" in out
+    assert (
+        "Creating dataset unit ch.geodienste-lu (default) as maintainer in ch.geodienste-lu.av"
+        in out
+    )
+
+    dataset_unit = org_aggregate.unit_set.get().dataset_units.get()
+    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
+
+    dataset_unit = org_part.unit_set.get().dataset_units.get()
+    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.dataset.dataset_id == "ch.geodienste-lu.av"
+
+    # ------
+    # Rerun
+    # ------
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset unit ch.kgk (default) as maintainer in ch.kgk.av already exists" in out
+    assert (
+        "Dataset unit ch.geodienste-lu (default) as maintainer in ch.geodienste-lu.av already "
+        "exists" in out
+    )
+
+    # ------
+    # Update
+    # ------
+    dataset = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
+    unit = org_aggregate.unit_set.get()
+    DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.MAINTAINER).save()
+    DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER).save()
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert (
+        "Removing obsolete dataset unit ch.kgk (default) as maintainer in ch.geodienste-lu.av"
+        in out
+    )
+
+    assert dataset.dataset_units.count() == 2
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
+    org_aggregate = Organization(
+        organization_id="ch.kgk-cgc",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+    )
+    org_aggregate.save()
+
+    org_part = Organization(
+        organization_id="ch.rawi",
+        name_de="Raum und Wirtschaft",
+        name_en="Raum und Wirtschaft",
+        name_fr="Raum und Wirtschaft",
+        acronym_de="RAWI",
+        acronym_fr="RAWI",
+        acronym_en="RAWI",
+    )
+    org_part.save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    OrganizationMapping(provider_id_prefix="KGK", organization_id="ch.kgk-cgc").save()
+    OrganizationMapping(provider_id_prefix="LU", organization_id="ch.rawi").save()
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Mapping found for provider_id KGK: ch.kgk-cgc" in out
+    assert "Mapping found for provider_id LU: ch.rawi" in out
+    assert "Creating dataset unit ch.kgk-cgc (default) as maintainer in ch.kgk.av" in out
+    assert "Creating dataset unit ch.rawi (default) as maintainer in ch.geodienste-lu.av" in out
+
+    dataset_unit = org_aggregate.unit_set.get().dataset_units.get()
+    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
+
+    dataset_unit = org_part.unit_set.get().dataset_units.get()
+    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.dataset.dataset_id == "ch.geodienste-lu.av"
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_uses_mapping_for_dataset_unit(mock, client, db):
+    org_aggregate = Organization(
+        organization_id="ch.kgk-cgc",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+    )
+    org_aggregate.save()
+    unit_aggregate = Unit(
+        organization=org_aggregate, unit_id="aggregate", name_de="x", name_fr="x", name_en="x"
+    )
+    unit_aggregate.save()
+
+    org_part = Organization(
+        organization_id="ch.rawi",
+        name_de="Raum und Wirtschaft",
+        name_en="Raum und Wirtschaft",
+        name_fr="Raum und Wirtschaft",
+        acronym_de="RAWI",
+        acronym_fr="RAWI",
+        acronym_en="RAWI",
+    )
+    org_part.save()
+    unit_part = Unit(organization=org_part, unit_id="part", name_de="x", name_fr="x", name_en="x")
+    unit_part.save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    DatasetToUnitMapping(
+        dataset_id_prefix="ch.kgk.av", organization_id="ch.kgk-cgc", unit_id="aggregate"
+    ).save()
+    DatasetToUnitMapping(
+        dataset_id_prefix="ch.geodienste-lu.av", organization_id="ch.rawi", unit_id="part"
+    ).save()
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Unit mapping found for dataset_id ch.kgk.av: aggregate" in out
+    assert "Unit mapping found for dataset_id ch.geodienste-lu.av: part" in out
+
+    dataset_unit = unit_aggregate.dataset_units.get()
+    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
+
+    dataset_unit = unit_part.dataset_units.get()
+    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.dataset.dataset_id == "ch.geodienste-lu.av"
+
+
+# --------------------------------------------------------------------------------------------------
+# Dataset Contacts
+# --------------------------------------------------------------------------------------------------
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
+    org_aggregate = Organization(
+        organization_id="ch.kgk",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+        data_source=Organization.DataSource.GEODIENSTE,
+        data_source_ids=["KGK"],
+    )
+    org_aggregate.save()
+    contact_aggregate = Contact(
+        organization=org_aggregate,
+        data_source=Contact.DataSource.GEODIENSTE,
+        data_source_ids=["KGK"],
+        name_en="kgk",
+    )
+    contact_aggregate.save()
+
+    org_part = Organization(
+        organization_id="ch.geodienste-lu",
+        name_de="Kanton Luzern",
+        name_en="Canton of Lucerne",
+        name_fr="Canton de Lucerne",
+        name_it="Cantone di Lucerna",
+        name_rm="Chantun Lucerna",
+        acronym_de="LU",
+        acronym_fr="LU",
+        acronym_en="LU",
+        acronym_it="LU",
+        acronym_rm="LU",
+        data_source=Organization.DataSource.GEODIENSTE,
+    )
+    org_part.save()
+    contact_part_org = Contact(
+        organization=org_part,
+        data_source=Contact.DataSource.GEODIENSTE,
+        data_source_ids=["LU"],
+        name_en="LU",
+    )
+    contact_part_org.save()
+    contact_part_specialist = Contact(
+        organization=org_part,
+        data_source=Contact.DataSource.GEODIENSTE,
+        data_source_ids=["LU.av"],
+        name_en="LU.av",
+    )
+    contact_part_specialist.save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    # ------
+    # Create
+    # ------
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Creating dataset contact ch.kgk (kgk) as custodian in ch.kgk.av" in out
+    assert (
+        "Creating dataset contact ch.geodienste-lu (LU.av) as owner in ch.geodienste-lu.av" in out
+    )
+    assert (
+        "Creating dataset contact ch.geodienste-lu (LU) as custodian in ch.geodienste-lu.av" in out
+    )
+
+    dataset_contact = contact_aggregate.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.dataset.dataset_id == "ch.kgk.av"
+
+    dataset_contact = contact_part_org.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
+
+    dataset_contact = contact_part_specialist.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.OWNER
+    assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
+
+    # ------
+    # Update
+    # ------
+    contact_aggregate.data_source_ids = []
+    contact_aggregate.save()
+
+    contact_aggregate_new = Contact(
+        organization=org_aggregate,
+        data_source=Contact.DataSource.GEODIENSTE,
+        data_source_ids=["KGK"],
+        name_en="kgk_new",
+    )
+    contact_aggregate_new.save()
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removing obsolete dataset contact ch.kgk (kgk) as custodian in ch.kgk.av" in out
+    assert "Creating dataset contact ch.kgk (kgk_new) as custodian in ch.kgk.av" in out
+    assert (
+        "Dataset contact ch.geodienste-lu (LU.av) as owner in ch.geodienste-lu.av already exists"
+        in out
+    )
+    assert (
+        "Dataset contact ch.geodienste-lu (LU) as custodian in ch.geodienste-lu.av already exists"
+        in out
+    )
+
+    assert contact_aggregate.dataset_contacts.first() is None
+
+    dataset_contact = contact_aggregate_new.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.dataset.dataset_id == "ch.kgk.av"
+
+    dataset_contact = contact_part_org.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
+
+    dataset_contact = contact_part_specialist.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.OWNER
+    assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_uses_contact_mappings(mock, client, db):
+    org_aggregate = Organization(
+        organization_id="ch.kgk",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+    )
+    org_aggregate.save()
+    contact_aggregate = Contact(
+        organization=org_aggregate,
+        data_source=Contact.DataSource.GEODIENSTE,
+        name_en="KGK",
+    )
+    contact_aggregate.save()
+
+    org_part = Organization(
+        organization_id="ch.geodienste-lu",
+        name_de="Kanton Luzern",
+        name_en="Canton of Lucerne",
+        name_fr="Canton de Lucerne",
+        name_it="Cantone di Lucerna",
+        name_rm="Chantun Lucerna",
+        acronym_de="LU",
+        acronym_fr="LU",
+        acronym_en="LU",
+        acronym_it="LU",
+        acronym_rm="LU",
+    )
+    org_part.save()
+    contact_part_org = Contact(
+        organization=org_part,
+        name_en="LU",
+    )
+    contact_part_org.save()
+    contact_part_specialist = Contact(
+        organization=org_part,
+        name_en="LU.av",
+    )
+    contact_part_specialist.save()
+
+    DatasetToContactMapping(
+        dataset_id_prefix="ch.kgk.av",
+        role=DatasetToContact.Role.CUSTODIAN,
+        organization_id="ch.kgk",
+        contact_name_en="KGK",
+    ).save()
+    DatasetToContactMapping(
+        dataset_id_prefix="ch.geodienste-lu.av",
+        role=DatasetToContact.Role.CUSTODIAN,
+        organization_id="ch.geodienste-lu",
+        contact_name_en="LU",
+    ).save()
+    DatasetToContactMapping(
+        dataset_id_prefix="ch.geodienste-lu.av",
+        role=DatasetToContact.Role.OWNER,
+        organization_id="ch.geodienste-lu",
+        contact_name_en="LU.av",
+    ).save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    side_effect = [
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title DE",
+                    "abstract": "Abstract DE",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title FR",
+                    "abstract": "Abstract FR",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "topic_title": "Title IT",
+                    "abstract": "Abstract IT",
+                    "meta_data": meta_data,
+                }
+            ]
+        },
+    ]
+
+    mock.return_value.json.side_effect = side_effect
+
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Contact mapping found for dataset_id ch.kgk.av and role custodian: ch.kgk (KGK)" in out
+    assert (
+        "Contact mapping found for dataset_id ch.geodienste-lu.av and role owner: "
+        "ch.geodienste-lu (LU.av)" in out
+    )
+    assert (
+        "Contact mapping found for dataset_id ch.geodienste-lu.av and role custodian: "
+        "ch.geodienste-lu (LU)" in out
+    )
+    assert "Creating dataset contact ch.kgk (KGK) as custodian in ch.kgk.av" in out
+    assert (
+        "Creating dataset contact ch.geodienste-lu (LU.av) as owner in ch.geodienste-lu.av" in out
+    )
+    assert (
+        "Creating dataset contact ch.geodienste-lu (LU) as custodian in ch.geodienste-lu.av" in out
+    )
+
+    dataset_contact = contact_aggregate.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.dataset.dataset_id == "ch.kgk.av"
+
+    dataset_contact = contact_part_org.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
+
+    dataset_contact = contact_part_specialist.dataset_contacts.get()
+    assert dataset_contact.role == DatasetToContact.Role.OWNER
+    assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
