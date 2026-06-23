@@ -357,7 +357,11 @@ def test_command_creates_organization_from_file(client, db, tmp_path):
 
     out = StringIO()
     call_command(
-        "import_geodienste", organizations=True, services_endpoint=tmp_path, verbosity=2, stdout=out
+        "import_geodienste",
+        organizations=True,
+        services_directory=tmp_path,
+        verbosity=2,
+        stdout=out,
     )
     out = out.getvalue()
 
