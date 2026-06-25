@@ -2178,11 +2178,13 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=de",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "de",
                             },
                             {
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=de",
                                 "rel": "items",
                                 "type": "application/json",
+                                "hreflang": "de",
                             },
                         ],
                     },
@@ -2196,6 +2198,7 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=de",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "de",
                             }
                         ],
                     },
@@ -2206,6 +2209,7 @@ def test_command_exports_landingpage(session, db):
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
+                        "hreflang": "de",
                     }
                 ],
             },
@@ -2226,11 +2230,13 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=fr",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "fr",
                             },
                             {
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=fr",
                                 "rel": "items",
                                 "type": "application/json",
+                                "hreflang": "fr",
                             },
                         ],
                     },
@@ -2244,6 +2250,7 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=fr",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "fr",
                             }
                         ],
                     },
@@ -2254,6 +2261,7 @@ def test_command_exports_landingpage(session, db):
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
+                        "hreflang": "fr",
                     }
                 ],
             },
@@ -2274,11 +2282,13 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=it",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "it",
                             },
                             {
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=it",
                                 "rel": "items",
                                 "type": "application/json",
+                                "hreflang": "it",
                             },
                         ],
                     },
@@ -2292,6 +2302,7 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=it",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "it",
                             }
                         ],
                     },
@@ -2302,6 +2313,7 @@ def test_command_exports_landingpage(session, db):
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
+                        "hreflang": "it",
                     }
                 ],
             },
@@ -2322,11 +2334,13 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=en",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "en",
                             },
                             {
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=en",
                                 "rel": "items",
                                 "type": "application/json",
+                                "hreflang": "en",
                             },
                         ],
                     },
@@ -2340,6 +2354,7 @@ def test_command_exports_landingpage(session, db):
                                 "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=en",
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": "en",
                             }
                         ],
                     },
@@ -2350,6 +2365,7 @@ def test_command_exports_landingpage(session, db):
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
+                        "hreflang": "en",
                     }
                 ],
             },

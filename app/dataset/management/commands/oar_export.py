@@ -387,6 +387,7 @@ class Command(CustomBaseCommand):
                                 ),
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": lang,
                             },
                             {
                                 "href": (
@@ -394,6 +395,7 @@ class Command(CustomBaseCommand):
                                 ),
                                 "rel": "items",
                                 "type": "application/json",
+                                "hreflang": lang,
                             },
                         ],
                     },
@@ -409,6 +411,7 @@ class Command(CustomBaseCommand):
                                 ),
                                 "rel": "self",
                                 "type": "application/json",
+                                "hreflang": lang,
                             }
                         ],
                     },
@@ -419,6 +422,7 @@ class Command(CustomBaseCommand):
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
+                        "hreflang": lang,
                     }
                 ],
             }
