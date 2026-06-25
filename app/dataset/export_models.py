@@ -235,6 +235,7 @@ class OARDataset(OARRecord):
                 rel="distributions",
                 title="Distributions",
                 base_url=base_url,
+                hreflang=lang,
             )
         )
         dataset.links.append(
@@ -321,6 +322,7 @@ class OARDistribution(OARRecord):
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
                     base_url=base_url,
+                    hreflang=lang,
                 )
             )
             record.properties["externalIds"] = [dist.external_id]

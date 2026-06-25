@@ -734,9 +734,10 @@ def test_command_exports_distributions(session, db):
                                 "hreflang": "de",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=de",
                                 "rel": "dataservice",
                                 "type": "application/json",
+                                "hreflang": "de",
                             },
                         ],
                         "linkTemplates": [],
@@ -796,9 +797,10 @@ def test_command_exports_distributions(session, db):
                         "hreflang": "de",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=de",
                         "rel": "dataservice",
                         "type": "application/json",
+                        "hreflang": "de",
                     },
                 ],
                 "linkTemplates": [],
@@ -870,9 +872,10 @@ def test_command_exports_distributions(session, db):
                                 "hreflang": "fr",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=fr",
                                 "rel": "dataservice",
                                 "type": "application/json",
+                                "hreflang": "fr",
                             },
                         ],
                         "linkTemplates": [],
@@ -932,9 +935,10 @@ def test_command_exports_distributions(session, db):
                         "hreflang": "fr",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=fr",
                         "rel": "dataservice",
                         "type": "application/json",
+                        "hreflang": "fr",
                     },
                 ],
                 "linkTemplates": [],
@@ -1006,9 +1010,10 @@ def test_command_exports_distributions(session, db):
                                 "hreflang": "it",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=it",
                                 "rel": "dataservice",
                                 "type": "application/json",
+                                "hreflang": "it",
                             },
                         ],
                         "linkTemplates": [],
@@ -1068,9 +1073,10 @@ def test_command_exports_distributions(session, db):
                         "hreflang": "it",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=it",
                         "rel": "dataservice",
                         "type": "application/json",
+                        "hreflang": "it",
                     },
                 ],
                 "linkTemplates": [],
@@ -1142,9 +1148,10 @@ def test_command_exports_distributions(session, db):
                                 "hreflang": "en",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=en",
                                 "rel": "dataservice",
                                 "type": "application/json",
+                                "hreflang": "en",
                             },
                         ],
                         "linkTemplates": [],
@@ -1204,9 +1211,10 @@ def test_command_exports_distributions(session, db):
                         "hreflang": "en",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services/items/wmts-geoadminch?language=en",
                         "rel": "dataservice",
                         "type": "application/json",
+                        "hreflang": "en",
                     },
                 ],
                 "linkTemplates": [],
@@ -1306,10 +1314,11 @@ def test_command_exports_datasets(session, db):
                                 "hreflang": "de",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
                                 "rel": "distributions",
                                 "title": "Distributions",
                                 "type": "application/json",
+                                "hreflang": "de",
                             },
                             {
                                 "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -1408,10 +1417,11 @@ def test_command_exports_datasets(session, db):
                         "hreflang": "de",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
                         "rel": "distributions",
                         "title": "Distributions",
                         "type": "application/json",
+                        "hreflang": "de",
                     },
                     {
                         "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -1507,10 +1517,11 @@ def test_command_exports_datasets(session, db):
                                 "hreflang": "fr",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
                                 "rel": "distributions",
                                 "title": "Distributions",
                                 "type": "application/json",
+                                "hreflang": "fr",
                             },
                             {
                                 "href": "https://www.geocat.ch/geonetwork/srv/fra/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -1609,10 +1620,11 @@ def test_command_exports_datasets(session, db):
                         "hreflang": "fr",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
                         "rel": "distributions",
                         "title": "Distributions",
                         "type": "application/json",
+                        "hreflang": "fr",
                     },
                     {
                         "href": "https://www.geocat.ch/geonetwork/srv/fra/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -1708,10 +1720,11 @@ def test_command_exports_datasets(session, db):
                                 "hreflang": "it",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
                                 "rel": "distributions",
                                 "title": "Distributions",
                                 "type": "application/json",
+                                "hreflang": "it",
                             },
                             {
                                 "href": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -1810,10 +1823,11 @@ def test_command_exports_datasets(session, db):
                         "hreflang": "it",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
                         "rel": "distributions",
                         "title": "Distributions",
                         "type": "application/json",
+                        "hreflang": "it",
                     },
                     {
                         "href": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -1909,10 +1923,11 @@ def test_command_exports_datasets(session, db):
                                 "hreflang": "en",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
                                 "rel": "distributions",
                                 "title": "Distributions",
                                 "type": "application/json",
+                                "hreflang": "en",
                             },
                             {
                                 "href": "https://www.geocat.ch/geonetwork/srv/eng/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -2006,10 +2021,11 @@ def test_command_exports_datasets(session, db):
                         "hreflang": "en",
                     },
                     {
-                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items",
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
                         "rel": "distributions",
                         "title": "Distributions",
                         "type": "application/json",
+                        "hreflang": "en",
                     },
                     {
                         "href": "https://www.geocat.ch/geonetwork/srv/eng/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
@@ -2159,12 +2175,12 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=de",
                                 "rel": "self",
                                 "type": "application/json",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=de",
                                 "rel": "items",
                                 "type": "application/json",
                             },
@@ -2177,7 +2193,7 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=de",
                                 "rel": "self",
                                 "type": "application/json",
                             }
@@ -2207,12 +2223,12 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=fr",
                                 "rel": "self",
                                 "type": "application/json",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=fr",
                                 "rel": "items",
                                 "type": "application/json",
                             },
@@ -2225,7 +2241,7 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=fr",
                                 "rel": "self",
                                 "type": "application/json",
                             }
@@ -2255,12 +2271,12 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=it",
                                 "rel": "self",
                                 "type": "application/json",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=it",
                                 "rel": "items",
                                 "type": "application/json",
                             },
@@ -2273,7 +2289,7 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=it",
                                 "rel": "self",
                                 "type": "application/json",
                             }
@@ -2303,12 +2319,12 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog?language=en",
                                 "rel": "self",
                                 "type": "application/json",
                             },
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items?language=en",
                                 "rel": "items",
                                 "type": "application/json",
                             },
@@ -2321,7 +2337,7 @@ def test_command_exports_landingpage(session, db):
                         "itemType": "record",
                         "links": [
                             {
-                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services",
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/geoadmin.services?language=en",
                                 "rel": "self",
                                 "type": "application/json",
                             }
