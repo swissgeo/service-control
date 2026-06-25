@@ -153,11 +153,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
 
-    # password, groups and user_permissions are set in inherited PermissionsMixin and
-    # AbstractBaseUser, but not used as authentication is done externally.
+    # password is set in inherited AbstractBaseUser, but not used as authentication is done
+    # externally.
     password = None
-    groups = None
-    user_permissions = None
+    # NOTE:
+    #  - `groups` and `user_permissions` are set in inherited PermissionsMixin.
+    #    For API calls the permissions and groups are handled by Verified Permissions and both
+    #    fields, `groups` and `user_permissions`, could be removed. However those two fields are
+    #    still used internally in django admin interface.
+    #    This is the case when a user not belongign to the OAUTH2_PROXY_DJANGO_ADMIN_GROUPS group
+    #    tries to access the admin interface.
 
     USERNAME_FIELD = "sub"
 
