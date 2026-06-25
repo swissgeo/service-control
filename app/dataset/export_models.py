@@ -243,6 +243,7 @@ class OARDataset(OARRecord):
                 href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_ISO_639_2_B[lang]}/catalog.search#/metadata/{ds.geocat_id}",
                 rel="alternate",
                 title="GeoCat Metadata",
+                typ="text/html",
             )
         )
         # TODO: Needs clarification before it can be added
