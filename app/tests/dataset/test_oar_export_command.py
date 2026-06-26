@@ -143,23 +143,14 @@ def test_command_exports_services(session, db):
                                 "title": "Service Documentation (DE)",
                                 "type": "application/json",
                             },
-                        ],
-                        "linkTemplates": [
                             {
-                                "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                                "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
                                 "rel": "about",
                                 "title": "WMS Capabilities File",
                                 "type": "application/xml",
-                                "variables": {
-                                    "lang": {
-                                        "enum": ["de", "fr", "en", "it"],
-                                        "type": "string",
-                                        "default": "de",
-                                        "description": "Language code",
-                                    }
-                                },
-                            }
+                            },
                         ],
+                        "linkTemplates": [],
                         "type": "Feature",
                         "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
                     }
@@ -251,23 +242,14 @@ def test_command_exports_services(session, db):
                         "title": "Service Documentation (DE)",
                         "type": "application/json",
                     },
-                ],
-                "linkTemplates": [
                     {
-                        "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                        "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
                         "rel": "about",
                         "title": "WMS Capabilities File",
                         "type": "application/xml",
-                        "variables": {
-                            "lang": {
-                                "enum": ["de", "fr", "en", "it"],
-                                "type": "string",
-                                "default": "de",
-                                "description": "Language code",
-                            }
-                        },
-                    }
+                    },
                 ],
+                "linkTemplates": [],
                 "type": "Feature",
                 "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
             },
@@ -371,23 +353,14 @@ def test_command_exports_services(session, db):
                                 "title": "Service Documentation (DE)",
                                 "type": "application/json",
                             },
-                        ],
-                        "linkTemplates": [
                             {
-                                "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                                "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=fr",
                                 "rel": "about",
                                 "title": "WMS Capabilities File",
                                 "type": "application/xml",
-                                "variables": {
-                                    "lang": {
-                                        "enum": ["de", "fr", "en", "it"],
-                                        "type": "string",
-                                        "default": "de",
-                                        "description": "Language code",
-                                    }
-                                },
-                            }
+                            },
                         ],
+                        "linkTemplates": [],
                         "type": "Feature",
                         "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
                     }
@@ -479,23 +452,14 @@ def test_command_exports_services(session, db):
                         "title": "Service Documentation (DE)",
                         "type": "application/json",
                     },
-                ],
-                "linkTemplates": [
                     {
-                        "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                        "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=fr",
                         "rel": "about",
                         "title": "WMS Capabilities File",
                         "type": "application/xml",
-                        "variables": {
-                            "lang": {
-                                "enum": ["de", "fr", "en", "it"],
-                                "type": "string",
-                                "default": "de",
-                                "description": "Language code",
-                            }
-                        },
-                    }
+                    },
                 ],
+                "linkTemplates": [],
                 "type": "Feature",
                 "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
             },
@@ -599,23 +563,14 @@ def test_command_exports_services(session, db):
                                 "title": "Service Documentation (DE)",
                                 "type": "application/json",
                             },
-                        ],
-                        "linkTemplates": [
                             {
-                                "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                                "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=it",
                                 "rel": "about",
                                 "title": "WMS Capabilities File",
                                 "type": "application/xml",
-                                "variables": {
-                                    "lang": {
-                                        "enum": ["de", "fr", "en", "it"],
-                                        "type": "string",
-                                        "default": "de",
-                                        "description": "Language code",
-                                    }
-                                },
-                            }
+                            },
                         ],
+                        "linkTemplates": [],
                         "type": "Feature",
                         "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
                     }
@@ -707,23 +662,14 @@ def test_command_exports_services(session, db):
                         "title": "Service Documentation (DE)",
                         "type": "application/json",
                     },
-                ],
-                "linkTemplates": [
                     {
-                        "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                        "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=it",
                         "rel": "about",
                         "title": "WMS Capabilities File",
                         "type": "application/xml",
-                        "variables": {
-                            "lang": {
-                                "enum": ["de", "fr", "en", "it"],
-                                "type": "string",
-                                "default": "de",
-                                "description": "Language code",
-                            }
-                        },
-                    }
+                    },
                 ],
+                "linkTemplates": [],
                 "type": "Feature",
                 "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
             },
@@ -827,23 +773,14 @@ def test_command_exports_services(session, db):
                                 "title": "Service Documentation (DE)",
                                 "type": "application/json",
                             },
-                        ],
-                        "linkTemplates": [
                             {
-                                "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                                "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=en",
                                 "rel": "about",
                                 "title": "WMS Capabilities File",
                                 "type": "application/xml",
-                                "variables": {
-                                    "lang": {
-                                        "enum": ["de", "fr", "en", "it"],
-                                        "type": "string",
-                                        "default": "de",
-                                        "description": "Language code",
-                                    }
-                                },
-                            }
+                            },
                         ],
+                        "linkTemplates": [],
                         "type": "Feature",
                         "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
                     }
@@ -935,23 +872,14 @@ def test_command_exports_services(session, db):
                         "title": "Service Documentation (DE)",
                         "type": "application/json",
                     },
-                ],
-                "linkTemplates": [
                     {
-                        "uriTemplate": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+                        "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=en",
                         "rel": "about",
                         "title": "WMS Capabilities File",
                         "type": "application/xml",
-                        "variables": {
-                            "lang": {
-                                "enum": ["de", "fr", "en", "it"],
-                                "type": "string",
-                                "default": "de",
-                                "description": "Language code",
-                            }
-                        },
-                    }
+                    },
                 ],
+                "linkTemplates": [],
                 "type": "Feature",
                 "properties": {"title": "WMTS geo.admin.ch", "type": "ogc:wms"},
             },

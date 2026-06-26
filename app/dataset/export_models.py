@@ -348,7 +348,7 @@ class OARDistribution(OARRecord):
                 htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
                 record.linkTemplates.append(
                     LinkTemplate(
-                        uriTemplate=f"{htmlpopup_url_base}{dist.external_id}/{{featureId}}/htmlPopup?lang={{lang}}",
+                        uriTemplate=f"{htmlpopup_url_base}{dist.external_id}/{{featureId}}/htmlPopup?lang={lang}",
                         rel="preview",
                         typ="application/html",
                         title="HTML popup for a feature of this distribution",
@@ -417,10 +417,11 @@ class OARDataservice(OARRecord):
 
         # Handle service-specific links
         if isinstance(ds, WMTSDataservice):
-            if "{epsg}" in ds.capabilities_url:
+            url = ds.localized_capabilities_url(lang)
+            if "{epsg}" in url:
                 record.linkTemplates.append(
                     LinkTemplate(
-                        uriTemplate=ds.capabilities_url,
+                        uriTemplate=url,
                         rel="about",
                         typ="application/xml",
                         title="WMTS Capabilities File",
@@ -438,7 +439,7 @@ class OARDataservice(OARRecord):
             else:
                 record.links.append(
                     Link(
-                        href=ds.capabilities_url,
+                        href=url,
                         rel="about",
                         typ="application/xml",
                         title="WMTS Capabilities File",
@@ -446,32 +447,14 @@ class OARDataservice(OARRecord):
                 )
 
         elif isinstance(ds, WMSDataservice):
-            if "{lang}" in ds.capabilities_url:
-                record.linkTemplates.append(
-                    LinkTemplate(
-                        uriTemplate=ds.capabilities_url,
-                        rel="about",
-                        typ="application/xml",
-                        title="WMS Capabilities File",
-                        variables={
-                            "lang": {
-                                "enum": ds.languages,
-                                "type": "string",
-                                "default": "de",
-                                "description": "Language code",
-                            }
-                        },
-                    )
+            record.links.append(
+                Link(
+                    href=ds.localized_capabilities_url(lang),
+                    rel="about",
+                    typ="application/xml",
+                    title="WMS Capabilities File",
                 )
-            else:
-                record.links.append(
-                    Link(
-                        href=ds.capabilities_url,
-                        rel="about",
-                        typ="application/xml",
-                        title="WMS Capabilities File",
-                    )
-                )
+            )
         elif isinstance(ds, OGCAPIStacDataservice):
             record.links.append(
                 Link(
