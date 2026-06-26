@@ -386,9 +386,23 @@ class Command(CustomBaseCommand):
                                     f"{self.oar_base_url}/collections/swissgeo.catalog?language={lang}"
                                 ),
                                 "rel": "self",
+                                "title": "This record",
                                 "type": "application/json",
                                 "hreflang": lang,
                             },
+                            *[
+                                {
+                                    "href": (
+                                        f"{self.oar_base_url}/collections/swissgeo.catalog?language={alt}"
+                                    ),
+                                    "rel": "alternate",
+                                    "title": f"This record ({value.alternate})",
+                                    "type": "application/json",
+                                    "hreflang": alt,
+                                }
+                                for alt, value in LANGS.items()
+                                if alt != lang
+                            ],
                             {
                                 "href": (
                                     f"{self.oar_base_url}/collections/swissgeo.catalog/items?language={lang}"
@@ -410,20 +424,45 @@ class Command(CustomBaseCommand):
                                     f"{self.oar_base_url}/collections/geoadmin.services?language={lang}"
                                 ),
                                 "rel": "self",
+                                "title": "This record",
                                 "type": "application/json",
                                 "hreflang": lang,
-                            }
+                            },
+                            *[
+                                {
+                                    "href": (
+                                        f"{self.oar_base_url}/collections/geoadmin.services?language={alt}"
+                                    ),
+                                    "rel": "alternate",
+                                    "title": f"This record ({value.alternate})",
+                                    "type": "application/json",
+                                    "hreflang": alt,
+                                }
+                                for alt, value in LANGS.items()
+                                if alt != lang
+                            ],
                         ],
                     },
                 ],
                 "links": [
                     {
-                        "href": f"{self.oar_base_url}/collections",
+                        "href": f"{self.oar_base_url}/collections?language={lang}",
                         "rel": "self",
                         "description": "This document",
                         "type": "application/json",
                         "hreflang": lang,
-                    }
+                    },
+                    *[
+                        {
+                            "href": f"{self.oar_base_url}/collections?language={alt}",
+                            "rel": "alternate",
+                            "description": f"This document {value.alternate}",
+                            "type": "application/json",
+                            "hreflang": alt,
+                        }
+                        for alt, value in LANGS.items()
+                        if alt != lang
+                    ],
                 ],
             }
             self.upload_object(

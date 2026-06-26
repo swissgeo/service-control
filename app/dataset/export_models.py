@@ -28,7 +28,7 @@ LANGS = {
     "de": Lang(code="de", name="Deutsch", dir="ltr", alternate="German"),
     "fr": Lang(code="fr", name="Français", dir="ltr", alternate="French"),
     "it": Lang(code="it", name="Italiano", dir="ltr", alternate="Italian"),
-    "en": Lang(code="en", name="English", dir="ltr"),
+    "en": Lang(code="en", name="English", dir="ltr", alternate="English"),
 }
 
 LANGS_ISO_639_2_B = {
@@ -168,6 +168,18 @@ class OARRecord(BaseModel):
                 base_url=self.base_url,
             )
         )
+        for lang, value in LANGS.items():
+            if lang != self.lang:
+                self.links.append(
+                    OARRecordLink(
+                        collectionId=self.collection_id,
+                        recordId=self.id,
+                        rel="alternate",
+                        title=f"This Record ({value.alternate})",
+                        hreflang=lang,
+                        base_url=self.base_url,
+                    )
+                )
         self.links.append(
             OARCollectionLink(
                 collectionId=self.collection_id,
@@ -501,6 +513,17 @@ class OAFeatureCollection(BaseModel):
                 base_url=self.base_url,
             )
         )
+        for lang, value in LANGS.items():
+            if lang != self.lang:
+                self.links.append(
+                    OARCollectionItemsLink(
+                        collectionId=self.collection_id,
+                        rel="alternate",
+                        title=f"Link to this resource ({value.alternate})",
+                        hreflang=lang,
+                        base_url=self.base_url,
+                    )
+                )
         self.links.append(
             OARCollectionLink(
                 collectionId=self.collection_id,
@@ -594,6 +617,17 @@ class OARCollection(BaseModel):
                 base_url=self.base_url,
             )
         )
+        for lang, value in LANGS.items():
+            if lang != self.lang:
+                self.links.append(
+                    OARCollectionLink(
+                        collectionId=self.id,
+                        rel="alternate",
+                        title=f"Link to this resource ({value.alternate})",
+                        hreflang=lang,
+                        base_url=self.base_url,
+                    )
+                )
         return self
 
     def get_key(self) -> str:
