@@ -345,7 +345,7 @@ class OARDistribution(OARRecord):
                     hreflang=lang,
                 )
             )
-            record.properties["externalIds"] = [dist.external_id]
+            record.properties["externalIds"] = [dist.external_record_id(lang)]
 
         # Add featureinfo relation. Prefer a GeoadminFeatures distribution sibling within the
         # dataset; fall back to the WMS distribution (self for WMS, sibling for WMTS).
@@ -389,7 +389,7 @@ class OARDistribution(OARRecord):
                 htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
                 record.linkTemplates.append(
                     LinkTemplate(
-                        uriTemplate=f"{htmlpopup_url_base}{dist.external_id}/{{featureId}}/htmlPopup?lang={lang}",
+                        uriTemplate=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={lang}",
                         rel="preview",
                         typ="application/html",
                         title="HTML popup for a feature of this distribution",

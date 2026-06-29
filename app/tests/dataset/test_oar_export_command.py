@@ -7,7 +7,7 @@ from django.core.management import call_command
 
 from dataservice.models import WMSDataservice
 from dataset.models import Dataset
-from distribution.models import ExternalWMSDistribution
+from distribution.models import ExternalGeoJSONDistribution, ExternalWMSDistribution
 
 
 def extract_put_object(session):
@@ -889,7 +889,7 @@ def test_command_exports_services(session, db):
 
 
 @patch("dataset.management.commands.oar_export.Session")
-def test_command_exports_distributions(session, db):
+def test_command_exports_wms_distribution(session, db):
     dataservice = WMSDataservice(
         dataservice_id="wmts-geoadminch",
         title="WMTS geo.admin.ch",
@@ -920,7 +920,7 @@ def test_command_exports_distributions(session, db):
         dataset=dataset,
         title="WMS Layer",
         dataservice=dataservice,
-        wms_layer_name="ch.bafu.moose",
+        wms_layer_name_de="ch.bafu.moose",
         opacity=1.0,
         gutter=0,
     ).save()
@@ -1997,6 +1997,991 @@ def test_command_exports_distributions(session, db):
                         "type": "raster",
                     }
                 ],
+            },
+            "ContentType": "application/json",
+        },
+    ]
+
+
+@patch("dataset.management.commands.oar_export.Session")
+def test_command_exports_geojson_distributions(session, db):
+    dataservice = WMSDataservice(
+        dataservice_id="wmts-geoadminch",
+        title="WMTS geo.admin.ch",
+        documentation_url_de="https://docs.geo.admin.ch/visualize-data/wmts.html",
+        languages=["de", "fr", "en", "it"],
+        capabilities_url="https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
+    )
+    dataservice.save()
+
+    dataset = Dataset(
+        dataset_id="ch.bafu.moose",
+        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_short_fr="Liste rouge mousses",
+        title_short_en="Red list bryophytes",
+        title_short_it="Lista rossa delle biofite minacciate in Svizzera",
+        title_short_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+        description_de="missing",
+        description_fr="missing",
+        description_en="missing",
+        description_it="missing",
+        description_rm="missing",
+        geocat_id="07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+    )
+    dataset.save()
+
+    ExternalGeoJSONDistribution(
+        distribution_id="ch.bafu.moose:wms",
+        dataset=dataset,
+        title="GeoJSON Layer",
+        geojson_url_de="https://data.geo.admin.ch/ch.bafu.moose_de.json",
+        geojson_url_fr="https://data.geo.admin.ch/ch.bafu.moose_fr.json",
+        geojson_url_en="https://data.geo.admin.ch/ch.bafu.moose_en.json",
+        geojson_url_it="https://data.geo.admin.ch/ch.bafu.moose_it.json",
+        geojson_url_rm="https://data.geo.admin.ch/ch.bafu.moose_rm.json",
+        style_url="https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+    ).save()
+
+    out = StringIO()
+    call_command("oar_export", types=["distributions"], upload=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions.de" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.de" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions.fr" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.fr" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions.it" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.it" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions.en" in out
+    assert "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.en" in out
+
+    result = extract_put_object(session)
+    assert result == [
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions.de",
+            "Body": {
+                "id": "ch.bafu.moose.distributions",
+                "title": "Distribution Collection for ch.bafu.moose.distributions",
+                "type": "Collection",
+                "itemType": "record",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
+                        "rel": "items",
+                        "title": "Link to the items of this collection",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                        "rel": "alternate",
+                        "title": "Link to this resource (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                        "rel": "alternate",
+                        "title": "Link to this resource (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                        "rel": "alternate",
+                        "title": "Link to this resource (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.de",
+            "Body": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": "ch.bafu.moose:wms",
+                        "links": [
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                                "rel": "self",
+                                "title": "This Record",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                                "rel": "alternate",
+                                "title": "This Record (French)",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                                "rel": "alternate",
+                                "title": "This Record (Italian)",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                                "rel": "alternate",
+                                "title": "This Record (English)",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                                "rel": "collection",
+                                "title": "Link to the collection this item belongs to",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=de",
+                                "rel": "dataset",
+                                "title": "Link to parent dataset ch.bafu.moose",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
+                            {
+                                "href": "https://data.geo.admin.ch/ch.bafu.moose_de.json",
+                                "rel": "about",
+                                "title": "Link to GeoJSON file",
+                                "type": "application/geo+json",
+                            },
+                            {
+                                "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                                "rel": "styled-by",
+                                "title": "Link to style file for the GeoJSON layer",
+                                "type": "application/json",
+                            },
+                        ],
+                        "linkTemplates": [],
+                        "type": "Feature",
+                        "properties": {
+                            "type": "Distribution",
+                            "title": "GeoJSON Layer",
+                            "protocol": "geojson",
+                        },
+                    }
+                ],
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
+                        "rel": "alternate",
+                        "title": "Link to this resource (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
+                        "rel": "alternate",
+                        "title": "Link to this resource (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
+                        "rel": "alternate",
+                        "title": "Link to this resource (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                        "rel": "collection",
+                        "title": "Link to the collection these items belong to",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms.de",
+            "Body": {
+                "id": "ch.bafu.moose:wms",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                        "rel": "self",
+                        "title": "This Record",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                        "rel": "alternate",
+                        "title": "This Record (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                        "rel": "alternate",
+                        "title": "This Record (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                        "rel": "alternate",
+                        "title": "This Record (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                        "rel": "collection",
+                        "title": "Link to the collection this item belongs to",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=de",
+                        "rel": "dataset",
+                        "title": "Link to parent dataset ch.bafu.moose",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://data.geo.admin.ch/ch.bafu.moose_de.json",
+                        "rel": "about",
+                        "title": "Link to GeoJSON file",
+                        "type": "application/geo+json",
+                    },
+                    {
+                        "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                        "rel": "styled-by",
+                        "title": "Link to style file for the GeoJSON layer",
+                        "type": "application/json",
+                    },
+                ],
+                "linkTemplates": [],
+                "type": "Feature",
+                "properties": {
+                    "type": "Distribution",
+                    "title": "GeoJSON Layer",
+                    "protocol": "geojson",
+                },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions.fr",
+            "Body": {
+                "id": "ch.bafu.moose.distributions",
+                "title": "Distribution Collection for ch.bafu.moose.distributions",
+                "type": "Collection",
+                "itemType": "record",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
+                        "rel": "items",
+                        "title": "Link to the items of this collection",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                        "rel": "alternate",
+                        "title": "Link to this resource (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                        "rel": "alternate",
+                        "title": "Link to this resource (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                        "rel": "alternate",
+                        "title": "Link to this resource (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.fr",
+            "Body": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": "ch.bafu.moose:wms",
+                        "links": [
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                                "rel": "self",
+                                "title": "This Record",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                                "rel": "alternate",
+                                "title": "This Record (German)",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                                "rel": "alternate",
+                                "title": "This Record (Italian)",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                                "rel": "alternate",
+                                "title": "This Record (English)",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                                "rel": "collection",
+                                "title": "Link to the collection this item belongs to",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=fr",
+                                "rel": "dataset",
+                                "title": "Link to parent dataset ch.bafu.moose",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
+                            {
+                                "href": "https://data.geo.admin.ch/ch.bafu.moose_fr.json",
+                                "rel": "about",
+                                "title": "Link to GeoJSON file",
+                                "type": "application/geo+json",
+                            },
+                            {
+                                "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                                "rel": "styled-by",
+                                "title": "Link to style file for the GeoJSON layer",
+                                "type": "application/json",
+                            },
+                        ],
+                        "linkTemplates": [],
+                        "type": "Feature",
+                        "properties": {
+                            "type": "Distribution",
+                            "title": "GeoJSON Layer",
+                            "protocol": "geojson",
+                        },
+                    }
+                ],
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
+                        "rel": "alternate",
+                        "title": "Link to this resource (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
+                        "rel": "alternate",
+                        "title": "Link to this resource (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
+                        "rel": "alternate",
+                        "title": "Link to this resource (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                        "rel": "collection",
+                        "title": "Link to the collection these items belong to",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms.fr",
+            "Body": {
+                "id": "ch.bafu.moose:wms",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                        "rel": "self",
+                        "title": "This Record",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                        "rel": "alternate",
+                        "title": "This Record (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                        "rel": "alternate",
+                        "title": "This Record (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                        "rel": "alternate",
+                        "title": "This Record (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                        "rel": "collection",
+                        "title": "Link to the collection this item belongs to",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=fr",
+                        "rel": "dataset",
+                        "title": "Link to parent dataset ch.bafu.moose",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://data.geo.admin.ch/ch.bafu.moose_fr.json",
+                        "rel": "about",
+                        "title": "Link to GeoJSON file",
+                        "type": "application/geo+json",
+                    },
+                    {
+                        "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                        "rel": "styled-by",
+                        "title": "Link to style file for the GeoJSON layer",
+                        "type": "application/json",
+                    },
+                ],
+                "linkTemplates": [],
+                "type": "Feature",
+                "properties": {
+                    "type": "Distribution",
+                    "title": "GeoJSON Layer",
+                    "protocol": "geojson",
+                },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions.it",
+            "Body": {
+                "id": "ch.bafu.moose.distributions",
+                "title": "Distribution Collection for ch.bafu.moose.distributions",
+                "type": "Collection",
+                "itemType": "record",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
+                        "rel": "items",
+                        "title": "Link to the items of this collection",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                        "rel": "alternate",
+                        "title": "Link to this resource (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                        "rel": "alternate",
+                        "title": "Link to this resource (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                        "rel": "alternate",
+                        "title": "Link to this resource (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.it",
+            "Body": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": "ch.bafu.moose:wms",
+                        "links": [
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                                "rel": "self",
+                                "title": "This Record",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                                "rel": "alternate",
+                                "title": "This Record (German)",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                                "rel": "alternate",
+                                "title": "This Record (French)",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                                "rel": "alternate",
+                                "title": "This Record (English)",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                                "rel": "collection",
+                                "title": "Link to the collection this item belongs to",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=it",
+                                "rel": "dataset",
+                                "title": "Link to parent dataset ch.bafu.moose",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
+                            {
+                                "href": "https://data.geo.admin.ch/ch.bafu.moose_it.json",
+                                "rel": "about",
+                                "title": "Link to GeoJSON file",
+                                "type": "application/geo+json",
+                            },
+                            {
+                                "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                                "rel": "styled-by",
+                                "title": "Link to style file for the GeoJSON layer",
+                                "type": "application/json",
+                            },
+                        ],
+                        "linkTemplates": [],
+                        "type": "Feature",
+                        "properties": {
+                            "type": "Distribution",
+                            "title": "GeoJSON Layer",
+                            "protocol": "geojson",
+                        },
+                    }
+                ],
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
+                        "rel": "alternate",
+                        "title": "Link to this resource (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
+                        "rel": "alternate",
+                        "title": "Link to this resource (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
+                        "rel": "alternate",
+                        "title": "Link to this resource (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                        "rel": "collection",
+                        "title": "Link to the collection these items belong to",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms.it",
+            "Body": {
+                "id": "ch.bafu.moose:wms",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                        "rel": "self",
+                        "title": "This Record",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                        "rel": "alternate",
+                        "title": "This Record (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                        "rel": "alternate",
+                        "title": "This Record (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                        "rel": "alternate",
+                        "title": "This Record (English)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                        "rel": "collection",
+                        "title": "Link to the collection this item belongs to",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=it",
+                        "rel": "dataset",
+                        "title": "Link to parent dataset ch.bafu.moose",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://data.geo.admin.ch/ch.bafu.moose_it.json",
+                        "rel": "about",
+                        "title": "Link to GeoJSON file",
+                        "type": "application/geo+json",
+                    },
+                    {
+                        "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                        "rel": "styled-by",
+                        "title": "Link to style file for the GeoJSON layer",
+                        "type": "application/json",
+                    },
+                ],
+                "linkTemplates": [],
+                "type": "Feature",
+                "properties": {
+                    "type": "Distribution",
+                    "title": "GeoJSON Layer",
+                    "protocol": "geojson",
+                },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions.en",
+            "Body": {
+                "id": "ch.bafu.moose.distributions",
+                "title": "Distribution Collection for ch.bafu.moose.distributions",
+                "type": "Collection",
+                "itemType": "record",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
+                        "rel": "items",
+                        "title": "Link to the items of this collection",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=de",
+                        "rel": "alternate",
+                        "title": "Link to this resource (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=fr",
+                        "rel": "alternate",
+                        "title": "Link to this resource (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=it",
+                        "rel": "alternate",
+                        "title": "Link to this resource (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.en",
+            "Body": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": "ch.bafu.moose:wms",
+                        "links": [
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                                "rel": "self",
+                                "title": "This Record",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                                "rel": "alternate",
+                                "title": "This Record (German)",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                                "rel": "alternate",
+                                "title": "This Record (French)",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                                "rel": "alternate",
+                                "title": "This Record (Italian)",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                                "rel": "collection",
+                                "title": "Link to the collection this item belongs to",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=en",
+                                "rel": "dataset",
+                                "title": "Link to parent dataset ch.bafu.moose",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
+                            {
+                                "href": "https://data.geo.admin.ch/ch.bafu.moose_en.json",
+                                "rel": "about",
+                                "title": "Link to GeoJSON file",
+                                "type": "application/geo+json",
+                            },
+                            {
+                                "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                                "rel": "styled-by",
+                                "title": "Link to style file for the GeoJSON layer",
+                                "type": "application/json",
+                            },
+                        ],
+                        "linkTemplates": [],
+                        "type": "Feature",
+                        "properties": {
+                            "type": "Distribution",
+                            "title": "GeoJSON Layer",
+                            "protocol": "geojson",
+                        },
+                    }
+                ],
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=en",
+                        "rel": "self",
+                        "title": "Link to this resource",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=de",
+                        "rel": "alternate",
+                        "title": "Link to this resource (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=fr",
+                        "rel": "alternate",
+                        "title": "Link to this resource (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items?language=it",
+                        "rel": "alternate",
+                        "title": "Link to this resource (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                        "rel": "collection",
+                        "title": "Link to the collection these items belong to",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                ],
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-records-static-v2-dev-swissgeo",
+            "Key": "api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms.en",
+            "Body": {
+                "id": "ch.bafu.moose:wms",
+                "links": [
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=en",
+                        "rel": "self",
+                        "title": "This Record",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=de",
+                        "rel": "alternate",
+                        "title": "This Record (German)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=fr",
+                        "rel": "alternate",
+                        "title": "This Record (French)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:wms?language=it",
+                        "rel": "alternate",
+                        "title": "This Record (Italian)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/ch.bafu.moose.distributions?language=en",
+                        "rel": "collection",
+                        "title": "Link to the collection this item belongs to",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oar/staticv2/collections/swissgeo.catalog/items/ch.bafu.moose?language=en",
+                        "rel": "dataset",
+                        "title": "Link to parent dataset ch.bafu.moose",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
+                    {
+                        "href": "https://data.geo.admin.ch/ch.bafu.moose_en.json",
+                        "rel": "about",
+                        "title": "Link to GeoJSON file",
+                        "type": "application/geo+json",
+                    },
+                    {
+                        "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+                        "rel": "styled-by",
+                        "title": "Link to style file for the GeoJSON layer",
+                        "type": "application/json",
+                    },
+                ],
+                "linkTemplates": [],
+                "type": "Feature",
+                "properties": {
+                    "type": "Distribution",
+                    "title": "GeoJSON Layer",
+                    "protocol": "geojson",
+                },
             },
             "ContentType": "application/json",
         },
