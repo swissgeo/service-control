@@ -31,7 +31,7 @@ services:
         bind:
           create_host_path: true
 
-  # FIXME: replace with moto-server
+  # TODO: replace with moto-server
   cognito:
     image: jagregory/cognito-local:latest
     environment:

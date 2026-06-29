@@ -93,13 +93,40 @@ class Dataservice(PolymorphicModel):
         )
 
 
-class WMSDataservice(Dataservice):
+class LocalizedCapabilitiesUrlMixin:
+    capabilities_url: str
+    languages: list[str]
+    default_language: str | None
+
+    def localized_capabilities_url(self, lang: str) -> str:
+        """Returns the capabilities URL for the given language.
+
+        Only tries to interpolate the language, if the URL contains the {lang} placeholder.
+
+        Uses the given language if supported, falls back to the default language.
+        """
+
+        url = self.capabilities_url
+        if "{lang}" in url:
+            if lang in self.languages:
+                url = url.replace("{lang}", lang)
+            else:
+                url = url.replace("{lang}", self.default_language or "")
+        return url
+
+
+class WMSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
     languages = ArrayField(
         models.CharField(
             max_length=32,
         ),
+        default=list,
+        blank=True,
         verbose_name=_(_context, "Supported Languages"),
         help_text=_(_context, "List of supported languages for the WMS Dataservice"),
+    )
+    default_language = models.CharField(
+        _(_context, "Default languages"), max_length=2, blank=True, null=True
     )
     capabilities_url = models.URLField(
         _(_context, "Capabilities URL"),
@@ -121,7 +148,7 @@ class WMSDataservice(Dataservice):
         return "ogc:wms"
 
 
-class WMTSDataservice(Dataservice):
+class WMTSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
     variable_epsg_list = ArrayField(
         models.IntegerField(),
         verbose_name=_(_context, "List of supported CRS (EPSG codes)"),
@@ -131,6 +158,21 @@ class WMTSDataservice(Dataservice):
             "if {epsg} placeholder is used in the capabilities URL.",
         ),
     )
+    languages = ArrayField(
+        models.CharField(
+            max_length=32,
+        ),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Supported Languages"),
+        help_text=_(_context, "List of supported languages for the WMS Dataservice"),
+    )
+    default_language = models.CharField(
+        _(_context, "Default languages"),
+        max_length=2,
+        null=True,
+        blank=True,
+    )
     capabilities_url = models.URLField(
         _(_context, "Capabilities URL"),
         max_length=500,
@@ -138,7 +180,8 @@ class WMTSDataservice(Dataservice):
             _context,
             "URL to the capabilities document of the WTMS Dataservice. "
             "The URL can contain the following placeholders: {epsg} for the "
-            "different supported EPSG code.",
+            "different supported EPSG code; {lang} for the different languages "
+            "in which the WMS is available.",
         ),
     )
 
