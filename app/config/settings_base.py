@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str("SECRET_KEY", default=None)
+SECRET_KEY = env.str("SECRET_KEY", default="") or None
 
 # SECURITY:
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
@@ -193,14 +193,14 @@ def ensure_https(url: str | None) -> str | None:
 # oauth2-proxy
 # List of groups that are allowed in django admin interface
 OAUTH2_PROXY_URL_PREFIX = env.str("OAUTH2_PROXY_URL_PREFIX", "oauth2-proxy/")
-OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str("OAUTH2_PROXY_COGNITO_URL", None))
+OAUTH2_PROXY_COGNITO_URL = ensure_https(env.str("OAUTH2_PROXY_COGNITO_URL", "") or None)
 OAUTH2_PROXY_COGNITO_APP_CLIENT_ID = env.str("OAUTH2_PROXY_COGNITO_APP_CLIENT_ID", "local")
-OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str("OAUTH2_PROXY_EIAM_LOGOUT_URL", None))
+OAUTH2_PROXY_EIAM_LOGOUT_URL = ensure_https(env.str("OAUTH2_PROXY_EIAM_LOGOUT_URL", "") or None)
 OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = env.list(
     "OAUTH2_PROXY_DJANGO_ADMIN_GROUPS",
     default=["swissgeo-admin"],
 )
-OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME = env.str("OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME", None)
+OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME = env.str("OAUTH2_PROXY_EXTRA_AUD_SSM_PARAM_NAME", "") or None
 
 # Only when running server locally to not connect to ssm parameter store
 USE_LOCAL_SSM_STORE = env.bool("USE_LOCAL_SSM_STORE", False)
@@ -216,14 +216,15 @@ VERIFIED_PERMISSIONS_STORE_ID = env.str("VERIFIED_PERMISSIONS_STORE_ID", "local"
 VERIFIED_PERMISSIONS_NAMESPACE = env.str("VERIFIED_PERMISSIONS_NAMESPACE", "swissgeo")
 # Map roles to aws verified permissions policy templates.
 ROLE_POLICY_TEMPLATE_IDS = {
-    VPRole.ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default=None),
-    VPRole.DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default=None),
-    VPRole.DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default=None),
+    VPRole.ORG_ADMIN: env.str("ORG_ADMIN_POLICY_TEMPLATE_ID", default="") or None,
+    VPRole.DATASET_ADMIN: env.str("DATASET_ADMIN_POLICY_TEMPLATE_ID", default="") or None,
+    VPRole.DATASET_CONTRIBUTOR: env.str("DATASET_CONTRIBUTOR_POLICY_TEMPLATE_ID", default="")
+    or None,
 }
 
 # M2M
 DEFAULT_M2M_TOKEN_DURATION_MINS = env.int("DEFAULT_M2M_TOKEN_DURATION_MINS", 15)
-DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", None)
+DEFAULT_M2M_SCOPE = env.str("DEFAULT_M2M_SCOPE", "") or None
 
 # Testing
 TESTING: bool = False
@@ -252,7 +253,7 @@ OTEL_SDK_DISABLED = env.bool("OTEL_SDK_DISABLED", False)
 
 OTEL_ENABLE_OTLP_EXPORTER = env.bool("OTEL_ENABLE_OTLP_EXPORTER", True)
 OTEL_EXPORTER_OTLP_ENDPOINT = env.str("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
-OTEL_EXPORTER_OTLP_HEADERS = env.str("OTEL_EXPORTER_OTLP_HEADERS", default=None)
+OTEL_EXPORTER_OTLP_HEADERS = env.str("OTEL_EXPORTER_OTLP_HEADERS", default="") or None
 OTEL_EXPORTER_OTLP_INSECURE = env.bool("OTEL_EXPORTER_OTLP_INSECURE", False)
 
 OTEL_ENABLE_DJANGO = env.bool("OTEL_ENABLE_DJANGO", True)

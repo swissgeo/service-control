@@ -89,7 +89,7 @@ class Command(CustomBaseCommand):
         # Some entities like organizations and contacts have no localized contents, it is sufficient
         # to just use the German response from the API. For localized content on the other hand, we
         # need to query German, French and Italian (no English available!).
-        languages = set()
+        languages: set[Language] = set()
         if options["organizations"] or options["contacts"]:
             languages.add("de")
         if options["datasets"]:
