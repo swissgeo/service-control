@@ -8,8 +8,12 @@ class DataSourceIdManagerMixin:
     """Shared manager methods for models that have a data_source_ids array field."""
 
     if TYPE_CHECKING:
+        from typing import Any  # noqa: PLC0415
 
-        def filter(self, *args, **kwargs) -> models.QuerySet: ...
+        from polymorphic.managers import _All, _Base  # noqa: PLC0415
+        from polymorphic.query import PolymorphicQuerySet  # noqa: PLC0415
+
+        def filter(self, *args: Any, **kwargs: Any) -> PolymorphicQuerySet[_All, _Base]: ...
 
     def remove_data_source_id(self, data_source_id: str) -> int:
         """Remove the given data source ID from all records."""

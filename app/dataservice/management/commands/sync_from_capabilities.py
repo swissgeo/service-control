@@ -102,6 +102,9 @@ class Command(CustomBaseCommand):
         }
         success = True
         for service in OGCAPIStacDataservice.objects.all():
+            if service.dataservice_id == "stac-geodienste":
+                continue
+
             self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")
             try:
                 processed, added, updated, obsolete = self.sync_stac_from_capabilities(
