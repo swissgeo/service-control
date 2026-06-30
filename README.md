@@ -264,6 +264,34 @@ The python SDK supports ratio based [head sampling](https://opentelemetry.io/doc
 - OTEL_TRACES_SAMPLER=parentbased_traceidratio|traceidratio
 - and OTEL_TRACES_SAMPLER_ARG=[0.0,1.0]
 
+### Metrics
+
+#### Custom metrics
+
+All metrics names are prefixed with `swissgeo.service_control.`.
+
+| Metric name | Type | Unit | Attributes | Description |
+|---|---|---|---|---|
+| `import_harvest_tables.organization.import` | Counter | `{organization}` | `job_id`, `state` (failed/created/updated) | Counts number of organizations imported. |
+| `import_harvest_tables.organization.cleanup` | Counter | `{organization}` | `job_id`, `state` (removed/obsoleted) | Counts number of organizations removed. |
+| `import_harvest_tables.dataset.import` | Counter | `{dataset}` | `job_id`, `state` (failed/created/updated) | Counts number of datasets imported. |
+| `import_harvest_tables.dataset.cleanup` | Counter | `{dataset}` | `job_id`, `state` (removed/obsoleted) | Counts number of datasets removed. |
+| `import_harvest_tables.distribution.import` | Counter | `{distribution}` | `job_id`, `state` (failed/created/updated), `dataservice` (wmts/wms/geojson/api3feature) | Counts number of distributions imported. |
+| `import_harvest_tables.distribution.cleanup` | Counter | `{distribution}` | `job_id` | Counts number of distributions removed. |
+| `import_harvest_tables.keyword.import` | Counter | `{keyword}` | `job_id`, `state` (found/created), `thesaurus_created` (true/false) | Counts number of keywords imported. |
+| `import_harvest_tables.contact.import` | Counter | `{contact}` | `job_id`, `state` (created/missing_organization/existing_differs) | Counts number of contacts imported. |
+| `import_geodienste.organization.import` | Counter | `{organization}` | `job_id`, `state` (created/updated) | Counts number of organizations imported. |
+| `import_geodienste.organization.cleanup` | Counter | `{organization}` | `job_id`, `state` (removed/obsoleted) | Counts number of organizations removed. |
+| `import_geodienste.contact.import` | Counter | `{contact}` | `job_id`, `state` (failed/created/updated) | Counts number of contacts imported. |
+| `import_geodienste.contact.cleanup` | Counter | `{contact}` | `job_id`, `state` (removed/obsoleted) | Counts number of contacts removed. |
+| `import_geodienste.dataset.import` | Counter | `{dataset}` | `job_id`, `state` (created/updated) | Counts number of datasets imported. |
+| `import_geodienste.dataset.cleanup` | Counter | `{dataset}` | `job_id`, `state` (removed/obsoleted) | Counts number of datasets removed. |
+| `import_geodienste.dataset.connected` | Counter | `{dataset}` | `job_id` | Counts number of datasets connected. |
+| `import_geodienste.dataset_unit.import` | Counter | `{dataset_unit}` | `job_id`, `state` (created/updated) | Counts number of dataset units imported. |
+| `import_geodienste.dataset_unit.cleanup` | Counter | `{dataset_unit}` | `job_id`, `state` (removed/obsoleted) | Counts number of dataset units removed. |
+| `sync_from_capabilities.distribution.import` | Counter | `{distribution}` | `job_id`, `state` (created/updated) | Counts number of distributions imported. |
+| `sync_from_capabilities.distribution.cleanup` | Counter | `{distribution}` | `job_id`, `state` (removed/obsoleted) | Counts number of distributions removed. |
+
 ### Local Telemetry
 
 Local telemetry can be tested by using one of the serve commands that use gunicorn, either 
