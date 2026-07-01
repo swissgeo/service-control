@@ -16,8 +16,7 @@ class GeopoliticalEntity(models.Model):
         CORP = "corp", _("GeopoliticalEntity Level", "Corporate")
 
     geopolitical_entity_id = models.IntegerField(
-        unique=True,
-        help_text=_(_context, "Stable external identifier of the geopolitical entity")
+        unique=True, help_text=_(_context, "Stable external identifier of the geopolitical entity")
     )
     type = models.CharField(
         max_length=255,
@@ -34,8 +33,7 @@ class GeopoliticalEntity(models.Model):
         help_text=_(_context, "Link to the parent geopolitical entity"),
     )
     name = models.CharField(
-        max_length=255,
-        help_text=_(_context, "The name of the GeopoliticalEntity (without type)")
+        max_length=255, help_text=_(_context, "The name of the GeopoliticalEntity (without type)")
     )
     name_de = models.CharField(
         max_length=255,
