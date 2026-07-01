@@ -22,6 +22,8 @@ from harvest.utils import (
     CANTONAL_PROVIDER_ORGANIZATIONS,
 )
 from organization.models import Contact, Organization, Unit
+from thesaurus.models import Keyword, Thesaurus
+from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 
 # The services API only supports German, French and Italian - no English!
@@ -51,6 +53,11 @@ class Command(CustomBaseCommand):
             action="store_true",
             help="Import datasets",
         )
+        parser.add_argument(
+            "--keywords",
+            action="store_true",
+            help="Import keywords",
+        )
 
         parser.add_argument(
             "--services-endpoint",
@@ -65,12 +72,22 @@ class Command(CustomBaseCommand):
                 "services_fr.json, services_it.json. Useful for local development."
             ),
         )
-
         parser.add_argument(
             "--timeout",
             type=int,
             default="60",
             help="Timeout when calling services information (JSON) endpoint",
+        )
+
+        parser.add_argument(
+            "--gemet-thesaurus",
+            default="https://www.geocat.ch/geonetwork/srv/api/registries/vocabularies/external.theme.gemet",
+            help="URL to the thesaurus / RDF containing the GEMET keywords.",
+        )
+        parser.add_argument(
+            "--geocat-thesaurus",
+            default="https://www.geocat.ch/geonetwork/srv/api/registries/vocabularies/local.theme.geocat.ch",
+            help="URL to the thesaurus / RDF containing the GEOCAT keywords.",
         )
 
         parser.add_argument(
@@ -90,7 +107,7 @@ class Command(CustomBaseCommand):
         # to just use the German response from the API. For localized content on the other hand, we
         # need to query German, French and Italian (no English available!).
         languages: set[Language] = set()
-        if options["organizations"] or options["contacts"]:
+        if options["organizations"] or options["contacts"] or options["keywords"]:
             languages.add("de")
         if options["datasets"]:
             languages.update({"de", "fr", "it"})
@@ -114,6 +131,8 @@ class Command(CustomBaseCommand):
             self.import_contacts(services, options["clean"])
         if options["datasets"]:
             self.import_datasets(services, options["clean"])
+        if options["keywords"]:
+            self.import_keywords(services, options["gemet_thesaurus"], options["geocat_thesaurus"])
 
     # ##########################################################################
     def get_services(
@@ -705,7 +724,6 @@ class Command(CustomBaseCommand):
             metrics["dataset_contacts.removed"] += removed
 
             # TODO: preferred_distribution
-            # TODO: keywords
 
         (
             metrics["datasets.removed"],
@@ -899,3 +917,165 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"Obsolete datasets found: {', '.join(ids)}")
 
         return len(removed), len(obsolete)
+
+    # ##########################################################################
+    def import_keywords(self, services: dict, gemet_thesaurus: str, geocat_thesaurus: str) -> None:  # noqa: C901
+        """Import keywords.
+
+        There are three types of keywords / thesauri:
+
+        - GEMET:      These are currently only present in the German response and should correspond
+                      to the German translation of concepts defined in the according thesaurus on
+                      geocat.ch.
+        - Geocat:     These are currently only present in the Geocat response and should correspond
+                      to the German translation of concepts defined in the according thesaurus on
+                      geocat.ch.
+        - Geodienste: These are present in all languages, but are not yet present in a thesaurus and
+                      do not correspond to each other by order. Not yet supported.
+
+        Replaces all keywords of the corresponding aggregate and cantonal dataset.
+
+        No keywords and thesauri are updated or cleaned.
+
+        """
+        self.print_success("Importing keywords")
+
+        mappings = DatasetMapping.table()
+
+        metrics = {
+            "thesauri.created": 0,
+            "keywords.created": 0,
+        }
+
+        # Load thesauri
+        gemet, gemet_lookup, created = self.load_thesaurus(
+            "geonetwork.thesaurus.external.theme.gemet", gemet_thesaurus
+        )
+        metrics["thesauri.created"] += 1 if created else 0
+
+        geocat, geocat_lookup, created = self.load_thesaurus(
+            "geonetwork.thesaurus.local.theme.geocat.ch", geocat_thesaurus
+        )
+        metrics["thesauri.created"] += 1 if created else 0
+
+        if not gemet_lookup or not geocat_lookup:
+            self.print_error("Could not load all required thesauri")
+            return
+
+        processed = set()
+
+        for service in services["de"].values():
+            # Get aggregate dataset if not yet processed
+            base_topic = service["base_topic"]
+            aggregate = None
+            update_aggregate = True
+            if base_topic not in processed:
+                processed.add(base_topic)
+                dataset_id = self.dataset_id(service, aggregate=True)
+                aggregate, mapping = mappings.match(dataset_id)
+                update_aggregate = mapping.update if mapping else True
+                if aggregate:
+                    self.print(f"Dataset mapping found for dataset_id {dataset_id}: {aggregate}")
+                else:
+                    aggregate = Dataset.objects.filter(dataset_id=dataset_id).first()
+                if not aggregate:
+                    self.print(f"Dataset with dataset_id {dataset_id} does not exist, skipping")
+
+            # Get cantonal dataset
+            dataset_id = self.dataset_id(service)
+            part, mapping = mappings.match(dataset_id)
+            update_part = mapping.update if mapping else True
+            if part:
+                self.print(f"Dataset mapping found for dataset_id {dataset_id}: {part}")
+            else:
+                part = Dataset.objects.filter(dataset_id=dataset_id).first()
+            if not part:
+                self.print(f"Dataset with dataset_id {dataset_id} does not exist, skipping")
+
+            if not aggregate and not part:
+                continue
+
+            # Create keywords
+            gemet_keywords, created = self.create_keywords(
+                service["keywords_gemet"] or "", gemet, gemet_lookup
+            )
+            metrics["keywords.created"] += created
+
+            geocat_keywords, created = self.create_keywords(
+                service["keywords_geocat"] or "", geocat, geocat_lookup
+            )
+            metrics["keywords.created"] += created
+
+            # Replace dataset keywords
+            keywords = gemet_keywords + geocat_keywords
+            if aggregate and update_aggregate:
+                aggregate.keywords.set(keywords)
+            if part and update_part:
+                part.keywords.set(keywords)
+
+        self.write_command_metrics(metrics)
+        self.print_success(f"Keyword import completed. Metrics: {metrics}")
+
+    def load_thesaurus(
+        self, thesaurus_id: str, url: str
+    ) -> tuple[Thesaurus, ThesaurusLookup | None, bool]:
+        """Create or get the thesaurus database model and load the lookup.
+
+        Return a tuple with the thesaurus, lookup and if the thesaurus has been created.
+        """
+        thesaurus, created = Thesaurus.objects.get_or_create(thesaurus_id=thesaurus_id)
+        if created:
+            self.print(f"Thesaurus {thesaurus_id} created")
+
+        self.print(f"Loading lookup table / RDF from {url}")
+        lookup = ThesaurusLookup.build(url)
+        if not lookup:
+            self.print_error("Failed to load GEMET thesaurus from URL")
+
+        return thesaurus, lookup, created
+
+    def create_keywords(
+        self, keyword_strings: str, thesaurus: Thesaurus, lookup: ThesaurusLookup
+    ) -> tuple[list[Keyword], int]:
+        """Lookup the given list of comma-seprated keywords and create the keywords in the DB if
+        not yet existing.
+
+        Returns the keywords and the number of created keywords.
+        """
+
+        keywords = []
+        created = 0
+        for token in keyword_strings.split(","):
+            term = token.strip()
+            if not term:
+                continue
+
+            concept, translations = lookup.find_concept(term)
+            if not concept:
+                self.print_warning(f"Keyword {term} not found in thesaurus {lookup}")
+            elif "de" not in translations:
+                self.print_warning(f"Keyword {term} has no German translation")
+            elif "fr" not in translations:
+                self.print_warning(f"Keyword {term} has no French translation")
+            elif "en" not in translations:
+                self.print_warning(f"Keyword {term} has no English translation")
+            else:
+                keyword = thesaurus.keyword_set.filter(keyword_id=concept).first()  # ty:ignore[unresolved-attribute]
+                if not keyword:
+                    self.print(
+                        f"Adding keyword {concept} / {translations} to thesaurus {thesaurus}"
+                    )
+                    keyword = Keyword(
+                        thesaurus=thesaurus,
+                        keyword_id=concept,
+                        label_de=translations["de"],
+                        label_fr=translations["fr"],
+                        label_en=translations["en"],
+                        label_it=translations.get("it"),
+                        label_rm=translations.get("rm"),
+                    )
+                    keyword.save()
+                    created += 1
+                keywords.append(keyword)
+
+        return keywords, created

@@ -1,6 +1,6 @@
 from io import StringIO
 from json import dumps
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.core.management import call_command
 
@@ -12,6 +12,7 @@ from harvest.models import (
     OrganizationMapping,
 )
 from organization.models import Contact, Organization, Unit
+from thesaurus.models import Thesaurus
 
 
 # --------------------------------------------------------------------------------------------------
@@ -2173,3 +2174,248 @@ def test_command_uses_contact_mappings(mock, client, db):
     dataset_contact = contact_part_specialist.dataset_contacts.get()
     assert dataset_contact.role == DatasetToContact.Role.OWNER
     assert dataset_contact.dataset.dataset_id == "ch.geodienste-lu.av"
+
+
+# --------------------------------------------------------------------------------------------------
+# Keywords
+# --------------------------------------------------------------------------------------------------
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+@patch("thesaurus.utils.get", name="rdf")
+def test_command_creates_keywords(rdf, mock, client, db):
+    aggregate_dataset = Dataset(
+        dataset_id="ch.kgk.av",
+        description_de="Abstract DE",
+        description_en="Abstract DE",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    aggregate_dataset.save()
+
+    part_dataset = Dataset(
+        dataset_id="ch.geodienste-lu.av",
+        description_de="Abstract DE",
+        description_en="Abstract DE",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    part_dataset.save()
+
+    mock.return_value.json.return_value = {
+        "services": [
+            {
+                "canton": "LU",
+                "broker": None,
+                "base_topic": "av",
+                "keywords_gemet": "foo de",
+                "keywords_geocat": "bar de, baz de",
+            }
+        ]
+    }
+
+    gemet_response = Mock()
+    gemet_response.status_code = 200
+    gemet_response.content = """<?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:ns4="http://www.opengis.net/gml#"
+            xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+            xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+            <rdf:Description rdf:about="concept/1">
+                <skos:prefLabel xml:lang="de">foo de</skos:prefLabel>
+                <skos:prefLabel xml:lang="fr">foo fr</skos:prefLabel>
+                <skos:prefLabel xml:lang="en">foo en</skos:prefLabel>
+                <skos:prefLabel xml:lang="it">foo it</skos:prefLabel>
+                <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+            </rdf:Description>
+        </rdf:RDF>"""
+
+    geocat_response = Mock()
+    geocat_response.status_code = 200
+    geocat_response.content = """<?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:ns4="http://www.opengis.net/gml#"
+            xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+            xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+            <rdf:Description rdf:about="http://geocat.ch/concept#1">
+                <skos:prefLabel xml:lang="de">bar de</skos:prefLabel>
+                <skos:prefLabel xml:lang="fr">bar fr</skos:prefLabel>
+                <skos:prefLabel xml:lang="en">bar en</skos:prefLabel>
+                <skos:prefLabel xml:lang="it">bar it</skos:prefLabel>
+                <skos:prefLabel xml:lang="rm">bar rm</skos:prefLabel>
+                <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+            </rdf:Description>
+        </rdf:RDF>"""
+
+    # ------
+    # Create
+    # ------
+    rdf.side_effect = [gemet_response, geocat_response]
+
+    out = StringIO()
+    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Thesaurus geonetwork.thesaurus.external.theme.gemet created" in out
+    assert "Thesaurus geonetwork.thesaurus.local.theme.geocat.ch created" in out
+    assert "Loading lookup table / RDF from" in out
+    assert "www.geocat.ch/geonetwork/srv/api/registries/vocabularies/external.theme.gemet" in out
+    assert "www.geocat.ch/geonetwork/srv/api/registries/vocabularies/local.theme.geocat.ch" in out
+    assert "Adding keyword concept/1" in out
+    assert "Adding keyword http://geocat.ch/concept#1" in out
+    assert "Keyword baz de not found in thesaurus ThesaurusLookup" in out
+
+    assert {k.label_fr for k in aggregate_dataset.keywords.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in part_dataset.keywords.all()} == {"bar fr", "foo fr"}
+    assert Thesaurus.objects.count() == 2
+
+    gemet = Thesaurus.objects.get(thesaurus_id="geonetwork.thesaurus.external.theme.gemet")
+    keyword = gemet.keyword_set.first()
+    assert keyword.label_de == "foo de"
+    assert keyword.label_fr == "foo fr"
+    assert keyword.label_en == "foo en"
+    assert keyword.label_it == "foo it"
+    assert keyword.label_rm is None
+
+    geocat = Thesaurus.objects.get(thesaurus_id="geonetwork.thesaurus.local.theme.geocat.ch")
+    keyword = geocat.keyword_set.first()
+    assert keyword.label_de == "bar de"
+    assert keyword.label_fr == "bar fr"
+    assert keyword.label_en == "bar en"
+    assert keyword.label_it == "bar it"
+    assert keyword.label_rm == "bar rm"
+
+    # ------
+    # Re-run
+    # ------
+    part_dataset.keywords.clear()
+
+    rdf.side_effect = [gemet_response, geocat_response]
+
+    out = StringIO()
+    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert {k.label_fr for k in aggregate_dataset.keywords.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in part_dataset.keywords.all()} == {"bar fr", "foo fr"}
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+@patch("thesaurus.utils.get", name="rdf")
+def test_command_use_mapping_for_keywords(rdf, mock, client, db):
+    aggregate_dataset = Dataset(
+        dataset_id="ch.kgk-cgc.av",
+        description_de="Abstract DE",
+        description_en="Abstract DE",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    aggregate_dataset.save()
+
+    part_dataset = Dataset(
+        dataset_id="ch.rawi.av",
+        description_de="Abstract DE",
+        description_en="Abstract DE",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    part_dataset.save()
+
+    aggregate_mapping = DatasetMapping(
+        dataset_id_prefix="ch.kgk.av", dataset_id="ch.kgk-cgc.av", update=False
+    )
+    aggregate_mapping.save()
+
+    part_mapping = DatasetMapping(
+        dataset_id_prefix="ch.geodienste-lu.av", dataset_id="ch.rawi.av", update=False
+    )
+    part_mapping.save()
+
+    mock.return_value.json.return_value = {
+        "services": [
+            {
+                "canton": "LU",
+                "broker": None,
+                "base_topic": "av",
+                "keywords_gemet": "foo de",
+                "keywords_geocat": None,
+            }
+        ]
+    }
+
+    gemet_response = Mock()
+    gemet_response.status_code = 200
+    gemet_response.content = """<?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:ns4="http://www.opengis.net/gml#"
+            xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+            xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+            <rdf:Description rdf:about="concept/1">
+                <skos:prefLabel xml:lang="de">foo de</skos:prefLabel>
+                <skos:prefLabel xml:lang="fr">foo fr</skos:prefLabel>
+                <skos:prefLabel xml:lang="en">foo en</skos:prefLabel>
+                <skos:prefLabel xml:lang="it">foo it</skos:prefLabel>
+                <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+            </rdf:Description>
+        </rdf:RDF>"""
+
+    geocat_response = Mock()
+    geocat_response.status_code = 200
+    geocat_response.content = """<?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:ns4="http://www.opengis.net/gml#"
+            xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+            xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+        </rdf:RDF>"""
+
+    # ---------
+    # No update
+    # ---------
+    rdf.side_effect = [gemet_response, geocat_response]
+
+    out = StringIO()
+    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset mapping found for dataset_id ch.kgk.av: ch.kgk-cgc.av" in out
+    assert "Dataset mapping found for dataset_id ch.geodienste-lu.av: ch.rawi.av" in out
+
+    assert aggregate_dataset.keywords.count() == 0
+    assert part_dataset.keywords.count() == 0
+
+    # ------
+    # Re-run
+    # ------
+    aggregate_mapping.update = True
+    aggregate_mapping.save()
+
+    part_mapping.update = True
+    part_mapping.save()
+
+    rdf.side_effect = [gemet_response, geocat_response]
+
+    out = StringIO()
+    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert aggregate_dataset.keywords.count() == 1
+    assert part_dataset.keywords.count() == 1
