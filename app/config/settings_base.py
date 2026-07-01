@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "shared",
     "dataservice",
     "distribution",
+    "legal"
 ]
 
 MIDDLEWARE = [
