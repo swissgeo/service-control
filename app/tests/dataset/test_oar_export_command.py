@@ -937,6 +937,10 @@ def test_command_exports_distributions(session, db):
     assert "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.it" in out
     assert "api/oar/staticv2/collections/ch.bafu.moose.distributions.en" in out
     assert "api/oar/staticv2/collections/ch.bafu.moose.distributions/items.en" in out
+    assert "api/oas/v0/styles/ch.bafu.moose:wms:style.de" in out
+    assert "api/oas/v0/styles/ch.bafu.moose:wms:style.fr" in out
+    assert "api/oas/v0/styles/ch.bafu.moose:wms:style.it" in out
+    assert "api/oas/v0/styles/ch.bafu.moose:wms:style.en" in out
 
     result = extract_put_object(session)
     assert result == [
@@ -1051,6 +1055,13 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "de",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=de",
+                                "rel": "styledby",
+                                "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                                "type": "application/json",
+                                "hreflang": "de",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1162,6 +1173,13 @@ def test_command_exports_distributions(session, db):
                         "type": "application/json",
                         "hreflang": "de",
                     },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=de",
+                        "rel": "styledby",
+                        "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                        "type": "application/json",
+                        "hreflang": "de",
+                    },
                 ],
                 "linkTemplates": [],
                 "type": "Feature",
@@ -1171,6 +1189,22 @@ def test_command_exports_distributions(session, db):
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-styles-static-dev-swissgeo",
+            "Key": "api/oas/v0/styles/ch.bafu.moose:wms:style.de",
+            "Body": {
+                "id": "ch.bafu.moose:wms:style",
+                "layers": [
+                    {
+                        "id": "ch.bafu.moose:wms:style",
+                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "source": "wmts-geoadminch",
+                        "type": "raster",
+                    }
+                ],
             },
             "ContentType": "application/json",
         },
@@ -1285,6 +1319,13 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "fr",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=fr",
+                                "rel": "styledby",
+                                "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                                "type": "application/json",
+                                "hreflang": "fr",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1396,6 +1437,13 @@ def test_command_exports_distributions(session, db):
                         "type": "application/json",
                         "hreflang": "fr",
                     },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=fr",
+                        "rel": "styledby",
+                        "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                        "type": "application/json",
+                        "hreflang": "fr",
+                    },
                 ],
                 "linkTemplates": [],
                 "type": "Feature",
@@ -1405,6 +1453,22 @@ def test_command_exports_distributions(session, db):
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-styles-static-dev-swissgeo",
+            "Key": "api/oas/v0/styles/ch.bafu.moose:wms:style.fr",
+            "Body": {
+                "id": "ch.bafu.moose:wms:style",
+                "layers": [
+                    {
+                        "id": "ch.bafu.moose:wms:style",
+                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "source": "wmts-geoadminch",
+                        "type": "raster",
+                    }
+                ],
             },
             "ContentType": "application/json",
         },
@@ -1519,6 +1583,13 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "it",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=it",
+                                "rel": "styledby",
+                                "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                                "type": "application/json",
+                                "hreflang": "it",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1630,6 +1701,13 @@ def test_command_exports_distributions(session, db):
                         "type": "application/json",
                         "hreflang": "it",
                     },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=it",
+                        "rel": "styledby",
+                        "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                        "type": "application/json",
+                        "hreflang": "it",
+                    },
                 ],
                 "linkTemplates": [],
                 "type": "Feature",
@@ -1639,6 +1717,22 @@ def test_command_exports_distributions(session, db):
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-styles-static-dev-swissgeo",
+            "Key": "api/oas/v0/styles/ch.bafu.moose:wms:style.it",
+            "Body": {
+                "id": "ch.bafu.moose:wms:style",
+                "layers": [
+                    {
+                        "id": "ch.bafu.moose:wms:style",
+                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "source": "wmts-geoadminch",
+                        "type": "raster",
+                    }
+                ],
             },
             "ContentType": "application/json",
         },
@@ -1753,6 +1847,13 @@ def test_command_exports_distributions(session, db):
                                 "type": "application/json",
                                 "hreflang": "en",
                             },
+                            {
+                                "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=en",
+                                "rel": "styledby",
+                                "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                                "type": "application/json",
+                                "hreflang": "en",
+                            },
                         ],
                         "linkTemplates": [],
                         "type": "Feature",
@@ -1864,6 +1965,13 @@ def test_command_exports_distributions(session, db):
                         "type": "application/json",
                         "hreflang": "en",
                     },
+                    {
+                        "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style?language=en",
+                        "rel": "styledby",
+                        "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                        "type": "application/json",
+                        "hreflang": "en",
+                    },
                 ],
                 "linkTemplates": [],
                 "type": "Feature",
@@ -1873,6 +1981,22 @@ def test_command_exports_distributions(session, db):
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
+            },
+            "ContentType": "application/json",
+        },
+        {
+            "Bucket": "oa-styles-static-dev-swissgeo",
+            "Key": "api/oas/v0/styles/ch.bafu.moose:wms:style.en",
+            "Body": {
+                "id": "ch.bafu.moose:wms:style",
+                "layers": [
+                    {
+                        "id": "ch.bafu.moose:wms:style",
+                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "source": "wmts-geoadminch",
+                        "type": "raster",
+                    }
+                ],
             },
             "ContentType": "application/json",
         },

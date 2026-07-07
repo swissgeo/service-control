@@ -14,6 +14,7 @@ from dataset.export_models import (
     OARDataservice,
     OARDataset,
     OARDistribution,
+    RasterStyle,
 )
 from dataset.models import Dataset
 from utils.command import CustomBaseCommand
@@ -156,10 +157,10 @@ class Command(CustomBaseCommand):
         if options["command"] == "clean":
             self.do_clean(*args, **options)
 
-    def upload_object(self, key: str, obj: dict) -> None:
+    def upload_object(self, bucket: str, key: str, obj: dict) -> None:
         """Helper function to upload a single OGC API Record object to S3."""
         self.s3_client.put_object(
-            Bucket=self.oarecords_s3_bucket,
+            Bucket=bucket,
             Key=f"{key}",
             Body=json.dumps(obj, indent=2, ensure_ascii=False).encode("utf-8"),
             ContentType="application/json",
@@ -171,12 +172,14 @@ class Command(CustomBaseCommand):
         (including its feature collection and features) to S3."""
         # Upload the collection itself
         self.upload_object(
+            bucket=self.oarecords_s3_bucket,
             key=f"{prefix}{collection.get_key()}",
             obj=collection.model_dump(exclude_none=True, by_alias=True),
         )
 
         # Upload the feature collection
         self.upload_object(
+            bucket=self.oarecords_s3_bucket,
             key=f"{prefix}{collection.feature_collection.get_key()}",
             obj=collection.feature_collection.model_dump(exclude_none=True, by_alias=True),
         )
@@ -184,8 +187,18 @@ class Command(CustomBaseCommand):
         # Upload each feature in the collection
         for feature in collection.feature_collection.features:
             self.upload_object(
+                bucket=self.oarecords_s3_bucket,
                 key=f"{prefix}{feature.get_key()}",
                 obj=feature.model_dump(exclude_none=True, by_alias=True),
+            )
+
+    def upload_styles(self, styles: list[RasterStyle], prefix: str = OAS_PREFIX) -> None:
+        """Helper function to upload a list of Maplibre styles to S3."""
+        for style in styles:
+            self.upload_object(
+                self.oastyles_s3_bucket,
+                key=f"{prefix}{style.get_key()}",
+                obj=style.model_dump(exclude_none=True, by_alias=True),
             )
 
     def dump_collection(self, collection: OARCollection) -> None:
@@ -270,26 +283,33 @@ class Command(CustomBaseCommand):
                     lang=lang,
                     base_url=self.oar_base_url,
                 )
+                styles = []
                 for distribution in ds_distributions:
                     distribution_record = OARDistribution.from_distribution(
                         distribution,
                         lang=lang,
                         collection_id=collection_id,
-                        base_url=self.oar_base_url,
+                        oar_base_url=self.oar_base_url,
+                        oas_base_url=self.oas_base_url,
                     )
                     self.print_success(f" - {distribution_record.get_key()}")
                     distribution_collection.feature_collection.features.append(distribution_record)
+
+                    style = RasterStyle.from_distribution(distribution, lang=lang)
+                    if style:
+                        styles.append(style)
 
                 # Dump the generated record collections (for debugging)
                 if options["dump"]:
                     self.dump_collection(distribution_collection)
 
-                # Upload the record collections to S3
+                # Upload the record collections and styles to S3
                 if options["upload"]:
                     self.upload_collection(
                         distribution_collection,
                         prefix=OAR_PREFIX,
                     )
+                    self.upload_styles(styles, OAS_PREFIX)
 
     def do_export_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         self.print("Generating dataset records...")
@@ -353,7 +373,9 @@ class Command(CustomBaseCommand):
                 },
             ],
         }
-        self.upload_object(key=f"{OAR_PREFIX}/landingpage", obj=landing_page)
+        self.upload_object(
+            bucket=self.oarecords_s3_bucket, key=f"{OAR_PREFIX}/landingpage", obj=landing_page
+        )
 
         # conformance declaration
         self.print("Uploading conformance declaration...")
@@ -366,6 +388,7 @@ class Command(CustomBaseCommand):
         }
         for lang in LANGS:
             self.upload_object(
+                bucket=self.oarecords_s3_bucket,
                 key=f"{OAR_PREFIX}/conformance.{lang}",
                 obj=conformance_declaration,
             )
@@ -466,6 +489,7 @@ class Command(CustomBaseCommand):
                 ],
             }
             self.upload_object(
+                bucket=self.oarecords_s3_bucket,
                 key=f"{OAR_PREFIX}/collections.{lang}",
                 obj=collections,
             )

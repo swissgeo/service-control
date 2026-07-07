@@ -281,10 +281,15 @@ class OARDistribution(OARRecord):
 
     @classmethod
     def from_distribution(
-        cls, dist: Distribution, lang: str, collection_id: str, base_url: str
+        cls,
+        dist: Distribution,
+        lang: str,
+        collection_id: str,
+        oar_base_url: str,
+        oas_base_url: str,
     ) -> OARDistribution:
         record = OARDistribution(
-            id=dist.distribution_id, collection_id=collection_id, lang=lang, base_url=base_url
+            id=dist.distribution_id, collection_id=collection_id, lang=lang, base_url=oar_base_url
         )
 
         # Set properties
@@ -297,7 +302,7 @@ class OARDistribution(OARRecord):
                 rel="dataset",
                 hreflang=lang,
                 title=f"Link to parent dataset {dist.dataset.dataset_id}",
-                base_url=base_url,
+                base_url=oar_base_url,
             )
         )
         record.properties["protocol"] = dist.protocol
@@ -336,7 +341,7 @@ class OARDistribution(OARRecord):
                     collectionId="geoadmin.services",
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
-                    base_url=base_url,
+                    base_url=oar_base_url,
                     hreflang=lang,
                 )
             )
@@ -359,8 +364,20 @@ class OARDistribution(OARRecord):
                     collectionId=f"{info_dist.dataset.dataset_id}.distributions",
                     recordId=info_dist.distribution_id,
                     rel="featureinfo",
-                    base_url=base_url,
+                    base_url=oar_base_url,
                     hreflang=lang,
+                )
+            )
+
+        # Add style relation
+        if isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
+            record.links.append(
+                OASStyleLink(
+                    distribution_id=dist.distribution_id,
+                    rel="styledby",
+                    title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    hreflang=lang,
+                    base_url=oas_base_url,
                 )
             )
 
@@ -652,3 +669,97 @@ class Contact(BaseModel):
     # address: str | None
     # city: str | None
     # postal_code: str | None
+
+
+class OASLink(BaseLink):
+    """Link object for endpoints within the OAS service.
+
+    This is a base class for links that point to endpoints within the OAS service itself.
+    - base_url (string): The base URL of the OAR service
+      (e.g. "http://services.dev.sgdi.tech/api/oas/staticv2")
+
+    """
+
+    # These are "private" fields that should not be included in a model_dump
+    base_url: str = Field(exclude=True)
+
+
+class OASStyleLink(OASLink):
+    """Link to a Maplibre style file."""
+
+    distribution_id: str = Field(exclude=True)
+
+    @model_validator(mode="after")
+    def generate_href_value(self) -> OASStyleLink:
+        """Generate the href value for the style link.
+
+        This method is called after the model is initialized and will set the href value
+        based on the hreflang, basepath and distribution_id.
+        """
+        self.href = f"{self.base_url}/styles/{self.distribution_id}:style"
+        if self.hreflang:
+            self.href += f"?language={self.hreflang}"
+        return self
+
+
+class RasterPaint(BaseModel):
+    """A Maplibre paint definition.
+
+    See https://maplibre.org/maplibre-style-spec/layers/#paint.
+
+    Note that raster-gutter is actually not part of the specs.
+    """
+
+    raster_opacity: float | None = Field(default=None, serialization_alias="raster-opacity")
+    raster_gutter: int | None = Field(default=None, serialization_alias="raster-gutter")
+
+
+class RasterLayer(BaseModel):
+    """A Maplibre raster layer definition.
+
+    See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
+    """
+
+    id: str
+    paint: RasterPaint
+    source: str
+    type: Literal["raster"] = "raster"
+
+
+class RasterStyle(BaseModel):
+    """A Maplibre style file for a single raster layer.
+
+    See https://maplibre.org/maplibre-style-spec/layers/.
+    """
+
+    id: str
+    layers: list[RasterLayer] = Field(default_factory=list)
+    lang: str = Field(default="de", exclude=True)
+
+    @classmethod
+    def from_distribution(
+        cls,
+        dist: Distribution,
+        lang: str,
+    ) -> RasterStyle | None:
+        if not isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
+            return None
+
+        id_ = f"{dist.distribution_id}:style"
+        return RasterStyle(
+            id=id_,
+            layers=[
+                RasterLayer(
+                    id=id_,
+                    paint=RasterPaint(
+                        raster_opacity=dist.opacity,
+                        raster_gutter=getattr(dist, "gutter", None),
+                    ),
+                    source=dist.dataservice.dataservice_id,
+                )
+            ],
+            lang=lang,
+        )
+
+    def get_key(self) -> str:
+        return f"/styles/{self.id}.{self.lang}"
