@@ -68,12 +68,12 @@ class Distribution(PolymorphicModel):
             "The 'protocol' property must be implemented in concrete Distribution subclasses."
         )
 
-    @property
     @abstractmethod
-    def external_id(self) -> str:
-        """External Identifier of the distribution(layer) in the service."""
+    def external_record_id(self, lang: str) -> str:
+        """The identifier of the distribution, as used in the data service."""
         raise NotImplementedError(
-            "The 'external_id' property must be implemented in concrete Distribution subclasses."
+            "The 'external_record_id' property must be implemented in concrete Distribution "
+            "subclasses."
         )
 
 
@@ -92,7 +92,19 @@ class ExternalWMSDistribution(ExternalDistribution):
     dataservice = models.ForeignKey(
         "dataservice.WMSDataservice", on_delete=models.SET_NULL, null=True
     )
-    wms_layer_name = models.CharField(_(_context, "WMS Layer Name"), max_length=255)
+    wms_layer_name_de = models.CharField(_(_context, "WMS Layer Name (default/DE)"), max_length=255)
+    wms_layer_name_fr = models.CharField(
+        _(_context, "WMS Layer Name (FR)"), max_length=255, null=True, blank=True
+    )
+    wms_layer_name_en = models.CharField(
+        _(_context, "WMS Layer Name (EN)"), max_length=255, null=True, blank=True
+    )
+    wms_layer_name_it = models.CharField(
+        _(_context, "WMS Layer Name (IT)"), max_length=255, null=True, blank=True
+    )
+    wms_layer_name_rm = models.CharField(
+        _(_context, "WMS Layer Name (RM)"), max_length=255, null=True, blank=True
+    )
     opacity = models.DecimalField(
         _(_context, "Opacity"),
         default=1.0,
@@ -111,7 +123,7 @@ class ExternalWMSDistribution(ExternalDistribution):
     class Meta:
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
-                fields=["dataservice", "wms_layer_name"],
+                fields=["dataservice", "wms_layer_name_de"],
                 name="unique_wms_layer_name_per_dataservice",
             ),
         ]
@@ -122,9 +134,9 @@ class ExternalWMSDistribution(ExternalDistribution):
     def protocol(self) -> str:
         return "ogc:wms"
 
-    @property
-    def external_id(self) -> str:
-        return self.wms_layer_name
+    def external_record_id(self, lang: str) -> str:
+        default = self.wms_layer_name_de
+        return getattr(self, f"wms_layer_name_{lang}", default) or default
 
 
 class ExternalWMTSDistribution(ExternalDistribution):
@@ -133,7 +145,21 @@ class ExternalWMTSDistribution(ExternalDistribution):
     dataservice = models.ForeignKey(
         "dataservice.WMTSDataservice", on_delete=models.SET_NULL, null=True
     )
-    wmts_layer_name = models.CharField(_(_context, "WMTS Layer Name"), max_length=255)
+    wmts_layer_name_de = models.CharField(
+        _(_context, "WMTS Layer Name (default/DE)"), max_length=255
+    )
+    wmts_layer_name_fr = models.CharField(
+        _(_context, "WMTS Layer Name (FR)"), max_length=255, null=True, blank=True
+    )
+    wmts_layer_name_en = models.CharField(
+        _(_context, "WMTS Layer Name (EN)"), max_length=255, null=True, blank=True
+    )
+    wmts_layer_name_it = models.CharField(
+        _(_context, "WMTS Layer Name (IT)"), max_length=255, null=True, blank=True
+    )
+    wmts_layer_name_rm = models.CharField(
+        _(_context, "WMTS Layer Name (RM)"), max_length=255, null=True, blank=True
+    )
     opacity = models.DecimalField(
         _(_context, "Opacity"),
         default=1.0,
@@ -146,7 +172,7 @@ class ExternalWMTSDistribution(ExternalDistribution):
     class Meta:
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
-                fields=["dataservice", "wmts_layer_name"],
+                fields=["dataservice", "wmts_layer_name_de"],
                 name="unique_wmts_layer_name_per_dataservice",
             ),
         ]
@@ -157,9 +183,9 @@ class ExternalWMTSDistribution(ExternalDistribution):
     def protocol(self) -> str:
         return "ogc:wmts"
 
-    @property
-    def external_id(self) -> str:
-        return self.wmts_layer_name
+    def external_record_id(self, lang: str) -> str:
+        default = self.wmts_layer_name_de
+        return getattr(self, f"wmts_layer_name_{lang}", default) or default
 
 
 class ExternalStacDistribution(ExternalDistribution):
@@ -184,8 +210,7 @@ class ExternalStacDistribution(ExternalDistribution):
     def protocol(self) -> str:
         return "ogcapi:stac"
 
-    @property
-    def external_id(self) -> str:
+    def external_record_id(self, lang: str) -> str:
         return self.stac_collection_id
 
 
@@ -195,7 +220,7 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
     TODO/TO BE DISCUSSED: Currently GeoJSON Distributions don't have a reference to a dataservice,
     they just have a link to the actual file. This requires different handling of GeoJSON
     distributions in several places. We could model GeoJSON distributions with a somewhat generic
-    "dataservie", which would just be the base URL of the GeoJSON file, and then we could have
+    "dataservice", which would just be the base URL of the GeoJSON file, and then we could have
     multiple distributions referencing the same "dataservice" with different language-specific URIs
     (without the domain) that would be the 'externalIds'.
     This would make handling of GeoJSON distributions more consistent with other distribution
@@ -231,9 +256,18 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
     def protocol(self) -> str:
         return "geojson"
 
-    @property
-    def external_id(self) -> str:
-        return self.geojson_url_de
+    def external_record_id(self, lang: str) -> str:
+        # TODO: This is probably not correct. In case of Swisstopo distributions with URLs like
+        # https://data.geo.admin.ch/ch.bfe.shared-mobility/ch.bfe.shared-mobility_de.json
+        # and style URS likes
+        # https://api3.geo.admin.ch/static/vectorStyles/ch.bfe.shared-mobility.json
+        # the external ID should probably be "ch.bfe.shared-mobility".
+        # This is no problem ATM, as this is never used in case of GeoJSON distributions (see also
+        # comment above regarding distributions and the one in in export_models regarding exporting
+        # distributions). But it might be better, to switch for example to a template mechanism
+        # like in the dataservices.
+        default = self.geojson_url_de
+        return getattr(self, f"geojson_url_{lang}", default) or default
 
 
 class ExternalGeoadminFeaturesDistribution(ExternalDistribution):
@@ -270,6 +304,5 @@ class ExternalGeoadminFeaturesDistribution(ExternalDistribution):
     def protocol(self) -> str:
         return "geoadmin:features"
 
-    @property
-    def external_id(self) -> str:
+    def external_record_id(self, lang: str) -> str:
         return self.layer_id

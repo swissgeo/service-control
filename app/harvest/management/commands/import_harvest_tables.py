@@ -619,7 +619,7 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMTSDistribution.objects.get_or_create(
             distribution_id=wmts_distribution_id,
             dataset=dataset,
-            wmts_layer_name=ljs.layer_id,
+            wmts_layer_name_de=ljs.layer_id,
         )
         dist.dataservice = wmts_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
@@ -641,7 +641,7 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMSDistribution.objects.get_or_create(
             distribution_id=wms_distribution_id,
             dataset=dataset,
-            wms_layer_name=ljs.layer_id,
+            wms_layer_name_de=ljs.layer_id,
         )
         dist.dataservice = wms_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
