@@ -23,6 +23,7 @@ dependencies = [
     "pyjwt~=2.11",
     "pystac-client~=0.9",
     "pyyaml~=6.0",
+    "rdflib>=7.6.0",
     "tinydb~=4.8",
     "whitenoise~=6.11",
 ]
