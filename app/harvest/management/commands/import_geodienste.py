@@ -316,7 +316,6 @@ class Command(CustomBaseCommand):
             metrics["organizations.obsoleted"],
         ) = self.cleanup_organizations(processed, clean)
 
-        self.write_command_metrics(metrics)
         self.print_success(f"Organization import completed. Metrics: {metrics}")
 
     def import_organization(
@@ -486,7 +485,6 @@ class Command(CustomBaseCommand):
             metrics["contacts.obsoleted"],
         ) = self.cleanup_contacts(processed, clean)
 
-        self.write_command_metrics(metrics)
         self.print_success(f"Contact import completed. Metrics: {metrics}")
 
     def import_contact(
@@ -730,7 +728,6 @@ class Command(CustomBaseCommand):
             metrics["datasets.obsoleted"],
         ) = self.cleanup_datasets(processed, clean)
 
-        self.write_command_metrics(metrics)
         self.print_success(f"Dataset import completed. Metrics: {metrics}")
 
     def import_dataset(
@@ -1013,7 +1010,6 @@ class Command(CustomBaseCommand):
             if part and update_part:
                 part.keywords.set(keywords)
 
-        self.write_command_metrics(metrics)
         self.print_success(f"Keyword import completed. Metrics: {metrics}")
 
     def load_thesaurus(

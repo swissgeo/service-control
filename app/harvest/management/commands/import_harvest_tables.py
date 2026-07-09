@@ -230,7 +230,6 @@ class Command(CustomBaseCommand):
         log_metrics["organizations.removed"] = removed_count
         log_metrics["organizations.obsolete"] = obsolete_count
 
-        self.write_command_metrics(log_metrics)
         self.print_success(f"Organization import completed. Metrics: {log_metrics}")
 
     def cleanup_organizations(self, processed: set[str], **options: Any) -> tuple[int, int]:
@@ -402,7 +401,6 @@ class Command(CustomBaseCommand):
             log_metrics["datasets.removed"],
             log_metrics["datasets.obsolete"],
         ) = self.cleanup_datasets(processed, **options)
-        self.write_command_metrics(log_metrics)
         self.print_success(f"Dataset import completed. Metrics: {log_metrics}")
 
     def cleanup_datasets(self, processed: set[str], **options: Any) -> tuple[int, int]:
@@ -606,7 +604,6 @@ class Command(CustomBaseCommand):
                         )
                     log_metrics["distributions.removed"] += len(obsolete)
 
-        self.write_command_metrics(log_metrics)
         self.print_success(f"Distribution import completed. Metrics: {log_metrics}")
 
     def import_wmts_distribution(
@@ -794,7 +791,6 @@ class Command(CustomBaseCommand):
 
             dataset.keywords.set(keywords)
             log_metrics["keywords.datasets_updated"] += 1
-        self.write_command_metrics(log_metrics)
         self.print_success(f"Keyword import completed. Metrics: {log_metrics}")
 
     # ##########################################################################
@@ -962,7 +958,6 @@ class Command(CustomBaseCommand):
 
                 DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
                 log_metrics["contacts.datasets_updated"] += 1
-        self.write_command_metrics(log_metrics)
         self.print_success(f"Contact import completed. Metrics: {log_metrics}")
 
     def find_organization(
