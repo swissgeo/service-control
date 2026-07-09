@@ -121,7 +121,6 @@ class Command(CustomBaseCommand):
                     f"Error syncing dataservice '{service.dataservice_id}' from capabilities: {e}"
                 )
 
-        self.write_command_metrics(metrics)
         if success:
             self.print_success(f"Sync from STAC completed. Metrics: {metrics}")
         else:
