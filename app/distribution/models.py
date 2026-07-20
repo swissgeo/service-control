@@ -119,6 +119,16 @@ class ExternalWMSDistribution(ExternalDistribution):
         validators=[MinValueValidator(0), MaxValueValidator(500)],
         help_text=_(_context, "Desired Gutter of the WMS layer when using tiled in web app."),
     )
+    min_zoom = models.IntegerField(
+        _(_context, "Min zoom (as defined in the LV95 pyramid)"),
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(28)],
+    )
+    max_zoom = models.IntegerField(
+        _(_context, "Max zoom (as defined in the LV95 pyramid)"),
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(28)],
+    )
 
     class Meta:
         constraints: ClassVar[list[models.BaseConstraint]] = [
@@ -167,6 +177,18 @@ class ExternalWMTSDistribution(ExternalDistribution):
         decimal_places=2,
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
         help_text=_(_context, "Desired Opacity of the WMTS layer when displayed in web app."),
+    )
+    min_zoom = models.IntegerField(
+        _(_context, "Min zoom (as defined in the LV95 pyramid)"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(28)],
+    )
+    max_zoom = models.IntegerField(
+        _(_context, "Max zoom (as defined in the LV95 pyramid)"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(28)],
     )
 
     class Meta:

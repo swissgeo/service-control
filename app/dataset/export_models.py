@@ -712,6 +712,8 @@ class RasterPaint(BaseModel):
 
     raster_opacity: float | None = Field(default=None, serialization_alias="raster-opacity")
     raster_gutter: int | None = Field(default=None, serialization_alias="raster-gutter")
+    min_zoom: int | None = Field(default=None, serialization_alias="minzoom")
+    max_zoom: int | None = Field(default=None, serialization_alias="maxzoom")
 
 
 class RasterLayer(BaseModel):
@@ -746,6 +748,13 @@ class RasterStyle(BaseModel):
             return None
 
         id_ = f"{dist.distribution_id}:style"
+
+        # Convert from LV95 tilegrid zoom levels to map zoom, see
+        # https://docs.geo.admin.ch/visualize-data/wmts.html#gettile
+        min_zoom = getattr(dist, "min_zoom", None)
+        min_zoom = min_zoom - 14 if min_zoom is not None else None
+        max_zoom = getattr(dist, "max_zoom", None)
+        max_zoom = max_zoom - 14 if max_zoom is not None else None
         return RasterStyle(
             id=id_,
             layers=[
@@ -754,6 +763,8 @@ class RasterStyle(BaseModel):
                     paint=RasterPaint(
                         raster_opacity=dist.opacity,
                         raster_gutter=getattr(dist, "gutter", None),
+                        min_zoom=min_zoom,
+                        max_zoom=max_zoom,
                     ),
                     source=dist.dataservice.dataservice_id,
                 )

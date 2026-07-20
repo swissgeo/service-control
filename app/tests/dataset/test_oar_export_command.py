@@ -923,6 +923,8 @@ def test_command_exports_wms_distribution(session, db):
         wms_layer_name_de="ch.bafu.moose",
         opacity=1.0,
         gutter=0,
+        min_zoom=15,
+        max_zoom=16,
     ).save()
 
     out = StringIO()
@@ -1200,7 +1202,12 @@ def test_command_exports_wms_distribution(session, db):
                 "layers": [
                     {
                         "id": "ch.bafu.moose:wms:style",
-                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "paint": {
+                            "raster-opacity": 1.0,
+                            "raster-gutter": 0,
+                            "minzoom": 1,
+                            "maxzoom": 2,
+                        },
                         "source": "wmts-geoadminch",
                         "type": "raster",
                     }
@@ -1464,7 +1471,12 @@ def test_command_exports_wms_distribution(session, db):
                 "layers": [
                     {
                         "id": "ch.bafu.moose:wms:style",
-                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "paint": {
+                            "raster-opacity": 1.0,
+                            "raster-gutter": 0,
+                            "minzoom": 1,
+                            "maxzoom": 2,
+                        },
                         "source": "wmts-geoadminch",
                         "type": "raster",
                     }
@@ -1728,7 +1740,12 @@ def test_command_exports_wms_distribution(session, db):
                 "layers": [
                     {
                         "id": "ch.bafu.moose:wms:style",
-                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "paint": {
+                            "raster-opacity": 1.0,
+                            "raster-gutter": 0,
+                            "minzoom": 1,
+                            "maxzoom": 2,
+                        },
                         "source": "wmts-geoadminch",
                         "type": "raster",
                     }
@@ -1992,7 +2009,12 @@ def test_command_exports_wms_distribution(session, db):
                 "layers": [
                     {
                         "id": "ch.bafu.moose:wms:style",
-                        "paint": {"raster-opacity": 1.0, "raster-gutter": 0},
+                        "paint": {
+                            "raster-opacity": 1.0,
+                            "raster-gutter": 0,
+                            "minzoom": 1,
+                            "maxzoom": 2,
+                        },
                         "source": "wmts-geoadminch",
                         "type": "raster",
                     }
