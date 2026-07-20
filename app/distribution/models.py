@@ -23,7 +23,25 @@ class Distribution(PolymorphicModel):
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
-    title = models.CharField(_(_context, "Title"), max_length=255)
+    title_de = models.CharField(_(_context, "Title (German)"), max_length=255)
+    title_fr = models.CharField(
+        _(_context, "Title (French)"), null=True, blank=True, max_length=255
+    )
+    title_en = models.CharField(
+        _(_context, "Title (English)"), null=True, blank=True, max_length=255
+    )
+    title_it = models.CharField(
+        _(_context, "Title (Italian)"), null=True, blank=True, max_length=255
+    )
+    title_rm = models.CharField(
+        _(_context, "Title (Romansh)"), null=True, blank=True, max_length=255
+    )
+
+    description_de = models.TextField(_(_context, "Description (German)"), null=True, blank=True)
+    description_fr = models.TextField(_(_context, "Description (French)"), null=True, blank=True)
+    description_en = models.TextField(_(_context, "Description (English)"), null=True, blank=True)
+    description_it = models.TextField(_(_context, "Description (Italian)"), null=True, blank=True)
+    description_rm = models.TextField(_(_context, "Description (Romansh)"), null=True, blank=True)
 
     class DataSource(models.TextChoices):
         BOD_LAYERS_JS = "bod-layers-js", _("Distribution DataSource", "BOD (Layers JS)")
