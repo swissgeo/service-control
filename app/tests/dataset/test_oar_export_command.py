@@ -922,6 +922,10 @@ def test_command_exports_wms_distribution(session, db):
         title_fr="WMS Layer (FR)",
         title_it="WMS Layer (IT)",
         title_en="WMS Layer (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_it="Description (IT)",
+        description_en="Description (EN)",
         dataservice=dataservice,
         wms_layer_name_de="ch.bafu.moose",
         opacity=1.0,
@@ -1071,6 +1075,7 @@ def test_command_exports_wms_distribution(session, db):
                         "properties": {
                             "type": "Distribution",
                             "title": "WMS Layer (DE)",
+                            "description": "Description (DE)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1189,6 +1194,7 @@ def test_command_exports_wms_distribution(session, db):
                 "properties": {
                     "type": "Distribution",
                     "title": "WMS Layer (DE)",
+                    "description": "Description (DE)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -1335,6 +1341,7 @@ def test_command_exports_wms_distribution(session, db):
                         "properties": {
                             "type": "Distribution",
                             "title": "WMS Layer (FR)",
+                            "description": "Description (FR)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1453,6 +1460,7 @@ def test_command_exports_wms_distribution(session, db):
                 "properties": {
                     "type": "Distribution",
                     "title": "WMS Layer (FR)",
+                    "description": "Description (FR)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -1599,6 +1607,7 @@ def test_command_exports_wms_distribution(session, db):
                         "properties": {
                             "type": "Distribution",
                             "title": "WMS Layer (IT)",
+                            "description": "Description (IT)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1717,6 +1726,7 @@ def test_command_exports_wms_distribution(session, db):
                 "properties": {
                     "type": "Distribution",
                     "title": "WMS Layer (IT)",
+                    "description": "Description (IT)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -1863,6 +1873,7 @@ def test_command_exports_wms_distribution(session, db):
                         "properties": {
                             "type": "Distribution",
                             "title": "WMS Layer (EN)",
+                            "description": "Description (EN)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1981,6 +1992,7 @@ def test_command_exports_wms_distribution(session, db):
                 "properties": {
                     "type": "Distribution",
                     "title": "WMS Layer (EN)",
+                    "description": "Description (EN)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
