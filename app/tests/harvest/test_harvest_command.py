@@ -991,16 +991,16 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert "Installed" in out
 
     attributes = {
-        "title_short_de": "x",
-        "title_short_fr": "x",
-        "title_short_en": "x",
-        "title_short_it": "x",
-        "title_short_rm": "x",
-        "description_de": "x",
-        "description_fr": "x",
-        "description_en": "x",
-        "description_it": "x",
-        "description_rm": "x",
+        "title_short_de": "T DE",
+        "title_short_fr": "T FR",
+        "title_short_en": "T EN",
+        "title_short_it": "T IT",
+        "title_short_rm": "T RM",
+        "description_de": "D DE",
+        "description_fr": "D FR",
+        "description_en": "D EN",
+        "description_it": "D IT",
+        "description_rm": "D RM",
     }
 
     ds_wmts = Dataset(
@@ -1089,14 +1089,32 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_1
     assert dist_1.dataservice.service_type == "ogc:wmts"
     assert dist_1.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_1.title == "WMTS Layer"
+    assert dist_1.title_de == "T DE"
+    assert dist_1.title_fr == "T FR"
+    assert dist_1.title_en == "T EN"
+    assert dist_1.title_it == "T IT"
+    assert dist_1.title_rm == "T RM"
+    assert dist_1.description_de == "D DE"
+    assert dist_1.description_fr == "D FR"
+    assert dist_1.description_en == "D EN"
+    assert dist_1.description_it == "D IT"
+    assert dist_1.description_rm == "D RM"
     assert dist_1.opacity == Decimal("0.5")
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
     assert dist_2
     assert dist_2.dataservice.service_type == "ogc:wms"
     assert dist_2.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_2.title == "WMS Layer"
+    assert dist_2.title_de == "T DE"
+    assert dist_2.title_fr == "T FR"
+    assert dist_2.title_en == "T EN"
+    assert dist_2.title_it == "T IT"
+    assert dist_2.title_rm == "T RM"
+    assert dist_2.description_de == "D DE"
+    assert dist_2.description_fr == "D FR"
+    assert dist_2.description_en == "D EN"
+    assert dist_2.description_it == "D IT"
+    assert dist_2.description_rm == "D RM"
     assert dist_2.opacity == Decimal("0.5")
     assert dist_2.gutter == 0
 
@@ -1104,7 +1122,11 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_3
     assert dist_3.dataservice.service_type == "geoadmin:features"
     assert dist_3.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_3.title == "Geoadmin Features"
+    assert dist_3.title_de == "Geoadmin Features"
+    assert dist_3.title_fr == "Geoadmin Features"
+    assert dist_3.title_en == "Geoadmin Features"
+    assert dist_3.title_it == "Geoadmin Features"
+    assert dist_3.title_rm == "Geoadmin Features"
     assert dist_3.renderable is True
     assert dist_3.queryable is False
 
@@ -1118,7 +1140,16 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_4
     assert dist_4.dataservice.service_type == "ogc:wms"
     assert dist_4.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_4.title == "WMS Layer"
+    assert dist_4.title_de == "T DE"
+    assert dist_4.title_fr == "T FR"
+    assert dist_4.title_en == "T EN"
+    assert dist_4.title_it == "T IT"
+    assert dist_4.title_rm == "T RM"
+    assert dist_4.description_de == "D DE"
+    assert dist_4.description_fr == "D FR"
+    assert dist_4.description_en == "D EN"
+    assert dist_4.description_it == "D IT"
+    assert dist_4.description_rm == "D RM"
     assert dist_4.opacity == Decimal("0.6")
     assert dist_4.gutter == 1
 
@@ -1128,7 +1159,11 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_5
     assert dist_5.dataservice.service_type == "geoadmin:features"
     assert dist_5.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_5.title == "Geoadmin Features"
+    assert dist_5.title_de == "Geoadmin Features"
+    assert dist_5.title_fr == "Geoadmin Features"
+    assert dist_5.title_en == "Geoadmin Features"
+    assert dist_5.title_it == "Geoadmin Features"
+    assert dist_5.title_rm == "Geoadmin Features"
     assert dist_5.renderable is False
     assert dist_5.queryable is True
 
@@ -1141,7 +1176,16 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ).first()
     assert dist_6
     assert dist_6.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_6.title == "GeoJSON Layer"
+    assert dist_6.title_de == "T DE"
+    assert dist_6.title_fr == "T FR"
+    assert dist_6.title_en == "T EN"
+    assert dist_6.title_it == "T IT"
+    assert dist_6.title_rm == "T RM"
+    assert dist_6.description_de == "D DE"
+    assert dist_6.description_fr == "D FR"
+    assert dist_6.description_en == "D EN"
+    assert dist_6.description_it == "D IT"
+    assert dist_6.description_rm == "D RM"
     assert dist_6.geojson_url_de == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json"
     assert dist_6.geojson_url_fr == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json"
     assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"

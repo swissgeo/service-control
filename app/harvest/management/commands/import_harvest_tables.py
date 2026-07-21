@@ -620,7 +620,16 @@ class Command(CustomBaseCommand):
         )
         dist.dataservice = wmts_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title = "WMTS Layer"
+        dist.title_de = dataset.title_short_de
+        dist.title_fr = dataset.title_short_fr
+        dist.title_it = dataset.title_short_it
+        dist.title_en = dataset.title_short_en
+        dist.title_rm = dataset.title_short_rm
+        dist.description_de = dataset.description_de
+        dist.description_fr = dataset.description_fr
+        dist.description_it = dataset.description_it
+        dist.description_en = dataset.description_en
+        dist.description_rm = dataset.description_rm
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -642,7 +651,16 @@ class Command(CustomBaseCommand):
         )
         dist.dataservice = wms_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title = "WMS Layer"
+        dist.title_de = dataset.title_short_de
+        dist.title_fr = dataset.title_short_fr
+        dist.title_it = dataset.title_short_it
+        dist.title_en = dataset.title_short_en
+        dist.title_rm = dataset.title_short_rm
+        dist.description_de = dataset.description_de
+        dist.description_fr = dataset.description_fr
+        dist.description_it = dataset.description_it
+        dist.description_en = dataset.description_en
+        dist.description_rm = dataset.description_rm
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -666,7 +684,16 @@ class Command(CustomBaseCommand):
             defaults={"geojson_url_de": ljs.geojson_url_de},
         )
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title = "GeoJSON Layer"
+        dist.title_de = dataset.title_short_de
+        dist.title_fr = dataset.title_short_fr
+        dist.title_it = dataset.title_short_it
+        dist.title_en = dataset.title_short_en
+        dist.title_rm = dataset.title_short_rm
+        dist.description_de = dataset.description_de
+        dist.description_fr = dataset.description_fr
+        dist.description_it = dataset.description_it
+        dist.description_en = dataset.description_en
+        dist.description_rm = dataset.description_rm
         dist.geojson_url_de = ljs.geojson_url_de
         dist.geojson_url_fr = ljs.geojson_url_fr
         dist.geojson_url_it = ljs.geojson_url_it
@@ -697,7 +724,11 @@ class Command(CustomBaseCommand):
         )
         dist.dataservice = geoadminfeature_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title = "Geoadmin Features"
+        dist.title_de = "Geoadmin Features"
+        dist.title_fr = "Geoadmin Features"
+        dist.title_it = "Geoadmin Features"
+        dist.title_en = "Geoadmin Features"
+        dist.title_rm = "Geoadmin Features"
         # Note: This information is not relyable in the layers_js table. There are
         # layers with searchable=true that return 404 for search requests on ../SearchServer
         # with `type=features`, which indicates that they are not actually queryable.

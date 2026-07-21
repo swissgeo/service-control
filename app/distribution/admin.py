@@ -34,7 +34,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         "data_source",
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
-    list_display = ("distribution_id", "title", "dataset", "data_source")
+    list_display = ("distribution_id", "proto", "title_de", "dataset", "data_source")
     readonly_fields = ("created_at", "updated_at")
 
     search_fields = (
@@ -43,12 +43,15 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         "dataset__title_short_de",
     )
 
+    @admin.display(empty_value="???")
+    def proto(self, obj: Distribution) -> str:
+        return obj.get_real_instance().protocol
+
 
 @admin.register(ExternalWMTSDistribution)
 class ExternalWMTSDistributionAdmin(PolymorphicChildModelAdmin):
     """Admin View for ExternalWMTSDistribution"""
 
-    list_display = ("distribution_id", "title")
     readonly_fields = ("created_at", "updated_at")
 
 
@@ -56,7 +59,6 @@ class ExternalWMTSDistributionAdmin(PolymorphicChildModelAdmin):
 class ExternalWMSDistributionAdmin(PolymorphicChildModelAdmin):
     """Admin View for ExternalWMSDistribution"""
 
-    list_display = ("distribution_id", "title")
     readonly_fields = ("created_at", "updated_at")
 
 
@@ -64,7 +66,6 @@ class ExternalWMSDistributionAdmin(PolymorphicChildModelAdmin):
 class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
     """Admin View for ExternalStacDistribution"""
 
-    list_display = ("distribution_id", "dataset", "data_source")
     readonly_fields = ("created_at", "updated_at")
     search_fields = (
         "distribution_id",
@@ -82,7 +83,6 @@ class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
 class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
     """Admin View for ExternalGeoJSONDistribution"""
 
-    list_display = ("distribution_id", "dataset", "data_source")
     readonly_fields = ("created_at", "updated_at")
     search_fields = (
         "distribution_id",

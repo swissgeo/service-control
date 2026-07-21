@@ -918,7 +918,10 @@ def test_command_exports_wms_distribution(session, db):
     ExternalWMSDistribution(
         distribution_id="ch.bafu.moose:wms",
         dataset=dataset,
-        title="WMS Layer",
+        title_de="WMS Layer (DE)",
+        title_fr="WMS Layer (FR)",
+        title_it="WMS Layer (IT)",
+        title_en="WMS Layer (EN)",
         dataservice=dataservice,
         wms_layer_name_de="ch.bafu.moose",
         opacity=1.0,
@@ -1067,7 +1070,7 @@ def test_command_exports_wms_distribution(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "WMS Layer",
+                            "title": "WMS Layer (DE)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1185,7 +1188,7 @@ def test_command_exports_wms_distribution(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "WMS Layer",
+                    "title": "WMS Layer (DE)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -1331,7 +1334,7 @@ def test_command_exports_wms_distribution(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "WMS Layer",
+                            "title": "WMS Layer (FR)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1449,7 +1452,7 @@ def test_command_exports_wms_distribution(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "WMS Layer",
+                    "title": "WMS Layer (FR)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -1595,7 +1598,7 @@ def test_command_exports_wms_distribution(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "WMS Layer",
+                            "title": "WMS Layer (IT)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1713,7 +1716,7 @@ def test_command_exports_wms_distribution(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "WMS Layer",
+                    "title": "WMS Layer (IT)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -1859,7 +1862,7 @@ def test_command_exports_wms_distribution(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "WMS Layer",
+                            "title": "WMS Layer (EN)",
                             "protocol": "ogc:wms",
                             "externalIds": ["ch.bafu.moose"],
                         },
@@ -1977,7 +1980,7 @@ def test_command_exports_wms_distribution(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "WMS Layer",
+                    "title": "WMS Layer (EN)",
                     "protocol": "ogc:wms",
                     "externalIds": ["ch.bafu.moose"],
                 },
@@ -2033,7 +2036,10 @@ def test_command_exports_geojson_distributions(session, db):
     ExternalGeoJSONDistribution(
         distribution_id="ch.bafu.moose:wms",
         dataset=dataset,
-        title="GeoJSON Layer",
+        title_de="GeoJSON Layer (DE)",
+        title_fr="GeoJSON Layer (FR)",
+        title_it="GeoJSON Layer (IT)",
+        title_en="GeoJSON Layer (EN)",
         geojson_url_de="https://data.geo.admin.ch/ch.bafu.moose_de.json",
         geojson_url_fr="https://data.geo.admin.ch/ch.bafu.moose_fr.json",
         geojson_url_en="https://data.geo.admin.ch/ch.bafu.moose_en.json",
@@ -2173,7 +2179,7 @@ def test_command_exports_geojson_distributions(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "GeoJSON Layer",
+                            "title": "GeoJSON Layer (DE)",
                             "protocol": "geojson",
                         },
                     }
@@ -2283,7 +2289,7 @@ def test_command_exports_geojson_distributions(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "GeoJSON Layer",
+                    "title": "GeoJSON Layer (DE)",
                     "protocol": "geojson",
                 },
             },
@@ -2405,7 +2411,7 @@ def test_command_exports_geojson_distributions(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "GeoJSON Layer",
+                            "title": "GeoJSON Layer (FR)",
                             "protocol": "geojson",
                         },
                     }
@@ -2515,7 +2521,7 @@ def test_command_exports_geojson_distributions(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "GeoJSON Layer",
+                    "title": "GeoJSON Layer (FR)",
                     "protocol": "geojson",
                 },
             },
@@ -2637,7 +2643,7 @@ def test_command_exports_geojson_distributions(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "GeoJSON Layer",
+                            "title": "GeoJSON Layer (IT)",
                             "protocol": "geojson",
                         },
                     }
@@ -2747,7 +2753,7 @@ def test_command_exports_geojson_distributions(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "GeoJSON Layer",
+                    "title": "GeoJSON Layer (IT)",
                     "protocol": "geojson",
                 },
             },
@@ -2869,7 +2875,7 @@ def test_command_exports_geojson_distributions(session, db):
                         "type": "Feature",
                         "properties": {
                             "type": "Distribution",
-                            "title": "GeoJSON Layer",
+                            "title": "GeoJSON Layer (EN)",
                             "protocol": "geojson",
                         },
                     }
@@ -2979,7 +2985,7 @@ def test_command_exports_geojson_distributions(session, db):
                 "type": "Feature",
                 "properties": {
                     "type": "Distribution",
-                    "title": "GeoJSON Layer",
+                    "title": "GeoJSON Layer (EN)",
                     "protocol": "geojson",
                 },
             },

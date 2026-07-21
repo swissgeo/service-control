@@ -293,7 +293,7 @@ class OARDistribution(OARRecord):
         )
 
         # Set properties
-        record.properties["title"] = dist.title
+        record.properties["title"] = getattr(dist, f"title_{lang}", dist.title_de)
 
         record.links.append(
             OARRecordLink(
