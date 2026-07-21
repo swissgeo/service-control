@@ -509,6 +509,8 @@ class Command(CustomBaseCommand):
             "distributions.removed": 0,
         }
 
+        processed = {}
+
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
             for item in page["Items"]:
                 log_metrics["distributions.total"] += 1
@@ -537,13 +539,13 @@ class Command(CustomBaseCommand):
                         self.print_error(f"No Dataset found for layer_id {layer_id}")
                         continue
 
-                processed = set()
+                processed.setdefault(dataset.dataset_id, set())
 
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
                     dist, created = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.wmts"] += 1
                     else:
@@ -554,7 +556,7 @@ class Command(CustomBaseCommand):
 
                 if ljs.layertype in ["wms", "wmts"]:
                     dist, created = self.import_wms_distribution(ljs, dataset, wms_dataservice)
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.wms"] += 1
                     else:
@@ -567,7 +569,7 @@ class Command(CustomBaseCommand):
 
                 if ljs.layertype == "geojson":
                     dist, created = self.import_geojson_distribution(ljs, dataset)
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.geojson"] += 1
                     else:
@@ -584,25 +586,27 @@ class Command(CustomBaseCommand):
                     dist, created = self.import_api3features_distribution(
                         ljs, dataset, geoadminfeature_dataservice
                     )
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.api3feature"] += 1
                     else:
                         log_metrics["distributions.updated.api3feature"] += 1
 
-                obsolete = dataset.distribution_set.filter(  # ty: ignore[unresolved-attribute]
-                    data_source=Distribution.DataSource.BOD_LAYERS_JS
-                ).exclude(distribution_id__in=processed)
-                if obsolete:
-                    if options["clean"]:
-                        for distribution in obsolete:
-                            self.print_warning(f"Removing obsolete distribution {distribution}")
-                            distribution.delete()
-                    else:
-                        self.print_warning(
-                            f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
-                        )
-                    log_metrics["distributions.removed"] += len(obsolete)
+        for dataset_id, distribution_ids in processed.items():
+            dataset = Dataset.objects.get(dataset_id=dataset_id)
+            obsolete = dataset.distribution_set.filter(
+                data_source=Distribution.DataSource.BOD_LAYERS_JS
+            ).exclude(distribution_id__in=distribution_ids)
+            if obsolete:
+                if options["clean"]:
+                    for distribution in obsolete:
+                        self.print_warning(f"Removing obsolete distribution {distribution}")
+                        distribution.delete()
+                else:
+                    self.print_warning(
+                        f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
+                    )
+                log_metrics["distributions.removed"] += len(obsolete)
 
         self.print_success(f"Distribution import completed. Metrics: {log_metrics}")
 
