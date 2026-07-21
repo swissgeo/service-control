@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 
 from cognito.utils.client import Client as CognitoClient
+from cognito.utils.client import OrganizationGroup
 from config.authorization import VPRole
 from organization.models import Organization
 from user.models import HumanUser
@@ -66,7 +67,7 @@ ORGANIZATIONS: list[OrganizationSeed] = [
 USERS: list[UserSeed] = [
     {
         "sub": "superuser",
-        "username": "superuser",
+        "username": "superuser@example.org",
         "first_name": "Super",
         "last_name": "User",
         "email": "superuser@example.org",
@@ -75,7 +76,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "admin-bafu",
-        "username": "admin.bafu",
+        "username": "admin.bafu@example.org",
         "first_name": "Admin",
         "last_name": "Bafu",
         "email": "admin.bafu@example.org",
@@ -84,7 +85,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "user-bafu",
-        "username": "user.bafu",
+        "username": "user.bafu@example.org",
         "first_name": "User",
         "last_name": "Bafu",
         "email": "user.bafu@example.org",
@@ -93,7 +94,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "admin-swisstopo",
-        "username": "admin.swisstopo",
+        "username": "admin.swisstopo@example.org",
         "first_name": "Admin",
         "last_name": "Swisstopo",
         "email": "admin.swisstopo@example.org",
@@ -102,7 +103,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "user-swisstopo",
-        "username": "user.swisstopo",
+        "username": "user.swisstopo@example.org",
         "first_name": "User",
         "last_name": "Swisstopo",
         "email": "user.swisstopo@example.org",
@@ -153,7 +154,7 @@ class Command(CustomBaseCommand):
                 self._ensure_cognito_group_membership(
                     cognito_client,
                     username=user["username"],
-                    group_name=organization.organization_id,
+                    organization_id=organization.organization_id,
                 )
             self._ensure_human_user(sub=sub, user=user, organization=organization)
 
@@ -288,14 +289,13 @@ class Command(CustomBaseCommand):
         self,
         cognito_client: CognitoClient,
         username: str,
-        group_name: str,
+        organization_id: str,
     ) -> None:
-        cognito_client.client.admin_add_user_to_group(
-            UserPoolId=cognito_client.user_pool_id,
-            Username=username,
-            GroupName=group_name,
-        )
-        self.print("Ensured cognito group membership %s -> %s", username, group_name)
+        group = OrganizationGroup(organization_id)
+        if cognito_client.create_group(group):
+            self.print("Created cognito group %s", group.name)
+        cognito_client.add_user_to_group(username=username, group=group)
+        self.print("Ensured cognito group membership %s -> %s", username, group.name)
 
     def _ensure_human_user(
         self,

@@ -20,6 +20,10 @@
   - [Visual Studio Code Integration](#visual-studio-code-integration)
     - [Debug from Visual Studio Code](#debug-from-visual-studio-code)
     - [Run Tests From Within Visual Studio Code](#run-tests-from-within-visual-studio-code)
+- [Exporting To OpenSearch](#exporting-to-opensearch)
+  - [Inspecting The Documents With --dump](#inspecting-the-documents-with---dump)
+  - [Creating The Indices And Importing](#creating-the-indices-and-importing)
+  - [Options](#options)
 - [Cognito](#cognito)
   - [Local Cognito](#local-cognito)
 - [User management](#user-management)
@@ -161,6 +165,146 @@ For the automatic test discovery to work, make sure that vs code has the Python
 interpreter of your venv selected (`.venv/bin/python`).
 You can change the Python interpreter via menu "Python: Select Interpreter"
 in the Command Palette.
+
+## Exporting To OpenSearch
+
+The `oar_opensearch_export` command builds OGC API Records documents from the database
+(dataservices, datasets and distributions) and indexes them into OpenSearch:
+
+```bash
+uv run app/manage.py oar_opensearch_export
+```
+
+The command must run inside the virtualenv and with the environment variables from `.env`
+loaded, as django reads its settings from the environment. Running `app/manage.py` directly
+fails with `ModuleNotFoundError: No module named 'opentelemetry'`, and running it without the
+environment fails with `ModuleNotFoundError: No module named 'config.settings'`.
+
+The shell started by `make setup` already has both. In any other shell, pass the env file
+explicitly:
+
+```bash
+uv run --env-file .env app/manage.py oar_opensearch_export
+```
+
+Every run processes all three record types, each written to its own index:
+
+| Record type     | OpenSearch index         | Source model   |
+| --------------- | ------------------------ | -------------- |
+| `services`      | `geoadmin-services`      | `Dataservice`  |
+| `datasets`      | `swissgeo-catalog`       | `Dataset`      |
+| `distributions` | `swissgeo-distributions` | `Distribution` |
+
+Note that the datasets index is historically called `swissgeo-catalog`, while its mapping file
+is named `opensearch-index-mapping-swissgeo-datasets.json`.
+
+With no flags the command always does the full run: it creates the indices and imports the
+documents. Pass `--dump` to build the documents without touching OpenSearch at all (see below).
+
+### Atomic Replacement Without Downtime
+
+A full run replaces the whole collection atomically, so searches never see an empty or
+half-filled index. The three names above are *aliases*, not indices. Each run:
+
+1. creates new timestamped indices (`swissgeo-catalog-20260722153000`);
+2. indexes all documents into them, while readers keep using the previous generation;
+3. refreshes the new indices so their documents are actually searchable;
+4. repoints all three aliases in a **single** `_aliases` request, which OpenSearch applies as
+   one atomic cluster-state update;
+5. deletes superseded indices, keeping the last `--keep-generations` (default 2) for rollback.
+
+Because all aliases move in one request, the cross-index links between datasets, distributions
+and services never point at a stale generation. If any document fails to index, the command
+aborts *before* the swap, so a broken export can never reach the aliases.
+
+To roll back to the previous generation, point the alias back by hand:
+
+```bash
+curl -XPOST "$OPENSEARCH_URL/_aliases" -H 'Content-Type: application/json' -d '{
+  "actions": [
+    {"remove": {"index": "swissgeo-catalog-20260722153000", "alias": "swissgeo-catalog"}},
+    {"add":    {"index": "swissgeo-catalog-20260722100000", "alias": "swissgeo-catalog"}}
+  ]
+}'
+```
+
+The swap only happens on a real (non-`--dump`) run. `--no-swap` opts out and writes into the
+aliased indices in place instead.
+
+#### Migrating An Existing Environment
+
+An environment created before this change has `swissgeo-catalog` as a *concrete index*.
+OpenSearch does not allow an alias and an index to share a name, so the first run there fails
+with a message telling you to re-run with `--migrate-to-alias`:
+
+```bash
+uv run app/manage.py oar_opensearch_export --opensearch-url https://<host> --migrate-to-alias
+```
+
+That run deletes the concrete index just before the swap, which means a short window with no
+data — the only run that has one. Every run afterwards is seamless and needs no flag.
+
+Make sure the database is seeded first, otherwise there is nothing to export:
+
+```bash
+make seed-local-testdata
+```
+
+### Inspecting The Documents With --dump
+
+`--dump` writes the generated documents to disk instead of talking to OpenSearch at all, one
+JSON file per document, at `dist/oar_opensearch_export/<index>/<id>.json`:
+
+```bash
+uv run app/manage.py oar_opensearch_export --dump
+```
+
+This produces, for example:
+
+```text
+dist/oar_opensearch_export/
+├── geoadmin-services/
+│   └── wms-geoadminch.json
+├── swissgeo-catalog/
+│   └── ch.bafu.schutzgebiete-luftfahrt.json
+└── swissgeo-distributions/
+    └── ch.bafu.schutzgebiete-luftfahrt.json
+```
+
+The paths are relative to the current working directory, so run the command from the repository
+root. Existing files with the same name are overwritten, but files from an earlier run are not
+removed. `dist/` is git-ignored.
+
+### Running Against A Cluster
+
+Against a local OpenSearch on the default `http://localhost:9200`:
+
+```bash
+uv run app/manage.py oar_opensearch_export
+```
+
+Against a remote cluster, SigV4 authentication is enabled automatically for `https` URLs:
+
+```bash
+uv run app/manage.py oar_opensearch_export --opensearch-url https://<opensearch-host>
+```
+
+Record links are always built against the production OAR/OAS base URLs, but the final documents
+never expose them: the doc builders strip or rewrite every OAR/OAS link to a relative
+`/collections/.../items/...` path (see `_rewrite_dist_links` and the doc builders in
+`oar_opensearch_export.py`), so which environment they came from doesn't affect the output.
+
+### Options
+
+| Option              | Default                    | Description                                                                       |
+| ------------------- | -------------------------- | --------------------------------------------------------------------------------- |
+| `--dump`            | false                      | Write the documents to `dist/oar_opensearch_export/<index>/<id>.json` instead of talking to OpenSearch at all |
+| `--opensearch-url`  | `$OPENSEARCH_URL` or `http://localhost:9200` | OpenSearch endpoint URL                                         |
+| `--aws-auth` / `--no-aws-auth` | auto            | Force/disable SigV4 auth (enabled automatically for `https` URLs)                 |
+| `--no-swap`         | false                      | Write into the aliased indices in place instead of building new ones and swapping the aliases atomically |
+| `--migrate-to-alias`| false                      | Allow replacing a pre-alias *concrete* index with an alias; needed once per environment |
+| `--keep-generations`| 2                          | Number of superseded indices to keep after a swap, for rollback                   |
+| `--batch-size`      | 500                        | Number of documents per bulk request                                              |
 
 ## Cognito
 

@@ -1,0 +1,1115 @@
+[
+  {
+    "model": "dataset.dataset",
+    "pk": 1,
+    "fields": {
+      "dataset_id": "from_fixture.ch.meteoschweiz.messwerte-pollen-erle-1h",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.meteoschweiz.messwerte-pollen-erle-1h"
+      ],
+      "title_short_de": "from_fixture Messwerte Erle, mittlere stündliche Pollenkonzentration",
+      "title_short_fr": "from_fixture Valeurs mesurées Aune, concentration pollinique moyenne horaire",
+      "title_short_en": "from_fixture Measurement values Alder, hourly average pollen concentration",
+      "title_short_it": "from_fixture Valori attuali Ontano, media oraria della concentrazione pollinica",
+      "title_short_rm": "from_fixture Valurs da mesiraziun ogn, concentraziun mesauna da pollen per ura",
+      "description_de": "Messwerte Erle, mittlere stündliche Pollenkonzentration [Pollen pro Kubikmeter Luft]. Daten werden stündlich aktualisiert. Der Datensatz enthält alle Messstationen des automatischen nationalen Pollenmessnetzes.",
+      "description_fr": "Valeurs mesurées Aune, concentration pollinique moyenne horaire [pollens par mètre cube d'air]. Données actualisées toutes les heures. Les données contiennent tous les stations du réseau automatique national de surveillance du pollen.",
+      "description_en": "Measurement values Alder, hourly average pollen concentration [pollen per cubic meter of air]. Data is updated every hour. The data set contains all stations of the automatic national pollen monitoring network.",
+      "description_it": "Valori attuali Ontano, media oraria della concentrazione pollinica [pollini per metro cubo d'aria]. Dati aggiornati ogni ora. Il set di dati contiene tutte le stazioni di misura automatiche della rete per il monitoraggio dei pollini.",
+      "description_rm": "Valurs da mesiraziun ogn, concentraziun mesauna da pollen per ura [pollen per meter cubic aria]. Las datas vegnan actualisadas mintga ura. L'unitad da datas cuntegna tut las staziuns da mesiraziun da la rait naziunala da mesiraziuns da pollens automaticas.",
+      "geocat_id": "012c160a-1404-42dd-8379-001a0bb2375b",
+      "preferred_distribution": 1,
+      "legacy_contacts": [
+        {
+          "role": "pointOfContact",
+          "org_name": "Bundesamt für Meteorologie und Klimatologie",
+          "contact_sms": null,
+          "org_acronym": "MeteoSchweiz",
+          "org_name_de": "Bundesamt für Meteorologie und Klimatologie",
+          "org_name_en": "Federal Office of Meterology and Climatology",
+          "org_name_fr": "Office fédéral de météorologie et de climatologie",
+          "org_name_it": "Ufficio federale di meteorologia e climatologia",
+          "org_name_rm": "Bundesamt für Meteorologie und Klimatologie",
+          "contact_city": "Zürich-Flughafen",
+          "contact_voice": "+41 58 460 99 99",
+          "org_acronym_de": "MeteoSchweiz",
+          "org_acronym_en": "MeteoSwiss",
+          "org_acronym_fr": "MétéoSuisse",
+          "org_acronym_it": "MeteoSvizzera",
+          "org_acronym_rm": "MeteoSchweiz",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://www.meteoschweiz.admin.ch",
+              "url_de": "https://www.meteoschweiz.admin.ch",
+              "url_en": "https://www.meteoswiss.admin.ch",
+              "url_fr": "https://www.meteosuisse.admin.ch",
+              "url_it": "https://www.meteosvizzera.admin.ch",
+              "url_rm": "https://www.meteoschweiz.admin.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": "8058",
+          "contact_delivery_point": null,
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "kundendienst@meteoschweiz.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:26.412Z",
+      "updated_at": "2026-07-22T07:01:29.362Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 2,
+    "fields": {
+      "dataset_id": "from_fixture.ch.bafu.hydroweb-messstationen_temperatur",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.bafu.hydroweb-messstationen_temperatur"
+      ],
+      "title_short_de": "from_fixture Wassertemperatur der Flüsse",
+      "title_short_fr": "from_fixture Température des cours d'eau",
+      "title_short_en": "from_fixture Water temperature of rivers and streams",
+      "title_short_it": "from_fixture Temperature dei fiumi",
+      "title_short_rm": "from_fixture Temperatura da l'aua dals flums",
+      "description_de": "Die Karte liefert einen Überblick über die aktuellen Wassertemperaturen in den Schweizer Flüssen.",
+      "description_fr": "La carte donne une vue d'ensemble des températures actuelles des cours d'eau suisses.",
+      "description_en": "The map provides an overview of current water temperatures in Switzerland's rivers.",
+      "description_it": "La carta fornisce una panoramica sulle temperature attuali dell'acqua nei fiumi svizzeri.",
+      "description_rm": "La charta dat ina survista da las temperaturas actualas da l'aua en ils flums svizzers.",
+      "geocat_id": "eb9d3cc1-0c04-4cda-9f21-7742b8376be7",
+      "preferred_distribution": 2,
+      "legacy_contacts": [
+        {
+          "role": "owner",
+          "org_name": "Bundesamt für Umwelt / Abteilung Hydrologie",
+          "contact_sms": null,
+          "org_acronym": "BAFU",
+          "org_name_de": "Bundesamt für Umwelt / Abteilung Hydrologie",
+          "org_name_en": "Federal Office for the Environment / Hydrology Division",
+          "org_name_fr": "Office fédéral de l'environnement /Division Hydrologie",
+          "org_name_it": "Ufficio federale dell'ambiente / Divisione Idrologia",
+          "org_name_rm": "BAFU Abteilung Hydrologie",
+          "contact_city": "Bern",
+          "contact_voice": "+41 58 464 71 87",
+          "org_acronym_de": "BAFU",
+          "org_acronym_en": "FOEN",
+          "org_acronym_fr": "OFEV",
+          "org_acronym_it": "UFAM",
+          "org_acronym_rm": "BAFU",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://www.bafu.admin.ch/de/abteilung-hydrologie",
+              "url_de": "https://www.bafu.admin.ch/de/abteilung-hydrologie",
+              "url_en": "https://www.bafu.admin.ch/en/hydrology-division",
+              "url_fr": "https://www.bafu.admin.ch/fr/division-hydrologie",
+              "url_it": "https://www.bafu.admin.ch/it/divisione-idrologia",
+              "url_rm": null,
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": "+41 58 464 76 81",
+          "contact_postal_code": "3003",
+          "contact_delivery_point": null,
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "hydrologie@bafu.admin.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:27.198Z",
+      "updated_at": "2026-07-22T07:01:29.984Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 3,
+    "fields": {
+      "dataset_id": "from_fixture.ch.astra.hauptstrassennetz",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.astra.hauptstrassennetz"
+      ],
+      "title_short_de": "from_fixture Hauptstrassennetz der Schweiz (MinVV)",
+      "title_short_fr": "from_fixture Réseau des routes principales suisses (OUMin)",
+      "title_short_en": "from_fixture Main roads network",
+      "title_short_it": "from_fixture Rete delle strade principali svizzere (OUMin)",
+      "title_short_rm": "from_fixture Rait da vias principalas",
+      "description_de": "Dieser Datensatz umfasst das Netz der schweizerischen Hauptstrassen, das in der Verordnung über die Verwendung der zweckgebundenen Mineralölsteuer im Strassenverkehr (MinVV) festgelegt ist. Der Bund, der den Kantonen Beiträge für das Hauptstrassennetz gewährt, definiert eindeutig, welche Infrastruktur zum Hauptstrassennetz gehört. Die Achsen der Hauptstrassen können für die Beschreibung und die Referenzierung von Sachverhalten entlang der Strassen verwendet werden. Im Gegensatz zum schweizerischen Hauptstrassennetz gem. MinVV wird das Hauptstrassennetz gemäss Durchgangsstrassenverordnung auf nationaler Ebene nicht kartografisch dargestellt. Die Durchgangsstrassenverordnung hält lediglich die Strassenverbindungen fest, die dem Durchgangsverkehr offenstehen müssen. Welcher Streckenverlauf resp. welche Strasseninfrastruktur genau betroffen ist, wird hingegen nicht angegeben.",
+      "description_fr": "Ce jeu de données comprend le réseau des routes principales suisses défini dans l'Ordonnance concernant l'utilisation de l'impôt sur les huiles minérales à affectation obligatoire dans le trafic routier (OUMin). La Confédération, qui alloue des contributions financières aux cantons pour le réseau de routes principales suisses, définit de façon univoque quelle infrastructure fait partie du réseau des routes principales suisses. Les axes des routes principales peuvent être utilisés pour la description et le référencement de faits matériels le long des routes.A la différence du réseau de routes principales défini par l'OUMin, le réseau des routes principales défini par l'Ordonnance concernant les routes de grand transit ne fait quant à lui pas l'objet d'une cartographie au niveau national. L'Ordonnance concernant les routes de grand transit définit les itinéraires routiers qui doivent être ouverts au grand transit, sans préciser exactement quel tracé, respectivement quelle infrastructure routière est directement concernée.",
+      "description_en": "Main roads network",
+      "description_it": "Questo set di dati rimanda alla rete delle strade principali svizzere definita nell'ordinanza concernente l'utilizzazione dell'imposta sugli oli minerali a destinazione vincolata e di altri mezzi a destinazione vincolata per il traffico stradale (OUMin). La rete è sovvenzionata mediante contributi erogati dalla Confederazione ai Cantoni ed è composta da infrastrutture specificate in modo univoco. I suoi assi stradali possono servire a descrivere e georeferenziare elementi e situazioni localizzati lungo il tracciato.Nonostante l'omonimia formale, la rete in oggetto si distingue nel merito da quella descritta nell'ordinanza concernente le strade di grande transito, che identifica un sistema viario distinto, non cartografato su scala nazionale. La predetta normativa indica solo i collegamenti garantiti, senza precisarne il tracciato né le infrastrutture coinvolte.",
+      "description_rm": "Rait da vias principalas",
+      "geocat_id": "c1333de6-fb91-4b0b-be95-8eab89b05358",
+      "preferred_distribution": 3,
+      "legacy_contacts": [
+        {
+          "role": "owner",
+          "org_name": "Bundesamt für Strassen",
+          "contact_sms": null,
+          "org_acronym": "ASTRA",
+          "org_name_de": "Bundesamt für Strassen",
+          "org_name_en": "Federal Roads Office",
+          "org_name_fr": "Office fédéral des routes",
+          "org_name_it": "Ufficio federale delle strade",
+          "org_name_rm": "Uffizi federal da vias",
+          "contact_city": "Bern",
+          "contact_voice": null,
+          "org_acronym_de": "ASTRA",
+          "org_acronym_en": "FEDRO",
+          "org_acronym_fr": "OFROU",
+          "org_acronym_it": "USTRA",
+          "org_acronym_rm": "UVIAS",
+          "contact_country": null,
+          "online_resources": [
+            {
+              "url": "http://www.astra.admin.ch",
+              "url_de": "http://www.astra.admin.ch",
+              "url_en": "http://www.astra.admin.ch",
+              "url_fr": "http://www.astra.admin.ch",
+              "url_it": "http://www.astra.admin.ch",
+              "url_rm": "http://www.astra.admin.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": "3003",
+          "contact_delivery_point": "Pulverstrasse 13",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "info@astra.admin.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:30.37Z",
+      "updated_at": "2026-07-22T07:01:32.936Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 4,
+    "fields": {
+      "dataset_id": "from_fixture.ch.swisstopo.swissnames3d",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.swisstopo.swissnames3d"
+      ],
+      "title_short_de": "from_fixture swissNAMES3D Geografische Namen der Landesvermessung",
+      "title_short_fr": "from_fixture swissNAMES3D Noms géographiques de la mensuration nationale",
+      "title_short_en": "from_fixture swissNAMES3D geographical names of the national Survey",
+      "title_short_it": "from_fixture swissNAMES3D nomi geografici della misurazione nazionale",
+      "title_short_rm": "from_fixture swissNAMES3D Nums geografics da la mesiraziun naziunala",
+      "description_de": "swissNAMES3D ist die vollständigste Sammlung von geografische Namen über die Schweiz und das Fürstentum Liechtenstein. swissNAMES3D umfasst über 437000 georeferenzierte Einträge, die in verschiedene Kategorien unterteilt sind. Der Datensatz ersetzt ab 2015 das auf dem Namengut der Landeskartenwerke basierende und bis 2008 nachgeführte Produkt SwissNames. Die Darstellung der geografischen Namen im Geoportal des Bundes entspricht einer Auswahl aus swissNAMES3D, die auf die ausgewählte Zoomstufe zugeschnitten ist.",
+      "description_fr": "swissNAMES3D est le recueil de noms géographiques le plus complet de la Suisse et la Principauté du Liechtenstein. swissNAMES3D comprend plus de 437'000 entrées géoréférencées réparties en différentes catégories. Le jeu de données remplace dès 2015 le produit SwissNames basé sur les noms de la Carte nationale et mis à jour jusqu'en 2008. Dans le géoportail fédéral, la couche \"noms géographiques\" correspond à une sélection de swissNAMES3D en fonction des niveaux de zoom.",
+      "description_en": "swissNAMES3D is the most comprehensive collection of geographical names for Switzerland and Liechtenstein. swissNAMES3D contains over 437,000 georeferenced entries divided in different categories. The dataset replaces since 2015 the old product swissNAMES updated until 2008. In the federal geoportal the layer \"geographical names\" corresponds to a selection of swissNAMES3D for the different zoomlevels.",
+      "description_it": "swissNAMES3D è la raccolta dei nomi geografici la più completa della Svizzera e del Principato del Liechtenstein. swissNAMES3D comprende oltre 437'000 dati georeferenziati e suddivisi in diverse categorie. La nuova serie di dati sostituisce dal 2015 il precedente prodotto SwissNames che era basato sui nomi della Carta Nazionale ed era stato aggiornato nel 2008. All'interno del geoportale federale, il layer \"nomi geografici\" corrisponde a una selezione di swissNAMES3D in funzione del livello di zoom scelto.",
+      "description_rm": "swissNAMES3D è la collecziun la pli cumpletta da nums geografics da la Svizra e dal principadi da Liechtenstein. swissNAMES3D cumpiglia sur 437'000 inscripziuns georeferenziadas ch'èn repartidas en differentas categorias. L'unitad da datas remplazza a partir da l'onn 2015 il product SwissNames che sa basa sin ils nums da las ovras da la Charta naziunala e ch'è vegnì actualisà fin l'onn 2008. La preschentaziun dals nums geografics en il geoportal da la Confederaziun correspunda ad ina selecziun or da swissNAMES3D ch'èn accordads al stgalim da zoom tschernì.",
+      "geocat_id": "ab24e5cc-7f53-451a-820a-f113fa545943",
+      "preferred_distribution": 25,
+      "legacy_contacts": [
+        {
+          "role": "owner",
+          "org_name": "Bundesamt für Landestopografie swisstopo",
+          "contact_sms": null,
+          "org_acronym": "swisstopo",
+          "org_name_de": "Bundesamt für Landestopografie swisstopo",
+          "org_name_en": "Federal Office of Topography swisstopo",
+          "org_name_fr": "Office fédéral de topographie swisstopo",
+          "org_name_it": "Ufficio federale di topografia swisstopo",
+          "org_name_rm": "Uffizi federal da topografia swisstopo",
+          "contact_city": "Wabern",
+          "contact_voice": "0041 58 469 01 11",
+          "org_acronym_de": "swisstopo",
+          "org_acronym_en": "swisstopo",
+          "org_acronym_fr": "swisstopo",
+          "org_acronym_it": "swisstopo",
+          "org_acronym_rm": "swisstopo",
+          "contact_country": null,
+          "online_resources": [
+            {
+              "url": "https://www.swisstopo.ch",
+              "url_de": "https://www.swisstopo.ch",
+              "url_en": "https://www.swisstopo.ch",
+              "url_fr": "https://www.swisstopo.ch",
+              "url_it": "https://www.swisstopo.ch",
+              "url_rm": "https://www.swisstopo.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Kontakt",
+          "position_name_en": "Contact",
+          "position_name_fr": "Contact",
+          "position_name_it": "Contatto",
+          "position_name_rm": null,
+          "contact_facsimile": "0041 58 469 04 59",
+          "contact_postal_code": "3084",
+          "contact_delivery_point": "Seftigenstrasse 264",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "info@swisstopo.ch"
+          ]
+        },
+        {
+          "role": "pointOfContact",
+          "org_name": "Bundesamt für Landestopografie swisstopo",
+          "contact_sms": null,
+          "org_acronym": "swisstopo",
+          "org_name_de": "Bundesamt für Landestopografie swisstopo",
+          "org_name_en": "Federal Office of Topography swisstopo",
+          "org_name_fr": "Office fédéral de topographie swisstopo",
+          "org_name_it": "Ufficio federale di topografia swisstopo",
+          "org_name_rm": "Uffizi federal da topografia swisstopo",
+          "contact_city": "Wabern",
+          "contact_voice": "+41 58 469 01 11",
+          "org_acronym_de": "swisstopo",
+          "org_acronym_en": "swisstopo",
+          "org_acronym_fr": "swisstopo",
+          "org_acronym_it": "swisstopo",
+          "org_acronym_rm": "swisstopo",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "http://www.swisstopo.ch",
+              "url_de": "http://www.swisstopo.ch",
+              "url_en": "http://www.swisstopo.ch",
+              "url_fr": "http://www.swisstopo.ch",
+              "url_it": "http://www.swisstopo.ch",
+              "url_rm": "http://www.swisstopo.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Geodatenabgabe",
+          "position_name_en": "Geodata Distribution",
+          "position_name_fr": "Distribution des géodonnées",
+          "position_name_it": "Distribuzione di geodati",
+          "position_name_rm": "Geodatenabgabe",
+          "contact_facsimile": "+41 58 469 04 59",
+          "contact_postal_code": "3084",
+          "contact_delivery_point": "Seftigenstrasse 264",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "geodata@swisstopo.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:30.678Z",
+      "updated_at": "2026-07-22T07:01:33.865Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 5,
+    "fields": {
+      "dataset_id": "from_fixture.ch.are.alpenkonvention",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.are.alpenkonvention"
+      ],
+      "title_short_de": "from_fixture Alpenkonvention",
+      "title_short_fr": "from_fixture Convention des Alpes",
+      "title_short_en": "from_fixture Alpine Convention",
+      "title_short_it": "from_fixture Convenzione delle alpi",
+      "title_short_rm": "from_fixture Convenziun da las Alps",
+      "description_de": "Perimeter der Alpenkonvention in der Schweiz. Die Alpenkonvention ist ein völkerrechtlicher Vertrag zwischen den acht Alpenländern Deutschland, Frankreich, Italien, Liechtenstein, Monaco, Österreich, Schweiz, Slowenien sowie der Europäischen Union. Das Ziel des Übereinkommens ist der Schutz der Alpen durch eine sektorübergreifende, ganzheitliche und nachhaltige Politik.",
+      "description_fr": "Périmètre de la Convention alpine en Suisse. La Convention alpine est un traité de droit international conclu par huit Etats alpins (Allemagne, Autriche, France, Italie, Liechtenstein, Monaco, Suisse, Slovénie) et l`Union européenne. L`accord vise à assurer la préservation et la protection des Alpes à travers une politique plurisectorielle, globale et durable.",
+      "description_en": "The perimeters of the Alpine Convention in Switzerland. The Alpine Convention is an international treaty between the eight Alpine countries: Germany, France, Italy, Liechtenstein, Monaco, Austria, Switzerland and Slovenia, plus the European Union. The aim of the treaty is to protect the Alps by means of cross-sectoral, integrated and sustainable policies.",
+      "description_it": "Il perimetro della Convenzione delle Alpi. La Convenzione delle Alpi è un trattato internazionale tra gli otto Paesi alpini Germania, Francia, Italia, Liechtenstein, Monaco, Austria, Svizzera, Slovenia e l'Unione europea. Lo scopo della Convenzione è la conservazione e la protezione delle Alpi mediante una politica intersettoriale, globale e durevole.",
+      "description_rm": "Perimeter da la Convenziun da las Alps en Svizra. La Convenziun da las Alps è in contract internaziunal tranter ils otg pajais alpins (Austria, Frantscha, Germania, Italia, Liechtenstein, Monaco, Slovenia, Svizra) e l'Uniun europeica. La convenziun ha la finamira da proteger las Alps cun agid d'ina politica intersecturiala, cumplessiva e duraivla.",
+      "geocat_id": "8698bf0b-fceb-4f0f-989b-111e7c4af0a4",
+      "preferred_distribution": 7,
+      "legacy_contacts": [
+        {
+          "role": "owner",
+          "org_name": "Bundesamt für Raumentwicklung",
+          "contact_sms": null,
+          "org_acronym": "ARE",
+          "org_name_de": "Bundesamt für Raumentwicklung",
+          "org_name_en": null,
+          "org_name_fr": null,
+          "org_name_it": null,
+          "org_name_rm": null,
+          "contact_city": null,
+          "contact_voice": null,
+          "org_acronym_de": "ARE",
+          "org_acronym_en": null,
+          "org_acronym_fr": null,
+          "org_acronym_it": null,
+          "org_acronym_rm": null,
+          "contact_country": null,
+          "online_resources": [],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": null,
+          "contact_delivery_point": null,
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "info@are.admin.ch"
+          ]
+        },
+        {
+          "role": "pointOfContact",
+          "org_name": "Bundesamt für Raumentwicklung",
+          "contact_sms": null,
+          "org_acronym": "ARE",
+          "org_name_de": "Bundesamt für Raumentwicklung",
+          "org_name_en": "Federal Office for Spatial Development",
+          "org_name_fr": "Office fédéral du développement territorial",
+          "org_name_it": "Ufficio federale dello sviluppo territoriale",
+          "org_name_rm": "Bundesamt für Raumentwicklung",
+          "contact_city": "Ittigen",
+          "contact_voice": "+41 58 462 01 43",
+          "org_acronym_de": "ARE",
+          "org_acronym_en": "ARE",
+          "org_acronym_fr": "ARE",
+          "org_acronym_it": "ARE",
+          "org_acronym_rm": "ARE",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "http://www.are.admin.ch",
+              "url_de": "http://www.are.admin.ch",
+              "url_en": "http://www.are.admin.ch",
+              "url_fr": "http://www.are.admin.ch",
+              "url_it": "http://www.are.admin.ch",
+              "url_rm": "http://www.are.admin.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": "3063",
+          "contact_delivery_point": "Worblentalstrasse 66",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "rolf.giezendanner@are.admin.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:39.294Z",
+      "updated_at": "2026-07-22T07:01:34.296Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 6,
+    "fields": {
+      "dataset_id": "from_fixture.ch.are.agglomerationsverkehr",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.are.agglomerationsverkehr"
+      ],
+      "title_short_de": "from_fixture Beitragsberechtigte Städte und Agglomerationen",
+      "title_short_fr": "from_fixture Villes et agglomérations ayant droit aux contributions",
+      "title_short_en": "from_fixture Cities and conurbations which qualify for subsidies",
+      "title_short_it": "from_fixture Città e agglomerati aventi diritto ai contributi",
+      "title_short_rm": "from_fixture Citads ed aglomeraziuns subvenziunablas",
+      "description_de": "Die Liste der Beitragsberechtigten Städte und Agglomerationen bildet ab, welche Gemeinden im Rahmen des Programms Agglomerationsverkehr für Beiträge des Bundes beitragsberechtigt sind (gemäss Anhang der Verordnung des UVEK über das Programm Agglomerationsverkehr [PAVV, SR 725.116.214]). Die Grundlage für die Liste bildet die Definition des «Raums mit städtischem Charakter» des Bundesamts für Statistik BFS (2012). Dabei wurde die Beitragsberechtigung für alle Gemeinden erhalten, die aufgrund der Agglomerationsdefinition von 2000 beitragsberechtigt waren. Die Anzahl Gürtelgemeinden wurde gegenüber der Definition des BFS von 2012 durch die Anwendung statistischer Kriterien reduziert. Überdies wurden die Gemeinden Sarnen und Appenzell als Kantonshauptorte in die Liste der Beitragsberechtigten Städte und Agglomerationen aufgenommen. Mit Arrondierungen und Lückenfüllungen wurden noch kleine Bereinigungen durchgeführt.Die Aktualisierung vom 01.08.2025 basiert auf der Agglomerationsdefinition 2020 und umfasst die berücksichtigten Vorschläge der Kantone und Agglomerationen auf Aufnahme oder Streichung von Gemeinden.",
+      "description_fr": "La liste des villes et agglomérations ayant droit aux contributions indique quelles sont les communes ayant droit aux contributions fédérales dans le cadre du programme en faveur du trafic d'agglomération (conformément à l'annexe de l'ordonnance du DETEC concernant le programme en faveur du trafic d'agglomération [OPTA, RS 725.116.214]). La base de cette liste est la définition de l'espace à caractère urbain de l'Office fédéral de la statistique OFS (2012). Dans ce contexte, l'éligibilité aux contributions a été maintenue pour toutes les communes ayant droit aux contributions sur la base de la définition des agglomérations de 2000. Le nombre de communes couronnes a été réduit par rapport à la définition de l'OFS de 2012 en appliquant des critères statistiques. En outre, les communes de Sarnen et d'Appenzell ont été incluses dans la liste des villes et agglomérations ayant droit aux contributions en tant que chefs-lieux de canton. De petits ajustements ont été effectués en arrondissant et en comblant les lacunes.La mise à jour du 01.08.2025 se fonde sur la définition des agglomérations de 2020 et comprend les propositions d'ajout ou de suppression de communes faites par les cantons et les agglomérations et approuvées par la Confédération.",
+      "description_en": "The list of cities and conurbations which qualify for subsidies shows which municipalities are entitled to federal subsidies within the framework of the Urban Transport programme (in accordance with Annex of the DETEC Ordinance on the Urban Transport Programme [PAVV, SR 725.116.214]). The basis for the list shows the definition of “Spaces with an urban character” from the Federal Statistical Office, FSO (2012). This includes the right to subsidies for all municipalities that are entitled to subsidies based on the definition of a conurbation from 2000. The number of adjoining communities are reduced in accordance with the definition by the Federal Statistical Office, FSO in 2012, through the use of statistical criteria. The municipalities of Sarnen and Appenzell as canton capitals are also included in the list of cities and conurbations which qualify for subsidies. Small adjustments were made with realignments and fillings in the gaps.The update dated 1 August 2025 is based on the 2020 agglomeration definition and includes the proposals from the cantons and agglomerations regarding the inclusion or removal of municipalities.",
+      "description_it": "L'elenco delle città e degli agglomerati che possono beneficiare dei contributi indica quali Comuni possono beneficiare dei contributi federali nell'ambito del Programma Traffico d'agglomerato (conformemente all'allegato dell'ordinanza dal DATEC concernente il programma Traffico d'agglomerato [OPTA, RS 725.116.214]). La base dell'elenco è la definizione di «area a carattere urbano» dell'Ufficio federale di statistica UST (2012). In questo contesto, l'ammissibilità ai contributi è stata mantenuta per tutti i Comuni che erano ammissibili ai contributi in base alla definizione di agglomerato del 2000. Il numero di Comuni della cintura è stato ridotto rispetto alla definizione dell'UST del 2012 applicando criteri statistici. Inoltre, i Comuni di Sarnen e Appenzello sono stati inseriti nell'elenco delle città e degli agglomerati aventi diritto ai contributi in quanto capoluoghi cantonali. Sono stati effettuati piccoli aggiustamenti arrotondando e colmando le lacune.L'aggiornamento del 1° agosto 2025 si basa sulla definizione di agglomerato del 2020 e include le proposte prese in considerazione dai Cantoni e dagli agglomerati di aggiungere o stralciare singole Comuni.",
+      "description_rm": "La glista da las citads e da las aglomeraziuns subvenziunablas mussa tge vischnancas che han il dretg da survegnir contribuziuns da la Confederaziun en il rom dal program \"Traffic d'aglomeraziun\" (tenor l'agiunta 4 da l'Ordinaziun davart l'utilisaziun da la taglia liada sin l'ieli mineral e d'auters meds destinads al traffic sin via [(OUMin)]. La basa per la glista furma la definiziun dal «territori cun caracter urban» da l'Uffizi federal da statistica UFS (2012). En quest connex han tut las vischnancas che avevan il dretg da survegnir contribuziuns sin basa da la definiziun d'aglomeraziun da l'onn 2000, salvà quest dretg. Il dumber da vischnancas da la zona orasum in'aglomeraziun è vegnì reducì envers la definiziun dal UFS da l'onn 2012 pervia da l'applicaziun da criteris statistics. Ultra da quai èn las vischnancas da Sarnen e d'Appenzell sco chapitalas chantunalas vegnidas integradas en la glista da las citads ed aglomeraziuns subvenziunablas. Cun arrundaziuns e cun emplenir largias èn anc vegnidas realisadas pitschnas rectificaziuns.",
+      "geocat_id": "f4b72bb8-aff0-4eab-b1e8-48e698c0e8fb",
+      "preferred_distribution": 10,
+      "legacy_contacts": [
+        {
+          "role": "owner",
+          "org_name": "Bundesamt für Raumentwicklung",
+          "contact_sms": null,
+          "org_acronym": "ARE",
+          "org_name_de": "Bundesamt für Raumentwicklung",
+          "org_name_en": "Federal Office for Spatial Development",
+          "org_name_fr": "Office fédéral du développement territorial",
+          "org_name_it": "Ufficio federale dello sviluppo territoriale",
+          "org_name_rm": "Bundesamt für Raumentwicklung",
+          "contact_city": "Ittigen",
+          "contact_voice": "+41 58 462 01 43",
+          "org_acronym_de": "ARE",
+          "org_acronym_en": "ARE",
+          "org_acronym_fr": "ARE",
+          "org_acronym_it": "ARE",
+          "org_acronym_rm": "ARE",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "http://www.are.admin.ch",
+              "url_de": "http://www.are.admin.ch",
+              "url_en": "http://www.are.admin.ch",
+              "url_fr": "http://www.are.admin.ch",
+              "url_it": "http://www.are.admin.ch",
+              "url_rm": "http://www.are.admin.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": "3063",
+          "contact_delivery_point": "Worblentalstrasse 66",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "rolf.giezendanner@are.admin.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:39.718Z",
+      "updated_at": "2026-07-22T07:01:37.929Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 7,
+    "fields": {
+      "dataset_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.swisstopo.geologie-dosisleistung-terrestrisch"
+      ],
+      "title_short_de": "from_fixture Terrestrische Strahlung",
+      "title_short_fr": "from_fixture Radiation terrestre",
+      "title_short_en": "from_fixture Terrestrial Radiation",
+      "title_short_it": "from_fixture Radiazione terrestre",
+      "title_short_rm": "from_fixture Radiaziun terrestra",
+      "description_de": "In Böden und Gesteinen kommen natürliche instabile Isotope verschiedener Elemente – zum Beispiel Uran, Thorium oder Kalium – vor, die bei ihrem Zerfall radioaktive Strahlung abgeben. Die obersten 30 bis 40 cm des Bodens liefern den Hauptteil der an der Oberfläche gemessenen Strahlung. Erfasst wird die terrestrische Dosisleistung einen Meter über dem Boden in der Masseinheit Nanosievert pro Stunde (nSv/h). In der Schweiz findet man vor allem in den Alpen Gesteine mit höheren Konzentrationen an Uran, Thorium und Kalium. Der Karte der terrestrischen Dosisleistung liegen verschiedene Messmethoden zugrunde: Zum einen wird die Radioaktivität anhand von Bodenproben durch gammaspektrometrische Messungen im Labor bestimmt. Die Aktivitäten werden aber auch mit Hilfe aeroradiometrischer und in-situ-gammaspektrometrischer Messungen vorgenommen. Da die Messpunkte heterogen über die Schweiz verteilt sind, wurden die vorhandenen Daten auf ein Gitternetz von 2 × 2 km interpoliert.",
+      "description_fr": "Les sols et les roches renferment des éléments naturels instables, comme l’uranium, le thorium et le potassium, qui émettent un rayonnement radioactif en se désintégrant. La majeure partie du rayonnement mesuré en surface provient des 30 à 40 cm supérieurs du sol. Le débit de dose radioactive terrestre est enregistré à un mètre de hauteur et il est exprimé en nanosieverts par heure (nSv/h). En Suisse, on trouve des lithologies riches en uranium, thorium et potassium dans les Alpes principalement. La carte du débit de dose radioactive terrestre a été établie par spectrométrie gamma mise en oeuvre à différents niveaux: mesures d’échantillons de sol en laboratoire, mesures directes sur le terrain et mesures aériennes. Comme les points de mesure sont inégalement répartis sur le territoire suisse, les données existantes ont été interpolées pour obtenir un maillage régulier de 2 × 2 km.",
+      "description_en": "Naturally unstable elements - such as uranium, thorium, potassium - in the upper 30 to 40 cm of the ground yield the bulk of the measured terrestrial radiation at the surface. The terrestrial radiation level is recorded one meter above the ground in the unit of measure nano-Sievert per hour (nSv/h). In Switzerland, rocks with high concentrations of uranium, thorium and potassium are mainly found in the Alps. Various methods of measurement form the basis of the terrestrial radiation dosage map: gamma spectrometry measurements of soil samples in the laboratory and aero-radiometric and gamma spectrometric measurements on site. The data from the measured locations were interpolated into a grid of 2 × 2 km.",
+      "description_it": "Gli elementi naturali instabili, come l’uranio, il torio e il potassio, nei primi 30 - 40 cm di suolo forniscono la maggior parte della radiazione misurata in superficie. L’intensità della radiazione terrestre si misura a un metro dal suolo ed e espressa in nano-Sievert l’ora (nSv/h). In Svizzera le concentrazioni più elevate di uranio, torio e potassio si trovano soprattutto nelle rocce delle Alpi. La mappa dell’intensità della radiazione terrestre sfrutta diversi metodi di misurazione: quello spettrometrico di tipo gamma in laboratorio su campioni di terreno, quello aeroradiometrico e spettrometrico di tipo gamma in situ. I dati dei punti di misura sono interpolati su una griglia di 2 × 2 km.",
+      "description_rm": "En ils funs ed en la crappa èn avant maun isotops instabils natirals da differents elements – per exempel uran, torium u calium – che produceschan ina radiaziun radioactiva, cur ch'els scrodan. Dals 30 fin 40 cm ils pli sisum dal terren deriva la gronda part da la radiaziun mesirada a la surfatscha. L'intensitad da la radiaziun terrestra vegn mesirada 1 meter sur il terren ed inditgada cun nanosieverts per ura (nSv/h). En Svizra chattan ins en spezial en las Alps crappa cun concentraziuns pli grondas d'uran, da torium e da calium. La charta da l'intensitad da la radiaziun terrestra sa basa sin differentas metodas da mesirar: Per l'ina vegn eruida la radioactivitad cun mesiraziuns gammaspectrometricas da provas da terren en il labor. Las activitads vegnan però er fatgas cun agid da mesiraziuns eroradiometricas e gammaspectrometricas al lieu. Perquai ch'ils puncts da mesiraziun èn repartids en moda eterogena sur la Svizra, vegnan las datas avant maun interpoladas ad ina rait da 2 x 2 kilometers.",
+      "geocat_id": "eccbc751-9928-4221-89e1-1184cbb3aff5",
+      "preferred_distribution": 13,
+      "legacy_contacts": [
+        {
+          "role": "pointOfContact",
+          "org_name": "Bundesamt für Landestopografie swisstopo",
+          "contact_sms": null,
+          "org_acronym": "swisstopo",
+          "org_name_de": "Bundesamt für Landestopografie swisstopo",
+          "org_name_en": "Federal Office of Topography swisstopo",
+          "org_name_fr": "Office fédéral de topographie swisstopo",
+          "org_name_it": "Ufficio federale di topografia swisstopo",
+          "org_name_rm": "Uffizi federal da topografia swisstopo",
+          "contact_city": "Wabern",
+          "contact_voice": "+41 58 469 05 74",
+          "org_acronym_de": "swisstopo",
+          "org_acronym_en": "swisstopo",
+          "org_acronym_fr": "swisstopo",
+          "org_acronym_it": "swisstopo",
+          "org_acronym_rm": "swisstopo",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://www.swisstopo.admin.ch/de/landesgeologie",
+              "url_de": "https://www.swisstopo.admin.ch/de/landesgeologie",
+              "url_en": "https://www.swisstopo.admin.ch/en/swiss-geological-survey",
+              "url_fr": "https://www.swisstopo.admin.ch/fr/service-geologique-national",
+              "url_it": "https://www.swisstopo.admin.ch/it/servizio-geologico-nazionale",
+              "url_rm": null,
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Landesgeologie",
+          "position_name_en": "Swiss Geological Survey",
+          "position_name_fr": "Service géologique national",
+          "position_name_it": "Servizio geologico nazionale",
+          "position_name_rm": "Landesgeologie",
+          "contact_facsimile": null,
+          "contact_postal_code": "3084",
+          "contact_delivery_point": "Seftigenstrasse 264",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "milan.beres@swisstopo.ch"
+          ]
+        },
+        {
+          "role": "resourceProvider",
+          "org_name": "Eidgenössisches Nuklearsicherheitsinspektorat ENSI",
+          "contact_sms": null,
+          "org_acronym": null,
+          "org_name_de": "Eidgenössisches Nuklearsicherheitsinspektorat ENSI",
+          "org_name_en": "Swiss Federal Nuclear Safety Inspectorate ENSI",
+          "org_name_fr": "Inspection fédérale de la sécurité nucléaire IFSN",
+          "org_name_it": "Ispettorato federale della sicurezza nucleare IFSN",
+          "org_name_rm": "Eidgenössisches Nuklearsicherheitsinspektorat",
+          "contact_city": "Brugg",
+          "contact_voice": "+41 56 460 85 45",
+          "org_acronym_de": null,
+          "org_acronym_en": null,
+          "org_acronym_fr": null,
+          "org_acronym_it": null,
+          "org_acronym_rm": null,
+          "contact_country": "CH",
+          "online_resources": [],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": "+41 56 460 84 99",
+          "contact_postal_code": "5200",
+          "contact_delivery_point": "Industriestrasse 19",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "benno.bucher@ensi.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:40.235Z",
+      "updated_at": "2026-07-22T07:01:34.065Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 8,
+    "fields": {
+      "dataset_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.swisstopo.geologie-hartsteinvorkommen"
+      ],
+      "title_short_de": "from_fixture Hartstein: Mächtigkeit und Qualität der geologischen Vorkommen",
+      "title_short_fr": "from_fixture Roches dures: Épaisseur et qualité des gisements géologiques",
+      "title_short_en": "from_fixture Hard rock aggregates: Thickness and quality of geological occurrences",
+      "title_short_it": "from_fixture Roccia dura: Potenza e qualità dei giacimenti geologici",
+      "title_short_rm": null,
+      "description_de": "Der Rohstoff Hartstein spielt beim Bau und Unterhalt des Schweizer Schienennetzes (Gleisschotter) sowie von Hochleistungs- und Hauptverkehrsstrassen (Hartsplitt) eine zentrale Rolle. Mehr dazu: <a href=\"https://rawmaterials.swissgeol.ch/de/hartstein\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Dieser Datensatz (Rasterzellengrösse: 50 x 50 m) zeigt die geschätzte räumliche Verteilung, nutzbare Mächtigkeit und Qualität der Hartstein führenden geologischen Einheiten unterhalb einer Terrainhöhe von 1300 m ü.M. und mächtiger als 30 m. Der Datensatz wurde auf der Grundlage von geologischen Profilen, stratigrafischen Beschreibungen und durch einen automatisierten Workflow erstellt, der auf den Datensatz swissGEOCOVER2D angewendet wurde. Weitere Informationen zu den berücksichtigten geologischen Einheiten befinden sich im <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Hartstein-Katalog</a>. Der Workflow und die Evaluationsmethodik für die gezeigten Daten sind in der <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Technischen Dokumentation</a> und in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a> dokumentiert. Die Hartstein-Produktions- und Abbaustandorte werden in einem eigenen Datensatz angezeigt (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Hartstein: Produktions- und Abbaustandorte</a>).Nutzende anerkennen, dass die Autoren alle zumutbaren Aufwände unternommen haben, um die Informationen des Datensatzes zu verifizieren. Es gibt keine Garantie, dass die angegebenen Daten an einem bestimmten Punkt korrekt sind. Für eine Standortentwicklung eines Rohstoffabbaus ist eine detaillierte geologische Untersuchung der Vorkommen vor Ort unumgänglich.",
+      "description_fr": "Les granulats issus de roches dures jouent un rôle central dans la construction et l'entretien du réseau ferroviaire suisse (ballast ferroviaire) ainsi que des routes à haute performance (gravillons durs). Pour en savoir plus: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Ce jeu de données (taille des tuiles : 50 x 50 m) présente une estimation de la répartition spatiale, de l'épaisseur utilisable et de la qualité des unités géologiques contenant des roches dures. Seules les unités géologiques situées à un niveau de terrain inférieur à 1300 m s.m. et ayant une épaisseur supérieure à 30 m sont affichées. Le jeu de données a été créé sur la base de coupes géologiques, de descriptions stratigraphiques et par l'intermédiaire d'un workflow automatisé, appliqué au jeu de données swissGEOCOVER2D. Des informations supplémentaires sur les unités géologiques prises en compte se trouvent dans le <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogue Roches Dures</a>. Le workflow et la méthodologie d'évaluation appliqués sont présentés dans la <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentation technique</a> et dans <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. Les sites de production et d'extraction des roches dures sont reportés dans un jeu de données dédié (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roches dures: Sites de production et d'extraction</a>).L'utilisateur reconnaît que les auteurs ont fait tous les efforts raisonnables pour vérifier les informations contenues dans le jeu de données présenté. Il n'y a aucune garantie que les données soient correctes à un endroit donné. Dans le cas où il est envisagé de développer un site d'extraction de matières premières, il est indispensable de procéder à une étude géologique détaillée sur place.",
+      "description_en": "Hard rock aggregates play a central role particularly for the construction and maintenance of the Swiss railway network (railway ballast) as well as of high-performance roads. For further information: <a href=\"https://rawmaterials.swissgeol.ch/de/hartstein\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. This dataset (raster cell size: 50 x 50 m) shows an estimation of the spatial distribution, the usable thickness and the quality of the hard rock-bearing geological units situated at a ground elevation lower than 1300 m a.s.l. and with a thickness exceeding 30 m. The dataset has been produced based on geological profiles, stratigraphic descriptions and through an automated workflow applied to the swissGEOCOVER2D dataset. Explanatory notes regarding the geological units considered and their characteristics can be found in the <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Hard rock catalog</a>. The workflow and methodology used for the compilation of the dataset are described in the <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Technical documentation</a> and in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. The hard rock aggregates production and mining sites are displayed in a dedicated dataset (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Hard rock aggregates: Production and mining sites</a>).The user acknowledges that the authors have taken every reasonable effort to ensure that information contained in this dataset is as accurate as possible. There is no guarantee that the given data related to a definite point in the subsurface is completely accurate. In case it is desired to develop a mining site, it is essential to conduct a detailed geological investigation on the location of interest.",
+      "description_it": "I granulati ottenuti dalla lavorazione della roccia dura svolgono un ruolo centrale nella costruzione e nella manutenzione della rete ferroviaria svizzera (massicciata ferroviaria) e di strade soggette a un forte carico di traffico. Per ulteriori informazioni: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Questo set di dati (dimensioni delle celle raster: 50 x 50 m) fornisce una stima della distribuzione spaziale, della potenza (spessore) utilizzabile e della qualità delle unità geologiche contenenti roccia dura. Visualizzate sono solo le unità geologiche che si trovano a una quota inferiore a 1300 m s.l.m. e aventi una potenza superiore a 30 m. Il set di dati è stato sviluppato sulla base di profili geologici e descrizioni stratigrafiche e tramite un workflow automatizzato, applicato al set di dati swissGEOCOVER2D. Ulteriori informazioni sulle unità geologiche prese in considerazione sono consultabili nel <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogo Rocce Dure</a>. Il workflow e la metodologia di valutazione applicata sono presentati nella <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentazione Tecnica</a> e in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. I siti di produzione e estrazione di rocce dure sono visualizzabili in un set di dati separato (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roccia dura: siti di produzione e estrazione</a>).L'utente riconosce che gli autori hanno applicato tutti gli sforzi ragionevoli per verificare le informazioni contenute nel set di dati presentato. Non c'è alcuna garanzia che i dati siano corretti in qualsiasi punto del sottosuolo. Nel caso si auspichi allo sviluppo di un sito di estrazione di materie prime, è essenziale condurre un'indagine geologica dettagliata in loco.",
+      "description_rm": null,
+      "geocat_id": "258c7ccf-5e7f-4759-9c09-519d41ba4d02",
+      "preferred_distribution": 16,
+      "legacy_contacts": [
+        {
+          "role": "owner",
+          "org_name": "Bundesamt für Landestopografie swisstopo",
+          "contact_sms": null,
+          "org_acronym": "swisstopo",
+          "org_name_de": "Bundesamt für Landestopografie swisstopo",
+          "org_name_en": "Federal Office of Topography swisstopo",
+          "org_name_fr": "Office fédéral de topographie swisstopo",
+          "org_name_it": "Ufficio federale di topografia swisstopo",
+          "org_name_rm": "Uffizi federal da topografia swisstopo",
+          "contact_city": "Wabern",
+          "contact_voice": "+41 58 469 05 68",
+          "org_acronym_de": "swisstopo",
+          "org_acronym_en": "swisstopo",
+          "org_acronym_fr": "swisstopo",
+          "org_acronym_it": "swisstopo",
+          "org_acronym_rm": "swisstopo",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://www.swisstopo.admin.ch/de/landesgeologie",
+              "url_de": "https://www.swisstopo.admin.ch/de/landesgeologie",
+              "url_en": "https://www.swisstopo.admin.ch/en/swiss-geological-survey",
+              "url_fr": "https://www.swisstopo.admin.ch/fr/service-geologique-national",
+              "url_it": "https://www.swisstopo.admin.ch/it/servizio-geologico-nazionale",
+              "url_rm": "https://www.swisstopo.admin.ch/de/landesgeologie",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Landesgeologie",
+          "position_name_en": "Swiss Geological Survey",
+          "position_name_fr": "Service géologique national",
+          "position_name_it": "Servizio geologico nazionale",
+          "position_name_rm": "Landesgeologie",
+          "contact_facsimile": null,
+          "contact_postal_code": "3084",
+          "contact_delivery_point": "Seftigenstrasse 264",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "geolcat@swisstopo.ch"
+          ]
+        },
+        {
+          "role": "owner",
+          "org_name": "Fachgruppe Georessourcen Schweiz",
+          "contact_sms": null,
+          "org_acronym": null,
+          "org_name_de": "Fachgruppe Georessourcen Schweiz",
+          "org_name_en": "Georesources Switzerland Group",
+          "org_name_fr": "Groupe d'expertise des Géoressources Suisse",
+          "org_name_it": "Gruppo Specialistico Georisorse Svizzera",
+          "org_name_rm": null,
+          "contact_city": "Zürich",
+          "contact_voice": "+41 44 632 37 28",
+          "org_acronym_de": null,
+          "org_acronym_en": null,
+          "org_acronym_fr": null,
+          "org_acronym_it": null,
+          "org_acronym_rm": null,
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://georessourcen.ethz.ch",
+              "url_de": "https://georessourcen.ethz.ch",
+              "url_en": "https://georessourcen.ethz.ch",
+              "url_fr": "https://georessourcen.ethz.ch",
+              "url_it": "https://georessourcen.ethz.ch",
+              "url_rm": null,
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": null,
+          "position_name_en": null,
+          "position_name_fr": null,
+          "position_name_it": null,
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": "8092",
+          "contact_delivery_point": "Sonneggstrasse 5",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "georessourcen@eaps.ethz.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:40.286Z",
+      "updated_at": "2026-07-22T07:01:49.668Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 9,
+    "fields": {
+      "dataset_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.blw.bodeneignung-wasserdurchlaessigkeit"
+      ],
+      "title_short_de": "from_fixture Digitale Bodeneignungskarte der Schweiz - Wasserdurchlässigkeit",
+      "title_short_fr": "from_fixture Carte digitale des aptitudes des sols de la Suisse - Perméabilité",
+      "title_short_en": "from_fixture Digital soil suitability map of Switzerland - Permeability",
+      "title_short_it": "from_fixture Carta digitale delle attitudini dei suoli svizzeri - Permeabilità",
+      "title_short_rm": "from_fixture Charta digitala da l'adattaziun dal terren da la Svizra – permeabilitad",
+      "description_de": "Die Wasserdurchlässigkeit wurde an gesättigten Stechzylinderproben im Labor bestimmt. Aus Beobachtungen im Feld ergaben sich Beziehungen zwischen dem Niederschlag, der Durchlässigkeit und den morphologischen Merkmalen. Berücksichtigt wurde der am schlechtesten durchlässige Horizont der obersten 50 cm.(Details: Bodeneignungskarte der Schweiz, März 1980)",
+      "description_fr": "La perméabilité est mesurée en laboratoire sur des échantillons cylindriques saturés. Les observations de terrain permettent d'etablir des relations entre les précipitations, la perméablilité et les traits morphologiques. On a pris en considération l'horizon le moins perméable des 50 cm supérieurs.",
+      "description_en": "Permeability is measured using saturated soil core samples in the laboratory. Observations in the field highlighted a relationship between precipitation, permeability and morphological features. The least permeable soil horizon of the top 50 cm was evaluated. (Details: Soil suitability map of Switzerland, March 1980).",
+      "description_it": "La permeabilità è misurata in laboratorio su campioni cilindrici saturi. Le osservazioni del terreno consentono di stabilire correlazioni tra le precipitazioni, la permeabilità e i tratti morfologici. È stato considerato l'orizzone meno permeabile dei 50 cm superiori. (Dettagli: carta delle attitudini dei suoli svizzeri, marzo 1980).",
+      "description_rm": "La permeabilitad vegn mesirada en il labor vi d'emprovas cilindricas saturadas. Las observaziuns dal terren permettan da descriver relaziuns tranter las precipitaziuns, la permeabilitad e las caracteristicas morfologicas. Ins ha resguardà l'orizont il main permeabel dals 50 cm il pli sisum. (Detagls: charta da l'adattaziun dal terren da la Svizra, mars 1980)",
+      "geocat_id": "d5bd22a3-0656-4582-97bc-37f77b5426ca",
+      "preferred_distribution": 19,
+      "legacy_contacts": [
+        {
+          "role": "pointOfContact",
+          "org_name": "Bundesamt für Landwirtschaft",
+          "contact_sms": null,
+          "org_acronym": "BLW",
+          "org_name_de": "Bundesamt für Landwirtschaft",
+          "org_name_en": "Federal Office for Agriculture",
+          "org_name_fr": "Office fédéral de l'agriculture",
+          "org_name_it": "Ufficio federale dell'agricoltura",
+          "org_name_rm": "Bundesamt für Landwirtschaft",
+          "contact_city": "Bern",
+          "contact_voice": "+41 58 462 26 05",
+          "org_acronym_de": "BLW",
+          "org_acronym_en": "FOAG",
+          "org_acronym_fr": "OFAG",
+          "org_acronym_it": "UFAG",
+          "org_acronym_rm": "BLW",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://www.blw.admin.ch/blw/de/home.html?_organization=705",
+              "url_de": "https://www.blw.admin.ch/blw/de/home.html?_organization=705",
+              "url_en": "https://www.blw.admin.ch/blw/en/home.html?_organization=705",
+              "url_fr": "https://www.blw.admin.ch/blw/fr/home.html",
+              "url_it": "https://www.blw.admin.ch/blw/it/home.html",
+              "url_rm": "https://www.blw.admin.ch/blw/de/home.html?_organization=705",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Fachbereich Agrarinformationssysteme",
+          "position_name_en": "Agricultural Policy Information Systems",
+          "position_name_fr": "Secteur Système d'information sur l'agriculture",
+          "position_name_it": "Settore Sistema d'informazione sull'agricoltura",
+          "position_name_rm": "Fachbereich Agrarinformationssystem",
+          "contact_facsimile": null,
+          "contact_postal_code": "3003",
+          "contact_delivery_point": "Schwarzenburgstrasse 165",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "info@blw.admin.ch"
+          ]
+        },
+        {
+          "role": "pointOfContact",
+          "org_name": "Info Fauna Karch",
+          "contact_sms": null,
+          "org_acronym": "InfoKarch",
+          "org_name_de": "Info Fauna Karch",
+          "org_name_en": "Info_Fauna_Karch",
+          "org_name_fr": "Information_Fauna_Karch",
+          "org_name_it": "Informatione_Fauna_Karch",
+          "org_name_rm": null,
+          "contact_city": "Neuchâtel",
+          "contact_voice": null,
+          "org_acronym_de": "InfoKarch",
+          "org_acronym_en": "ART",
+          "org_acronym_fr": "ART",
+          "org_acronym_it": "ART",
+          "org_acronym_rm": null,
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "https://www.infofauna.ch/de/beratungsstellen/amphibien-karch",
+              "url_de": "https://www.infofauna.ch/de/beratungsstellen/amphibien-karch",
+              "url_en": "https://www.agroscope.admin.ch/agroscope/en/home.html",
+              "url_fr": "https://www.agroscope.admin.ch/agroscope/fr/home.html",
+              "url_it": "https://www.agroscope.admin.ch/agroscope/it/home.html",
+              "url_rm": null,
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Information Karch Amphibien",
+          "position_name_en": "Information amphibianss karch",
+          "position_name_fr": "Information amphibiens karch",
+          "position_name_it": "Informatione anfibi karch",
+          "position_name_rm": null,
+          "contact_facsimile": null,
+          "contact_postal_code": "2000",
+          "contact_delivery_point": "Belleveaus 51",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "contact@infofauna.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:40.336Z",
+      "updated_at": "2026-07-22T07:01:35.383Z"
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "pk": 10,
+    "fields": {
+      "dataset_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte",
+      "data_source": "bod-dataset",
+      "data_source_ids": [
+        "ch.swisstopo.vec25-einzelobjekte"
+      ],
+      "title_short_de": "from_fixture VECTOR25 Einzelobjekte",
+      "title_short_fr": "from_fixture VECTOR25 Objets isolés",
+      "title_short_en": "from_fixture VECTOR25 Single objects",
+      "title_short_it": "from_fixture VECTOR25 Oggetti isolati",
+      "title_short_rm": "from_fixture VECTOR25 Objects singuls",
+      "description_de": "Die Ebene Einzelobjekte (Abkürzung eob) umfasst eine Auswahl von markanten topografischen Punkt- und Linienobjekten (Orientierungshilfen).",
+      "description_fr": "La couche thématique Objets isolés (abréviation eob) contient une sélection d'objets marquants figurant sous forme de points et de lignes (aides à l'orientation).",
+      "description_en": "The layer single objects (abbreviation \"eob\") includes a choice of prominent point and line objects (orientation aids).",
+      "description_it": "Il livello Oggetti isolati (abbreviazione eob) comprende una selezione di oggetti topografici marcati, puntuali e lineari (strumenti di orientamento).",
+      "description_rm": "Il plaun Objects singuls (abreviaziun eob) cumpiglia ina selecziun d'objects topografics marcants che figureschan en furma da puncts e da lingias (agids d'orientaziun).",
+      "geocat_id": "5fb1376e-554a-4bcc-9c1d-e0b9b39d7aaa",
+      "preferred_distribution": 22,
+      "legacy_contacts": [
+        {
+          "role": "pointOfContact",
+          "org_name": "Bundesamt für Landestopografie swisstopo",
+          "contact_sms": null,
+          "org_acronym": "swisstopo",
+          "org_name_de": "Bundesamt für Landestopografie swisstopo",
+          "org_name_en": "Federal Office of Topography swisstopo",
+          "org_name_fr": "Office fédéral de topographie swisstopo",
+          "org_name_it": "Ufficio federale di topografia swisstopo",
+          "org_name_rm": "Uffizi federal da topografia swisstopo",
+          "contact_city": "Wabern",
+          "contact_voice": "+41 58 469 01 11",
+          "org_acronym_de": "swisstopo",
+          "org_acronym_en": "swisstopo",
+          "org_acronym_fr": "swisstopo",
+          "org_acronym_it": "swisstopo",
+          "org_acronym_rm": "swisstopo",
+          "contact_country": "CH",
+          "online_resources": [
+            {
+              "url": "http://www.swisstopo.ch",
+              "url_de": "http://www.swisstopo.ch",
+              "url_en": "http://www.swisstopo.ch",
+              "url_fr": "http://www.swisstopo.ch",
+              "url_it": "http://www.swisstopo.ch",
+              "url_rm": "http://www.swisstopo.ch",
+              "name_de": null,
+              "name_en": null,
+              "name_fr": null,
+              "name_it": null,
+              "name_rm": null,
+              "function": null,
+              "protocol": "WWW:LINK",
+              "description_de": null,
+              "description_en": null,
+              "description_fr": null,
+              "description_it": null,
+              "description_rm": null
+            }
+          ],
+          "position_name_de": "Geodatenabgabe",
+          "position_name_en": "Geodata Distribution",
+          "position_name_fr": "Distribution des géodonnées",
+          "position_name_it": "Distribuzione di geodati",
+          "position_name_rm": "Geodatenabgabe",
+          "contact_facsimile": "+41 58 469 04 59",
+          "contact_postal_code": "3084",
+          "contact_delivery_point": "Seftigenstrasse 264",
+          "contact_administrative_area": null,
+          "contact_electronic_mail_addresses": [
+            "geodata@swisstopo.ch"
+          ]
+        }
+      ],
+      "created_at": "2026-05-18T09:16:40.412Z",
+      "updated_at": "2026-07-22T07:01:46.678Z"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 1,
+    "fields": {
+      "dataset": 1,
+      "unit": 1,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 2,
+    "fields": {
+      "dataset": 2,
+      "unit": 2,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 3,
+    "fields": {
+      "dataset": 3,
+      "unit": 1,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 4,
+    "fields": {
+      "dataset": 4,
+      "unit": 2,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 5,
+    "fields": {
+      "dataset": 5,
+      "unit": 1,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 6,
+    "fields": {
+      "dataset": 6,
+      "unit": 2,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 7,
+    "fields": {
+      "dataset": 7,
+      "unit": 1,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 8,
+    "fields": {
+      "dataset": 8,
+      "unit": 2,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 9,
+    "fields": {
+      "dataset": 9,
+      "unit": 1,
+      "role": "owner"
+    }
+  },
+  {
+    "model": "dataset.datasettounit",
+    "pk": 10,
+    "fields": {
+      "dataset": 10,
+      "unit": 2,
+      "role": "owner"
+    }
+  }
+]
