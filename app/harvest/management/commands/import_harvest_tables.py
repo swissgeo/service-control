@@ -729,6 +729,7 @@ class Command(CustomBaseCommand):
         dist.title_it = "Geoadmin Features"
         dist.title_en = "Geoadmin Features"
         dist.title_rm = "Geoadmin Features"
+        dist.meta_information = True
         # Note: This information is not relyable in the layers_js table. There are
         # layers with searchable=true that return 404 for search requests on ../SearchServer
         # with `type=features`, which indicates that they are not actually queryable.

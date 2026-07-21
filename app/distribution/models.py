@@ -43,6 +43,12 @@ class Distribution(PolymorphicModel):
     description_it = models.TextField(_(_context, "Description (Italian)"), null=True, blank=True)
     description_rm = models.TextField(_(_context, "Description (Romansh)"), null=True, blank=True)
 
+    meta_information = models.BooleanField(
+        _(_context, "Meta Information"),
+        default=False,
+        help_text=_(_context, "Whether the layer holds meta information (rather than data)"),
+    )
+
     class DataSource(models.TextChoices):
         BOD_LAYERS_JS = "bod-layers-js", _("Distribution DataSource", "BOD (Layers JS)")
         SERVICE_CAPABILITIES = (

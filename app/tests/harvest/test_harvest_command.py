@@ -1099,6 +1099,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_1.description_en == "D EN"
     assert dist_1.description_it == "D IT"
     assert dist_1.description_rm == "D RM"
+    assert dist_1.meta_information is False
     assert dist_1.opacity == Decimal("0.5")
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
@@ -1115,6 +1116,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_2.description_en == "D EN"
     assert dist_2.description_it == "D IT"
     assert dist_2.description_rm == "D RM"
+    assert dist_2.meta_information is False
     assert dist_2.opacity == Decimal("0.5")
     assert dist_2.gutter == 0
 
@@ -1127,6 +1129,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_3.title_en == "Geoadmin Features"
     assert dist_3.title_it == "Geoadmin Features"
     assert dist_3.title_rm == "Geoadmin Features"
+    assert dist_3.meta_information is True
     assert dist_3.renderable is True
     assert dist_3.queryable is False
 
@@ -1150,6 +1153,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_4.description_en == "D EN"
     assert dist_4.description_it == "D IT"
     assert dist_4.description_rm == "D RM"
+    assert dist_4.meta_information is False
     assert dist_4.opacity == Decimal("0.6")
     assert dist_4.gutter == 1
 
@@ -1164,6 +1168,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_5.title_en == "Geoadmin Features"
     assert dist_5.title_it == "Geoadmin Features"
     assert dist_5.title_rm == "Geoadmin Features"
+    assert dist_5.meta_information is True
     assert dist_5.renderable is False
     assert dist_5.queryable is True
 
@@ -1186,6 +1191,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.description_en == "D EN"
     assert dist_6.description_it == "D IT"
     assert dist_6.description_rm == "D RM"
+    assert dist_6.meta_information is False
     assert dist_6.geojson_url_de == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json"
     assert dist_6.geojson_url_fr == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json"
     assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"
