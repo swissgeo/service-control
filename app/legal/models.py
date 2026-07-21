@@ -1,27 +1,30 @@
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
+from utils.fields import CustomSlugField
+
 
 class GeopoliticalEntity(models.Model):
-    """Entity model for geobasisdaten.ch entities"""
+    """Entity model for geopolitical entities"""
 
     _context = "Geopolitical Entity Model"
 
     class Level(models.TextChoices):
         FEDERAL = "federal", _("GeopoliticalEntity Level", "Federal")
-        CANTON = "canton", _("GeopoliticalEntity Level", "Canton")
-        COMMUNITY = "community", _("GeopoliticalEntity Level", "Community")
-        REGION = "region", _("GeopoliticalEntity Level", "Region")
-        COUNTY = "county", _("GeopoliticalEntity Level", "County")
-        CORP = "corp", _("GeopoliticalEntity Level", "Corporate")
+        CANTONAL = "cantonal", _("GeopoliticalEntity Level", "Cantonal")
+        COMMUNAL = "communal", _("GeopoliticalEntity Level", "Communal")
+        DISTRICTAL = "districtal", _("GeopoliticalEntity Level", "Districtal")
+        CORPORAL = "corporal", _("GeopoliticalEntity Level", "Corporal")
 
-    geopolitical_entity_id = models.IntegerField(
-        unique=True, help_text=_(_context, "Stable external identifier of the geopolitical entity")
+    geopolitical_entity_id = CustomSlugField(
+        max_length=100,
+        unique=True,
+        help_text=_(_context, "Stable external identifier of the geopolitical entity"),
     )
     type = models.CharField(
         max_length=255,
         choices=Level.choices,
-        default=Level.COMMUNITY,
+        default=Level.COMMUNAL,
         help_text=_(_context, "Describes the type / level of geopolitical unit"),
     )
     parent = models.ForeignKey(
@@ -31,9 +34,6 @@ class GeopoliticalEntity(models.Model):
         blank=True,
         related_name="children",
         help_text=_(_context, "Link to the parent geopolitical entity"),
-    )
-    name = models.CharField(
-        max_length=255, help_text=_(_context, "The name of the GeopoliticalEntity (without type)")
     )
     name_de = models.CharField(
         max_length=255,
@@ -77,4 +77,4 @@ class GeopoliticalEntity(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.geopolitical_entity_id)
