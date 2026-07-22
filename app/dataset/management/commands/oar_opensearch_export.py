@@ -451,8 +451,10 @@ class Command(CustomBaseCommand):
         ]
         if blocking and not options["migrate_to_alias"]:
             names = ", ".join(f"'{a}'" for a in blocking)
-            subject = f"{names} is a concrete index" if len(blocking) == 1 else (
-                f"{names} are concrete indices"
+            subject = (
+                f"{names} is a concrete index"
+                if len(blocking) == 1
+                else (f"{names} are concrete indices")
             )
             raise CommandError(
                 f"{subject}, not an alias, so the new index cannot be swapped in atomically. "
@@ -498,9 +500,7 @@ class Command(CustomBaseCommand):
         for alias, index in targets.items():
             existing = client.indices.get(index=f"{alias}-*", ignore_unavailable=True)
             # Never touch the generation just swapped in, whatever `keep` says.
-            candidates = sorted(
-                i for i in existing if i != index and _is_generation_of(i, alias)
-            )
+            candidates = sorted(i for i in existing if i != index and _is_generation_of(i, alias))
             stale = candidates[: max(len(candidates) - keep, 0)] if keep >= 0 else []
             for old_index in stale:
                 self.print_warning(f"Deleting superseded index '{old_index}'")
