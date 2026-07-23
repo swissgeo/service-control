@@ -221,9 +221,22 @@ class OARDataset(OARRecord):
                 organization=contact.get(f"org_name_{lang}") or contact.get("org_name"),
                 country=contact.get("contact_country") or "CH",
                 role=contact.get("role"),
+                contact_instructions="",
             )
             for contact in ds.legacy_contacts
         ]
+        contacts.extend(
+            [
+                Contact(
+                    organization="",
+                    country="CH",
+                    role=contact.role,
+                    contact_instructions=contact.contact.legacy_contact,
+                )
+                for contact in ds.dataset_contacts.all()  # ty:ignore[unresolved-attribute]
+                if contact.contact.legacy_contact
+            ]
+        )
 
         properties = {
             "contacts": contacts,
@@ -661,6 +674,11 @@ class OARCollection(BaseModel):
 
 
 class Contact(BaseModel):
+    """Contact for a record, qualified by its role(s).
+
+    See https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/contact.yaml
+    """
+
     organization: str
     country: str
     role: str
@@ -671,6 +689,7 @@ class Contact(BaseModel):
     # address: str | None
     # city: str | None
     # postal_code: str | None
+    contact_instructions: str | None = Field(serialization_alias="contactInstructions")
 
 
 class OASLink(BaseLink):
