@@ -46,6 +46,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import boto3
+from opensearchpy import OpenSearch, RequestsHttpConnection, helpers
+from requests_aws4auth import AWS4Auth
+
 from django.core.management.base import CommandError, CommandParser
 
 from dataservice.models import Dataservice
@@ -141,8 +145,6 @@ def _wait_for_credentials() -> None:
 
     IMDS credential fetches can fail transiently on startup due to network errors.
     """
-    import boto3  # noqa: PLC0415
-
     for attempt in range(1, _CRED_RETRIES + 1):
         creds = boto3.Session().get_credentials()
         if creds is not None and creds.get_frozen_credentials().access_key:
@@ -295,12 +297,11 @@ class Command(CustomBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         dump = options["dump"]
 
-        if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
-            self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
+        self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
         # --dump never talks to OpenSearch at all; otherwise every run creates the indices and
         # imports the documents.
-        client = self._get_client(options) if not dump else None
+        client = self.get_client(options) if not dump else None
 
         # An atomic swap needs new indices to build and an import to fill them, so it always
         # applies to a real (non-dump) run, unless explicitly disabled with --no-swap.
@@ -327,24 +328,13 @@ class Command(CustomBaseCommand):
 
     # ------------------------------------------------------------------ client
 
-    def _get_client(self, options: dict) -> Any:
+    def get_client(self, options: dict) -> Any:
         """Build and ping an OpenSearch client, optionally using AWS SigV4 auth."""
-        try:
-            from opensearchpy import OpenSearch, RequestsHttpConnection  # noqa: PLC0415
-        except ImportError as exc:  # pragma: no cover - depends on deployment env
-            raise CommandError(
-                "The 'opensearch-py' package is required for this command. "
-                "Install it (and 'requests-aws4auth' for AWS auth)."
-            ) from exc
-
         url = options["opensearch_url"]
         aws_auth = options["aws_auth"]
         use_aws = aws_auth if aws_auth is not None else url.startswith("https")
 
         if use_aws:
-            import boto3  # noqa: PLC0415
-            from requests_aws4auth import AWS4Auth  # noqa: PLC0415
-
             _wait_for_credentials()  # ensures credentials are available below
             region = os.environ.get("AWS_DEFAULT_REGION", "eu-central-1")
             credentials = boto3.Session().get_credentials().get_frozen_credentials()  # ty:ignore[unresolved-attribute]
@@ -372,7 +362,7 @@ class Command(CustomBaseCommand):
 
     # ------------------------------------------------------------------ indices
 
-    def _load_mapping(self, index: str) -> dict:
+    def load_mapping(self, index: str) -> dict:
         return json.loads(INDEX_MAPPING_FILES[index].read_text())
 
     def do_create_indexes(self, client: Any, targets: dict[str, str], swap: bool = False) -> None:
@@ -388,20 +378,18 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"Index '{index}' already exists with {count} documents.")
                 continue
             self.print_success(f"Creating index '{index}'")
-            client.indices.create(index=index, body=self._load_mapping(alias))
+            client.indices.create(index=index, body=self.load_mapping(alias))
 
     # ------------------------------------------------------------------ import
 
     def do_import(self, client: Any, index: str, dtype: str, options: dict) -> None:
         self.print_success(f"Building {dtype} documents...")
-        documents = list(self._iter_documents(dtype))
+        documents = list(self.iter_documents(dtype))
 
         if options["dump"]:
-            self._dump_to_files(documents, TYPE_TO_INDEX[dtype])
+            self.dump_to_files(documents, TYPE_TO_INDEX[dtype])
             self.print_success(f"Generated {len(documents)} {dtype} documents (not imported).")
             return
-
-        from opensearchpy import helpers  # noqa: PLC0415
 
         def actions() -> Iterator[dict]:
             for doc in documents:
@@ -483,9 +471,9 @@ class Command(CustomBaseCommand):
             previous = ", ".join(superseded[alias]) or "none"
             self.print_success(f"Alias '{alias}' -> '{index}' (was: {previous})")
 
-        self._prune_generations(client, targets, options["keep_generations"])
+        self.prune_generations(client, targets, options["keep_generations"])
 
-    def _prune_generations(self, client: Any, targets: dict[str, str], keep: int) -> None:
+    def prune_generations(self, client: Any, targets: dict[str, str], keep: int) -> None:
         """Delete old generations of each alias, keeping the ``keep`` most recent for rollback.
 
         The candidates are discovered from the cluster rather than from what the alias pointed
@@ -510,7 +498,7 @@ class Command(CustomBaseCommand):
             if kept:
                 self.print(f"Keeping {len(kept)} superseded index/indices for rollback: {kept}")
 
-    def _dump_to_files(self, documents: list[dict], index: str) -> None:
+    def dump_to_files(self, documents: list[dict], index: str) -> None:
         """Write each document as its own JSON file below ``DUMP_DIR``."""
         target_dir = DUMP_DIR / index
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -526,23 +514,23 @@ class Command(CustomBaseCommand):
 
         self.print_success(f"Wrote {len(documents)} documents to {target_dir}")
 
-    def _iter_documents(self, dtype: str) -> Iterator[dict]:
+    def iter_documents(self, dtype: str) -> Iterator[dict]:
         if dtype == "services":
             for service in Dataservice.objects.all():
                 self.print(f" - {service.dataservice_id}")
-                yield self._build_service_doc(service, OAR_BASE_URL)
+                yield self.build_service_doc(service, OAR_BASE_URL)
         elif dtype == "datasets":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
-                yield self._build_dataset_doc(dataset, OAR_BASE_URL)
+                yield self.build_dataset_doc(dataset, OAR_BASE_URL)
         elif dtype == "distributions":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
-                yield self._build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL)
+                yield self.build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL)
 
     # ------------------------------------------------------------ doc builders
 
-    def _build_service_doc(self, service: Dataservice, oar_base_url: str) -> dict:
+    def build_service_doc(self, service: Dataservice, oar_base_url: str) -> dict:
         """Build a ``geoadmin-services`` document from a Dataservice."""
         features = {
             lang: _dump(
@@ -567,7 +555,7 @@ class Command(CustomBaseCommand):
             "linkTemplates": base.get("linkTemplates", []),
         }
 
-    def _build_dataset_doc(self, dataset: Dataset, oar_base_url: str) -> dict:
+    def build_dataset_doc(self, dataset: Dataset, oar_base_url: str) -> dict:
         """Build a ``swissgeo-catalog`` document from a Dataset."""
         features = {
             lang: _dump(OARDataset.from_dataset(dataset, lang, CATALOG_COLLECTION_ID, oar_base_url))
@@ -607,7 +595,7 @@ class Command(CustomBaseCommand):
             "properties": properties,
         }
 
-    def _build_distribution_doc(
+    def build_distribution_doc(
         self, dataset: Dataset, oar_base_url: str, oas_base_url: str
     ) -> dict:
         """Build a ``swissgeo-distributions`` FeatureCollection document from a Dataset."""

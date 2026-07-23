@@ -1,4 +1,3 @@
-# ruff:noqa:SLF001
 from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import Command
 from dataset.models import Dataset
@@ -38,7 +37,7 @@ def _make_dataset() -> Dataset:
 
 
 def test_build_service_doc(db):
-    doc = Command()._build_service_doc(_make_dataservice(), OAR_BASE_URL)
+    doc = Command().build_service_doc(_make_dataservice(), OAR_BASE_URL)
 
     assert doc["id"] == "wmts-geoadminch"
     assert doc["type"] == "Feature"
@@ -61,7 +60,7 @@ def test_build_service_doc(db):
 
 
 def test_build_dataset_doc(db):
-    doc = Command()._build_dataset_doc(_make_dataset(), OAR_BASE_URL)
+    doc = Command().build_dataset_doc(_make_dataset(), OAR_BASE_URL)
 
     assert doc["$schema"].endswith("recordGeoJSON.yaml")
     assert doc["id"] == "ch.bafu.moose"
@@ -120,7 +119,7 @@ def test_build_distribution_doc(db):
         gutter=0,
     ).save()
 
-    doc = Command()._build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL)
+    doc = Command().build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL)
 
     assert doc["id"] == "ch.bafu.moose"
     assert doc["type"] == "FeatureCollection"
