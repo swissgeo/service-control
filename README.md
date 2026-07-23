@@ -175,18 +175,6 @@ The `oar_opensearch_export` command builds OGC API Records documents from the da
 uv run app/manage.py oar_opensearch_export
 ```
 
-The command must run inside the virtualenv and with the environment variables from `.env`
-loaded, as django reads its settings from the environment. Running `app/manage.py` directly
-fails with `ModuleNotFoundError: No module named 'opentelemetry'`, and running it without the
-environment fails with `ModuleNotFoundError: No module named 'config.settings'`.
-
-The shell started by `make setup` already has both. In any other shell, pass the env file
-explicitly:
-
-```bash
-uv run --env-file .env app/manage.py oar_opensearch_export
-```
-
 Every run processes all three record types, each written to its own index:
 
 | Record type     | OpenSearch index         | Source model   |
@@ -243,12 +231,6 @@ uv run app/manage.py oar_opensearch_export --opensearch-url https://<host> --mig
 
 That run deletes the concrete index just before the swap, which means a short window with no
 data — the only run that has one. Every run afterwards is seamless and needs no flag.
-
-Make sure the database is seeded first, otherwise there is nothing to export:
-
-```bash
-make seed-local-testdata
-```
 
 ### Inspecting The Documents With --dump
 
