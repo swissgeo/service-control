@@ -65,10 +65,6 @@ from dataset.management.commands.oar_export import OAS_BASE_URL as _OAS_BASE_URL
 from dataset.models import Dataset
 from utils.command import CustomBaseCommand
 
-# Default directory the '--dump' documents are written to when no directory is passed, relative
-# to the current working directory.
-DUMP_DIR = Path(".generated") / "oar_opensearch_export"
-
 # OpenSearch index names.
 SERVICES_INDEX = "geoadmin-services"
 # The datasets index is historically called ``swissgeo-catalog`` -- this matches the
@@ -267,15 +263,16 @@ class Command(CustomBaseCommand):
             default=500,
             help="Number of documents per bulk request (default: 500)",
         )
+        default_dump_dir = str(Path(".generated") / "oar_opensearch_export")
         parser.add_argument(
             "--dump",
             nargs="?",
-            const=str(DUMP_DIR),
+            const=default_dump_dir,
             default=None,
             metavar="DIR",
             help=(
                 "Write the generated documents to DIR/<index>/<id>.json instead of talking to "
-                f"OpenSearch at all. DIR defaults to {DUMP_DIR} when given without a value"
+                f"OpenSearch at all. DIR defaults to {default_dump_dir} when given without a value"
             ),
         )
 
