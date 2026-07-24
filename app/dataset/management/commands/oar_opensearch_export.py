@@ -9,13 +9,13 @@ This command:
     models from :mod:`dataset.export_models` as the source of truth -- and bulk-inserts
     them into the corresponding index.
 
-By default the export runs *atomically*: the documents go into freshly created, timestamped
+The export always runs *atomically*: the documents go into freshly created, timestamped
 indices (``swissgeo-catalog-20260722153000``), and only once every requested type has been
 indexed without errors are the index names (``swissgeo-catalog``) -- which are aliases --
 repointed at the new indices in a single ``_aliases`` call. Readers keep seeing the previous
 generation until that swap, and never see a half-filled index. Because all aliases move in
 one request, the cross-index links between datasets, distributions and services stay
-consistent. ``--no-swap`` opts out and writes into the aliased indices in place.
+consistent.
 
 Connection to OpenSearch uses AWS SigV4 authentication when talking to an AWS managed
 OpenSearch domain, or plain HTTP for a local instance.
@@ -253,15 +253,6 @@ class Command(CustomBaseCommand):
             help="Disable AWS SigV4 authentication",
         )
         parser.add_argument(
-            "--no-swap",
-            dest="swap",
-            action="store_false",
-            help=(
-                "Write directly into the aliased indices instead of building new timestamped "
-                "indices and atomically swapping the aliases over when the import succeeded"
-            ),
-        )
-        parser.add_argument(
             "--keep-generations",
             type=int,
             default=KEEP_GENERATIONS,
@@ -293,29 +284,26 @@ class Command(CustomBaseCommand):
 
         self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
-        # --dump never talks to OpenSearch at all; otherwise every run creates the indices and
-        # imports the documents.
+        # --dump never talks to OpenSearch at all; otherwise every run creates the indices,
+        # imports the documents and atomically swaps the aliases over to the new generation.
         client = self.get_client(options) if not dump else None
 
-        # An atomic swap needs new indices to build and an import to fill them, so it always
-        # applies to a real (non-dump) run, unless explicitly disabled with --no-swap.
-        swap = options["swap"] and not dump
-
-        # alias -> concrete index the documents of this run go into. Without a swap the two are
-        # the same name, which is what makes the rest of the command indifferent to the mode.
+        # alias -> concrete index the documents of this run go into. A non-dump run always builds
+        # a fresh timestamped generation and swaps the aliases over once every type is imported.
+        # For a dump run the aliases are only used to name the per-index output sub-directories.
         timestamp = datetime.now(UTC)
         targets = {
-            index: (_generation_index(index, timestamp) if swap else index)
+            index: (index if dump else _generation_index(index, timestamp))
             for index in TYPE_TO_INDEX.values()
         }
 
         if not dump:
-            self.do_create_indexes(client, targets, swap=swap)
+            self.do_create_indexes(client, targets)
 
         for dtype in TYPE_TO_INDEX:
             self.do_import(client, targets[TYPE_TO_INDEX[dtype]], dtype, options)
 
-        if swap:
+        if not dump:
             self.do_swap_aliases(client, targets, options)
 
         self.print_success("Done.")
@@ -359,18 +347,13 @@ class Command(CustomBaseCommand):
     def load_mapping(self, index: str) -> dict:
         return json.loads(INDEX_MAPPING_FILES[index].read_text())
 
-    def do_create_indexes(self, client: Any, targets: dict[str, str], swap: bool = False) -> None:
+    def do_create_indexes(self, client: Any, targets: dict[str, str]) -> None:
         """Create the target index of each alias in ``targets``.
 
-        In swap mode the targets are new timestamped indices that cannot exist yet, so they are
-        simply created. Otherwise (``--no-swap``) the target *is* the aliased index, which
-        already exists on every run but the first, so it is left untouched.
+        The targets are new timestamped generations that cannot exist yet, so they are simply
+        created.
         """
         for alias, index in targets.items():
-            if not swap and client.indices.exists(index=index):
-                count = client.count(index=index)["count"]
-                self.print_warning(f"Index '{index}' already exists with {count} documents.")
-                continue
             self.print_success(f"Creating index '{index}'")
             client.indices.create(index=index, body=self.load_mapping(alias))
 
@@ -439,7 +422,7 @@ class Command(CustomBaseCommand):
             )
             raise CommandError(
                 f"{subject}, not an alias, so the new index cannot be swapped in atomically. "
-                f"Delete it manually, or re-run with --no-swap to keep writing into it in place."
+                f"Delete it manually and re-run."
             )
 
         actions: list[dict] = []

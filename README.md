@@ -249,7 +249,6 @@ uv run app/manage.py oar_opensearch_export
 | `--dump [DIR]`      | `.generated/oar_opensearch_export`                        | Write the documents to `DIR/<index>/<id>.json` instead of talking to OpenSearch at all |
 | `--opensearch-url`  | `$OPENSEARCH_URL` or `http://localhost:9200` | OpenSearch endpoint URL                                         |
 | `--aws-auth` / `--no-aws-auth` | auto            | Force/disable SigV4 auth (enabled automatically for `https` URLs)                 |
-| `--no-swap`         | false                      | Write into the aliased indices in place instead of building new ones and swapping the aliases atomically |
 | `--keep-generations`| 2                          | Number of superseded indices to keep after a swap, for rollback                   |
 | `--batch-size`      | 500                        | Number of documents per bulk request                                              |
 

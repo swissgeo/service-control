@@ -1,10 +1,30 @@
+"""End-to-end tests for the ``oar_opensearch_export`` management command.
+
+The command has two output modes:
+
+  * ``--dump <dir>`` builds the documents and writes them to disk, one JSON file per document,
+    without ever talking to OpenSearch. These tests run it against a ``tmp_path`` and assert on
+    the files produced.
+  * the default mode talks to an OpenSearch cluster, building a fresh timestamped generation and
+    swapping the aliases over. There is no cluster in the test environment, so the client and the
+    ``helpers.bulk`` call are mocked; the tests assert on the documents the command *would* have
+    indexed and on the index/alias calls it makes.
+"""
+
+import json
+from io import StringIO
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+from django.core.management import call_command
+
 from dataservice.models import WMSDataservice
-from dataset.management.commands.oar_opensearch_export import Command
+from dataset.management.commands.oar_opensearch_export import TYPE_TO_INDEX, _is_generation_of
 from dataset.models import Dataset
 from distribution.models import ExternalWMSDistribution
 
-OAR_BASE_URL = "https://services.dev.sgdi.tech/api/oar/staticv2"
-OAS_BASE_URL = "https://services.dev.sgdi.tech/api/oas/v0"
+COMMAND = "oar_opensearch_export"
+MODULE = "dataset.management.commands.oar_opensearch_export"
 
 
 def _make_dataservice() -> WMSDataservice:
@@ -36,12 +56,69 @@ def _make_dataset() -> Dataset:
     return dataset
 
 
-def test_build_service_doc(db):
-    doc = Command().build_service_doc(_make_dataservice(), OAR_BASE_URL)
+def _make_distribution(dataset: Dataset, dataservice: WMSDataservice) -> ExternalWMSDistribution:
+    distribution = ExternalWMSDistribution(
+        distribution_id="ch.bafu.moose:wms",
+        dataset=dataset,
+        title_de="WMS Layer (DE)",
+        title_fr="WMS Layer (FR)",
+        title_it="WMS Layer (IT)",
+        title_en="WMS Layer (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_it="Description (IT)",
+        description_en="Description (EN)",
+        dataservice=dataservice,
+        wms_layer_name_de="ch.bafu.moose",
+        opacity=1.0,
+        gutter=0,
+    )
+    distribution.save()
+    return distribution
 
+
+def _read_dump(dump_dir: Path, index: str, doc_id: str) -> dict:
+    return json.loads((dump_dir / index / f"{doc_id}.json").read_text())
+
+
+def _mock_client() -> MagicMock:
+    """A stand-in OpenSearch client for a fresh cluster.
+
+    ``exists``/``exists_alias`` are False (no concrete index blocks the swap, no previous alias
+    to detach) and ``get`` returns no generations, so the alias swap and prune run cleanly.
+    """
+    client = MagicMock()
+    client.indices.exists.return_value = False
+    client.indices.exists_alias.return_value = False
+    client.indices.get.return_value = {}
+    return client
+
+
+# --------------------------------------------------------------------------- --dump
+
+
+def test_dump_writes_one_file_per_document(db, tmp_path):
+    dataservice = _make_dataservice()
+    dataset = _make_dataset()
+    _make_distribution(dataset, dataservice)
+
+    out = StringIO()
+    call_command(COMMAND, dump=str(tmp_path), verbosity=2, stdout=out)
+
+    # One file per document, in the per-index sub-directories.
+    assert (tmp_path / "geoadmin-services" / "wmts-geoadminch.json").is_file()
+    assert (tmp_path / "swissgeo-catalog" / "ch.bafu.moose.json").is_file()
+    assert (tmp_path / "swissgeo-distributions" / "ch.bafu.moose.json").is_file()
+
+
+def test_dump_service_document(db, tmp_path):
+    _make_dataservice()
+
+    call_command(COMMAND, dump=str(tmp_path), verbosity=0)
+
+    doc = _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch")
     assert doc["id"] == "wmts-geoadminch"
     assert doc["type"] == "Feature"
-    # Multilingual title object, service type as a keyword.
     assert doc["properties"] == {
         "type": "ogc:wms",
         "title": {
@@ -59,9 +136,12 @@ def test_build_service_doc(db):
     assert doc["linkTemplates"] == []
 
 
-def test_build_dataset_doc(db):
-    doc = Command().build_dataset_doc(_make_dataset(), OAR_BASE_URL)
+def test_dump_dataset_document(db, tmp_path):
+    _make_dataset()
 
+    call_command(COMMAND, dump=str(tmp_path), verbosity=0)
+
+    doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert doc["$schema"].endswith("recordGeoJSON.yaml")
     assert doc["id"] == "ch.bafu.moose"
     assert doc["type"] == "Feature"
@@ -99,28 +179,14 @@ def test_build_dataset_doc(db):
     }
 
 
-def test_build_distribution_doc(db):
+def test_dump_distribution_document(db, tmp_path):
     dataservice = _make_dataservice()
     dataset = _make_dataset()
-    ExternalWMSDistribution(
-        distribution_id="ch.bafu.moose:wms",
-        dataset=dataset,
-        title_de="WMS Layer (DE)",
-        title_fr="WMS Layer (FR)",
-        title_it="WMS Layer (IT)",
-        title_en="WMS Layer (EN)",
-        description_de="Description (DE)",
-        description_fr="Description (FR)",
-        description_it="Description (IT)",
-        description_en="Description (EN)",
-        dataservice=dataservice,
-        wms_layer_name_de="ch.bafu.moose",
-        opacity=1.0,
-        gutter=0,
-    ).save()
+    _make_distribution(dataset, dataservice)
 
-    doc = Command().build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL)
+    call_command(COMMAND, dump=str(tmp_path), verbosity=0)
 
+    doc = _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose")
     assert doc["id"] == "ch.bafu.moose"
     assert doc["type"] == "FeatureCollection"
     assert doc["properties"]["title"] == {
@@ -147,7 +213,7 @@ def test_build_distribution_doc(db):
             "rel": "dataservice",
         },
         {
-            "href": "https://services.dev.sgdi.tech/api/oas/v0/styles/ch.bafu.moose:wms:style",
+            "href": "https://services.swissgeo.ch/api/oas/v0/styles/ch.bafu.moose:wms:style",
             "rel": "styledby",
             "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
             "type": "application/json",
@@ -169,3 +235,81 @@ def test_build_distribution_doc(db):
         "it": "Description (IT)",
         "en": "Description (EN)",
     }
+
+
+# ----------------------------------------------------------------- export (mocked)
+
+
+@patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
+@patch(f"{MODULE}.Command.get_client")
+def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db):
+    dataservice = _make_dataservice()
+    dataset = _make_dataset()
+    _make_distribution(dataset, dataservice)
+    client = _mock_client()
+    get_client.return_value = client
+
+    out = StringIO()
+    call_command(COMMAND, verbosity=2, stdout=out)
+
+    # A fresh timestamped generation is created for each of the three aliases.
+    created = {call.kwargs["index"] for call in client.indices.create.call_args_list}
+    assert len(created) == 3
+    for alias in ("geoadmin-services", "swissgeo-catalog", "swissgeo-distributions"):
+        assert any(_is_generation_of(index, alias) for index in created), alias
+
+    # helpers.bulk is called once per record type; the documents go into the generation index,
+    # keyed by the alias each generation belongs to.
+    assert bulk.call_count == 3
+    indexed: dict[str, list[dict]] = {}
+    for call in bulk.call_args_list:
+        actions = list(call.args[1])
+        assert actions, "expected at least one document per index"
+        target = actions[0]["_index"]
+        alias = next(a for a in TYPE_TO_INDEX.values() if _is_generation_of(target, a))
+        indexed[alias] = actions
+
+    # The service document reaches the services generation with its id and source.
+    service_actions = indexed["geoadmin-services"]
+    assert len(service_actions) == 1
+    action = service_actions[0]
+    assert action["_id"] == "wmts-geoadminch"
+    assert action["_source"]["id"] == "wmts-geoadminch"
+    assert action["_source"]["properties"]["title"]["de"] == "WMTS geo.admin.ch"
+
+    # The dataset and distribution documents reach their respective generations.
+    assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["ch.bafu.moose"]
+    assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["ch.bafu.moose"]
+
+
+@patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
+@patch(f"{MODULE}.Command.get_client")
+def test_export_swaps_all_aliases_in_a_single_request(get_client, bulk, db):
+    _make_dataservice()
+    _make_dataset()
+    client = _mock_client()
+    get_client.return_value = client
+
+    call_command(COMMAND, verbosity=0)
+
+    # The swap happens in one _aliases call; on a fresh cluster it is one 'add' per alias,
+    # each pointing at the generation just built.
+    client.indices.update_aliases.assert_called_once()
+    actions = client.indices.update_aliases.call_args.kwargs["body"]["actions"]
+    added = {a["add"]["alias"]: a["add"]["index"] for a in actions if "add" in a}
+    assert set(added) == set(TYPE_TO_INDEX.values())
+    for alias, index in added.items():
+        assert _is_generation_of(index, alias)
+
+
+@patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
+@patch(f"{MODULE}.Command.get_client")
+def test_export_does_not_dump_to_disk(get_client, bulk, db, tmp_path):
+    """A real (non-dump) export never writes files."""
+    _make_dataservice()
+    get_client.return_value = _mock_client()
+
+    call_command(COMMAND, verbosity=0)
+
+    assert not any(tmp_path.iterdir())
+    assert bulk.called
