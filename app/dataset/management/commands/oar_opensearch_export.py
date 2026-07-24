@@ -471,18 +471,20 @@ class Command(CustomBaseCommand):
         unrelated index that happens to share the alias prefix is left alone. Timestamped names
         sort chronologically, so the tail of the sorted list is the most recent.
         """
+
+        # If `keep` is negative, don't prune anything (keep everything).
+        if keep < 0:
+            return
+
         for alias, index in targets.items():
             existing = client.indices.get(index=f"{alias}-*", ignore_unavailable=True)
             # Never touch the generation just swapped in, whatever `keep` says.
             candidates = sorted(i for i in existing if i != index and _is_generation_of(i, alias))
-            stale = candidates[: max(len(candidates) - keep, 0)] if keep >= 0 else []
+            # Keep the `keep` newest (the tail of the sorted list); everything older is stale.
+            stale = candidates[: max(len(candidates) - keep, 0)]
             for old_index in stale:
-                self.print_warning(f"Deleting superseded index '{old_index}'")
+                self.print(f"Deleting old index '{old_index}'")
                 client.indices.delete(index=old_index)
-
-            kept = candidates[len(stale) :]
-            if kept:
-                self.print(f"Keeping {len(kept)} superseded index/indices for rollback: {kept}")
 
     def dump_to_files(self, documents: list[dict], index: str, dump_dir: Path) -> None:
         """Write each document as its own JSON file below ``dump_dir``."""
