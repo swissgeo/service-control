@@ -17,6 +17,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from django.core.management import call_command
+from django.core.management.base import CommandError
+
+import pytest
 
 from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import TYPE_TO_INDEX, _is_generation_of
@@ -300,6 +303,30 @@ def test_export_swaps_all_aliases_in_a_single_request(get_client, bulk, db):
     assert set(added) == set(TYPE_TO_INDEX.values())
     for alias, index in added.items():
         assert _is_generation_of(index, alias)
+
+
+@patch(f"{MODULE}.helpers.bulk")
+@patch(f"{MODULE}.Command.get_client")
+def test_export_aborts_before_swap_when_a_document_fails_to_index(get_client, bulk, db):
+    """A bulk error raises and stops the run *before* any alias is moved.
+
+    The half-filled generation is left behind for inspection, but the aliases keep pointing at
+    the previous generation, so readers are unaffected -- the safety property the command relies
+    on for atomicity.
+    """
+    _make_dataservice()
+    client = _mock_client()
+    get_client.return_value = client
+    # helpers.bulk reports one failed document (raise_on_error=False, so it returns errors).
+    bulk.return_value = (0, [{"index": {"error": "mapper_parsing_exception"}}])
+
+    out = StringIO()
+    with pytest.raises(CommandError, match="documents failed to index"):
+        call_command(COMMAND, verbosity=2, stdout=out, stderr=out)
+
+    # The command aborts on the first failing type and never reaches the alias swap or prune.
+    client.indices.update_aliases.assert_not_called()
+    client.indices.delete.assert_not_called()
 
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))

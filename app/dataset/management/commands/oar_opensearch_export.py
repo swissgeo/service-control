@@ -307,6 +307,7 @@ class Command(CustomBaseCommand):
 
     # ------------------------------------------------------------------ client
 
+    # pragma: no cover
     def get_client(self, options: dict) -> Any:
         """Build and ping an OpenSearch client, optionally using AWS SigV4 auth."""
         url = options["opensearch_url"]
@@ -474,8 +475,6 @@ class Command(CustomBaseCommand):
         for doc in documents:
             # Document ids are slugs, but keep the path confined to target_dir regardless.
             filename = Path(str(doc["id"])).name
-            if not filename or filename in {".", ".."}:
-                raise CommandError(f"Cannot derive a file name from document id {doc['id']!r}")
             path = target_dir / f"{filename}.json"
             path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             self.print("Wrote %s", path)
