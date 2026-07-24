@@ -183,9 +183,6 @@ Every run processes all three record types, each written to its own index:
 | `datasets`      | `swissgeo-catalog`       | `Dataset`      |
 | `distributions` | `swissgeo-distributions` | `Distribution` |
 
-Note that the datasets index is historically called `swissgeo-catalog`, while its mapping file
-is named `opensearch-index-mapping-swissgeo-datasets.json`.
-
 With no flags the command always does the full run: it creates the indices and imports the
 documents. Pass `--dump` to build the documents without touching OpenSearch at all (see below).
 
@@ -219,19 +216,6 @@ curl -XPOST "$OPENSEARCH_URL/_aliases" -H 'Content-Type: application/json' -d '{
 The swap only happens on a real (non-`--dump`) run. `--no-swap` opts out and writes into the
 aliased indices in place instead.
 
-#### Migrating An Existing Environment
-
-An environment created before this change has `swissgeo-catalog` as a *concrete index*.
-OpenSearch does not allow an alias and an index to share a name, so the first run there fails
-with a message telling you to re-run with `--migrate-to-alias`:
-
-```bash
-uv run app/manage.py oar_opensearch_export --opensearch-url https://<host> --migrate-to-alias
-```
-
-That run deletes the concrete index just before the swap, which means a short window with no
-data — the only run that has one. Every run afterwards is seamless and needs no flag.
-
 ### Inspecting The Documents With --dump
 
 `--dump` writes the generated documents to disk instead of talking to OpenSearch at all, one
@@ -264,17 +248,6 @@ Against a local OpenSearch on the default `http://localhost:9200`:
 ```bash
 uv run app/manage.py oar_opensearch_export
 ```
-
-Against a remote cluster, SigV4 authentication is enabled automatically for `https` URLs:
-
-```bash
-uv run app/manage.py oar_opensearch_export --opensearch-url https://<opensearch-host>
-```
-
-Record links are always built against the production OAR/OAS base URLs, but the final documents
-never expose them: the doc builders strip or rewrite every OAR/OAS link to a relative
-`/collections/.../items/...` path (see `_rewrite_dist_links` and the doc builders in
-`oar_opensearch_export.py`), so which environment they came from doesn't affect the output.
 
 ### Options
 
