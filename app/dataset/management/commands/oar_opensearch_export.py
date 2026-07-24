@@ -17,10 +17,6 @@ generation until that swap, and never see a half-filled index. Because all alias
 one request, the cross-index links between datasets, distributions and services stay
 consistent. ``--no-swap`` opts out and writes into the aliased indices in place.
 
-The very first run against an environment where the names are still *concrete indices*
-(the pre-alias layout) needs ``--migrate-to-alias``, which drops the concrete index just
-before the swap. That one run has a brief window with no data; every later run is seamless.
-
 Connection to OpenSearch uses AWS SigV4 authentication when talking to an AWS managed
 OpenSearch domain, or plain HTTP for a local instance.
 
@@ -29,8 +25,8 @@ Examples::
     # local OpenSearch, atomically rebuild everything
     ./manage.py oar_opensearch_export --opensearch-url http://localhost:9200
 
-    # first run against a domain still using concrete indices
-    ./manage.py oar_opensearch_export --opensearch-url https://<domain> --migrate-to-alias
+    # rebuild everything against a domain
+    ./manage.py oar_opensearch_export --opensearch-url https://<domain>
 
     # write the generated documents to dist/oar_opensearch_export/ without touching OpenSearch
     ./manage.py oar_opensearch_export --dump
@@ -266,15 +262,6 @@ class Command(CustomBaseCommand):
             ),
         )
         parser.add_argument(
-            "--migrate-to-alias",
-            action="store_true",
-            help=(
-                "Allow replacing a pre-alias concrete index with an alias: the concrete index is "
-                "deleted right before the swap. Needed once per environment; implies a short "
-                "window without data"
-            ),
-        )
-        parser.add_argument(
             "--keep-generations",
             type=int,
             default=KEEP_GENERATIONS,
@@ -435,16 +422,15 @@ class Command(CustomBaseCommand):
         self.print_success("Refreshing new indices before the swap")
         client.indices.refresh(index=",".join(targets.values()))
 
-        # A pre-alias deployment has a *concrete* index under the alias name. An alias cannot
-        # share a name with an index, so those have to be deleted before the swap. Collect them
-        # all first and only delete once every alias has been validated -- otherwise a failure
-        # on the second alias would leave the first one already deleted and not yet swapped.
+        # An alias cannot share a name with a concrete index. If one of the alias names is still a
+        # concrete index (an unexpected state now that we only ever work with aliases/generations),
+        # the atomic swap cannot proceed -- fail loudly instead of silently doing something wrong.
         blocking = [
             alias
             for alias in targets
             if client.indices.exists(index=alias) and not _alias_exists(client, alias)
         ]
-        if blocking and not options["migrate_to_alias"]:
+        if blocking:
             names = ", ".join(f"'{a}'" for a in blocking)
             subject = (
                 f"{names} is a concrete index"
@@ -453,8 +439,7 @@ class Command(CustomBaseCommand):
             )
             raise CommandError(
                 f"{subject}, not an alias, so the new index cannot be swapped in atomically. "
-                f"Re-run with --migrate-to-alias to replace it (brief window without data), "
-                f"or with --no-swap to keep writing into it in place."
+                f"Delete it manually, or re-run with --no-swap to keep writing into it in place."
             )
 
         actions: list[dict] = []
@@ -466,12 +451,6 @@ class Command(CustomBaseCommand):
             superseded[alias] = [i for i in old if i != index]
             actions += [{"remove": {"index": i, "alias": alias}} for i in superseded[alias]]
             actions.append({"add": {"index": index, "alias": alias}})
-
-        for alias in blocking:
-            self.print_warning(
-                f"--migrate-to-alias: deleting concrete index '{alias}' to free the name"
-            )
-            client.indices.delete(index=alias)
 
         client.indices.update_aliases(body={"actions": actions})
         for alias, index in targets.items():

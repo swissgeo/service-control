@@ -79,7 +79,7 @@ def _command() -> Command:
 
 
 def _options(**overrides: Any) -> dict:
-    options = {"migrate_to_alias": False, "keep_generations": 2}
+    options = {"keep_generations": 2}
     options.update(overrides)
     return options
 
@@ -137,7 +137,7 @@ def test_swap_creates_alias_when_none_exists():
     assert client.indices.deleted == []
 
 
-def test_swap_refuses_concrete_index_without_migrate_flag():
+def test_swap_refuses_concrete_index():
     client = FakeClient({}, concrete=["swissgeo-catalog"])
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
@@ -149,21 +149,8 @@ def test_swap_refuses_concrete_index_without_migrate_flag():
     assert client.indices.update_alias_calls == []
 
 
-def test_migrate_to_alias_replaces_concrete_index():
-    client = FakeClient({}, concrete=["swissgeo-catalog"])
-    targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
-
-    _command().do_swap_aliases(client, targets, _options(migrate_to_alias=True))
-
-    assert client.indices.deleted == ["swissgeo-catalog"]
-    assert client.indices.update_alias_calls == [
-        [{"add": {"index": "swissgeo-catalog-20260722153000", "alias": "swissgeo-catalog"}}]
-    ]
-    assert client.indices.aliases["swissgeo-catalog"] == ["swissgeo-catalog-20260722153000"]
-
-
-def test_migrate_guard_runs_before_any_deletion():
-    """A concrete index is only deleted once *all* aliases passed validation."""
+def test_swap_refuses_concrete_index_before_touching_other_aliases():
+    """A concrete index under any alias name aborts the swap before any alias is moved."""
     client = FakeClient(
         {"geoadmin-services": ["geoadmin-services-20260722100000"]},
         concrete=["swissgeo-catalog"],
@@ -177,6 +164,7 @@ def test_migrate_guard_runs_before_any_deletion():
         _command().do_swap_aliases(client, targets, _options())
 
     assert client.indices.deleted == []
+    assert client.indices.update_alias_calls == []
 
 
 def test_prune_keeps_the_configured_number_of_generations():
