@@ -101,7 +101,7 @@ SERVICES_COLLECTION_ID = "geoadmin.services"
 CATALOG_COLLECTION_ID = "swissgeo.catalog"
 
 # OAR/OAS base URLs embedded in the record links while the OpenSearch documents are built, then
-# stripped or rewritten to relative paths (see _rewrite_dist_links and the doc builders below).
+# stripped or rewritten to relative paths.
 # The final documents never expose these, so which environment they come from doesn't affect the
 # output -- 'prod' is hardcoded rather than exposed as an option.
 OAR_BASE_URL = _OAR_BASE_URL_BY_ENV["prod"]
