@@ -173,4 +173,6 @@ addopts = [
 omit = ["*/tests/*"]
 
 [tool.coverage.report]
-exclude_lines = ["if TYPE_CHECKING:"]
+# ``exclude_also`` adds to coverage.py's built-in defaults (which include ``pragma: no cover``)
+# rather than replacing them, so ``# pragma: no cover`` keeps working.
+exclude_also = ["if TYPE_CHECKING:"]

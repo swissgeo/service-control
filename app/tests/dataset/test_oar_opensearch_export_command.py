@@ -22,7 +22,11 @@ from django.core.management.base import CommandError
 import pytest
 
 from dataservice.models import WMSDataservice
-from dataset.management.commands.oar_opensearch_export import TYPE_TO_INDEX, _is_generation_of
+from dataset.management.commands.oar_opensearch_export import (
+    TYPE_TO_INDEX,
+    _is_generation_of,
+    _rewrite_dist_links,
+)
 from dataset.models import Dataset
 from distribution.models import ExternalWMSDistribution
 
@@ -95,6 +99,39 @@ def _mock_client() -> MagicMock:
     client.indices.exists_alias.return_value = False
     client.indices.get.return_value = {}
     return client
+
+
+# ------------------------------------------------------------- _rewrite_dist_links
+
+OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
+OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
+
+
+def test_rewrite_dist_links_keeps_external_link_as_is():
+    """A link with an unhandled rel and a non-OAR/OAS href falls through and is kept verbatim."""
+    external = {"href": "https://not-rewritten.org", "rel": "license", "title": "License"}
+    links = [
+        {"href": f"{OAR_BASE_URL}/collections/x/items/y", "rel": "self"},  # dropped
+        external,  # kept as-is
+    ]
+
+    result = _rewrite_dist_links(links, OAR_BASE_URL, OAS_BASE_URL, "ch.bafu.moose")
+
+    assert result == [external]
+    # The dict is passed through unchanged, not rewritten into a relative path.
+    assert result[0] is external
+
+
+def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
+    """An OAR/OAS-internal link with no defined mapping (e.g. featureinfo) is dropped."""
+    links = [
+        {"href": f"{OAR_BASE_URL}/some/featureinfo", "rel": "featureinfo"},
+        {"href": "https://not-rewritten.org", "rel": "license"},
+    ]
+
+    result = _rewrite_dist_links(links, OAR_BASE_URL, OAS_BASE_URL, "ch.bafu.moose")
+
+    assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
 
 
 # --------------------------------------------------------------------------- --dump

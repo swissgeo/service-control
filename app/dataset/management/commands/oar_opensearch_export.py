@@ -136,7 +136,7 @@ def _alias_exists(client: Any, alias: str) -> bool:
     return bool(client.indices.exists_alias(name=alias))
 
 
-def _wait_for_credentials() -> None:
+def _wait_for_credentials() -> None:  # pragma: no cover
     """Wait for AWS credentials to become available.
 
     IMDS credential fetches can fail transiently on startup due to network errors.
@@ -307,8 +307,7 @@ class Command(CustomBaseCommand):
 
     # ------------------------------------------------------------------ client
 
-    # pragma: no cover
-    def get_client(self, options: dict) -> Any:
+    def get_client(self, options: dict) -> Any:  # pragma: no cover
         """Build and ping an OpenSearch client, optionally using AWS SigV4 auth."""
         url = options["opensearch_url"]
         aws_auth = options["aws_auth"]
