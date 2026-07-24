@@ -378,7 +378,7 @@ class Command(CustomBaseCommand):
 
     def do_import(self, client: Any, index: str, dtype: str, options: dict) -> None:
         self.print_success(f"Building {dtype} documents...")
-        documents = list(self.iter_documents(dtype))
+        documents = self.build_documents(dtype)
 
         if options["dump"]:
             self.dump_to_files(documents, TYPE_TO_INDEX[dtype], Path(options["dump"]))
@@ -502,19 +502,21 @@ class Command(CustomBaseCommand):
 
         self.print_success(f"Wrote {len(documents)} documents to {target_dir}")
 
-    def iter_documents(self, dtype: str) -> Iterator[dict]:
+    def build_documents(self, dtype: str) -> list[dict]:
+        documents: list[dict] = []
         if dtype == "services":
             for service in Dataservice.objects.all():
                 self.print(f" - {service.dataservice_id}")
-                yield self.build_service_doc(service, OAR_BASE_URL)
+                documents.append(self.build_service_doc(service, OAR_BASE_URL))
         elif dtype == "datasets":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
-                yield self.build_dataset_doc(dataset, OAR_BASE_URL)
+                documents.append(self.build_dataset_doc(dataset, OAR_BASE_URL))
         elif dtype == "distributions":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
-                yield self.build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL)
+                documents.append(self.build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL))
+        return documents
 
     # ------------------------------------------------------------ doc builders
 
