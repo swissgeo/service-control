@@ -202,33 +202,26 @@ Because all aliases move in one request, the cross-index links between datasets,
 and services never point at a stale generation. If any document fails to index, the command
 aborts *before* the swap, so a broken export can never reach the aliases.
 
-To roll back to the previous generation, point the alias back by hand:
-
-```bash
-curl -XPOST "$OPENSEARCH_URL/_aliases" -H 'Content-Type: application/json' -d '{
-  "actions": [
-    {"remove": {"index": "swissgeo-catalog-20260722153000", "alias": "swissgeo-catalog"}},
-    {"add":    {"index": "swissgeo-catalog-20260722100000", "alias": "swissgeo-catalog"}}
-  ]
-}'
-```
-
-The swap only happens on a real (non-`--dump`) run. `--no-swap` opts out and writes into the
-aliased indices in place instead.
-
 ### Inspecting The Documents With --dump
 
 `--dump` writes the generated documents to disk instead of talking to OpenSearch at all, one
-JSON file per document, at `dist/oar_opensearch_export/<index>/<id>.json`:
+JSON file per document, at `<dir>/<index>/<id>.json`. Without a value it writes to the default
+`.generated/oar_opensearch_export/`:
 
 ```bash
 uv run app/manage.py oar_opensearch_export --dump
 ```
 
+Pass a directory to write there instead:
+
+```bash
+uv run app/manage.py oar_opensearch_export --dump /tmp/export
+```
+
 This produces, for example:
 
 ```text
-dist/oar_opensearch_export/
+.generated/oar_opensearch_export/
 ├── geoadmin-services/
 │   └── wms-geoadminch.json
 ├── swissgeo-catalog/
@@ -237,9 +230,9 @@ dist/oar_opensearch_export/
     └── ch.bafu.schutzgebiete-luftfahrt.json
 ```
 
-The paths are relative to the current working directory, so run the command from the repository
-root. Existing files with the same name are overwritten, but files from an earlier run are not
-removed. `dist/` is git-ignored.
+A relative directory is resolved from the current working directory, so run the command from the
+repository root. Existing files with the same name are overwritten, but files from an earlier run
+are not removed. `.generated/` is git-ignored.
 
 ### Running Against A Cluster
 
@@ -253,7 +246,7 @@ uv run app/manage.py oar_opensearch_export
 
 | Option              | Default                    | Description                                                                       |
 | ------------------- | -------------------------- | --------------------------------------------------------------------------------- |
-| `--dump`            | false                      | Write the documents to `dist/oar_opensearch_export/<index>/<id>.json` instead of talking to OpenSearch at all |
+| `--dump [DIR]`      | `.generated/oar_opensearch_export`                        | Write the documents to `DIR/<index>/<id>.json` instead of talking to OpenSearch at all |
 | `--opensearch-url`  | `$OPENSEARCH_URL` or `http://localhost:9200` | OpenSearch endpoint URL                                         |
 | `--aws-auth` / `--no-aws-auth` | auto            | Force/disable SigV4 auth (enabled automatically for `https` URLs)                 |
 | `--no-swap`         | false                      | Write into the aliased indices in place instead of building new ones and swapping the aliases atomically |

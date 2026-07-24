@@ -190,3 +190,6 @@ app/harvest/*.json
 
 # Temp files
 *.tmp
+
+# .generated documents from oar_opensearch_export with --dump parameter
+.generated/

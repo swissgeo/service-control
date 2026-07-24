@@ -34,6 +34,9 @@ Examples::
 
     # write the generated documents to dist/oar_opensearch_export/ without touching OpenSearch
     ./manage.py oar_opensearch_export --dump
+
+    # write them to a specific directory instead
+    ./manage.py oar_opensearch_export --dump /tmp/export
 """
 
 import json
@@ -66,8 +69,9 @@ from dataset.management.commands.oar_export import OAS_BASE_URL as _OAS_BASE_URL
 from dataset.models import Dataset
 from utils.command import CustomBaseCommand
 
-# Directory the '--dump' documents are written to, relative to the current working directory.
-DUMP_DIR = Path("dist") / "oar_opensearch_export"
+# Default directory the '--dump' documents are written to when no directory is passed, relative
+# to the current working directory.
+DUMP_DIR = Path(".generated") / "oar_opensearch_export"
 
 # OpenSearch index names.
 SERVICES_INDEX = "geoadmin-services"
@@ -287,10 +291,13 @@ class Command(CustomBaseCommand):
         )
         parser.add_argument(
             "--dump",
-            action="store_true",
+            nargs="?",
+            const=str(DUMP_DIR),
+            default=None,
+            metavar="DIR",
             help=(
-                "Write the generated documents to dist/oar_opensearch_export/<index>/<id>.json "
-                "instead of talking to OpenSearch at all"
+                "Write the generated documents to DIR/<index>/<id>.json instead of talking to "
+                f"OpenSearch at all. DIR defaults to {DUMP_DIR} when given without a value"
             ),
         )
 
@@ -387,7 +394,7 @@ class Command(CustomBaseCommand):
         documents = list(self.iter_documents(dtype))
 
         if options["dump"]:
-            self.dump_to_files(documents, TYPE_TO_INDEX[dtype])
+            self.dump_to_files(documents, TYPE_TO_INDEX[dtype], Path(options["dump"]))
             self.print_success(f"Generated {len(documents)} {dtype} documents (not imported).")
             return
 
@@ -498,9 +505,9 @@ class Command(CustomBaseCommand):
             if kept:
                 self.print(f"Keeping {len(kept)} superseded index/indices for rollback: {kept}")
 
-    def dump_to_files(self, documents: list[dict], index: str) -> None:
-        """Write each document as its own JSON file below ``DUMP_DIR``."""
-        target_dir = DUMP_DIR / index
+    def dump_to_files(self, documents: list[dict], index: str, dump_dir: Path) -> None:
+        """Write each document as its own JSON file below ``dump_dir``."""
+        target_dir = dump_dir / index
         target_dir.mkdir(parents=True, exist_ok=True)
 
         for doc in documents:
