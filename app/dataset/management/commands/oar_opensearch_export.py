@@ -278,8 +278,6 @@ class Command(CustomBaseCommand):
 
         self.print_success("Done.")
 
-    # ------------------------------------------------------------------ client
-
     def get_client(self, options: dict) -> Any:  # pragma: no cover
         """Build and ping an OpenSearch client, optionally using AWS SigV4 auth."""
         url = options["opensearch_url"]
@@ -312,8 +310,6 @@ class Command(CustomBaseCommand):
         self.print_success(f"Connected to OpenSearch at {url}")
         return client
 
-    # ------------------------------------------------------------------ indices
-
     def do_create_indexes(self, client: Any, targets: dict[str, str]) -> None:
         """Create the target index of each alias in ``targets``.
 
@@ -326,8 +322,6 @@ class Command(CustomBaseCommand):
                 index=index,
                 body=json.loads(INDEX_MAPPING_FILES[index].read_text())
             )
-
-    # ------------------------------------------------------------------ import
 
     def do_import(self, client: Any, index: str, dtype: str, options: dict) -> None:
         self.print_success(f"Building {dtype} documents...")
@@ -358,8 +352,6 @@ class Command(CustomBaseCommand):
             # previous generation, so readers are unaffected.
             raise CommandError(f"{len(errors)} documents failed to index into '{index}'")
         self.print_success(f"{ok} documents indexed into '{index}'")
-
-    # ------------------------------------------------------------------ aliases
 
     def do_swap_aliases(self, client: Any, targets: dict[str, str], options: dict) -> None:
         """Point every alias in ``targets`` at its freshly built index, atomically.
@@ -468,8 +460,6 @@ class Command(CustomBaseCommand):
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL))
         return documents
-
-    # ------------------------------------------------------------ doc builders
 
     def build_service_doc(self, service: Dataservice, oar_base_url: str) -> dict:
         """Build a ``geoadmin-services`` document from a Dataservice."""
