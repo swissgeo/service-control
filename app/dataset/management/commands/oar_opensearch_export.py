@@ -1,38 +1,11 @@
 """Export data entities into the OpenSearch indices backing the OGC API Records search.
 
-This command:
+This command exports the entities from DataService, Dataset and Distribution models from Django
+to an OpenSearch database in OGC API Records format.
 
-  * creates (or recreates) the OpenSearch indices for services, datasets and
-    distributions using the mapping files in ``opensearch-indexes/``;
-  * builds documents from the Django models (services, datasets, distributions) in the
-    OpenSearch document format found in ``tmp/.generated/`` -- reusing the OAR export
-    models from :mod:`dataset.export_models` as the source of truth -- and bulk-inserts
-    them into the corresponding index.
+The OGC API Records are mainly consumed by the SWISSGEO frontend to search for datasets.
 
-The export always runs *atomically*: the documents go into freshly created, timestamped
-indices (``swissgeo-catalog-20260722153000``), and only once every requested type has been
-indexed without errors are the index names (``swissgeo-catalog``) -- which are aliases --
-repointed at the new indices in a single ``_aliases`` call. Readers keep seeing the previous
-generation until that swap, and never see a half-filled index. Because all aliases move in
-one request, the cross-index links between datasets, distributions and services stay
-consistent.
-
-Connection to OpenSearch uses AWS SigV4 authentication when talking to an AWS managed
-OpenSearch domain, or plain HTTP for a local instance.
-
-Examples::
-
-    # local OpenSearch, atomically rebuild everything
-    ./manage.py oar_opensearch_export --opensearch-url http://localhost:9200
-
-    # rebuild everything against a domain
-    ./manage.py oar_opensearch_export --opensearch-url https://<domain>
-
-    # write the generated documents to dist/oar_opensearch_export/ without touching OpenSearch
-    ./manage.py oar_opensearch_export --dump
-
-    # write them to a specific directory instead
-    ./manage.py oar_opensearch_export --dump /tmp/export
+This command potentially could be replaced in the future with a SWISSGEO data pipeline.
 """
 
 import json
