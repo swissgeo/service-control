@@ -324,10 +324,11 @@ class Command(CustomBaseCommand):
         The targets are new timestamped generations that cannot exist yet, so they are simply
         created.
         """
-        for _alias, index in targets.values():
+        for alias, index in targets.items():
             self.print_success(f"Creating index '{index}'")
+            # The mapping files are keyed by alias, not by the timestamped generation name.
             client.indices.create(
-                index=index, body=json.loads(INDEX_MAPPING_FILES[index].read_text())
+                index=index, body=json.loads(INDEX_MAPPING_FILES[alias].read_text())
             )
 
     def do_import(self, client: Any, index: str, document_type: str, options: dict) -> None:
