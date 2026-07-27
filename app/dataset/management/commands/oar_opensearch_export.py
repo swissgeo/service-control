@@ -89,7 +89,7 @@ KEEP_GENERATIONS = 2
 def _generation_index(alias: str, timestamp: datetime) -> str:
     """Build the concrete index name for a new generation of ``alias``."""
     # Timestamp suffix appended to an alias to build a concrete index name, e.g.
-    # ``swissgeo-catalog-20260722153000``.
+    # `swissgeo-catalog-20260722153000`.
     timestamp_format = "%Y%m%d%H%M%S"
     return f"{alias}-{timestamp.strftime(timestamp_format)}"
 
