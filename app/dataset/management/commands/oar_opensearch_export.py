@@ -99,9 +99,21 @@ def _is_generation_of(index: str, alias: str) -> bool:
     generation_regex = re.compile(r"-\d{14}$")
     return index.startswith(f"{alias}-") and bool(generation_regex.search(index))
 
+
 def _alias_exists(client: Any, alias: str) -> bool:
     """Whether ``alias`` currently resolves to at least one index."""
     return bool(client.indices.exists_alias(name=alias))
+
+
+def _create_action_removeindex(index: str, alias: str) -> dict:
+    """Build the ``_aliases`` action detaching ``index`` from ``alias``."""
+    return {"remove": {"index": index, "alias": alias}}
+
+
+def _create_action_addindex(index: str, alias: str) -> dict:
+    """Build the ``_aliases`` action attaching ``index`` to ``alias``."""
+    return {"add": {"index": index, "alias": alias}}
+
 
 def _wait_for_credentials() -> None:  # pragma: no cover
     """Wait for AWS credentials to become available.
@@ -315,8 +327,7 @@ class Command(CustomBaseCommand):
         for _alias, index in targets.values():
             self.print_success(f"Creating index '{index}'")
             client.indices.create(
-                index=index,
-                body=json.loads(INDEX_MAPPING_FILES[index].read_text())
+                index=index, body=json.loads(INDEX_MAPPING_FILES[index].read_text())
             )
 
     def do_import(self, client: Any, index: str, document_type: str, options: dict) -> None:
@@ -393,14 +404,22 @@ class Command(CustomBaseCommand):
             )
 
         actions: list[dict] = []
+
+        # Collect the indexes this swap detaches, so they can be removed from the alias.
+        #
+        # Example:
+        # new index: swissgeo-distributions-2026002
+        # old index: swissgeo-distributions-2026001
+        # alias swissgeo-distributions: action remove index : swissgeo-distributions-2026001
+        #                               action add index    : swissgeo-distributions-2026002
         superseded: dict[str, list[str]] = {}
         for alias, index in targets.items():
             old = []
             if _alias_exists(client, alias):
                 old = sorted(client.indices.get_alias(name=alias))
             superseded[alias] = [i for i in old if i != index]
-            actions += [{"remove": {"index": i, "alias": alias}} for i in superseded[alias]]
-            actions.append({"add": {"index": index, "alias": alias}})
+            actions += [_create_action_removeindex(i, alias) for i in superseded[alias]]
+            actions.append(_create_action_addindex(index, alias))
 
         client.indices.update_aliases(body={"actions": actions})
         for alias, index in targets.items():
