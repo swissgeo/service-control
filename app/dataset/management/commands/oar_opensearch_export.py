@@ -81,14 +81,6 @@ LANG_CODES = list(LANGS.keys())
 
 LOGGER = logging.getLogger(__name__)
 
-_CRED_RETRIES = 3
-_CRED_RETRY_DELAY = 2.0
-
-# Timestamp suffix appended to an alias to build a concrete index name, e.g.
-# ``swissgeo-catalog-20260722153000``.
-_TIMESTAMP_FORMAT = "%Y%m%d%H%M%S"
-_GENERATION_RE = re.compile(r"-\d{14}$")
-
 # How many superseded generations to keep around after a swap, so that a bad export can be
 # rolled back by pointing the alias back at the previous index.
 KEEP_GENERATIONS = 2
@@ -96,12 +88,18 @@ KEEP_GENERATIONS = 2
 
 def _generation_index(alias: str, timestamp: datetime) -> str:
     """Build the concrete index name for a new generation of ``alias``."""
-    return f"{alias}-{timestamp.strftime(_TIMESTAMP_FORMAT)}"
+    # Timestamp suffix appended to an alias to build a concrete index name, e.g.
+    # ``swissgeo-catalog-20260722153000``.
+    timestamp_format = "%Y%m%d%H%M%S"
+    return f"{alias}-{timestamp.strftime(timestamp_format)}"
 
 
 def _is_generation_of(index: str, alias: str) -> bool:
     """Whether ``index`` is a timestamped generation of ``alias`` created by this command."""
-    return index.startswith(f"{alias}-") and bool(_GENERATION_RE.search(index))
+    generation_regex = re.compile(r"-\d{14}$")
+    return index.startswith(f"{alias}-") and bool(generation_regex.search(index))
+
+
 
 
 def _alias_exists(client: Any, alias: str) -> bool:
@@ -114,19 +112,21 @@ def _wait_for_credentials() -> None:  # pragma: no cover
 
     IMDS credential fetches can fail transiently on startup due to network errors.
     """
-    for attempt in range(1, _CRED_RETRIES + 1):
+    retries = 3
+    delay = 2.0
+    for attempt in range(1, retries + 1):
         creds = boto3.Session().get_credentials()
         if creds is not None and creds.get_frozen_credentials().access_key:
             return
-        if attempt == _CRED_RETRIES:
-            raise RuntimeError(f"AWS credentials unavailable after {_CRED_RETRIES} attempts")
+        if attempt == retries:
+            raise RuntimeError(f"AWS credentials unavailable after {retries} attempts")
         LOGGER.warning(
             "AWS credentials not ready (attempt %d/%d), retrying in %.1fs",
             attempt,
-            _CRED_RETRIES,
-            _CRED_RETRY_DELAY,
+            retries,
+            delay,
         )
-        time.sleep(_CRED_RETRY_DELAY)
+        time.sleep(delay)
 
 
 def _dump(model: Any) -> dict:
