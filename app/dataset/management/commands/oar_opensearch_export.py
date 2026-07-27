@@ -99,13 +99,9 @@ def _is_generation_of(index: str, alias: str) -> bool:
     generation_regex = re.compile(r"-\d{14}$")
     return index.startswith(f"{alias}-") and bool(generation_regex.search(index))
 
-
-
-
 def _alias_exists(client: Any, alias: str) -> bool:
     """Whether ``alias`` currently resolves to at least one index."""
     return bool(client.indices.exists_alias(name=alias))
-
 
 def _wait_for_credentials() -> None:  # pragma: no cover
     """Wait for AWS credentials to become available.
@@ -323,13 +319,22 @@ class Command(CustomBaseCommand):
                 body=json.loads(INDEX_MAPPING_FILES[index].read_text())
             )
 
-    def do_import(self, client: Any, index: str, dtype: str, options: dict) -> None:
-        self.print_success(f"Building {dtype} documents...")
-        documents = self.build_documents(dtype)
+    def do_import(self, client: Any, index: str, document_type: str, options: dict) -> None:
+        """Build the documents of type ``document_type`` and index them into ``index``.
+
+        Args:
+            client (Any): The OpenSearch client, or None on a ``--dump`` run, where it is unused.
+            index (str): The opensearch index to index into (i.e. 'swissgeo-catalog-20260722153000')
+                         does not matter for `--dump`.
+            document_type (str): Which type export ('services', 'datasets' or 'distributions')
+            options (dict): The parsed command options. ``dump`` and ``batch_size`` are used here.
+        """
+        self.print_success(f"Building {document_type} documents...")
+        documents = self.build_documents(document_type)
 
         if options["dump"]:
-            self.dump_to_files(documents, TYPE_TO_INDEX[dtype], Path(options["dump"]))
-            self.print_success(f"Generated {len(documents)} {dtype} documents (not imported).")
+            self.dump_to_files(documents, TYPE_TO_INDEX[document_type], Path(options["dump"]))
+            self.print_success(f"Generated {len(documents)}! (not imported).")
             return
 
         def actions() -> Iterator[dict]:
