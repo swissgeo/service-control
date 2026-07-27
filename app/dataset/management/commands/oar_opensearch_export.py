@@ -270,8 +270,8 @@ class Command(CustomBaseCommand):
         if not dump:
             self.do_create_indexes(client, targets)
 
-        for dtype in TYPE_TO_INDEX:
-            self.do_import(client, targets[TYPE_TO_INDEX[dtype]], dtype, options)
+        for dtype, index in TYPE_TO_INDEX.items():
+            self.do_import(client, targets[index], dtype, options)
 
         if not dump:
             self.do_swap_aliases(client, targets, options)
