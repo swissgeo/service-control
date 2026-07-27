@@ -314,18 +314,18 @@ class Command(CustomBaseCommand):
 
     # ------------------------------------------------------------------ indices
 
-    def load_mapping(self, index: str) -> dict:
-        return json.loads(INDEX_MAPPING_FILES[index].read_text())
-
     def do_create_indexes(self, client: Any, targets: dict[str, str]) -> None:
         """Create the target index of each alias in ``targets``.
 
         The targets are new timestamped generations that cannot exist yet, so they are simply
         created.
         """
-        for alias, index in targets.items():
+        for _alias, index in targets.values():
             self.print_success(f"Creating index '{index}'")
-            client.indices.create(index=index, body=self.load_mapping(alias))
+            client.indices.create(
+                index=index,
+                body=json.loads(INDEX_MAPPING_FILES[index].read_text())
+            )
 
     # ------------------------------------------------------------------ import
 
