@@ -67,7 +67,7 @@ ORGANIZATIONS: list[OrganizationSeed] = [
 USERS: list[UserSeed] = [
     {
         "sub": "superuser",
-        "username": "superuser@example.org",
+        "username": "superuser",
         "first_name": "Super",
         "last_name": "User",
         "email": "superuser@example.org",
@@ -76,7 +76,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "admin-bafu",
-        "username": "admin.bafu@example.org",
+        "username": "admin.bafu",
         "first_name": "Admin",
         "last_name": "Bafu",
         "email": "admin.bafu@example.org",
@@ -85,7 +85,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "user-bafu",
-        "username": "user.bafu@example.org",
+        "username": "user.bafu",
         "first_name": "User",
         "last_name": "Bafu",
         "email": "user.bafu@example.org",
@@ -94,7 +94,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "admin-swisstopo",
-        "username": "admin.swisstopo@example.org",
+        "username": "admin.swisstopo",
         "first_name": "Admin",
         "last_name": "Swisstopo",
         "email": "admin.swisstopo@example.org",
@@ -103,7 +103,7 @@ USERS: list[UserSeed] = [
     },
     {
         "sub": "user-swisstopo",
-        "username": "user.swisstopo@example.org",
+        "username": "user.swisstopo",
         "first_name": "User",
         "last_name": "Swisstopo",
         "email": "user.swisstopo@example.org",
