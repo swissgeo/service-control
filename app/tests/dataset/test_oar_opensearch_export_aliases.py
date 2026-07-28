@@ -15,7 +15,7 @@ from dataset.management.commands.oar_opensearch_export import (
 
 
 class FakeIndices:
-    """Minimal stand-in for ``client.indices`` backed by an alias -> indices mapping."""
+    """Minimal stand-in for `client.indices` backed by an alias -> indices mapping."""
 
     def __init__(self, aliases: dict[str, list[str]], concrete: list[str] | None = None) -> None:
         # alias name -> the concrete indices it points at
@@ -203,7 +203,7 @@ def test_prune_never_deletes_the_generation_just_swapped_in():
 
 
 def test_prune_keeps_everything_when_keep_is_negative():
-    """A negative ``--keep-generations`` means 'keep everything' -- prune nothing."""
+    """A negative `--keep-generations` means 'keep everything' -- prune nothing."""
     client = FakeClient(
         {"swissgeo-catalog": ["swissgeo-catalog-20260722120000"]},
         concrete=[
@@ -219,7 +219,7 @@ def test_prune_keeps_everything_when_keep_is_negative():
 
 
 def test_prune_never_deletes_indices_it_did_not_create():
-    """An index sharing the alias prefix but not ``<alias>-<timestamp>`` is left alone."""
+    """An index sharing the alias prefix but not `<alias>-<timestamp>` is left alone."""
     client = FakeClient(
         {"swissgeo-catalog": ["swissgeo-catalog-20260722120000"]},
         concrete=[

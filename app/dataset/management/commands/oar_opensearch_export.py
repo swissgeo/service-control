@@ -40,9 +40,9 @@ from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
 SERVICES_INDEX = "geoadmin-services"
-# The datasets index is historically called ``swissgeo-catalog`` -- this matches the
-# generated fixtures, the ``swissgeo-catalog`` links referenced by the other documents and
-# the older tmp scripts. Its mapping file, however, is named ``...swissgeo-datasets.json``.
+# The datasets index is historically called `swissgeo-catalog` -- this matches the
+# generated fixtures, the `swissgeo-catalog` links referenced by the other documents and
+# the older tmp scripts. Its mapping file, however, is named `...swissgeo-datasets.json`.
 DATASETS_INDEX = "swissgeo-catalog"
 DISTRIBUTIONS_INDEX = "swissgeo-distributions"
 
@@ -87,7 +87,7 @@ KEEP_GENERATIONS = 2
 
 
 def _generation_index(alias: str, timestamp: datetime) -> str:
-    """Build the concrete index name for a new generation of ``alias``."""
+    """Build the concrete index name for a new generation of `alias`."""
     # Timestamp suffix appended to an alias to build a concrete index name, e.g.
     # `swissgeo-catalog-20260722153000`.
     timestamp_format = "%Y%m%d%H%M%S"
@@ -95,23 +95,23 @@ def _generation_index(alias: str, timestamp: datetime) -> str:
 
 
 def _is_generation_of(index: str, alias: str) -> bool:
-    """Whether ``index`` is a timestamped generation of ``alias`` created by this command."""
+    """Whether `index` is a timestamped generation of `alias` created by this command."""
     generation_regex = re.compile(r"-\d{14}$")
     return index.startswith(f"{alias}-") and bool(generation_regex.search(index))
 
 
 def _alias_exists(client: Any, alias: str) -> bool:
-    """Whether ``alias`` currently resolves to at least one index."""
+    """Whether `alias` currently resolves to at least one index."""
     return bool(client.indices.exists_alias(name=alias))
 
 
 def _create_action_removeindex(index: str, alias: str) -> dict:
-    """Build the ``_aliases`` action detaching ``index`` from ``alias``."""
+    """Build the `_aliases` action detaching `index` from `alias`."""
     return {"remove": {"index": index, "alias": alias}}
 
 
 def _create_action_addindex(index: str, alias: str) -> dict:
-    """Build the ``_aliases`` action attaching ``index`` to ``alias``."""
+    """Build the `_aliases` action attaching `index` to `alias`."""
     return {"add": {"index": index, "alias": alias}}
 
 
@@ -143,10 +143,10 @@ def _dump(model: Any) -> dict:
 
 
 def _clean_props(properties: dict, skip: frozenset[str] = frozenset()) -> dict:
-    """Return a copy of a properties dict without ``None`` values and skipped keys.
+    """Return a copy of a properties dict without `None` values and skipped keys.
 
-    ``model_dump(exclude_none=True)`` drops None model *fields* but leaves None entries
-    inside a plain ``dict`` field, so we strip them explicitly here.
+    `model_dump(exclude_none=True)` drops None model *fields* but leaves None entries
+    inside a plain `dict` field, so we strip them explicitly here.
     """
     return {k: v for k, v in properties.items() if v is not None and k not in skip}
 
@@ -156,11 +156,11 @@ def _rewrite_dist_links(
 ) -> list[dict]:
     """Rewrite a distribution feature's links into the OpenSearch form.
 
-    The ``dataset`` and ``dataservice`` links are rewritten to relative
-    ``/collections/.../items/...`` paths, the ``styledby`` link to the OAS style file is kept
+    The `dataset` and `dataservice` links are rewritten to relative
+    `/collections/.../items/...` paths, the `styledby` link to the OAS style file is kept
     (with the per-language query/hreflang stripped, as styles are language-neutral), the
-    intra-service ``self``/``collection``/``alternate`` links and any other OAR/OAS internal
-    link without a defined mapping (e.g. ``featureinfo``) are dropped, and genuinely external
+    intra-service `self`/`collection`/`alternate` links and any other OAR/OAS internal
+    link without a defined mapping (e.g. `featureinfo`) are dropped, and genuinely external
     links are kept as-is.
     """
     rewritten: list[dict] = []
@@ -178,7 +178,7 @@ def _rewrite_dist_links(
                 }
             )
         elif rel == "dataservice":
-            # The href looks like ``.../items/<service_id>?language=de``.
+            # The href looks like `.../items/<service_id>?language=de`.
             service_id = href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
             rewritten.append(
                 {
@@ -319,7 +319,7 @@ class Command(CustomBaseCommand):
         return client
 
     def create_indexes(self, client: Any, targets: dict[str, str]) -> None:
-        """Create the target index of each alias in ``targets``.
+        """Create the target index of each alias in `targets`.
 
         The targets are new timestamped generations that cannot exist yet, so they are simply
         created.
@@ -332,14 +332,14 @@ class Command(CustomBaseCommand):
             )
 
     def import_documents(self, client: Any, index: str, document_type: str, options: dict) -> None:
-        """Build the documents of type ``document_type`` and index them into ``index``.
+        """Build the documents of type `document_type` and index them into `index`.
 
         Args:
-            client (Any): The OpenSearch client, or None on a ``--dump`` run, where it is unused.
+            client (Any): The OpenSearch client, or None on a `--dump` run, where it is unused.
             index (str): The opensearch index to index into (i.e. 'swissgeo-catalog-20260722153000')
                          does not matter for `--dump`.
             document_type (str): Which type export ('services', 'datasets' or 'distributions')
-            options (dict): The parsed command options. ``dump`` and ``batch_size`` are used here.
+            options (dict): The parsed command options. `dump` and `batch_size` are used here.
         """
         self.print_success(f"Building {document_type} documents...")
         documents = self.build_documents(document_type)
@@ -371,9 +371,9 @@ class Command(CustomBaseCommand):
         self.print_success(f"{ok} documents indexed into '{index}'")
 
     def swap_aliases(self, client: Any, targets: dict[str, str], options: dict) -> None:
-        """Point every alias in ``targets`` at its freshly built index, atomically.
+        """Point every alias in `targets` at its freshly built index, atomically.
 
-        All removes and adds go into a single ``_aliases`` request, which OpenSearch applies as
+        All removes and adds go into a single `_aliases` request, which OpenSearch applies as
         one cluster state update. Searches therefore switch from the old to the new generation
         between two requests, with no window in which an alias is missing, resolves to both
         generations at once, or -- across the three indices -- mixes generations.
@@ -430,14 +430,14 @@ class Command(CustomBaseCommand):
         self.prune_generations(client, targets, options["keep_generations"])
 
     def prune_generations(self, client: Any, targets: dict[str, str], keep: int) -> None:
-        """Delete old generations of each alias, keeping the ``keep`` most recent for rollback.
+        """Delete old generations of each alias, keeping the `keep` most recent for rollback.
 
         The candidates are discovered from the cluster rather than from what the alias pointed
         at, because a swap detaches the previous generation: after the second run the alias only
         ever names one old index, and every generation before it would otherwise be orphaned and
         never cleaned up.
 
-        Only indices this command created (``<alias>-<timestamp>``) are considered, so an
+        Only indices this command created (`<alias>-<timestamp>`) are considered, so an
         unrelated index that happens to share the alias prefix is left alone. Timestamped names
         sort chronologically, so the tail of the sorted list is the most recent.
         """
@@ -451,13 +451,16 @@ class Command(CustomBaseCommand):
             # Never touch the generation just swapped in, whatever `keep` says.
             candidates = sorted(i for i in existing if i != index and _is_generation_of(i, alias))
             # Keep the `keep` newest (the tail of the sorted list); everything older is stale.
-            stale = candidates[: max(len(candidates) - keep, 0)]
-            for old_index in stale:
+            prune_count = len(candidates) - keep
+            if prune_count <= 0:
+               continue
+            to_prune = candidates[:prune_count]
+            for old_index in to_prune:
                 self.print(f"Deleting old index '{old_index}'")
                 client.indices.delete(index=old_index)
 
     def dump_to_files(self, documents: list[dict], index: str, dump_dir: Path) -> None:
-        """Write each document as its own JSON file below ``dump_dir``."""
+        """Write each document as its own JSON file below `dump_dir`."""
         target_dir = dump_dir / index
         target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -487,7 +490,7 @@ class Command(CustomBaseCommand):
         return documents
 
     def build_service_doc(self, service: Dataservice, oar_base_url: str) -> dict:
-        """Build a ``geoadmin-services`` document from a Dataservice."""
+        """Build a `geoadmin-services` document from a Dataservice."""
         features = {
             lang: _dump(
                 OARDataservice.from_dataservice(service, lang, SERVICES_COLLECTION_ID, oar_base_url)
@@ -512,7 +515,7 @@ class Command(CustomBaseCommand):
         }
 
     def build_dataset_doc(self, dataset: Dataset, oar_base_url: str) -> dict:
-        """Build a ``swissgeo-catalog`` document from a Dataset."""
+        """Build a `swissgeo-catalog` document from a Dataset."""
         features = {
             lang: _dump(OARDataset.from_dataset(dataset, lang, CATALOG_COLLECTION_ID, oar_base_url))
             for lang in LANG_CODES
@@ -554,7 +557,7 @@ class Command(CustomBaseCommand):
     def build_distribution_doc(
         self, dataset: Dataset, oar_base_url: str, oas_base_url: str
     ) -> dict:
-        """Build a ``swissgeo-distributions`` FeatureCollection document from a Dataset."""
+        """Build a `swissgeo-distributions` FeatureCollection document from a Dataset."""
         collection_id = f"{dataset.dataset_id}.distributions"
         features = []
         for distribution in dataset.distribution_set.all():  # ty:ignore[unresolved-attribute]

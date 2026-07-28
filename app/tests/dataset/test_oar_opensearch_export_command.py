@@ -1,13 +1,13 @@
-"""End-to-end tests for the ``oar_opensearch_export`` management command.
+"""End-to-end tests for the `oar_opensearch_export` management command.
 
 The command has two output modes:
 
-  * ``--dump <dir>`` builds the documents and writes them to disk, one JSON file per document,
-    without ever talking to OpenSearch. These tests run it against a ``tmp_path`` and assert on
+  * `--dump <dir>` builds the documents and writes them to disk, one JSON file per document,
+    without ever talking to OpenSearch. These tests run it against a `tmp_path` and assert on
     the files produced.
   * the default mode talks to an OpenSearch cluster, building a fresh timestamped generation and
     swapping the aliases over. There is no cluster in the test environment, so the client and the
-    ``helpers.bulk`` call are mocked; the tests assert on the documents the command *would* have
+    `helpers.bulk` call are mocked; the tests assert on the documents the command *would* have
     indexed and on the index/alias calls it makes.
 """
 
@@ -91,8 +91,8 @@ def _read_dump(dump_dir: Path, index: str, doc_id: str) -> dict:
 def _mock_client() -> MagicMock:
     """A stand-in OpenSearch client for a fresh cluster.
 
-    ``exists``/``exists_alias`` are False (no concrete index blocks the swap, no previous alias
-    to detach) and ``get`` returns no generations, so the alias swap and prune run cleanly.
+    `exists`/`exists_alias` are False (no concrete index blocks the swap, no previous alias
+    to detach) and `get` returns no generations, so the alias swap and prune run cleanly.
     """
     client = MagicMock()
     client.indices.exists.return_value = False
@@ -100,8 +100,6 @@ def _mock_client() -> MagicMock:
     client.indices.get.return_value = {}
     return client
 
-
-# ------------------------------------------------------------- _rewrite_dist_links
 
 OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
 OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
@@ -133,8 +131,6 @@ def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
 
-
-# --------------------------------------------------------------------------- --dump
 
 
 def test_dump_writes_one_file_per_document(db, tmp_path):
@@ -275,10 +271,6 @@ def test_dump_distribution_document(db, tmp_path):
         "it": "Description (IT)",
         "en": "Description (EN)",
     }
-
-
-# ----------------------------------------------------------------- export (mocked)
-
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
 @patch(f"{MODULE}.Command.get_client")
