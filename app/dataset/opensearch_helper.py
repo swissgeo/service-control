@@ -20,6 +20,11 @@ from utils.command import CustomBaseCommand
 
 LOGGER = logging.getLogger(__name__)
 
+# Per-request timeout in seconds. The opensearch-py default of 10s is not enough for the bulk
+# requests of the export command: a chunk of distribution documents (a FeatureCollection per
+# dataset, in four languages) regularly takes longer than that to be acknowledged.
+REQUEST_TIMEOUT = 120
+
 
 def add_connection_arguments(parser: CommandParser) -> None:
     """Add the OpenSearch connection flags consumed by `build_client`."""
@@ -92,9 +97,10 @@ def build_client(command: CustomBaseCommand, options: dict) -> Any:  # pragma: n
             use_ssl=url.startswith("https"),
             verify_certs=True,
             connection_class=RequestsHttpConnection,
+            timeout=REQUEST_TIMEOUT,
         )
     else:
-        client = OpenSearch(url, verify_certs=False)
+        client = OpenSearch(url, verify_certs=False, timeout=REQUEST_TIMEOUT)
 
     if not client.ping():
         raise CommandError(f"Cannot connect to OpenSearch at {url}")
