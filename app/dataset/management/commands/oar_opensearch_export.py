@@ -9,18 +9,13 @@ This command potentially could be replaced in the future with a SWISSGEO data pi
 """
 
 import json
-import logging
-import os
 import re
-import time
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import boto3
-from opensearchpy import OpenSearch, RequestsHttpConnection, helpers
-from requests_aws4auth import AWS4Auth
+from opensearchpy import helpers
 
 from django.core.management.base import CommandError, CommandParser
 
@@ -36,6 +31,7 @@ from dataset.export_models import (
 from dataset.management.commands.oar_export import OAR_BASE_URL as _OAR_BASE_URL_BY_ENV
 from dataset.management.commands.oar_export import OAS_BASE_URL as _OAS_BASE_URL_BY_ENV
 from dataset.models import Dataset
+from dataset.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
@@ -79,8 +75,6 @@ OGC_SCHEMA = (
 # Language codes in the canonical order (de, fr, it, en).
 LANG_CODES = list(LANGS.keys())
 
-LOGGER = logging.getLogger(__name__)
-
 # How many superseded generations to keep around after a swap, so that a bad export can be
 # rolled back by pointing the alias back at the previous index.
 KEEP_GENERATIONS = 2
@@ -113,28 +107,6 @@ def _create_action_removeindex(index: str, alias: str) -> dict:
 def _create_action_addindex(index: str, alias: str) -> dict:
     """Build the `_aliases` action attaching `index` to `alias`."""
     return {"add": {"index": index, "alias": alias}}
-
-
-def _wait_for_credentials() -> None:  # pragma: no cover
-    """Wait for AWS credentials to become available.
-
-    IMDS credential fetches can fail transiently on startup due to network errors.
-    """
-    retries = 3
-    delay = 2.0
-    for attempt in range(1, retries + 1):
-        creds = boto3.Session().get_credentials()
-        if creds is not None and creds.get_frozen_credentials().access_key:
-            return
-        if attempt == retries:
-            raise RuntimeError(f"AWS credentials unavailable after {retries} attempts")
-        LOGGER.warning(
-            "AWS credentials not ready (attempt %d/%d), retrying in %.1fs",
-            attempt,
-            retries,
-            delay,
-        )
-        time.sleep(delay)
 
 
 def _dump(model: Any) -> dict:
@@ -210,25 +182,8 @@ class Command(CustomBaseCommand):
         # Base class arguments (mainly '--logger').
         super().add_arguments(parser)
 
-        parser.add_argument(
-            "--opensearch-url",
-            type=str,
-            default=os.environ.get("OPENSEARCH_URL", "http://localhost:9200"),
-            help="OpenSearch endpoint URL (default: $OPENSEARCH_URL or http://localhost:9200)",
-        )
-        parser.add_argument(
-            "--aws-auth",
-            dest="aws_auth",
-            action="store_true",
-            default=None,
-            help="Force AWS SigV4 authentication (default: enabled automatically for https URLs)",
-        )
-        parser.add_argument(
-            "--no-aws-auth",
-            dest="aws_auth",
-            action="store_false",
-            help="Disable AWS SigV4 authentication",
-        )
+        add_connection_arguments(parser)
+
         parser.add_argument(
             "--keep-generations",
             type=int,
@@ -288,35 +243,7 @@ class Command(CustomBaseCommand):
 
     def get_client(self, options: dict) -> Any:  # pragma: no cover
         """Build and ping an OpenSearch client, optionally using AWS SigV4 auth."""
-        url = options["opensearch_url"]
-        aws_auth = options["aws_auth"]
-        use_aws = aws_auth if aws_auth is not None else url.startswith("https")
-
-        if use_aws:
-            _wait_for_credentials()  # ensures credentials are available below
-            region = os.environ.get("AWS_DEFAULT_REGION", "eu-central-1")
-            credentials = boto3.Session().get_credentials().get_frozen_credentials()  # ty:ignore[unresolved-attribute]
-            auth = AWS4Auth(
-                credentials.access_key,
-                credentials.secret_key,
-                region,
-                "es",
-                session_token=credentials.token,
-            )
-            client = OpenSearch(
-                url,
-                http_auth=auth,
-                use_ssl=url.startswith("https"),
-                verify_certs=True,
-                connection_class=RequestsHttpConnection,
-            )
-        else:
-            client = OpenSearch(url, verify_certs=False)
-
-        if not client.ping():
-            raise CommandError(f"Cannot connect to OpenSearch at {url}")
-        self.print_success(f"Connected to OpenSearch at {url}")
-        return client
+        return build_client(self, options)
 
     def create_indexes(self, client: Any, targets: dict[str, str]) -> None:
         """Create the target index of each alias in `targets`.
@@ -453,7 +380,7 @@ class Command(CustomBaseCommand):
             # Keep the `keep` newest (the tail of the sorted list); everything older is stale.
             prune_count = len(candidates) - keep
             if prune_count <= 0:
-               continue
+                continue
             to_prune = candidates[:prune_count]
             for old_index in to_prune:
                 self.print(f"Deleting old index '{old_index}'")

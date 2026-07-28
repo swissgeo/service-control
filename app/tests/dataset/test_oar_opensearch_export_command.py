@@ -132,7 +132,6 @@ def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
     assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
 
 
-
 def test_dump_writes_one_file_per_document(db, tmp_path):
     dataservice = _make_dataservice()
     dataset = _make_dataset()
@@ -271,6 +270,7 @@ def test_dump_distribution_document(db, tmp_path):
         "it": "Description (IT)",
         "en": "Description (EN)",
     }
+
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
 @patch(f"{MODULE}.Command.get_client")
