@@ -108,7 +108,7 @@ def test_swap_moves_every_alias_in_a_single_request():
         "geoadmin-services": "geoadmin-services-20260722153000",
     }
 
-    _command().do_swap_aliases(client, targets, _options())
+    _command().swap_aliases(client, targets, _options())
 
     # One _aliases call for both indices: that is what makes the swap atomic across them.
     assert len(client.indices.update_alias_calls) == 1
@@ -129,7 +129,7 @@ def test_swap_creates_alias_when_none_exists():
     client = FakeClient({})
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
-    _command().do_swap_aliases(client, targets, _options())
+    _command().swap_aliases(client, targets, _options())
 
     assert client.indices.update_alias_calls == [
         [{"add": {"index": "swissgeo-catalog-20260722153000", "alias": "swissgeo-catalog"}}]
@@ -142,7 +142,7 @@ def test_swap_refuses_concrete_index():
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
     with pytest.raises(CommandError, match="is a concrete index, not an alias"):
-        _command().do_swap_aliases(client, targets, _options())
+        _command().swap_aliases(client, targets, _options())
 
     # Nothing was touched -- the old index still serves reads.
     assert client.indices.deleted == []
@@ -161,7 +161,7 @@ def test_swap_refuses_concrete_index_before_touching_other_aliases():
     }
 
     with pytest.raises(CommandError):
-        _command().do_swap_aliases(client, targets, _options())
+        _command().swap_aliases(client, targets, _options())
 
     assert client.indices.deleted == []
     assert client.indices.update_alias_calls == []
@@ -183,7 +183,7 @@ def test_prune_keeps_the_configured_number_of_generations():
     )
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
-    _command().do_swap_aliases(client, targets, _options(keep_generations=2))
+    _command().swap_aliases(client, targets, _options(keep_generations=2))
 
     # Four old generations exist, the two most recent stay available for a rollback.
     assert client.indices.deleted == [
@@ -196,7 +196,7 @@ def test_prune_never_deletes_the_generation_just_swapped_in():
     client = FakeClient({"swissgeo-catalog": ["swissgeo-catalog-20260722100000"]})
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
-    _command().do_swap_aliases(client, targets, _options(keep_generations=0))
+    _command().swap_aliases(client, targets, _options(keep_generations=0))
 
     assert client.indices.deleted == ["swissgeo-catalog-20260722100000"]
     assert client.indices.aliases["swissgeo-catalog"] == ["swissgeo-catalog-20260722153000"]
@@ -213,7 +213,7 @@ def test_prune_keeps_everything_when_keep_is_negative():
     )
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
-    _command().do_swap_aliases(client, targets, _options(keep_generations=-1))
+    _command().swap_aliases(client, targets, _options(keep_generations=-1))
 
     assert client.indices.deleted == []
 
@@ -230,7 +230,7 @@ def test_prune_never_deletes_indices_it_did_not_create():
     )
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
-    _command().do_swap_aliases(client, targets, _options(keep_generations=1))
+    _command().swap_aliases(client, targets, _options(keep_generations=1))
 
     assert client.indices.deleted == [
         "swissgeo-catalog-20260722100000",
@@ -244,6 +244,6 @@ def test_swap_refreshes_new_indices_before_moving_the_alias():
     client = FakeClient({"swissgeo-catalog": ["swissgeo-catalog-20260722100000"]})
     targets = {"swissgeo-catalog": "swissgeo-catalog-20260722153000"}
 
-    _command().do_swap_aliases(client, targets, _options())
+    _command().swap_aliases(client, targets, _options())
 
     assert client.indices.refreshed == ["swissgeo-catalog-20260722153000"]

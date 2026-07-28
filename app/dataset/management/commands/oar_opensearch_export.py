@@ -276,13 +276,13 @@ class Command(CustomBaseCommand):
         }
 
         if not dump:
-            self.do_create_indexes(client, targets)
+            self.create_indexes(client, targets)
 
-        for dtype, index in TYPE_TO_INDEX.items():
-            self.do_import(client, targets[index], dtype, options)
+        for document_type, index in TYPE_TO_INDEX.items():
+            self.import_documents(client, targets[index], document_type, options)
 
         if not dump:
-            self.do_swap_aliases(client, targets, options)
+            self.swap_aliases(client, targets, options)
 
         self.print_success("Done.")
 
@@ -318,7 +318,7 @@ class Command(CustomBaseCommand):
         self.print_success(f"Connected to OpenSearch at {url}")
         return client
 
-    def do_create_indexes(self, client: Any, targets: dict[str, str]) -> None:
+    def create_indexes(self, client: Any, targets: dict[str, str]) -> None:
         """Create the target index of each alias in ``targets``.
 
         The targets are new timestamped generations that cannot exist yet, so they are simply
@@ -331,7 +331,7 @@ class Command(CustomBaseCommand):
                 index=index, body=json.loads(INDEX_MAPPING_FILES[alias].read_text())
             )
 
-    def do_import(self, client: Any, index: str, document_type: str, options: dict) -> None:
+    def import_documents(self, client: Any, index: str, document_type: str, options: dict) -> None:
         """Build the documents of type ``document_type`` and index them into ``index``.
 
         Args:
@@ -370,7 +370,7 @@ class Command(CustomBaseCommand):
             raise CommandError(f"{len(errors)} documents failed to index into '{index}'")
         self.print_success(f"{ok} documents indexed into '{index}'")
 
-    def do_swap_aliases(self, client: Any, targets: dict[str, str], options: dict) -> None:
+    def swap_aliases(self, client: Any, targets: dict[str, str], options: dict) -> None:
         """Point every alias in ``targets`` at its freshly built index, atomically.
 
         All removes and adds go into a single ``_aliases`` request, which OpenSearch applies as
@@ -470,17 +470,17 @@ class Command(CustomBaseCommand):
 
         self.print_success(f"Wrote {len(documents)} documents to {target_dir}")
 
-    def build_documents(self, dtype: str) -> list[dict]:
+    def build_documents(self, document_type: str) -> list[dict]:
         documents: list[dict] = []
-        if dtype == "services":
+        if document_type == "services":
             for service in Dataservice.objects.all():
                 self.print(f" - {service.dataservice_id}")
                 documents.append(self.build_service_doc(service, OAR_BASE_URL))
-        elif dtype == "datasets":
+        elif document_type == "datasets":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_dataset_doc(dataset, OAR_BASE_URL))
-        elif dtype == "distributions":
+        elif document_type == "distributions":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL))
