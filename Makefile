@@ -86,6 +86,8 @@ seed-local-testdata: start-local-services start-local-db ## Seed local organizat
 	USE_LOCAL_VERIFIED_PERMISSIONS=true $(PYTHON) $(DJANGO_MANAGER) seed_local_testdata
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/mapping.json
+	# dataset and distribution reference each other, so they must load in one transaction
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataset.json app/fixtures/distribution.json
 
 
 .PHONY: reset-local-testdata
@@ -93,6 +95,8 @@ reset-local-testdata: start-local-services start-local-db ## Reset local users/o
 	USE_LOCAL_VERIFIED_PERMISSIONS=true $(PYTHON) $(DJANGO_MANAGER) seed_local_testdata --reset --recreate-cognito-users
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/mapping.json
+	# dataset and distribution reference each other, so they must load in one transaction
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataset.json app/fixtures/distribution.json
 
 .PHONY: format
 format: ## Call ruff format to make sure your code is easier to read and respects some conventions.
