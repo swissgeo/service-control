@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 # Per-request timeout in seconds. The opensearch-py default of 10s is not enough for the bulk
 # requests of the export command: a chunk of distribution documents (a FeatureCollection per
 # dataset, in four languages) regularly takes longer than that to be acknowledged.
-REQUEST_TIMEOUT = 120
+REQUEST_TIMEOUT = 600
 
 
 def add_connection_arguments(parser: CommandParser) -> None:
