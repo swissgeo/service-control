@@ -12,7 +12,6 @@ The command has two output modes:
 """
 
 import json
-from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -23,14 +22,14 @@ import pytest
 
 from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import (
-    TYPE_TO_INDEX,
+    OAR_BASE_URL,
+    OAS_BASE_URL,
     _is_generation_of,
     _rewrite_dist_links,
 )
 from dataset.models import Dataset
 from distribution.models import ExternalWMSDistribution
 
-COMMAND = "oar_opensearch_export"
 MODULE = "dataset.management.commands.oar_opensearch_export"
 
 
@@ -101,33 +100,50 @@ def _mock_client() -> MagicMock:
     return client
 
 
-OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
-OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
+# Stand-in base URLs for the `_rewrite_dist_links` unit tests below, so they don't depend on the
+# environment the command happens to build its documents with.
+EXAMPLE_OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
+EXAMPLE_OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
 
 
 def test_rewrite_dist_links_keeps_external_link_as_is():
     """A link with an unhandled rel and a non-OAR/OAS href falls through and is kept verbatim."""
-    external = {"href": "https://not-rewritten.org", "rel": "license", "title": "License"}
     links = [
-        {"href": f"{OAR_BASE_URL}/collections/x/items/y", "rel": "self"},  # dropped
-        external,  # kept as-is
+        {"href": f"{EXAMPLE_OAR_BASE_URL}/collections/x/items/y", "rel": "self"},  # dropped
+        {"href": "https://not-rewritten.org", "rel": "license", "title": "License"},  # kept as-is
     ]
 
-    result = _rewrite_dist_links(links, OAR_BASE_URL, OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
-    assert result == [external]
-    # The dict is passed through unchanged, not rewritten into a relative path.
-    assert result[0] is external
+    assert result == [{"href": "https://not-rewritten.org", "rel": "license", "title": "License"}]
+
+
+@pytest.mark.parametrize("rel", ["self", "collection", "alternate"])
+def test_rewrite_dist_links_drops_intra_service_links(rel):
+    """`self`/`collection`/`alternate` are dropped on their rel alone, whatever the href is.
+
+    The href here is deliberately external, so an intra-service link that got rewritten to some
+    other host is still dropped rather than falling through to the 'keep external links' branch.
+    """
+    links = [
+        {"href": "https://elsewhere.example.org/collections/x/items/y", "rel": rel},
+        {"href": "https://not-rewritten.org", "rel": "license"},
+    ]
+
+    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+
+    assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
 
 
 def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
     """An OAR/OAS-internal link with no defined mapping (e.g. featureinfo) is dropped."""
     links = [
-        {"href": f"{OAR_BASE_URL}/some/featureinfo", "rel": "featureinfo"},
+        {"href": f"{EXAMPLE_OAR_BASE_URL}/some/featureinfo", "rel": "featureinfo"},
+        {"href": f"{EXAMPLE_OAS_BASE_URL}/some/other", "rel": "unmapped"},
         {"href": "https://not-rewritten.org", "rel": "license"},
     ]
 
-    result = _rewrite_dist_links(links, OAR_BASE_URL, OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
 
@@ -137,8 +153,7 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
     dataset = _make_dataset()
     _make_distribution(dataset, dataservice)
 
-    out = StringIO()
-    call_command(COMMAND, dump=str(tmp_path), verbosity=2, stdout=out)
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     # One file per document, in the per-index sub-directories.
     assert (tmp_path / "geoadmin-services" / "wmts-geoadminch.json").is_file()
@@ -149,68 +164,109 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
 def test_dump_service_document(db, tmp_path):
     _make_dataservice()
 
-    call_command(COMMAND, dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    doc = _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch")
-    assert doc["id"] == "wmts-geoadminch"
-    assert doc["type"] == "Feature"
-    assert doc["properties"] == {
-        "type": "ogc:wms",
-        "title": {
-            "de": "WMTS geo.admin.ch",
-            "fr": "WMTS geo.admin.ch",
-            "it": "WMTS geo.admin.ch",
-            "en": "WMTS geo.admin.ch",
-        },
-    }
     # The per-language 'alternate' self links are dropped; the (de) self/collection and the
-    # external links are kept.
-    rels = [link["rel"] for link in doc["links"]]
-    assert "alternate" not in rels
-    assert rels == ["self", "collection", "service-doc", "about"]
-    assert doc["linkTemplates"] == []
+    # external links are kept. 'title' becomes a {lang: value} object.
+    assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
+        "id": "wmts-geoadminch",
+        "type": "Feature",
+        "links": [
+            {
+                "href": (
+                    f"{OAR_BASE_URL}/collections/geoadmin.services"
+                    "/items/wmts-geoadminch?language=de"
+                ),
+                "rel": "self",
+                "title": "This Record",
+                "type": "application/json",
+                "hreflang": "de",
+            },
+            {
+                "href": f"{OAR_BASE_URL}/collections/geoadmin.services?language=de",
+                "rel": "collection",
+                "title": "Link to the collection this item belongs to",
+                "type": "application/json",
+                "hreflang": "de",
+            },
+            {
+                "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+                "rel": "service-doc",
+                "title": "Service Documentation (DE)",
+                "type": "application/json",
+            },
+            {
+                "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
+                "rel": "about",
+                "title": "WMS Capabilities File",
+                "type": "application/xml",
+            },
+        ],
+        "properties": {
+            "type": "ogc:wms",
+            "title": {
+                "de": "WMTS geo.admin.ch",
+                "fr": "WMTS geo.admin.ch",
+                "it": "WMTS geo.admin.ch",
+                "en": "WMTS geo.admin.ch",
+            },
+        },
+        "linkTemplates": [],
+    }
 
 
 def test_dump_dataset_document(db, tmp_path):
     _make_dataset()
 
-    call_command(COMMAND, dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
-    assert doc["$schema"].endswith("recordGeoJSON.yaml")
-    assert doc["id"] == "ch.bafu.moose"
-    assert doc["type"] == "Feature"
-    assert doc["geometry"]["type"] == "Polygon"
-
-    # Only external links survive, plus the (relative) distributions link.
-    assert doc["links"] == [
-        {
-            "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
-            "rel": "alternate",
-            "title": "GeoCat Metadata",
-            "type": "text/html",
+    # Only external links survive, plus the (relative) distributions link. 'title'/'description'
+    # become multilingual objects and the singular 'language' property is dropped.
+    assert _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose") == {
+        "$schema": "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml",
+        "id": "ch.bafu.moose",
+        "type": "Feature",
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+            ],
         },
-        {
-            "href": "/collections/swissgeo-distributions/items/ch.bafu.moose",
-            "rel": "distributions",
-            "title": "Distributions",
+        "links": [
+            {
+                "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                "rel": "alternate",
+                "title": "GeoCat Metadata",
+                "type": "text/html",
+            },
+            {
+                "href": "/collections/swissgeo-distributions/items/ch.bafu.moose",
+                "rel": "distributions",
+                "title": "Distributions",
+            },
+        ],
+        "properties": {
+            "contacts": [],
+            "languages": [
+                {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+            ],
+            "type": "Dataset",
+            "title": {
+                "de": "Rote Liste Moose",
+                "fr": "Liste rouge mousses",
+                "it": "Lista rossa biofite",
+                "en": "Red list bryophytes",
+            },
+            "description": {
+                "de": "Beschreibung",
+                "fr": "Description",
+                "it": "Descrizione",
+                "en": "Description",
+            },
         },
-    ]
-
-    # 'title'/'description' become multilingual objects; the singular 'language' is dropped.
-    assert "language" not in doc["properties"]
-    assert doc["properties"]["type"] == "Dataset"
-    assert doc["properties"]["title"] == {
-        "de": "Rote Liste Moose",
-        "fr": "Liste rouge mousses",
-        "it": "Lista rossa biofite",
-        "en": "Red list bryophytes",
-    }
-    assert doc["properties"]["description"] == {
-        "de": "Beschreibung",
-        "fr": "Description",
-        "it": "Descrizione",
-        "en": "Description",
     }
 
 
@@ -219,56 +275,63 @@ def test_dump_distribution_document(db, tmp_path):
     dataset = _make_dataset()
     _make_distribution(dataset, dataservice)
 
-    call_command(COMMAND, dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    doc = _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose")
-    assert doc["id"] == "ch.bafu.moose"
-    assert doc["type"] == "FeatureCollection"
-    assert doc["properties"]["title"] == {
-        "de": "Rote Liste Moose",
-        "fr": "Liste rouge mousses",
-        "it": "Lista rossa biofite",
-        "en": "Red list bryophytes",
-    }
-
-    assert len(doc["features"]) == 1
-    feature = doc["features"][0]
-    assert feature["id"] == "ch.bafu.moose:wms"
-    assert feature["type"] == "Feature"
-    # dataset/dataservice links rewritten to relative index paths; styledby kept (language
-    # stripped); the internal self/collection/featureinfo links are dropped.
-    assert feature["links"] == [
-        {
-            "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
-            "rel": "dataset",
-            "title": "Dataset Record",
+    # The dataset/dataservice links are rewritten to relative index paths and styledby is kept
+    # (with the language stripped); the internal self/collection/featureinfo links are dropped.
+    # Translated fields become {lang: value} objects, like datasets/services.
+    assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose") == {
+        "id": "ch.bafu.moose",
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "id": "ch.bafu.moose:wms",
+                "type": "Feature",
+                "links": [
+                    {
+                        "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                        "rel": "dataset",
+                        "title": "Dataset Record",
+                    },
+                    {
+                        "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                        "rel": "dataservice",
+                    },
+                    {
+                        "href": f"{OAS_BASE_URL}/styles/ch.bafu.moose:wms:style",
+                        "rel": "styledby",
+                        "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                        "type": "application/json",
+                    },
+                ],
+                "linkTemplates": [],
+                "properties": {
+                    "type": "Distribution",
+                    "title": {
+                        "de": "WMS Layer (DE)",
+                        "fr": "WMS Layer (FR)",
+                        "it": "WMS Layer (IT)",
+                        "en": "WMS Layer (EN)",
+                    },
+                    "description": {
+                        "de": "Description (DE)",
+                        "fr": "Description (FR)",
+                        "it": "Description (IT)",
+                        "en": "Description (EN)",
+                    },
+                    "protocol": "ogc:wms",
+                    "externalIds": ["ch.bafu.moose"],
+                },
+            }
+        ],
+        "properties": {
+            "title": {
+                "de": "Rote Liste Moose",
+                "fr": "Liste rouge mousses",
+                "it": "Lista rossa biofite",
+                "en": "Red list bryophytes",
+            },
         },
-        {
-            "href": "/collections/geoadmin-services/items/wmts-geoadminch",
-            "rel": "dataservice",
-        },
-        {
-            "href": "https://services.swissgeo.ch/api/oas/v0/styles/ch.bafu.moose:wms:style",
-            "rel": "styledby",
-            "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
-            "type": "application/json",
-        },
-    ]
-    # Translated fields are {lang: value} objects, like datasets/services.
-    assert feature["properties"]["type"] == "Distribution"
-    assert feature["properties"]["protocol"] == "ogc:wms"
-    assert feature["properties"]["externalIds"] == ["ch.bafu.moose"]
-    assert feature["properties"]["title"] == {
-        "de": "WMS Layer (DE)",
-        "fr": "WMS Layer (FR)",
-        "it": "WMS Layer (IT)",
-        "en": "WMS Layer (EN)",
-    }
-    assert feature["properties"]["description"] == {
-        "de": "Description (DE)",
-        "fr": "Description (FR)",
-        "it": "Description (IT)",
-        "en": "Description (EN)",
     }
 
 
@@ -281,8 +344,7 @@ def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db
     client = _mock_client()
     get_client.return_value = client
 
-    out = StringIO()
-    call_command(COMMAND, verbosity=2, stdout=out)
+    call_command("oar_opensearch_export", verbosity=0)
 
     # A fresh timestamped generation is created for each of the three aliases.
     created = {call.kwargs["index"] for call in client.indices.create.call_args_list}
@@ -298,7 +360,11 @@ def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db
         actions = list(call.args[1])
         assert actions, "expected at least one document per index"
         target = actions[0]["_index"]
-        alias = next(a for a in TYPE_TO_INDEX.values() if _is_generation_of(target, a))
+        alias = next(
+            a
+            for a in ("geoadmin-services", "swissgeo-catalog", "swissgeo-distributions")
+            if _is_generation_of(target, a)
+        )
         indexed[alias] = actions
 
     # The service document reaches the services generation with its id and source.
@@ -322,14 +388,14 @@ def test_export_swaps_all_aliases_in_a_single_request(get_client, bulk, db):
     client = _mock_client()
     get_client.return_value = client
 
-    call_command(COMMAND, verbosity=0)
+    call_command("oar_opensearch_export", verbosity=0)
 
     # The swap happens in one _aliases call; on a fresh cluster it is one 'add' per alias,
     # each pointing at the generation just built.
     client.indices.update_aliases.assert_called_once()
     actions = client.indices.update_aliases.call_args.kwargs["body"]["actions"]
     added = {a["add"]["alias"]: a["add"]["index"] for a in actions if "add" in a}
-    assert set(added) == set(TYPE_TO_INDEX.values())
+    assert sorted(added) == ["geoadmin-services", "swissgeo-catalog", "swissgeo-distributions"]
     for alias, index in added.items():
         assert _is_generation_of(index, alias)
 
@@ -349,9 +415,8 @@ def test_export_aborts_before_swap_when_a_document_fails_to_index(get_client, bu
     # helpers.bulk reports one failed document (raise_on_error=False, so it returns errors).
     bulk.return_value = (0, [{"index": {"error": "mapper_parsing_exception"}}])
 
-    out = StringIO()
     with pytest.raises(CommandError, match="documents failed to index"):
-        call_command(COMMAND, verbosity=2, stdout=out, stderr=out)
+        call_command("oar_opensearch_export", verbosity=0)
 
     # The command aborts on the first failing type and never reaches the alias swap or prune.
     client.indices.update_aliases.assert_not_called()
@@ -365,7 +430,7 @@ def test_export_does_not_dump_to_disk(get_client, bulk, db, tmp_path):
     _make_dataservice()
     get_client.return_value = _mock_client()
 
-    call_command(COMMAND, verbosity=0)
+    call_command("oar_opensearch_export", verbosity=0)
 
     assert not any(tmp_path.iterdir())
     assert bulk.called
