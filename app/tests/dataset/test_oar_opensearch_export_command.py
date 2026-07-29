@@ -100,6 +100,32 @@ def _mock_client() -> MagicMock:
     return client
 
 
+def _mock_client_with_generations(existing: dict[str, list[str]]) -> MagicMock:
+    """A stand-in client for a cluster that already holds generations of each alias.
+
+    `existing` maps an alias to the generation indices already in the cluster, oldest first. The
+    newest of them is the one the alias currently points at, as it would be after a previous run.
+    """
+    client = MagicMock()
+    client.indices.exists.side_effect = lambda index: index in existing
+    client.indices.exists_alias.side_effect = lambda name: name in existing
+    client.indices.get_alias.side_effect = lambda name: {existing[name][-1]: {}}
+
+    # Generations created during the run, so the wildcard lookup below sees them the way a real
+    # cluster would -- the index just built is in the cluster by the time the prune looks.
+    created: set[str] = set()
+    client.indices.create.side_effect = lambda index, body: created.add(index)
+
+    # The command discovers prune candidates with a `<alias>-*` wildcard rather than from the
+    # alias, so resolve the pattern against every generation the cluster holds.
+    def get(index: str, ignore_unavailable: bool) -> dict:
+        alias = index.removesuffix("-*")
+        return {i: {} for i in [*existing[alias], *created] if i.startswith(f"{alias}-")}
+
+    client.indices.get.side_effect = get
+    return client
+
+
 # Stand-in base URLs for the `_rewrite_dist_links` unit tests below, so they don't depend on the
 # environment the command happens to build its documents with.
 EXAMPLE_OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
@@ -398,6 +424,50 @@ def test_export_swaps_all_aliases_in_a_single_request(get_client, bulk, db):
     assert sorted(added) == ["geoadmin-services", "swissgeo-catalog", "swissgeo-distributions"]
     for alias, index in added.items():
         assert _is_generation_of(index, alias)
+
+
+@patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
+@patch(f"{MODULE}.Command.get_client")
+def test_export_detaches_previous_generation_and_prunes_the_oldest(get_client, bulk, db):
+    """On a cluster with a history, the swap detaches the previous generation and prunes old ones.
+
+    Each alias already has four generations behind it. With `--keep-generations 2` the swap moves
+    the alias off the newest of them, and the prune then deletes all but the two most recent --
+    including the orphans earlier swaps already detached.
+    """
+    _make_dataservice()
+    _make_dataset()
+    existing = {
+        alias: [f"{alias}-2026072{n}120000" for n in range(1, 5)]
+        for alias in ("geoadmin-services", "swissgeo-catalog", "swissgeo-distributions")
+    }
+    client = _mock_client_with_generations(existing)
+    get_client.return_value = client
+
+    call_command("oar_opensearch_export", verbosity=0, keep_generations=2)
+
+    # Still a single _aliases request, now carrying a 'remove' of the generation each alias
+    # currently points at alongside the 'add' of the one just built.
+    client.indices.update_aliases.assert_called_once()
+    actions = client.indices.update_aliases.call_args.kwargs["body"]["actions"]
+    removed = {a["remove"]["alias"]: a["remove"]["index"] for a in actions if "remove" in a}
+    assert removed == {
+        "geoadmin-services": "geoadmin-services-20260724120000",
+        "swissgeo-catalog": "swissgeo-catalog-20260724120000",
+        "swissgeo-distributions": "swissgeo-distributions-20260724120000",
+    }
+
+    # The two oldest generations of every alias are deleted; the two most recent survive for a
+    # rollback, and the generation just swapped in is never a candidate.
+    deleted = sorted(call.kwargs["index"] for call in client.indices.delete.call_args_list)
+    assert deleted == [
+        "geoadmin-services-20260721120000",
+        "geoadmin-services-20260722120000",
+        "swissgeo-catalog-20260721120000",
+        "swissgeo-catalog-20260722120000",
+        "swissgeo-distributions-20260721120000",
+        "swissgeo-distributions-20260722120000",
+    ]
 
 
 @patch(f"{MODULE}.helpers.bulk")
