@@ -391,7 +391,7 @@ class OARDistribution(OARRecord):
                 htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
                 record.linkTemplates.append(
                     LinkTemplate(
-                        uriTemplate=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={lang}",
+                        uriTemplate=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={{lang}}",
                         rel="preview",
                         typ="application/html",
                         title="HTML popup for a feature of this distribution",
