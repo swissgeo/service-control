@@ -3,8 +3,13 @@
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
+      "links": {"type": "object", "enabled": false},
       "properties": {
         "properties": {
+          "type": {"type": "keyword", "index": false},
+          "dataset": {"type": "keyword"},
+          "protocol": {"type": "keyword"},
+          "externalIds": {"type": "keyword", "index": false},
           "title": {
             "properties": {
               "de": {"type": "text"},
@@ -12,35 +17,13 @@
               "it": {"type": "text"},
               "en": {"type": "text"}
             }
-          }
-        }
-      },
-      "features": {
-        "properties": {
-          "id": {"type": "keyword"},
-          "type": {"type": "keyword", "index": false},
-          "links": {"type": "object", "enabled": false},
-          "properties": {
+          },
+          "description": {
             "properties": {
-              "type": {"type": "keyword", "index": false},
-              "protocol": {"type": "keyword"},
-              "externalIds": {"type": "keyword", "index": false},
-              "title": {
-                "properties": {
-                  "de": {"type": "text"},
-                  "fr": {"type": "text"},
-                  "it": {"type": "text"},
-                  "en": {"type": "text"}
-                }
-              },
-              "description": {
-                "properties": {
-                  "de": {"type": "text"},
-                  "fr": {"type": "text"},
-                  "it": {"type": "text"},
-                  "en": {"type": "text"}
-                }
-              }
+              "de": {"type": "text"},
+              "fr": {"type": "text"},
+              "it": {"type": "text"},
+              "en": {"type": "text"}
             }
           }
         }

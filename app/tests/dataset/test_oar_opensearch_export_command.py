@@ -184,7 +184,8 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
     # One file per document, in the per-index sub-directories.
     assert (tmp_path / "geoadmin-services" / "wmts-geoadminch.json").is_file()
     assert (tmp_path / "swissgeo-catalog" / "ch.bafu.moose.json").is_file()
-    assert (tmp_path / "swissgeo-distributions" / "ch.bafu.moose.json").is_file()
+    # One file per distribution, not one per dataset.
+    assert (tmp_path / "swissgeo-distributions" / "ch.bafu.moose:wms.json").is_file()
 
 
 def test_dump_service_document(db, tmp_path):
@@ -266,7 +267,7 @@ def test_dump_dataset_document(db, tmp_path):
                 "type": "text/html",
             },
             {
-                "href": "/collections/swissgeo-distributions/items/ch.bafu.moose",
+                "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
                 "rel": "distributions",
                 "title": "Distributions",
             },
@@ -303,60 +304,49 @@ def test_dump_distribution_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
+    # Each distribution is its own Feature document, keyed by its distribution id, with the
+    # owning dataset in 'properties.dataset'.
     # The dataset/dataservice links are rewritten to relative index paths and styledby is kept
     # (with the language stripped); the internal self/collection/featureinfo links are dropped.
     # Translated fields become {lang: value} objects, like datasets/services.
-    assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose") == {
-        "id": "ch.bafu.moose",
-        "type": "FeatureCollection",
-        "features": [
+    assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose:wms") == {
+        "id": "ch.bafu.moose:wms",
+        "type": "Feature",
+        "links": [
             {
-                "id": "ch.bafu.moose:wms",
-                "type": "Feature",
-                "links": [
-                    {
-                        "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
-                        "rel": "dataset",
-                        "title": "Dataset Record",
-                    },
-                    {
-                        "href": "/collections/geoadmin-services/items/wmts-geoadminch",
-                        "rel": "dataservice",
-                    },
-                    {
-                        "href": f"{OAS_BASE_URL}/styles/ch.bafu.moose:wms:style",
-                        "rel": "styledby",
-                        "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
-                        "type": "application/json",
-                    },
-                ],
-                "linkTemplates": [],
-                "properties": {
-                    "type": "Distribution",
-                    "title": {
-                        "de": "WMS Layer (DE)",
-                        "fr": "WMS Layer (FR)",
-                        "it": "WMS Layer (IT)",
-                        "en": "WMS Layer (EN)",
-                    },
-                    "description": {
-                        "de": "Description (DE)",
-                        "fr": "Description (FR)",
-                        "it": "Description (IT)",
-                        "en": "Description (EN)",
-                    },
-                    "protocol": "ogc:wms",
-                    "externalIds": ["ch.bafu.moose"],
-                },
-            }
-        ],
-        "properties": {
-            "title": {
-                "de": "Rote Liste Moose",
-                "fr": "Liste rouge mousses",
-                "it": "Lista rossa biofite",
-                "en": "Red list bryophytes",
+                "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                "rel": "dataset",
+                "title": "Dataset Record",
             },
+            {
+                "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                "rel": "dataservice",
+            },
+            {
+                "href": f"{OAS_BASE_URL}/styles/ch.bafu.moose:wms:style",
+                "rel": "styledby",
+                "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                "type": "application/json",
+            },
+        ],
+        "linkTemplates": [],
+        "properties": {
+            "type": "Distribution",
+            "dataset": "ch.bafu.moose",
+            "title": {
+                "de": "WMS Layer (DE)",
+                "fr": "WMS Layer (FR)",
+                "it": "WMS Layer (IT)",
+                "en": "WMS Layer (EN)",
+            },
+            "description": {
+                "de": "Description (DE)",
+                "fr": "Description (FR)",
+                "it": "Description (IT)",
+                "en": "Description (EN)",
+            },
+            "protocol": "ogc:wms",
+            "externalIds": ["ch.bafu.moose"],
         },
     }
 
@@ -403,7 +393,8 @@ def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db
 
     # The dataset and distribution documents reach their respective generations.
     assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["ch.bafu.moose"]
-    assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["ch.bafu.moose"]
+    # Distributions are indexed individually, keyed by distribution id.
+    assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["ch.bafu.moose:wms"]
 
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))

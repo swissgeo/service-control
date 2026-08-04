@@ -227,8 +227,14 @@ This produces, for example:
 ├── swissgeo-catalog/
 │   └── ch.bafu.schutzgebiete-luftfahrt.json
 └── swissgeo-distributions/
-    └── ch.bafu.schutzgebiete-luftfahrt.json
+    ├── ch.bafu.schutzgebiete-luftfahrt:wms.json
+    └── ch.bafu.schutzgebiete-luftfahrt:wmts.json
 ```
+
+Each distribution is its own `Feature` document, keyed by its distribution id, so the
+`swissgeo-distributions` index holds several times as many documents as `swissgeo-catalog`.
+The owning dataset is in `properties.dataset` (a `swissgeo-catalog` document id), which is
+how a distribution is tied back to its dataset.
 
 A relative directory is resolved from the current working directory, so run the command from the
 repository root. Existing files with the same name are overwritten, but files from an earlier run
