@@ -454,8 +454,6 @@ class Command(CustomBaseCommand):
         links = [
             link for link in base["links"] if not link.get("href", "").startswith(oar_base_url)
         ]
-        # Distributions are individual documents now, so the dataset can no longer point at a
-        # single per-dataset item -- it points at the query selecting the ones it owns.
         links.append(
             {
                 "href": f"/collections/{DISTRIBUTIONS_INDEX}/items?dataset={base['id']}",
@@ -488,11 +486,7 @@ class Command(CustomBaseCommand):
     ) -> list[dict]:
         """Build the `swissgeo-distributions` Feature documents of a Dataset.
 
-        Each distribution is its own top-level `Feature` document, keyed by its
-        `distribution_id`, rather than a feature nested in a per-dataset FeatureCollection.
-        The owning dataset is recorded in `properties.dataset` (the `swissgeo-catalog`
-        document id), which is what ties a distribution back to its dataset now that the
-        collection wrapper is gone.
+        Field `properties.dataset` indicates the dataset each distribution is part of.
         """
         collection_id = f"{dataset.dataset_id}.distributions"
         documents = []

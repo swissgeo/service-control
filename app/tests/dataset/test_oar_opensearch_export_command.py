@@ -62,9 +62,15 @@ def _make_dataset() -> Dataset:
     return dataset
 
 
-def _make_distribution(dataset: Dataset, dataservice: WMSDataservice) -> ExternalWMSDistribution:
+def _make_distribution(
+    dataset: Dataset,
+    dataservice: WMSDataservice,
+    distribution_id: str = "ch.bafu.moose:wms",
+    # The layer name is unique per dataservice, so a second distribution needs its own.
+    wms_layer_name: str = "ch.bafu.moose",
+) -> ExternalWMSDistribution:
     distribution = ExternalWMSDistribution(
-        distribution_id="ch.bafu.moose:wms",
+        distribution_id=distribution_id,
         dataset=dataset,
         title_de="WMS Layer (DE)",
         title_fr="WMS Layer (FR)",
@@ -75,7 +81,7 @@ def _make_distribution(dataset: Dataset, dataservice: WMSDataservice) -> Externa
         description_it="Description (IT)",
         description_en="Description (EN)",
         dataservice=dataservice,
-        wms_layer_name_de="ch.bafu.moose",
+        wms_layer_name_de=wms_layer_name,
         opacity=1.0,
         gutter=0,
     )
@@ -178,14 +184,23 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
     dataservice = _make_dataservice()
     dataset = _make_dataset()
     _make_distribution(dataset, dataservice)
+    _make_distribution(
+        dataset,
+        dataservice,
+        distribution_id="ch.bafu.moose:wmts",
+        wms_layer_name="ch.bafu.moose.wmts",
+    )
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     # One file per document, in the per-index sub-directories.
     assert (tmp_path / "geoadmin-services" / "wmts-geoadminch.json").is_file()
     assert (tmp_path / "swissgeo-catalog" / "ch.bafu.moose.json").is_file()
-    # One file per distribution, not one per dataset.
-    assert (tmp_path / "swissgeo-distributions" / "ch.bafu.moose:wms.json").is_file()
+    # Every distribution of the dataset gets a document of its own.
+    assert sorted(p.name for p in (tmp_path / "swissgeo-distributions").iterdir()) == [
+        "ch.bafu.moose:wms.json",
+        "ch.bafu.moose:wmts.json",
+    ]
 
 
 def test_dump_service_document(db, tmp_path):
@@ -304,8 +319,6 @@ def test_dump_distribution_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # Each distribution is its own Feature document, keyed by its distribution id, with the
-    # owning dataset in 'properties.dataset'.
     # The dataset/dataservice links are rewritten to relative index paths and styledby is kept
     # (with the language stripped); the internal self/collection/featureinfo links are dropped.
     # Translated fields become {lang: value} objects, like datasets/services.

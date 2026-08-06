@@ -231,10 +231,9 @@ This produces, for example:
     └── ch.bafu.schutzgebiete-luftfahrt:wmts.json
 ```
 
-Each distribution is its own `Feature` document, keyed by its distribution id, so the
-`swissgeo-distributions` index holds several times as many documents as `swissgeo-catalog`.
-The owning dataset is in `properties.dataset` (a `swissgeo-catalog` document id), which is
-how a distribution is tied back to its dataset.
+Each distribution is its own `Feature` document, so the `swissgeo-distributions` index holds
+several times as many documents as `swissgeo-catalog`. Field `properties.dataset` holds the
+`swissgeo-catalog` id of the dataset the distribution belongs to.
 
 A relative directory is resolved from the current working directory, so run the command from the
 repository root. Existing files with the same name are overwritten, but files from an earlier run
