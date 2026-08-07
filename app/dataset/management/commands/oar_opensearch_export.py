@@ -413,7 +413,7 @@ class Command(CustomBaseCommand):
         elif document_type == "distributions":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
-                documents.append(self.build_distribution_doc(dataset, OAR_BASE_URL, OAS_BASE_URL))
+                documents.extend(self.build_distribution_docs(dataset, OAR_BASE_URL, OAS_BASE_URL))
         return documents
 
     def build_service_doc(self, service: Dataservice, oar_base_url: str) -> dict:
@@ -456,7 +456,7 @@ class Command(CustomBaseCommand):
         ]
         links.append(
             {
-                "href": f"/collections/{DISTRIBUTIONS_INDEX}/items/{base['id']}",
+                "href": f"/collections/{DISTRIBUTIONS_INDEX}/items?dataset={base['id']}",
                 "rel": "distributions",
                 "title": "Distributions",
             }
@@ -481,12 +481,15 @@ class Command(CustomBaseCommand):
             "properties": properties,
         }
 
-    def build_distribution_doc(
+    def build_distribution_docs(
         self, dataset: Dataset, oar_base_url: str, oas_base_url: str
-    ) -> dict:
-        """Build a `swissgeo-distributions` FeatureCollection document from a Dataset."""
+    ) -> list[dict]:
+        """Build the `swissgeo-distributions` Feature documents of a Dataset.
+
+        Field `properties.dataset` indicates the dataset each distribution is part of.
+        """
         collection_id = f"{dataset.dataset_id}.distributions"
-        features = []
+        documents = []
         for distribution in dataset.distribution_set.all():  # ty:ignore[unresolved-attribute]
             per_lang = {
                 lang: _dump(
@@ -496,28 +499,20 @@ class Command(CustomBaseCommand):
                 )
                 for lang in LANG_CODES
             }
-            feature = per_lang["de"]
-            feature["links"] = _rewrite_dist_links(
-                feature.get("links", []), oar_base_url, oas_base_url, dataset.dataset_id
+            document = per_lang["de"]
+            document["links"] = _rewrite_dist_links(
+                document.get("links", []), oar_base_url, oas_base_url, dataset.dataset_id
             )
+            document["properties"]["dataset"] = dataset.dataset_id
             # Turn the translated fields into {lang: value} objects.
-            feature["properties"]["title"] = {
+            document["properties"]["title"] = {
                 lang: per_lang[lang]["properties"].get("title") or "" for lang in LANG_CODES
             }
             descriptions = {
                 lang: per_lang[lang]["properties"].get("description") or "" for lang in LANG_CODES
             }
             if any(descriptions.values()):
-                feature["properties"]["description"] = descriptions
-            features.append(feature)
+                document["properties"]["description"] = descriptions
+            documents.append(document)
 
-        return {
-            "id": dataset.dataset_id,
-            "type": "FeatureCollection",
-            "features": features,
-            "properties": {
-                "title": {
-                    lang: getattr(dataset, f"title_short_{lang}", None) or "" for lang in LANG_CODES
-                },
-            },
-        }
+        return documents
