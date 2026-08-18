@@ -21,8 +21,9 @@
     - [Debug from Visual Studio Code](#debug-from-visual-studio-code)
     - [Run Tests From Within Visual Studio Code](#run-tests-from-within-visual-studio-code)
 - [Exporting To OpenSearch](#exporting-to-opensearch)
+  - [Atomic Replacement Without Downtime](#atomic-replacement-without-downtime)
   - [Inspecting The Documents With --dump](#inspecting-the-documents-with---dump)
-  - [Creating The Indices And Importing](#creating-the-indices-and-importing)
+  - [Running Against A Cluster](#running-against-a-cluster)
   - [Options](#options)
 - [Cognito](#cognito)
   - [Local Cognito](#local-cognito)
@@ -281,6 +282,7 @@ class Client:
 
     def __init__(self) -> None:
         from boto3 import Session
+
         session = Session(profile_name="<AWS_PROFILE_NAME>", region_name="<AWS_REGION_NAME>")
         self.user_pool_id = "<USER_POOL_ID>"
         self.client = session.client("cognito-idp")

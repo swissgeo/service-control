@@ -34,7 +34,7 @@ class RemoteCustomUserBackend(RemoteUserBackend):
                 user.cognito_username = cognito_username
                 user.save()
             else:
-                logger.exception("Failed to get preferred_username header")
+                logger.error("Failed to get preferred_username header")
                 raise AuthenticationError
         return user
 
