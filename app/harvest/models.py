@@ -92,8 +92,10 @@ class DatasetMapping(models.Model):
                     "Prefix used for matching:",
                     "- Dataset ID during import of datasets from harvest table/BOD (if enabled)",
                     "- Layer ID during import of distributions from harvest table/BOD (if enabled)",
-                    "- STAC Collection ID during syncing distributions from capabilities "
-                    "(if enabled)",
+                    (
+                        "- STAC Collection ID during syncing distributions from capabilities "
+                        "(if enabled)"
+                    ),
                     "- Base topic during import of datasets from geodienste",
                 )
             ),

@@ -89,6 +89,7 @@ ignore = [
     "DJ001",  # Ignore nullable strings
     "TRY003", # Ignore long messages in exceptions
     "G004",   # Ignore rule for logging calls using f-strings
+    "CPY001", # Ignore missing copyright notice at top of file
 
     # Pydantic schemas uses type annotations at runtime to generate the openapi
     # and do the validation. Putting the type annotation in a TYPE_CHECKING
@@ -121,6 +122,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?)|request|lang)$"
     "ARG005",  # Ignore unused lambda argument in tests
     "PLR2004", # Ignore magic number in tests
     "PLR0913", # Ignore too many arguments in function in tests
+    "PLR0917", # Ignore too many positional arguments in tests
 ]
 
 "app/stubs/**" = [
