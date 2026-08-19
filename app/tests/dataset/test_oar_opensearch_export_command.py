@@ -72,14 +72,6 @@ def _make_distribution(
     distribution = ExternalWMSDistribution(
         distribution_id=distribution_id,
         dataset=dataset,
-        title_de="WMS Layer (DE)",
-        title_fr="WMS Layer (FR)",
-        title_it="WMS Layer (IT)",
-        title_en="WMS Layer (EN)",
-        description_de="Description (DE)",
-        description_fr="Description (FR)",
-        description_it="Description (IT)",
-        description_en="Description (EN)",
         dataservice=dataservice,
         wms_layer_name_de=wms_layer_name,
         opacity=1.0,
@@ -346,18 +338,6 @@ def test_dump_distribution_document(db, tmp_path):
         "properties": {
             "type": "Distribution",
             "dataset": "ch.bafu.moose",
-            "title": {
-                "de": "WMS Layer (DE)",
-                "fr": "WMS Layer (FR)",
-                "it": "WMS Layer (IT)",
-                "en": "WMS Layer (EN)",
-            },
-            "description": {
-                "de": "Description (DE)",
-                "fr": "Description (FR)",
-                "it": "Description (IT)",
-                "en": "Description (EN)",
-            },
             "protocol": "ogc:wms",
             "externalIds": ["ch.bafu.moose"],
         },

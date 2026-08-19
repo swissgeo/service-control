@@ -505,14 +505,6 @@ class Command(CustomBaseCommand):
             )
             document["properties"]["dataset"] = dataset.dataset_id
             # Turn the translated fields into {lang: value} objects.
-            document["properties"]["title"] = {
-                lang: per_lang[lang]["properties"].get("title") or "" for lang in LANG_CODES
-            }
-            descriptions = {
-                lang: per_lang[lang]["properties"].get("description") or "" for lang in LANG_CODES
-            }
-            if any(descriptions.values()):
-                document["properties"]["description"] = descriptions
             documents.append(document)
 
         return documents

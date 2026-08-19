@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "dataservice",
     "distribution",
     "legal",
+    "collection",
 ]
 
 MIDDLEWARE = [

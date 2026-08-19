@@ -280,7 +280,7 @@ class OARDistribution(OARRecord):
     geometry: dict | None = None
 
     @classmethod
-    def from_distribution(  # noqa: C901
+    def from_distribution(
         cls,
         dist: Distribution,
         lang: str,
@@ -291,11 +291,6 @@ class OARDistribution(OARRecord):
         record = OARDistribution(
             id=dist.distribution_id, collection_id=collection_id, lang=lang, base_url=oar_base_url
         )
-
-        # Set properties
-        record.properties["title"] = getattr(dist, f"title_{lang}", dist.title_de)
-        if description := getattr(dist, f"description_{lang}"):
-            record.properties["description"] = description
 
         record.links.append(
             OARRecordLink(

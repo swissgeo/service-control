@@ -7,6 +7,7 @@ from boto3 import Session
 from django.core.management.base import CommandParser
 from django.db.models import Q
 
+from collection.models import Collection
 from dataservice.models import GeoadminFeaturesDataservice, WMSDataservice, WMTSDataservice
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from distribution.models import (
@@ -594,9 +595,19 @@ class Command(CustomBaseCommand):
 
         for dataset_id, distribution_ids in processed.items():
             dataset = Dataset.objects.get(dataset_id=dataset_id)
-            obsolete = dataset.distribution_set.filter(
-                data_source=Distribution.DataSource.BOD_LAYERS_JS
-            ).exclude(distribution_id__in=distribution_ids)
+            obsolete = list(
+                dataset.distribution_set.filter(
+                    data_source=Distribution.DataSource.BOD_LAYERS_JS
+                ).exclude(distribution_id__in=distribution_ids)
+            )
+            for collection in dataset.collection_set.all():
+                obsolete.extend(
+                    list(
+                        collection.distribution_set.filter(
+                            data_source=Distribution.DataSource.BOD_LAYERS_JS
+                        ).exclude(distribution_id__in=distribution_ids)
+                    )
+                )
             if obsolete:
                 if options["clean"]:
                     for distribution in obsolete:
@@ -624,16 +635,6 @@ class Command(CustomBaseCommand):
         )
         dist.dataservice = wmts_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = dataset.title_short_de
-        dist.title_fr = dataset.title_short_fr
-        dist.title_it = dataset.title_short_it
-        dist.title_en = dataset.title_short_en
-        dist.title_rm = dataset.title_short_rm
-        dist.description_de = dataset.description_de
-        dist.description_fr = dataset.description_fr
-        dist.description_it = dataset.description_it
-        dist.description_en = dataset.description_en
-        dist.description_rm = dataset.description_rm
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -655,16 +656,6 @@ class Command(CustomBaseCommand):
         )
         dist.dataservice = wms_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = dataset.title_short_de
-        dist.title_fr = dataset.title_short_fr
-        dist.title_it = dataset.title_short_it
-        dist.title_en = dataset.title_short_en
-        dist.title_rm = dataset.title_short_rm
-        dist.description_de = dataset.description_de
-        dist.description_fr = dataset.description_fr
-        dist.description_it = dataset.description_it
-        dist.description_en = dataset.description_en
-        dist.description_rm = dataset.description_rm
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -688,16 +679,6 @@ class Command(CustomBaseCommand):
             defaults={"geojson_url_de": ljs.geojson_url_de},
         )
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = dataset.title_short_de
-        dist.title_fr = dataset.title_short_fr
-        dist.title_it = dataset.title_short_it
-        dist.title_en = dataset.title_short_en
-        dist.title_rm = dataset.title_short_rm
-        dist.description_de = dataset.description_de
-        dist.description_fr = dataset.description_fr
-        dist.description_it = dataset.description_it
-        dist.description_en = dataset.description_en
-        dist.description_rm = dataset.description_rm
         dist.geojson_url_de = ljs.geojson_url_de
         dist.geojson_url_fr = ljs.geojson_url_fr
         dist.geojson_url_it = ljs.geojson_url_it
@@ -718,22 +699,26 @@ class Command(CustomBaseCommand):
         geoadminfeature_dataservice: GeoadminFeaturesDataservice,
     ) -> tuple[Distribution, bool]:
 
-        geoadminfeature_distribution_id = ljs.layer_id + ":api3features"
-        self.print(f"Importing Geoadmin Features Distribution {geoadminfeature_distribution_id}")
+        id_ = ljs.layer_id + ":api3features"
+        self.print(f"Importing Geoadmin Features Collection and Distribution {id_}")
+
+        collection, created = Collection.objects.get_or_create(collection_id=id_, dataset=dataset)
+        collection.title_de = "Geoadmin Features"
+        collection.title_fr = "Geoadmin Features"
+        collection.title_it = "Geoadmin Features"
+        collection.title_en = "Geoadmin Features"
+        collection.title_rm = "Geoadmin Features"
+        collection.meta_information = True
+        collection.data_source = Collection.DataSource.BOD_LAYERS_JS
+        collection.save()
 
         dist, created = ExternalGeoadminFeaturesDistribution.objects.get_or_create(
-            distribution_id=geoadminfeature_distribution_id,
-            dataset=dataset,
+            distribution_id=id_,
+            collection=collection,
             layer_id=ljs.layer_id,
         )
         dist.dataservice = geoadminfeature_dataservice
         dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = "Geoadmin Features"
-        dist.title_fr = "Geoadmin Features"
-        dist.title_it = "Geoadmin Features"
-        dist.title_en = "Geoadmin Features"
-        dist.title_rm = "Geoadmin Features"
-        dist.meta_information = True
         # Note: This information is not relyable in the layers_js table. There are
         # layers with searchable=true that return 404 for search requests on ../SearchServer
         # with `type=features`, which indicates that they are not actually queryable.

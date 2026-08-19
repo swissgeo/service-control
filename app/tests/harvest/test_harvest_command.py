@@ -6,6 +6,7 @@ from django.core.management import call_command
 
 import pytest
 
+from collection.models import Collection
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from distribution.models import Distribution, ExternalGeoJSONDistribution, ExternalStacDistribution
 from harvest.import_models import (
@@ -1074,67 +1075,56 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     assert "Importing WMTS Distribution ch.bafu.moose:wmts" in out
     assert "Importing WMS Distribution ch.bafu.moose:wms" in out
-    assert "Importing Geoadmin Features Distribution ch.bafu.moose:api3features" in out
+    assert (
+        "Importing Geoadmin Features Collection and Distribution ch.bafu.moose:api3features" in out
+    )
     assert "Importing WMS Distribution ch.bazl.luftfahrthindernis:wms" in out
-    assert "Importing Geoadmin Features Distribution ch.bazl.luftfahrthindernis:api3features" in out
+    assert (
+        "Importing Geoadmin Features Collection and Distribution ch.bazl.luftfahrthindernis"
+        ":api3features" in out
+    )
     assert "Importing GeoJSON Distribution ch.swisstopo.treasurehunt:geojson" in out
 
     assert Distribution.objects.count() == 6
 
     ds_wmts.refresh_from_db()
-    assert ds_wmts.distribution_set.count() == 3
+    assert ds_wmts.collection_set.count() == 1
+    assert ds_wmts.distribution_set.count() == 2
     assert ds_wmts.preferred_distribution.protocol == "ogc:wmts"
 
     dist_1 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wmts").first()
     assert dist_1
     assert dist_1.dataservice.service_type == "ogc:wmts"
     assert dist_1.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_1.title_de == "T DE"
-    assert dist_1.title_fr == "T FR"
-    assert dist_1.title_en == "T EN"
-    assert dist_1.title_it == "T IT"
-    assert dist_1.title_rm == "T RM"
-    assert dist_1.description_de == "D DE"
-    assert dist_1.description_fr == "D FR"
-    assert dist_1.description_en == "D EN"
-    assert dist_1.description_it == "D IT"
-    assert dist_1.description_rm == "D RM"
-    assert dist_1.meta_information is False
     assert dist_1.opacity == Decimal("0.5")
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
     assert dist_2
     assert dist_2.dataservice.service_type == "ogc:wms"
     assert dist_2.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_2.title_de == "T DE"
-    assert dist_2.title_fr == "T FR"
-    assert dist_2.title_en == "T EN"
-    assert dist_2.title_it == "T IT"
-    assert dist_2.title_rm == "T RM"
-    assert dist_2.description_de == "D DE"
-    assert dist_2.description_fr == "D FR"
-    assert dist_2.description_en == "D EN"
-    assert dist_2.description_it == "D IT"
-    assert dist_2.description_rm == "D RM"
-    assert dist_2.meta_information is False
     assert dist_2.opacity == Decimal("0.5")
     assert dist_2.gutter == 0
 
-    dist_3 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:api3features").first()
+    collection_1 = ds_wmts.collection_set.first()
+    assert collection_1.collection_id == "ch.bafu.moose:api3features"
+    assert collection_1.data_source == Collection.DataSource.BOD_LAYERS_JS
+    assert collection_1.meta_information is True
+    assert collection_1.title_de == "Geoadmin Features"
+    assert collection_1.title_en == "Geoadmin Features"
+    assert collection_1.title_fr == "Geoadmin Features"
+    assert collection_1.title_it == "Geoadmin Features"
+    assert collection_1.title_rm == "Geoadmin Features"
+
+    dist_3 = collection_1.distribution_set.first()
     assert dist_3
     assert dist_3.dataservice.service_type == "geoadmin:features"
     assert dist_3.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_3.title_de == "Geoadmin Features"
-    assert dist_3.title_fr == "Geoadmin Features"
-    assert dist_3.title_en == "Geoadmin Features"
-    assert dist_3.title_it == "Geoadmin Features"
-    assert dist_3.title_rm == "Geoadmin Features"
-    assert dist_3.meta_information is True
     assert dist_3.renderable is True
     assert dist_3.queryable is False
 
     ds_wms.refresh_from_db()
-    assert ds_wms.distribution_set.count() == 2
+    assert ds_wms.collection_set.count() == 1
+    assert ds_wms.distribution_set.count() == 1
     assert ds_wms.preferred_distribution.protocol == "ogc:wms"
 
     dist_4 = ds_wms.distribution_set.filter(
@@ -1143,32 +1133,23 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_4
     assert dist_4.dataservice.service_type == "ogc:wms"
     assert dist_4.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_4.title_de == "T DE"
-    assert dist_4.title_fr == "T FR"
-    assert dist_4.title_en == "T EN"
-    assert dist_4.title_it == "T IT"
-    assert dist_4.title_rm == "T RM"
-    assert dist_4.description_de == "D DE"
-    assert dist_4.description_fr == "D FR"
-    assert dist_4.description_en == "D EN"
-    assert dist_4.description_it == "D IT"
-    assert dist_4.description_rm == "D RM"
-    assert dist_4.meta_information is False
     assert dist_4.opacity == Decimal("0.6")
     assert dist_4.gutter == 1
 
-    dist_5 = ds_wms.distribution_set.filter(
-        distribution_id="ch.bazl.luftfahrthindernis:api3features"
-    ).first()
+    collection_2 = ds_wms.collection_set.first()
+    assert collection_2.collection_id == "ch.bazl.luftfahrthindernis:api3features"
+    assert collection_2.data_source == Collection.DataSource.BOD_LAYERS_JS
+    assert collection_2.meta_information is True
+    assert collection_2.title_de == "Geoadmin Features"
+    assert collection_2.title_en == "Geoadmin Features"
+    assert collection_2.title_fr == "Geoadmin Features"
+    assert collection_2.title_it == "Geoadmin Features"
+    assert collection_2.title_rm == "Geoadmin Features"
+
+    dist_5 = collection_2.distribution_set.first()
     assert dist_5
     assert dist_5.dataservice.service_type == "geoadmin:features"
     assert dist_5.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_5.title_de == "Geoadmin Features"
-    assert dist_5.title_fr == "Geoadmin Features"
-    assert dist_5.title_en == "Geoadmin Features"
-    assert dist_5.title_it == "Geoadmin Features"
-    assert dist_5.title_rm == "Geoadmin Features"
-    assert dist_5.meta_information is True
     assert dist_5.renderable is False
     assert dist_5.queryable is True
 
@@ -1181,17 +1162,6 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ).first()
     assert dist_6
     assert dist_6.data_source == Distribution.DataSource.BOD_LAYERS_JS
-    assert dist_6.title_de == "T DE"
-    assert dist_6.title_fr == "T FR"
-    assert dist_6.title_en == "T EN"
-    assert dist_6.title_it == "T IT"
-    assert dist_6.title_rm == "T RM"
-    assert dist_6.description_de == "D DE"
-    assert dist_6.description_fr == "D FR"
-    assert dist_6.description_en == "D EN"
-    assert dist_6.description_it == "D IT"
-    assert dist_6.description_rm == "D RM"
-    assert dist_6.meta_information is False
     assert dist_6.geojson_url_de == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json"
     assert dist_6.geojson_url_fr == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json"
     assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"

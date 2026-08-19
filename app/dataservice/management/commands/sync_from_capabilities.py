@@ -197,11 +197,6 @@ class Command(CustomBaseCommand):
                 ExternalStacDistribution.objects.create(
                     distribution_id=f"{collection_id}:stac",
                     dataset=dataset,
-                    title_de="STAC Download Collection",
-                    title_fr="STAC Download Collection",
-                    title_it="STAC Download Collection",
-                    title_en="STAC Download Collection",
-                    title_rm="STAC Download Collection",
                     data_source=Distribution.DataSource.SERVICE_CAPABILITIES,
                     dataservice=dataservice,
                     stac_collection_id=collection_id,

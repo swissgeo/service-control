@@ -34,14 +34,10 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         "data_source",
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
-    list_display = ("distribution_id", "proto", "title_de", "dataset", "data_source")
+    list_display = ("distribution_id", "proto", "dataset", "data_source")
     readonly_fields = ("created_at", "updated_at")
 
-    search_fields = (
-        "distribution_id",
-        "dataset__dataset_id",
-        "dataset__title_short_de",
-    )
+    search_fields = ("distribution_id", "dataset__dataset_id")
 
     @admin.display(empty_value="???")
     def proto(self, obj: Distribution) -> str:
