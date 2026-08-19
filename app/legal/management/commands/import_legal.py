@@ -62,19 +62,19 @@ class Command(CustomBaseCommand):
         geopolitical_entities_endpoint: str,
         geopolitical_entities_directory: str,
         timeout: int,
-    ) -> dict:
+    ) -> list[dict]:
         """
         Download the service information as JSON from the provided endpoint URL or load the from
         the given directory
         """
 
-        result = {}
+        result = []
 
         if geopolitical_entities_directory:
             path = Path(geopolitical_entities_directory)
             if not path.exists():
                 self.print_error(f"{geopolitical_entities_directory} does not exist")
-                return {}
+                return []
 
             filename = path / "geopolitical_entities.json"
             try:
@@ -82,7 +82,7 @@ class Command(CustomBaseCommand):
                     result = loads(file.read())
             except Exception as e:  # noqa: BLE001
                 self.print_error(f"Failed to load file {filename}: {e}")
-                return {}
+                return []
         else:
             try:
                 url = f"{geopolitical_entities_endpoint}"
@@ -94,14 +94,14 @@ class Command(CustomBaseCommand):
 
         return result
 
-    def import_geopolitical_entitites(self, geopolitical_entities: dict) -> None:
+    def import_geopolitical_entitites(self, geopolitical_entities: list[dict]) -> None:
         "Import non existing entities"
         self.add_new_entries(geopolitical_entities)
 
         "Update existing entitites"
         self.update_existing_entries(geopolitical_entities)
 
-    def add_new_entries(self, geopolitical_entities: dict) -> None:
+    def add_new_entries(self, geopolitical_entities: list[dict]) -> None:
         """
         Checks if an entry of the fetched api data exists already in the db.
         If not it creates a new entry
@@ -133,7 +133,7 @@ class Command(CustomBaseCommand):
 
         GeopoliticalEntity.objects.bulk_create(created_entries)
 
-    def update_existing_entries(self, geopolitical_entities: dict) -> None:
+    def update_existing_entries(self, geopolitical_entities: list[dict]) -> None:
         """
         Checks if an entry of the fetched api data exists already in the db.
         If the entry already exists it checks if the data attribute values has changed
@@ -184,9 +184,9 @@ class Command(CustomBaseCommand):
                         existing_geopolitical_entity.parent = None
                     else:
                         existing_geopolitical_entity.parent = (
-                            existing_geopolitical_entity_objects.get(
+                            existing_geopolitical_entity_objects.filter(
                                 geopolitical_entity_id=geopolitical_entity_parent
-                            )
+                            ).first()
                         )
                     changed_fields.append("parent")
 
@@ -219,7 +219,7 @@ class Command(CustomBaseCommand):
             case _:
                 return GeopoliticalEntity.Level.COMMUNAL
 
-    def sanitize_json_response(self, geopolitical_entities: dict) -> dict:
+    def sanitize_json_response(self, geopolitical_entities: list[dict]) -> list[dict]:
         for geopolitical_entity in geopolitical_entities:
             keys = geopolitical_entity.keys()
             for key in keys:
