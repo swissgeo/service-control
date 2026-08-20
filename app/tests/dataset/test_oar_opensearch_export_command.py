@@ -347,7 +347,7 @@ def test_dump_distribution_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # The dataset/dataservice/featureinfo links are rewritten to relative index paths and styledby
+    # The dataset/dataservice/featureinfo links are rewritten to relative index paths and styledBy
     # is kept (with the language stripped); the internal self/collection links are dropped.
     # A WMS distribution is its own featureinfo target, so it links back to itself here.
     # Translated fields become {lang: value} objects, like datasets/services.
@@ -370,7 +370,7 @@ def test_dump_distribution_document(db, tmp_path):
             },
             {
                 "href": f"{OAS_BASE_URL}/styles/ch.bafu.moose:wms:style",
-                "rel": "styledby",
+                "rel": "styledBy",
                 "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                 "type": "application/json",
             },

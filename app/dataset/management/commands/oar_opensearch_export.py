@@ -129,7 +129,7 @@ def _rewrite_dist_links(
     """Rewrite a distribution feature's links into the OpenSearch form.
 
     The `dataset`, `dataservice` and `featureinfo` links are rewritten to relative
-    `/collections/.../items/...` paths, the `styledby` link to the OAS style file is kept
+    `/collections/.../items/...` paths, the `styledBy` link to the OAS style file is kept
     (with the per-language query/hreflang stripped, as styles are language-neutral), the
     intra-service `self`/`collection`/`alternate` links and any other OAR/OAS internal
     link without a defined mapping are dropped, and genuinely external links are kept as-is.
@@ -167,7 +167,7 @@ def _rewrite_dist_links(
                     "rel": "featureinfo",
                 }
             )
-        elif rel == "styledby":
+        elif rel == "styledBy":
             # Keep the style link, but drop the language-specific query/hreflang so it stays
             # language-neutral in the (multilingual) document.
             clean = {k: v for k, v in link.items() if k != "hreflang"}
