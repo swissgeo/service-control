@@ -325,7 +325,7 @@ class OARDistribution(OARRecord):
                 record.links.append(
                     Link(
                         href=dist.style_url,
-                        rel="styled-by",
+                        rel="styledBy",
                         title="Link to style file for the GeoJSON layer",
                         typ="application/json",
                     )
@@ -376,7 +376,7 @@ class OARDistribution(OARRecord):
             record.links.append(
                 OASStyleLink(
                     distribution_id=dist.distribution_id,
-                    rel="styledby",
+                    rel="styledBy",
                     title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                     hreflang=lang,
                     base_url=oas_base_url,
