@@ -168,9 +168,9 @@ def test_rewrite_dist_links_drops_intra_service_links(rel):
 
 
 def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
-    """An OAR/OAS-internal link with no defined mapping (e.g. featureinfo) is dropped."""
+    """An OAR/OAS-internal link with no defined mapping is dropped."""
     links = [
-        {"href": f"{EXAMPLE_OAR_BASE_URL}/some/featureinfo", "rel": "featureinfo"},
+        {"href": f"{EXAMPLE_OAR_BASE_URL}/some/thing", "rel": "unmapped"},
         {"href": f"{EXAMPLE_OAS_BASE_URL}/some/other", "rel": "unmapped"},
         {"href": "https://not-rewritten.org", "rel": "license"},
     ]
@@ -178,6 +178,34 @@ def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
     result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
+
+
+def test_rewrite_dist_links_rewrites_featureinfo_to_the_distributions_index():
+    """`featureinfo` keeps only the distribution id -- all distributions share one index.
+
+    The OAR href names the dataset's own `<dataset_id>.distributions` collection, which has no
+    OpenSearch counterpart, and the target distribution may belong to another dataset than the
+    one the link is rewritten for.
+    """
+    links = [
+        {
+            "href": (
+                f"{EXAMPLE_OAR_BASE_URL}/collections/ch.bafu.moose.distributions"
+                "/items/ch.bafu.moose:features?language=de"
+            ),
+            "rel": "featureinfo",
+            "hreflang": "de",
+        }
+    ]
+
+    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+
+    assert result == [
+        {
+            "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:features",
+            "rel": "featureinfo",
+        }
+    ]
 
 
 def test_dump_writes_one_file_per_document(db, tmp_path):
@@ -319,8 +347,9 @@ def test_dump_distribution_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # The dataset/dataservice links are rewritten to relative index paths and styledby is kept
-    # (with the language stripped); the internal self/collection/featureinfo links are dropped.
+    # The dataset/dataservice/featureinfo links are rewritten to relative index paths and styledby
+    # is kept (with the language stripped); the internal self/collection links are dropped.
+    # A WMS distribution is its own featureinfo target, so it links back to itself here.
     # Translated fields become {lang: value} objects, like datasets/services.
     assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose:wms") == {
         "id": "ch.bafu.moose:wms",
@@ -334,6 +363,10 @@ def test_dump_distribution_document(db, tmp_path):
             {
                 "href": "/collections/geoadmin-services/items/wmts-geoadminch",
                 "rel": "dataservice",
+            },
+            {
+                "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                "rel": "featureinfo",
             },
             {
                 "href": f"{OAS_BASE_URL}/styles/ch.bafu.moose:wms:style",
