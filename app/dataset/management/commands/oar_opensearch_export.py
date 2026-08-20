@@ -118,17 +118,21 @@ def _clean_props(properties: dict, skip: frozenset[str] = frozenset()) -> dict:
     return {k: v for k, v in properties.items() if v is not None and k not in skip}
 
 
+def _record_id_from_href(href: str) -> str:
+    """Extract the record id from an OAR item href like `.../items/<record_id>?language=de`."""
+    return href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
+
+
 def _rewrite_dist_links(
     links: list[dict], oar_base_url: str, oas_base_url: str, dataset_id: str
 ) -> list[dict]:
     """Rewrite a distribution feature's links into the OpenSearch form.
 
-    The `dataset` and `dataservice` links are rewritten to relative
+    The `dataset`, `dataservice` and `featureinfo` links are rewritten to relative
     `/collections/.../items/...` paths, the `styledby` link to the OAS style file is kept
     (with the per-language query/hreflang stripped, as styles are language-neutral), the
     intra-service `self`/`collection`/`alternate` links and any other OAR/OAS internal
-    link without a defined mapping (e.g. `featureinfo`) are dropped, and genuinely external
-    links are kept as-is.
+    link without a defined mapping are dropped, and genuinely external links are kept as-is.
     """
     rewritten: list[dict] = []
     for link in links:
@@ -145,12 +149,22 @@ def _rewrite_dist_links(
                 }
             )
         elif rel == "dataservice":
-            # The href looks like `.../items/<service_id>?language=de`.
-            service_id = href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
             rewritten.append(
                 {
-                    "href": f"/collections/{SERVICES_INDEX}/items/{service_id}",
+                    "href": f"/collections/{SERVICES_INDEX}/items/{_record_id_from_href(href)}",
                     "rel": "dataservice",
+                }
+            )
+        elif rel == "featureinfo":
+            # Points at another distribution record (or at this one). In OAR that record lives in
+            # the dataset's own `<dataset_id>.distributions` collection, in OpenSearch all
+            # distributions share a single index, so only the distribution id carries over.
+            rewritten.append(
+                {
+                    "href": (
+                        f"/collections/{DISTRIBUTIONS_INDEX}/items/{_record_id_from_href(href)}"
+                    ),
+                    "rel": "featureinfo",
                 }
             )
         elif rel == "styledby":
