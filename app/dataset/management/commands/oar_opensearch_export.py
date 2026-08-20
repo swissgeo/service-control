@@ -26,10 +26,6 @@ from dataset.export_models import (
     OARDataset,
     OARDistribution,
 )
-
-# Base URLs are only needed to run the mapping code. In OpenSearch, the BaseURLs are not stored
-from dataset.management.commands.oar_export import OAR_BASE_URL as _OAR_BASE_URL_BY_ENV
-from dataset.management.commands.oar_export import OAS_BASE_URL as _OAS_BASE_URL_BY_ENV
 from dataset.models import Dataset
 from dataset.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
@@ -65,9 +61,8 @@ CATALOG_COLLECTION_ID = "swissgeo.catalog"
 # stripped or rewritten to relative paths.
 # The final documents never expose these, so which environment they come from doesn't affect the
 # output -- 'prod' is hardcoded rather than exposed as an option.
-OAR_BASE_URL = _OAR_BASE_URL_BY_ENV["prod"]
-OAS_BASE_URL = _OAS_BASE_URL_BY_ENV["prod"]
-
+OAR_BASE_URL = "https://services.swissgeo.ch/api/oar/staticv2"
+OAS_BASE_URL = "https://services.swissgeo.ch/api/oas/v0"
 OGC_SCHEMA = (
     "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml"
 )
