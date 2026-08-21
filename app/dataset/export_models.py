@@ -19,6 +19,35 @@ from distribution.models import (
 )
 
 
+def featureinfo_distribution(
+    dataset: Dataset, dist: Distribution | None = None
+) -> Distribution | None:
+    """Return the distribution that serves the feature info of `dataset`, if any.
+
+    Prefer a GeoadminFeatures distribution of the dataset; fall back to the dataset's WMS
+    distribution. When resolving for a specific distribution `dist`, a WMS distribution is
+    its own feature info source and a WMTS distribution falls back to a WMS sibling; other
+    distribution types only get the GeoadminFeatures candidate.
+    """
+    geoadmin_features = dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+        ExternalGeoadminFeaturesDistribution
+    ).first()
+    if geoadmin_features:
+        return geoadmin_features
+    if dist is None:
+        # Dataset-level lookup: any WMS distribution of the dataset serves the feature info.
+        return dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+            ExternalWMSDistribution
+        ).first()
+    if isinstance(dist, ExternalWMSDistribution):
+        return dist
+    if isinstance(dist, ExternalWMTSDistribution):
+        return dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+            ExternalWMSDistribution
+        ).first()
+    return None
+
+
 class Lang(BaseModel):
     code: str
     name: str
@@ -349,17 +378,7 @@ class OARDistribution(OARRecord):
             )
             record.properties["externalIds"] = [dist.external_record_id(lang)]
 
-        # Add featureinfo relation. Prefer a GeoadminFeatures distribution sibling within the
-        # dataset; fall back to the WMS distribution (self for WMS, sibling for WMTS).
-        info_dist = (
-            dist.dataset.distribution_set.instance_of(ExternalGeoadminFeaturesDistribution).first()
-            or (dist if isinstance(dist, ExternalWMSDistribution) else None)
-            or (
-                dist.dataset.distribution_set.instance_of(ExternalWMSDistribution).first()
-                if isinstance(dist, ExternalWMTSDistribution)
-                else None
-            )
-        )
+        info_dist = featureinfo_distribution(dist.dataset, dist)
         if info_dist:
             record.links.append(
                 OARRecordLink(
