@@ -14,6 +14,7 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from opensearchpy import helpers
 
@@ -130,9 +131,10 @@ def _rewrite_dist_links(
 
     The `dataset`, `dataservice` and `featureinfo` links are rewritten to relative
     `/collections/.../items/...` paths, the `styledBy` link to the OAS style file is kept
-    (with the per-language query/hreflang stripped, as styles are language-neutral), the
-    intra-service `self`/`collection`/`alternate` links and any other OAR/OAS internal
-    link without a defined mapping are dropped, and genuinely external links are kept as-is.
+    (with the per-language query/hreflang stripped, as styles are language-neutral, and
+    reduced to a host-relative path), the intra-service `self`/`collection`/`alternate`
+    links and any other OAR/OAS internal link without a defined mapping are dropped, and
+    genuinely external links are kept as-is.
     """
     rewritten: list[dict] = []
     for link in links:
@@ -171,7 +173,13 @@ def _rewrite_dist_links(
             # Keep the style link, but drop the language-specific query/hreflang so it stays
             # language-neutral in the (multilingual) document.
             clean = {k: v for k, v in link.items() if k != "hreflang"}
-            clean["href"] = href.split("?", 1)[0]
+            style_href = href.split("?", 1)[0]
+            if style_href.startswith(f"{oas_base_url}/styles/"):
+                # Internal OAS style link: keep only the path, so the document doesn't pin a
+                # specific environment's host. Style files hosted elsewhere (e.g. the vector
+                # styles of a GeoJSON distribution) stay absolute.
+                style_href = urlsplit(style_href).path
+            clean["href"] = style_href
             rewritten.append(clean)
         elif href.startswith((oar_base_url, oas_base_url)):
             # Internal OAR/OAS link without a defined relative mapping -- drop it to keep the
