@@ -378,6 +378,43 @@ def test_dump_dataset_document(db, tmp_path):
     }
 
 
+def test_dump_dataset_document_links_to_its_featureinfo_distribution(db, tmp_path):
+    """A dataset with a feature info source gets a `featureinfo` link to that distribution.
+
+    It is a shortcut to the same target the dataset's own distribution records point at, so a
+    consumer of the dataset record doesn't have to fetch all distributions to find it.
+    """
+    dataservice = _make_dataservice()
+    dataset = _make_dataset()
+    _make_distribution(dataset, dataservice)
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == [
+        {
+            "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+            "rel": "featureinfo",
+            "title": "Feature Info",
+        }
+    ]
+    # The same target the WMS distribution record points at (itself, for a WMS distribution).
+    distribution_doc = _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose:wms")
+    assert [link["href"] for link in distribution_doc["links"] if link["rel"] == "featureinfo"] == [
+        "/collections/swissgeo-distributions/items/ch.bafu.moose:wms"
+    ]
+
+
+def test_dump_dataset_document_without_featureinfo_distribution_has_no_such_link(db, tmp_path):
+    """A dataset whose distributions cannot serve feature info gets no `featureinfo` link."""
+    _make_dataset()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == []
+
+
 def test_dump_distribution_document(db, tmp_path):
     dataservice = _make_dataservice()
     dataset = _make_dataset()

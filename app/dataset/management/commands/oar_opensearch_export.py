@@ -26,6 +26,7 @@ from dataset.export_models import (
     OARDataservice,
     OARDataset,
     OARDistribution,
+    featureinfo_distribution,
 )
 from dataset.models import Dataset
 from dataset.opensearch_helper import add_connection_arguments, build_client
@@ -478,6 +479,18 @@ class Command(CustomBaseCommand):
                 "title": "Distributions",
             }
         )
+
+        # Shortcut to the distribution serving this dataset's feature info, so a consumer of the
+        # dataset record doesn't have to fetch all distributions to find it. Same target as the
+        # `featureinfo` link on the dataset's own distribution records.
+        if info_dist := featureinfo_distribution(dataset):
+            links.append(
+                {
+                    "href": f"/collections/{DISTRIBUTIONS_INDEX}/items/{info_dist.distribution_id}",
+                    "rel": "featureinfo",
+                    "title": "Feature Info",
+                }
+            )
 
         properties = _clean_props(
             base["properties"], skip=frozenset({"title", "description", "language"})
