@@ -14,6 +14,7 @@ The command has two output modes:
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlsplit
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -178,6 +179,43 @@ def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
     result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
+
+
+def test_rewrite_dist_links_makes_oas_style_link_relative():
+    """An OAS style link loses its host and its per-language query/hreflang."""
+    links = [
+        {
+            "href": f"{EXAMPLE_OAS_BASE_URL}/styles/ch.bafu.moose:wms:style?language=de",
+            "rel": "styledBy",
+            "hreflang": "de",
+            "title": "Style Hints",
+        }
+    ]
+
+    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+
+    assert result == [
+        {
+            "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+            "rel": "styledBy",
+            "title": "Style Hints",
+        }
+    ]
+
+
+def test_rewrite_dist_links_keeps_externally_hosted_style_link_absolute():
+    """A style file hosted outside OAS (e.g. a GeoJSON vector style) keeps its full URL."""
+    links = [
+        {
+            "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
+            "rel": "styledBy",
+            "title": "Link to style file for the GeoJSON layer",
+        }
+    ]
+
+    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+
+    assert result == links
 
 
 def test_rewrite_dist_links_rewrites_featureinfo_to_the_distributions_index():
@@ -369,7 +407,7 @@ def test_dump_distribution_document(db, tmp_path):
                 "rel": "featureinfo",
             },
             {
-                "href": f"{OAS_BASE_URL}/styles/ch.bafu.moose:wms:style",
+                "href": f"{urlsplit(OAS_BASE_URL).path}/styles/ch.bafu.moose:wms:style",
                 "rel": "styledBy",
                 "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                 "type": "application/json",
