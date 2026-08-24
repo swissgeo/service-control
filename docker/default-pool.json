@@ -248,9 +248,6 @@
       "AllowAdminCreateUserOnly": false,
       "UnusedAccountValidityDays": 7
     },
-    "UsernameAttributes": [
-      "email"
-    ],
     "Id": "local_PoolPrty"
   }
 }

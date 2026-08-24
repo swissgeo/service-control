@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
@@ -14,7 +14,38 @@ from distribution.models import (
     Distribution,
     ExternalGeoadminFeaturesDistribution,
     ExternalGeoJSONDistribution,
+    ExternalWMSDistribution,
+    ExternalWMTSDistribution,
 )
+
+
+def featureinfo_distribution(
+    dataset: Dataset, dist: Distribution | None = None
+) -> Distribution | None:
+    """Return the distribution that serves the feature info of `dataset`, if any.
+
+    Prefer a GeoadminFeatures distribution of the dataset; fall back to the dataset's WMS
+    distribution. When resolving for a specific distribution `dist`, a WMS distribution is
+    its own feature info source and a WMTS distribution falls back to a WMS sibling; other
+    distribution types only get the GeoadminFeatures candidate.
+    """
+    geoadmin_features = dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+        ExternalGeoadminFeaturesDistribution
+    ).first()
+    if geoadmin_features:
+        return geoadmin_features
+    if dist is None:
+        # Dataset-level lookup: any WMS distribution of the dataset serves the feature info.
+        return dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+            ExternalWMSDistribution
+        ).first()
+    if isinstance(dist, ExternalWMSDistribution):
+        return dist
+    if isinstance(dist, ExternalWMTSDistribution):
+        return dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+            ExternalWMSDistribution
+        ).first()
+    return None
 
 
 class Lang(BaseModel):
@@ -28,7 +59,14 @@ LANGS = {
     "de": Lang(code="de", name="Deutsch", dir="ltr", alternate="German"),
     "fr": Lang(code="fr", name="Français", dir="ltr", alternate="French"),
     "it": Lang(code="it", name="Italiano", dir="ltr", alternate="Italian"),
-    "en": Lang(code="en", name="English", dir="ltr"),
+    "en": Lang(code="en", name="English", dir="ltr", alternate="English"),
+}
+
+LANGS_ISO_639_2_B = {
+    "de": "ger",
+    "fr": "fra",
+    "it": "ita",
+    "en": "eng",
 }
 
 
@@ -73,15 +111,13 @@ class OARLink(BaseLink):
     """Link object for endpoints within the OAR service
 
     This is a base class for links that point to endpoints within the OAR service itself.
-    - fqdn (string): The fully qualified domain name of the OAR service
-      (e.g. "services.dev.sgdi.tech")
-    - basepath (string): The base path of the OAR API (e.g. "/api/oar/v0")
+    - base_url (string): The base URL of the OAR service
+      (e.g. "http://services.dev.sgdi.tech/api/oar/staticv2")
 
     """
 
     # These are "private" fields that should not be included in a model_dump
-    fqdn: str = Field(exclude=True, default="services.dev.sgdi.tech")
-    basepath: str = Field(exclude=True, default="/api/oar/v0")
+    base_url: str = Field(exclude=True)
 
 
 class OARCollectionLink(OARLink):
@@ -92,9 +128,25 @@ class OARCollectionLink(OARLink):
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
-        based on the fqdn, basepath, collectionId and recordId.
+        based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}"
+        self.href = f"{self.base_url}/collections/{self.collectionId}"
+        if self.hreflang:
+            self.href += f"?language={self.hreflang}"
+        return self
+
+
+class OARCollectionItemsLink(OARLink):
+    collectionId: str = Field(exclude=True)  # noqa: N815
+
+    @model_validator(mode="after")
+    def generate_href_value(self) -> OARLink:
+        """Generate the href value for the record link.
+
+        This method is called after the model is initialized and will set the href value
+        based on the origin, basepath, collectionId and recordId.
+        """
+        self.href = f"{self.base_url}/collections/{self.collectionId}/items"
         if self.hreflang:
             self.href += f"?language={self.hreflang}"
         return self
@@ -109,9 +161,9 @@ class OARRecordLink(OARCollectionLink):
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
-        based on the fqdn, basepath, collectionId and recordId.
+        based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"https://{self.fqdn}{self.basepath}/collections/{self.collectionId}/items/{self.recordId}"
+        self.href = f"{self.base_url}/collections/{self.collectionId}/items/{self.recordId}"
         if self.hreflang:
             self.href += f"?language={self.hreflang}"
         return self
@@ -131,6 +183,47 @@ class OARRecord(BaseModel):
     linkTemplates: list[LinkTemplate] = Field(default_factory=list)  # noqa: N815
     type: Literal["Feature"] = "Feature"
     geometry: dict | None = None
+    lang: str = Field(default="de", exclude=True)
+    collection_id: str = Field(default="MISSING", exclude=True)
+    base_url: str = Field(exclude=True)
+
+    @model_validator(mode="after")
+    def add_links(self) -> OARRecord:
+        self.links.append(
+            OARRecordLink(
+                collectionId=self.collection_id,
+                recordId=self.id,
+                rel="self",
+                title="This Record",
+                hreflang=self.lang,
+                base_url=self.base_url,
+            )
+        )
+        for lang, value in LANGS.items():
+            if lang != self.lang:
+                self.links.append(
+                    OARRecordLink(
+                        collectionId=self.collection_id,
+                        recordId=self.id,
+                        rel="alternate",
+                        title=f"This Record ({value.alternate})",
+                        hreflang=lang,
+                        base_url=self.base_url,
+                    )
+                )
+        self.links.append(
+            OARCollectionLink(
+                collectionId=self.collection_id,
+                rel="collection",
+                title="Link to the collection this item belongs to",
+                hreflang=self.lang,
+                base_url=self.base_url,
+            )
+        )
+        return self
+
+    def get_key(self) -> str:
+        return f"/collections/{self.collection_id}/items/{self.id}.{self.lang}"
 
 
 class OARDataset(OARRecord):
@@ -143,29 +236,67 @@ class OARDataset(OARRecord):
     properties: dict = Field(default_factory=lambda: {"type": "Dataset"})
     geometry: dict | None = {
         "type": "Polygon",
+        # coordinates of the bounding box of Switzerland
         "coordinates": [
             [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
         ],
     }
 
     @classmethod
-    def from_dataset(cls, ds: Dataset, lang: str) -> OARDataset:
-        record = OARDataset(id=ds.dataset_id)
+    def from_dataset(cls, ds: Dataset, lang: str, collection_id: str, base_url: str) -> OARDataset:
 
-        # Set properties
-        record.properties["title"] = getattr(ds, f"title_short_{lang}", None)
-        record.properties["description"] = getattr(ds, f"description_{lang}", None)
-        # record.properties["preferredDistributionId"] = self.preferred_distribution_id
-        record.properties["language"] = LANGS[lang]
-        record.properties["languages"] = list(LANGS.values())
-        # record.properties["contacts"] = getattr(self, f"contacts_{lang}", [])
+        contacts = [
+            Contact(
+                organization=contact.get(f"org_name_{lang}") or contact.get("org_name"),
+                country=contact.get("contact_country") or "CH",
+                role=contact.get("role"),
+            )
+            for contact in ds.legacy_contacts
+        ]
 
-        # Add links
-        # links = getattr(self, f"links_{lang}", [])
-        # for link in links:
-        #     record.links.append(link)
+        properties = {
+            "contacts": contacts,
+            "description": getattr(ds, f"description_{lang}", None),
+            "language": LANGS[lang],
+            "languages": list(LANGS.values()),
+            "preferredDistributionId": ds.preferred_distribution.distribution_id
+            if ds.preferred_distribution
+            else None,  # TODO: needs further clarification
+            "title": getattr(ds, f"title_short_{lang}", None),
+            "type": "Dataset",
+        }
+        dataset = OARDataset(
+            id=ds.dataset_id,
+            properties=properties,
+            collection_id=collection_id,
+            lang=lang,
+            base_url=base_url,
+        )
+        dataset.links.append(
+            OARCollectionItemsLink(
+                collectionId=f"{ds.dataset_id}.distributions",
+                rel="distributions",
+                title="Distributions",
+                base_url=base_url,
+                hreflang=lang,
+            )
+        )
+        dataset.links.append(
+            Link(
+                href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_ISO_639_2_B[lang]}/catalog.search#/metadata/{ds.geocat_id}",
+                rel="alternate",
+                title="GeoCat Metadata",
+                typ="text/html",
+            )
+        )
+        # TODO: Needs clarification before it can be added
+        # Link(
+        #    href="https://www.some-external-website.ch",
+        #    rel="describedby",
+        #    title="Details"
+        # )
 
-        return record
+        return dataset
 
 
 class OARDistribution(OARRecord):
@@ -178,20 +309,23 @@ class OARDistribution(OARRecord):
     geometry: dict | None = None
 
     @classmethod
-    def from_distribution(cls, dist: Distribution, lang: str) -> OARDistribution:
-        record = OARDistribution(id=dist.distribution_id)
+    def from_distribution(  # noqa: C901
+        cls,
+        dist: Distribution,
+        lang: str,
+        collection_id: str,
+        oar_base_url: str,
+        oas_base_url: str,
+    ) -> OARDistribution:
+        record = OARDistribution(
+            id=dist.distribution_id, collection_id=collection_id, lang=lang, base_url=oar_base_url
+        )
 
         # Set properties
-        record.properties["title"] = dist.title
-        record.links.append(
-            OARRecordLink(
-                collectionId=dist.dataset.dataset_id,
-                recordId=dist.distribution_id,
-                rel="self",
-                title="Link to this distribution record",
-                hreflang=lang,
-            )
-        )
+        record.properties["title"] = getattr(dist, f"title_{lang}", dist.title_de)
+        if description := getattr(dist, f"description_{lang}"):
+            record.properties["description"] = description
+
         record.links.append(
             OARRecordLink(
                 collectionId="swissgeo.catalog",
@@ -199,6 +333,7 @@ class OARDistribution(OARRecord):
                 rel="dataset",
                 hreflang=lang,
                 title=f"Link to parent dataset {dist.dataset.dataset_id}",
+                base_url=oar_base_url,
             )
         )
         record.properties["protocol"] = dist.protocol
@@ -219,7 +354,7 @@ class OARDistribution(OARRecord):
                 record.links.append(
                     Link(
                         href=dist.style_url,
-                        rel="styled-by",
+                        rel="styledBy",
                         title="Link to style file for the GeoJSON layer",
                         typ="application/json",
                     )
@@ -237,9 +372,35 @@ class OARDistribution(OARRecord):
                     collectionId="geoadmin.services",
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
+                    base_url=oar_base_url,
+                    hreflang=lang,
                 )
             )
-            record.properties["externalIds"] = [dist.external_id]
+            record.properties["externalIds"] = [dist.external_record_id(lang)]
+
+        info_dist = featureinfo_distribution(dist.dataset, dist)
+        if info_dist:
+            record.links.append(
+                OARRecordLink(
+                    collectionId=f"{info_dist.dataset.dataset_id}.distributions",
+                    recordId=info_dist.distribution_id,
+                    rel="featureinfo",
+                    base_url=oar_base_url,
+                    hreflang=lang,
+                )
+            )
+
+        # Add style relation
+        if isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
+            record.links.append(
+                OASStyleLink(
+                    distribution_id=dist.distribution_id,
+                    rel="styledBy",
+                    title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    hreflang=lang,
+                    base_url=oas_base_url,
+                )
+            )
 
         if isinstance(dist, ExternalGeoadminFeaturesDistribution):
             if dist.renderable:
@@ -249,7 +410,7 @@ class OARDistribution(OARRecord):
                 htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
                 record.linkTemplates.append(
                     LinkTemplate(
-                        uriTemplate=f"{htmlpopup_url_base}{dist.external_id}/{{featureId}}/htmlPopup?lang={{lang}}",
+                        uriTemplate=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={{lang}}",
                         rel="preview",
                         typ="application/html",
                         title="HTML popup for a feature of this distribution",
@@ -284,10 +445,14 @@ class OARDataservice(OARRecord):
     properties: dict = {}
 
     @classmethod
-    def from_dataservice(cls, ds: Dataservice, lang: str = "de") -> OARDataservice:
+    def from_dataservice(
+        cls, ds: Dataservice, lang: str, collection_id: str, base_url: str
+    ) -> OARDataservice:
 
         # Instantiate record with common properties
-        record = OARDataservice(id=ds.dataservice_id)
+        record = OARDataservice(
+            id=ds.dataservice_id, lang=lang, collection_id=collection_id, base_url=base_url
+        )
 
         # Set common properties
         record.properties["title"] = getattr(ds, "title", None)
@@ -314,10 +479,11 @@ class OARDataservice(OARRecord):
 
         # Handle service-specific links
         if isinstance(ds, WMTSDataservice):
-            if "{epsg}" in ds.capabilities_url:
+            url = ds.localized_capabilities_url(lang)
+            if "{epsg}" in url:
                 record.linkTemplates.append(
                     LinkTemplate(
-                        uriTemplate=ds.capabilities_url,
+                        uriTemplate=url,
                         rel="about",
                         typ="application/xml",
                         title="WMTS Capabilities File",
@@ -335,7 +501,7 @@ class OARDataservice(OARRecord):
             else:
                 record.links.append(
                     Link(
-                        href=ds.capabilities_url,
+                        href=url,
                         rel="about",
                         typ="application/xml",
                         title="WMTS Capabilities File",
@@ -343,32 +509,14 @@ class OARDataservice(OARRecord):
                 )
 
         elif isinstance(ds, WMSDataservice):
-            if "{lang}" in ds.capabilities_url:
-                record.linkTemplates.append(
-                    LinkTemplate(
-                        uriTemplate=ds.capabilities_url,
-                        rel="about",
-                        typ="application/xml",
-                        title="WMS Capabilities File",
-                        variables={
-                            "lang": {
-                                "enum": ds.languages,
-                                "type": "string",
-                                "default": "de",
-                                "description": "Language code",
-                            }
-                        },
-                    )
+            record.links.append(
+                Link(
+                    href=ds.localized_capabilities_url(lang),
+                    rel="about",
+                    typ="application/xml",
+                    title="WMS Capabilities File",
                 )
-            else:
-                record.links.append(
-                    Link(
-                        href=ds.capabilities_url,
-                        rel="about",
-                        typ="application/xml",
-                        title="WMS Capabilities File",
-                    )
-                )
+            )
         elif isinstance(ds, OGCAPIStacDataservice):
             record.links.append(
                 Link(
@@ -389,6 +537,51 @@ class OARDataservice(OARRecord):
             )
 
         return record
+
+
+class OAFeatureCollection(BaseModel):
+    typ: str = Field(default="FeatureCollection", serialization_alias="type")
+    features: list[OARDistribution | OARDataset | OARDataservice] = Field(default_factory=list)
+    links: list[BaseLink] = Field(default_factory=list)
+    collection_id: str = Field(exclude=True)
+    lang: str = Field(default="de", exclude=True)
+    base_url: str = Field(exclude=True)
+
+    @model_validator(mode="after")
+    def add_links(self) -> OAFeatureCollection:
+        self.links.append(
+            OARCollectionItemsLink(
+                collectionId=self.collection_id,
+                rel="self",
+                title="Link to this resource",
+                hreflang=self.lang,
+                base_url=self.base_url,
+            )
+        )
+        for lang, value in LANGS.items():
+            if lang != self.lang:
+                self.links.append(
+                    OARCollectionItemsLink(
+                        collectionId=self.collection_id,
+                        rel="alternate",
+                        title=f"Link to this resource ({value.alternate})",
+                        hreflang=lang,
+                        base_url=self.base_url,
+                    )
+                )
+        self.links.append(
+            OARCollectionLink(
+                collectionId=self.collection_id,
+                rel="collection",
+                title="Link to the collection these items belong to",
+                hreflang=self.lang,
+                base_url=self.base_url,
+            )
+        )
+        return self
+
+    def get_key(self) -> str:
+        return f"/collections/{self.collection_id}/items.{self.lang}"
 
 
 class OARCollection(BaseModel):
@@ -433,25 +626,161 @@ class OARCollection(BaseModel):
     title: str
     type: str = "Collection"
     itemType: str = "record"  # noqa: N815
-    recordsArrayName: str = "records"  # noqa: N815
-    records: list[Any] = Field(default_factory=list)
-    links: list[Link] = Field(default_factory=list)
+    lang: str = Field(default="de", exclude=True)
+    base_url: str = Field(exclude=True)
+    # We don't encode records inline anymore but use the /items endpoint instead,
+    # and include a link to the /items endpoint in the collection links.
+    # recordsArrayName: str = "records"
+    # records: list[Any] = Field(default_factory=list)
+    links: list[BaseLink] = Field(default_factory=list)
+    # We don't want the features field to be serialized in the collection record
+    # and therefore set `exclude=True`.
+    feature_collection: OAFeatureCollection = Field(
+        default_factory=lambda data: OAFeatureCollection(
+            collection_id=data["id"], lang=data["lang"], base_url=data["base_url"]
+        ),
+        exclude=True,
+    )
 
+    @model_validator(mode="after")
+    def add_links(self) -> OARCollection:
+        self.links.append(
+            OARCollectionItemsLink(
+                collectionId=self.id,
+                rel="items",
+                title="Link to the items of this collection",
+                hreflang=self.lang,
+                base_url=self.base_url,
+            )
+        )
+        self.links.append(
+            OARCollectionLink(
+                collectionId=self.id,
+                rel="self",
+                title="Link to this resource",
+                hreflang=self.lang,
+                base_url=self.base_url,
+            )
+        )
+        for lang, value in LANGS.items():
+            if lang != self.lang:
+                self.links.append(
+                    OARCollectionLink(
+                        collectionId=self.id,
+                        rel="alternate",
+                        title=f"Link to this resource ({value.alternate})",
+                        hreflang=lang,
+                        base_url=self.base_url,
+                    )
+                )
+        return self
 
-class OAFeatureCollection(BaseModel):
-    typ: str = Field(default="FeatureCollection", serialization_alias="type")
-    features: list[OARDistribution | OARDataset | OARDataservice] = Field(default_factory=list)
-    links: list[Link] = Field(default_factory=list)
+    def get_key(self) -> str:
+        return f"/collections/{self.id}.{self.lang}"
 
 
 class Contact(BaseModel):
     organization: str
     country: str
     role: str
-    # name: Optional[str] = None
-    # position: Optional[str] = None
-    # email: Optional[str] = None
-    # phone: Optional[str] = None
-    # address: Optional[str] = None
-    # city: Optional[str] = None
-    # postal_code: Optional[str] = None
+    # name: str | None
+    # position: str | None
+    # email: str | None
+    # phone: str | None
+    # address: str | None
+    # city: str | None
+    # postal_code: str | None
+
+
+class OASLink(BaseLink):
+    """Link object for endpoints within the OAS service.
+
+    This is a base class for links that point to endpoints within the OAS service itself.
+    - base_url (string): The base URL of the OAR service
+      (e.g. "http://services.dev.sgdi.tech/api/oas/staticv2")
+
+    """
+
+    # These are "private" fields that should not be included in a model_dump
+    base_url: str = Field(exclude=True)
+
+
+class OASStyleLink(OASLink):
+    """Link to a Maplibre style file."""
+
+    distribution_id: str = Field(exclude=True)
+
+    @model_validator(mode="after")
+    def generate_href_value(self) -> OASStyleLink:
+        """Generate the href value for the style link.
+
+        This method is called after the model is initialized and will set the href value
+        based on the hreflang, basepath and distribution_id.
+        """
+        self.href = f"{self.base_url}/styles/{self.distribution_id}:style"
+        if self.hreflang:
+            self.href += f"?language={self.hreflang}"
+        return self
+
+
+class RasterPaint(BaseModel):
+    """A Maplibre paint definition.
+
+    See https://maplibre.org/maplibre-style-spec/layers/#paint.
+
+    Note that raster-gutter is actually not part of the specs.
+    """
+
+    raster_opacity: float | None = Field(default=None, serialization_alias="raster-opacity")
+    raster_gutter: int | None = Field(default=None, serialization_alias="raster-gutter")
+
+
+class RasterLayer(BaseModel):
+    """A Maplibre raster layer definition.
+
+    See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
+    """
+
+    id: str
+    paint: RasterPaint
+    source: str
+    type: Literal["raster"] = "raster"
+
+
+class RasterStyle(BaseModel):
+    """A Maplibre style file for a single raster layer.
+
+    See https://maplibre.org/maplibre-style-spec/layers/.
+    """
+
+    id: str
+    layers: list[RasterLayer] = Field(default_factory=list)
+    lang: str = Field(default="de", exclude=True)
+
+    @classmethod
+    def from_distribution(
+        cls,
+        dist: Distribution,
+        lang: str,
+    ) -> RasterStyle | None:
+        if not isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
+            return None
+
+        id_ = f"{dist.distribution_id}:style"
+        return RasterStyle(
+            id=id_,
+            layers=[
+                RasterLayer(
+                    id=id_,
+                    paint=RasterPaint(
+                        raster_opacity=dist.opacity,
+                        raster_gutter=getattr(dist, "gutter", None),
+                    ),
+                    source=dist.dataservice.dataservice_id,
+                )
+            ],
+            lang=lang,
+        )
+
+    def get_key(self) -> str:
+        return f"/styles/{self.id}.{self.lang}"

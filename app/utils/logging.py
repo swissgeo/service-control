@@ -58,4 +58,4 @@ def redirect_std_to_logger(
     for _, level, message in sorted(stderr.messages + stdout.messages):
         logger.log(level, message)
     if exception:
-        logger.exception(exception)
+        logger.exception(exception)  # noqa: LOG004

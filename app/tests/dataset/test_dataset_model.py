@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 
 import pytest
 
-from dataset.models import Dataset, DatasetToUnit
+from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
 from organization.models import Unit
 from thesaurus.models import Keyword, Thesaurus
 
@@ -35,7 +35,6 @@ def test_dataset_all_required_fields(dataset):
         "description_de",
         "description_fr",
         "description_en",
-        "geocat_id",
     ],
 )
 def test_dataset_required_field_empty(field, dataset):
@@ -54,7 +53,6 @@ def test_dataset_required_field_empty(field, dataset):
         "description_de",
         "description_fr",
         "description_en",
-        "geocat_id",
     ],
 )
 def test_dataset_required_field_null(field, dataset):
@@ -65,10 +63,7 @@ def test_dataset_required_field_null(field, dataset):
 
 @pytest.mark.parametrize(
     "field",
-    [
-        "dataset_id",
-        "geocat_id",
-    ],
+    ["dataset_id"],
 )
 def test_dataset_unique_fields(field, dataset):
     new_dataset = Dataset(
@@ -86,9 +81,44 @@ def test_dataset_unique_fields(field, dataset):
         new_dataset.full_clean()
 
 
+def test_dataset_to_dataset(db):
+    parent = Dataset.objects.create(
+        dataset_id="parent",
+        title_short_de="Title (DE)",
+        title_short_fr="Title (FR)",
+        title_short_en="Title (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_en="Description (EN)",
+        geocat_id="parent",
+    )
+
+    child = Dataset.objects.create(
+        dataset_id="child",
+        title_short_de="Title (DE)",
+        title_short_fr="Title (FR)",
+        title_short_en="Title (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_en="Description (EN)",
+        geocat_id="child",
+    )
+
+    relation = DatasetToDataset(subject=child, role=DatasetToDataset.Role.CHILD, object=parent)
+    relation.save()
+
+    assert str(relation) == "child is a child of parent"
+
+    assert parent.related_datasets(DatasetToDataset.Role.CHILD).first() == child
+    assert parent.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first() is None
+
+    assert child.related_datasets(DatasetToDataset.Role.CHILD).first() is None
+    assert child.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first() == parent
+
+
 def test_dataset_unit(dataset, unit):
     dataset_unit = DatasetToUnit.objects.create(
-        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+        dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER
     )
 
     assert unit.dataset_units.first() == dataset_unit
@@ -100,7 +130,7 @@ def test_dataset_unit(dataset, unit):
 
 def test_dataset_contact(dataset, unit):
     dataset_unit = DatasetToUnit.objects.create(
-        dataset=dataset, unit=unit, role=DatasetToUnit.ROLE_OWNER
+        dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER
     )
     assert unit.dataset_units.first() == dataset_unit
 

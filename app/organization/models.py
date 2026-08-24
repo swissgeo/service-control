@@ -12,35 +12,17 @@ from cognito.utils.client import Client, OrganizationGroup, UnitGroup
 from config.authorization import VPRole
 from user.models import MachineUser
 from utils.fields import CustomSlugField
+from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 from verified_permissions.utils.client import Client as VPClient
 
 logger = logging.getLogger(__name__)
 
 
-class OrganizationManager(models.Manager):
-    def remove_data_source_id(self, data_source_id: str) -> int:
-        """Remove the given data source ID from all organizations"""
-
-        return self.filter(data_source_ids__contains=[data_source_id]).update(
-            data_source_ids=models.Func(
-                models.F("data_source_ids"),
-                models.Value(data_source_id),
-                function="array_remove",
-            )
-        )
-
-    def existing_data_source_ids(self, data_source: str) -> set[str]:
-        """Return all data source ID of all organization with the given data source."""
-
-        return set(
-            self.filter(data_source=data_source)
-            .annotate(ids=models.Func("data_source_ids", function="unnest"))
-            .values_list("ids", flat=True)
-            .distinct()
-        )
+class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
+    pass
 
 
-class Organization(models.Model):
+class Organization(DataSourceIdModelMixin, models.Model):
     _context = "Organization model"
 
     """
@@ -54,16 +36,18 @@ class Organization(models.Model):
         db_index=True,
     )
 
-    DATA_SOURCE_CHOICE_USER_INPUT: ClassVar[str] = "user-input"
-    DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION: ClassVar[str] = "bod-contact-organization"
-    DATA_SOURCE_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION, "BOD (contactorganization)"),
-        (DATA_SOURCE_CHOICE_USER_INPUT, "User Input (Admin UI/API)"),
-    ]
+    class DataSource(models.TextChoices):
+        BOD_CONTACT_ORGANIZATION = (
+            "bod-contact-organization",
+            _("Organization DataSource", "BOD (contactorganization)"),
+        )
+        USER_INPUT = "user-input", _("Organization DataSource", "User Input (Admin UI/API)")
+        GEODIENSTE = "geodienste", _("Organization DataSource", "geodienste.ch")
+
     data_source = models.CharField(
         _(_context, "Data Source"),
-        choices=DATA_SOURCE_CHOICES,
-        default=DATA_SOURCE_CHOICE_USER_INPUT,
+        choices=DataSource.choices,
+        default=DataSource.USER_INPUT,
         max_length=255,
     )
     data_source_ids = ArrayField(
@@ -171,11 +155,6 @@ class Organization(models.Model):
 
         return result
 
-    def add_data_source_id(self, value: str) -> None:
-        values = set(self.data_source_ids)
-        values.add(value)
-        self.data_source_ids = sorted(values)
-
 
 class Unit(models.Model):
     _context = "Organization Unit model"
@@ -277,13 +256,39 @@ class Unit(models.Model):
         return result
 
 
-class Contact(models.Model):
+class ContactManager(DataSourceIdManagerMixin, models.Manager):
+    pass
+
+
+class Contact(DataSourceIdModelMixin, models.Model):
     """Contact point of an organization.
 
     See eCH-0271 CI_Contact.
     """
 
     _context = "Organization Contact model"
+
+    class DataSource(models.TextChoices):
+        GEOCAT = (
+            "geocat",
+            _("Contact DataSource", "Geocat"),
+        )
+        USER_INPUT = "user-input", _("Contact DataSource", "User Input (Admin UI/API)")
+        GEODIENSTE = "geodienste", _("Contact DataSource", "geodienste.ch")
+
+    data_source = models.CharField(
+        _(_context, "Data Source"),
+        choices=DataSource.choices,
+        default=DataSource.USER_INPUT,
+        max_length=255,
+    )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
+    )
 
     organization = models.ForeignKey(
         Organization,
@@ -323,29 +328,35 @@ class Contact(models.Model):
         null=True,
     )
     url_fr = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (French)"),
         max_length=500,
         blank=True,
         null=True,
     )
     url_en = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (English)"),
         max_length=500,
         blank=True,
         null=True,
     )
     url_it = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (Italian)"),
         max_length=500,
         blank=True,
         null=True,
     )
     url_rm = models.URLField(
-        _(_context, "URL (German)"),
+        _(_context, "URL (Romansh)"),
         max_length=500,
         blank=True,
         null=True,
     )
+
+    legacy_contact = models.TextField(
+        _(_context, "Free Text Contact (Legacy)"), null=True, blank=True
+    )
+
+    objects = ContactManager()
 
     class Meta:
         ordering = ("organization__organization_id", "name_en")

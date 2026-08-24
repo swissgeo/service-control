@@ -75,7 +75,7 @@ class CustomBaseCommand(BaseCommand):
                     message = (
                         message + " " + ", ".join(f"{key}={value}" for key, value in kwargs.items())
                     )
-                self.stdout.write(message % (args))
+                self.stdout.write(message % args if args else message)
 
     def print_warning(self, message: str, *args: Any, level: int = 1, **kwargs: Any) -> None:
         if self.options["verbosity"] >= level:

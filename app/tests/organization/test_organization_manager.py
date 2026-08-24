@@ -15,31 +15,29 @@ def test_data_source_ids(client, db):
     }
     Organization(
         organization_id="a",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["1", "2"],
         **attributes,
     ).save()
     Organization(
         organization_id="b",
-        data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["2", "3"],
         **attributes,
     ).save()
     Organization(
         organization_id="c",
-        data_source=Organization.DATA_SOURCE_CHOICE_USER_INPUT,
+        data_source=Organization.DataSource.USER_INPUT,
         data_source_ids=["1", "2", "3", "4"],
         **attributes,
     ).save()
 
     # test existing_data_source_ids
     assert Organization.objects.existing_data_source_ids(
-        Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+        Organization.DataSource.BOD_CONTACT_ORGANIZATION
     ) == {"1", "2", "3"}
 
-    assert Organization.objects.existing_data_source_ids(
-        Organization.DATA_SOURCE_CHOICE_USER_INPUT
-    ) == {
+    assert Organization.objects.existing_data_source_ids(Organization.DataSource.USER_INPUT) == {
         "1",
         "2",
         "3",
@@ -51,12 +49,10 @@ def test_data_source_ids(client, db):
 
     # test existing_data_source_ids
     assert Organization.objects.existing_data_source_ids(
-        Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+        Organization.DataSource.BOD_CONTACT_ORGANIZATION
     ) == {"1", "3"}
 
-    assert Organization.objects.existing_data_source_ids(
-        Organization.DATA_SOURCE_CHOICE_USER_INPUT
-    ) == {
+    assert Organization.objects.existing_data_source_ids(Organization.DataSource.USER_INPUT) == {
         "1",
         "3",
         "4",

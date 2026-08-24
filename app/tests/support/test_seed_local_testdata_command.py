@@ -62,7 +62,10 @@ def test_seed_local_testdata(mock_organization, mock_human_user, mock_cognito_cl
     assert f"Seeded 2 organizations and {len(USERS)} users" in output
     assert org_update_or_create.call_count == 2
     assert user_update_or_create.call_count == len(USERS)
-    assert fake_cognito.client.admin_add_user_to_group.call_count == _org_member_count()
+    assert fake_cognito.add_user_to_group.call_count == _org_member_count()
+    assert {
+        call.kwargs["group"].name for call in fake_cognito.add_user_to_group.call_args_list
+    } == {"O_ch.bafu", "O_ch.swisstopo"}
     assert fake_cognito.update_user_roles.call_count == len(USERS)
 
 

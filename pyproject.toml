@@ -13,6 +13,7 @@ dependencies = [
     "django~=6.0",
     "gevent~=26.4",
     "gunicorn~=26.0",
+    "opensearch-py~=3.2",
     "opentelemetry-exporter-otlp~=1.39",
     "opentelemetry-instrumentation-botocore==0.60b1",
     "opentelemetry-instrumentation-django==0.60b1",
@@ -23,6 +24,8 @@ dependencies = [
     "pyjwt~=2.11",
     "pystac-client~=0.9",
     "pyyaml~=6.0",
+    "rdflib>=7.6.0",
+    "requests-aws4auth~=1.3",
     "tinydb~=4.8",
     "whitenoise~=6.11",
 ]
@@ -66,8 +69,7 @@ target-version = "py314"
 # Linting configuration
 [tool.ruff.lint]
 exclude = [
-    "app/*/migrations/**",                          # Exclude django generated migrations files from linting
-    "app/dataset/management/commands/oarecords.py", # Exclude OAR stub generator during POC phase
+    "app/*/migrations/**",  # Exclude django generated migrations files from linting
 ]
 select = ["ALL"]
 ignore = [
@@ -86,6 +88,7 @@ ignore = [
     "DJ001",  # Ignore nullable strings
     "TRY003", # Ignore long messages in exceptions
     "G004",   # Ignore rule for logging calls using f-strings
+    "CPY001", # Ignore missing copyright notice at top of file
 
     # Pydantic schemas uses type annotations at runtime to generate the openapi
     # and do the validation. Putting the type annotation in a TYPE_CHECKING
@@ -118,6 +121,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?)|request|lang)$"
     "ARG005",  # Ignore unused lambda argument in tests
     "PLR2004", # Ignore magic number in tests
     "PLR0913", # Ignore too many arguments in function in tests
+    "PLR0917", # Ignore too many positional arguments in tests
 ]
 
 "app/stubs/**" = [
@@ -170,4 +174,6 @@ addopts = [
 omit = ["*/tests/*"]
 
 [tool.coverage.report]
-exclude_lines = ["if TYPE_CHECKING:"]
+# ``exclude_also`` adds to coverage.py's built-in defaults (which include ``pragma: no cover``)
+# rather than replacing them, so ``# pragma: no cover`` keeps working.
+exclude_also = ["if TYPE_CHECKING:"]

@@ -29,6 +29,7 @@ from harvest.models import (
     DatasetToContactMapping,
     DatasetToUnitMapping,
     OrganizationMapping,
+    PrefixLookupTable,
 )
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Keyword, Thesaurus
@@ -42,15 +43,9 @@ env = environ.Env()
 
 
 class Command(CustomBaseCommand):
-    """Import data from DynamoDB harvesting tables.
+    """Import data from DynamoDB harvesting tables."""
 
-    This command imports data from DynamoDB harvesting tables. It currently supports importing
-    organizations, but can be extended to import other entities in the future.
-
-    """
-
-    help = "Importing data from DynamoDB harvesting tables. "
-    "Currently supports importing organizations."
+    help = "Import data from DynamoDB harvesting tables."
 
     def add_arguments(self, parser: CommandParser) -> None:
         # Call the base class method to get default arguments defined in the base class
@@ -108,6 +103,7 @@ class Command(CustomBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Main entry point of command."""
+
         profile = options.get("profile")
         if profile and profile != "default":
             self.session = Session(profile_name=profile)
@@ -131,6 +127,55 @@ class Command(CustomBaseCommand):
             self.import_contacts(*args, **options)
 
     # ##########################################################################
+    def import_organization(
+        self, item: dict[str, Any], mappings: PrefixLookupTable
+    ) -> tuple[str | None, str]:
+        """Import a single organization from a dynamoDB item.
+
+        Returns the provider_id and the state of the import (created, updated, failed)
+        """
+        try:
+            import_org = OrganizationImport.from_dynamodb_item(item)
+            self.print(f"Parsed organization: {import_org.provider_id} - {import_org.name_de}")
+        except ParsingError as e:
+            self.print_error(f"Failed to parse item: {item}. Error: {e}")
+            return None, "failed"
+
+        provider_id = import_org.provider_id
+        Organization.objects.remove_data_source_id(provider_id)
+
+        update = True
+        org, mapping = mappings.match(provider_id)
+        if org:
+            self.print(f"Mapping found for provider_id {provider_id} : {org}")
+            update = mapping.update if mapping else True
+        else:
+            try:
+                org = Organization.objects.get(
+                    organization_id=provider_id,
+                    data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
+                )
+                self.print(f"Organization with provider_id {provider_id} already exists")
+            except Organization.DoesNotExist:
+                self.print(
+                    f"Organization with provider_id {provider_id} does not exist"
+                    " yet, creating a new one."
+                )
+                update = False
+                org = Organization(
+                    data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
+                    **import_org.model_dump(by_alias=True),
+                )
+
+        if update:
+            self.print(f"Updating {org}")
+            for field in import_org:
+                setattr(org, field[0], field[1])
+
+        org.add_data_source_id(provider_id)
+        org.save()
+        return provider_id, "updated" if update else "created"
+
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
 
@@ -151,6 +196,15 @@ class Command(CustomBaseCommand):
         After processing all entries, perform organization cleanup.
         """
 
+        log_metrics = {
+            "organizations.total": 0,
+            "organizations.failed": 0,
+            "organizations.created": 0,
+            "organizations.updated": 0,
+            "organizations.removed": 0,
+            "organizations.obsolete": 0,
+        }
+
         self.print_success("Importing organizations")
 
         dynamodb_client: DynamoDBClient = self.session.client(
@@ -162,70 +216,21 @@ class Command(CustomBaseCommand):
 
         mappings = OrganizationMapping.table()
 
-        metrics = {
-            "total_dynamo_orgs": 0,
-            "parsed_orgs": 0,
-            "created_orgs": 0,
-            "updated_orgs": 0,
-            "clean_flag_set": options["clean"],
-            "removed_orgs": 0,
-            "obsolete_orgs": 0,
-        }
-
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
-                metrics["total_dynamo_orgs"] += 1
-                try:
-                    import_org = OrganizationImport.from_dynamodb_item(item)
-                    metrics["parsed_orgs"] += 1
-                    self.print(
-                        f"Parsed organization: {import_org.provider_id} - {import_org.name_de}"
-                    )
-                except ParsingError as e:
-                    self.print_error(f"Failed to parse item: {item}. Error: {e}")
-                    continue
+                log_metrics["organizations.total"] += 1
+                provider_id, state = self.import_organization(item, mappings)
+                if provider_id:
+                    processed.add(provider_id)
+                match state:
+                    case "created" | "updated" | "failed":
+                        log_metrics[f"organizations.{state}"] += 1
 
-                provider_id = import_org.provider_id
-                processed.add(provider_id)
-                Organization.objects.remove_data_source_id(provider_id)
+        removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
+        log_metrics["organizations.removed"] = removed_count
+        log_metrics["organizations.obsolete"] = obsolete_count
 
-                update = True
-                org, mapping = mappings.match(provider_id)
-                if org:
-                    self.print(f"Mapping found for provider_id {provider_id} : {org}")
-                    update = mapping.update if mapping else True
-                else:
-                    try:
-                        org = Organization.objects.get(
-                            organization_id=provider_id,
-                            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
-                        )
-                        self.print(f"Organization with provider_id {provider_id} already exists")
-                    except Organization.DoesNotExist:
-                        self.print(
-                            f"Organization with provider_id {provider_id} does not exist"
-                            " yet, creating a new one."
-                        )
-                        update = False
-                        org = Organization(
-                            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
-                            **import_org.model_dump(by_alias=True),
-                        )
-                        metrics["created_orgs"] += 1
-
-                if update:
-                    self.print(f"Updating {org}")
-                    metrics["updated_orgs"] += 1
-                    for field in import_org:
-                        setattr(org, field[0], field[1])
-
-                org.add_data_source_id(provider_id)
-                org.save()
-
-        metrics["removed_orgs"], metrics["obsolete_orgs"] = self.cleanup_organizations(
-            processed, **options
-        )
-        self.print_success(f"Organization import completed. Metrics: {metrics}")
+        self.print_success(f"Organization import completed. Metrics: {log_metrics}")
 
     def cleanup_organizations(self, processed: set[str], **options: Any) -> tuple[int, int]:
         """Cleanup organizations
@@ -237,7 +242,7 @@ class Command(CustomBaseCommand):
 
         """
         existing = Organization.objects.existing_data_source_ids(
-            Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION
+            Organization.DataSource.BOD_CONTACT_ORGANIZATION
         )
         if removed := existing - processed:
             if options["clean"]:
@@ -250,7 +255,7 @@ class Command(CustomBaseCommand):
                 )
 
         obsolete = Organization.objects.filter(
-            data_source=Organization.DATA_SOURCE_CHOICE_BOD_CONTACT_ORGANIZATION,
+            data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
             data_source_ids=[],
         ).values_list("organization_id", flat=True)
         if obsolete:
@@ -295,24 +300,23 @@ class Command(CustomBaseCommand):
         ds_mappings = DatasetMapping.table()
         unit_mappings = DatasetToUnitMapping.table()
 
-        metrics = {
-            "total_dynamo_datasets": 0,
-            "parsed_datasets": 0,
-            "created_datasets": 0,
-            "updated_datasets": 0,
-            "clean_flag_set": False,
-            "removed_datasets": 0,
-            "obsolete_datasets": 0,
+        log_metrics = {
+            "datasets.total": 0,
+            "datasets.failed": 0,
+            "datasets.created": 0,
+            "datasets.updated": 0,
+            "datasets.removed": 0,
+            "datasets.obsolete": 0,
         }
 
         for page in paginator.paginate(TableName=f"harvest-datasets-{options['target_env']}"):
             for item in page["Items"]:
-                metrics["total_dynamo_datasets"] += 1
+                log_metrics["datasets.total"] += 1
                 try:
                     import_ds = DatasetImport.from_dynamodb_item(item)
                     self.print(f"Parsed dataset: {import_ds.dataset_id} - {import_ds.title_de}")
-                    metrics["parsed_datasets"] += 1
                 except Exception as e:  # noqa: BLE001
+                    log_metrics["datasets.failed"] += 1
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
                     continue
 
@@ -331,7 +335,7 @@ class Command(CustomBaseCommand):
                 else:
                     ds, created = Dataset.objects.get_or_create(
                         dataset_id=dataset_id,
-                        data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+                        data_source=Dataset.DataSource.BOD_DATASET,
                         defaults={
                             "title_short_de": import_ds.title_de,
                             "title_short_fr": import_ds.title_fr,
@@ -351,14 +355,14 @@ class Command(CustomBaseCommand):
                             f"Dataset with dataset_id {dataset_id} does not exist"
                             " yet, creating a new one."
                         )
-                        metrics["created_datasets"] += 1
+                        log_metrics["datasets.created"] += 1
                         update = False
                     else:
                         self.print(f"Dataset with dataset_id {dataset_id} already exists")
 
                 if update:
                     self.print(f"Updating {ds}")
-                    metrics["updated_datasets"] += 1
+                    log_metrics["datasets.updated"] += 1
                     ds.title_short_de = import_ds.title_de
                     ds.title_short_fr = import_ds.title_fr
                     ds.title_short_en = import_ds.title_en
@@ -390,13 +394,14 @@ class Command(CustomBaseCommand):
                         self.print_warning(f"Organization {org_id} has no default unit")
                         continue
 
-                DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.ROLE_OWNER).delete()
-                DatasetToUnit.objects.create(dataset=ds, unit=unit, role=DatasetToUnit.ROLE_OWNER)
+                DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.Role.OWNER).delete()
+                DatasetToUnit.objects.create(dataset=ds, unit=unit, role=DatasetToUnit.Role.OWNER)
 
-        metrics["removed_datasets"], metrics["obsolete_datasets"] = self.cleanup_datasets(
-            processed, **options
-        )
-        self.print_success(f"Dataset import completed. Metrics: {metrics}")
+        (
+            log_metrics["datasets.removed"],
+            log_metrics["datasets.obsolete"],
+        ) = self.cleanup_datasets(processed, **options)
+        self.print_success(f"Dataset import completed. Metrics: {log_metrics}")
 
     def cleanup_datasets(self, processed: set[str], **options: Any) -> tuple[int, int]:
         """Cleanup datasets
@@ -407,7 +412,7 @@ class Command(CustomBaseCommand):
           provider ID reference; optionally delete them
 
         """
-        existing = Dataset.objects.existing_data_source_ids(Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        existing = Dataset.objects.existing_data_source_ids(Dataset.DataSource.BOD_DATASET)
         if removed := existing - processed:
             if options["clean"]:
                 for dataset_id in removed:
@@ -417,7 +422,7 @@ class Command(CustomBaseCommand):
                 self.print_warning(f"Removed data_source_id (dataset) found: {', '.join(removed)}")
 
         obsolete = Dataset.objects.filter(
-            data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET,
+            data_source=Dataset.DataSource.BOD_DATASET,
             data_source_ids=[],
         ).values_list("dataset_id", flat=True)
         if obsolete:
@@ -426,7 +431,7 @@ class Command(CustomBaseCommand):
                     self.print_warning(f"Removing obsolete dataset {dataset_id}")
                     Dataset.objects.filter(dataset_id=dataset_id).delete()
             else:
-                self.print_warning(f"Obsolete datasets found: {', '.join(obsolete)}")
+                self.print_warning(f"Obsolete datasets found: {', '.join(sorted(obsolete))}")
         return len(removed), len(obsolete)
 
     # ##########################################################################
@@ -484,34 +489,36 @@ class Command(CustomBaseCommand):
         except GeoadminFeaturesDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin Features Dataservice found, try to load fixtures first "
-                "(./manage.py loaddata fixtures/dataservice.json"
+                "(./manage.py loaddata fixtures/dataservice.json)"
             )
             return
 
         ds_mappings = DatasetMapping.table()
 
-        metrics = {
-            "total_dynamo_layers": 0,
-            "parsed_layers": 0,
-            "created_wmts_distributions": 0,
-            "updated_wmts_distributions": 0,
-            "created_wms_distributions": 0,
-            "updated_wms_distributions": 0,
-            "created_geojson_distributions": 0,
-            "updated_geojson_distributions": 0,
-            "created_api3feature_distributions": 0,
-            "updated_api3feature_distributions": 0,
-            "removed_distributions": 0,
+        log_metrics = {
+            "distributions.total": 0,
+            "distributions.failed": 0,
+            "distributions.created.wmts": 0,
+            "distributions.updated.wmts": 0,
+            "distributions.created.wms": 0,
+            "distributions.updated.wms": 0,
+            "distributions.created.geojson": 0,
+            "distributions.updated.geojson": 0,
+            "distributions.created.api3feature": 0,
+            "distributions.updated.api3feature": 0,
+            "distributions.removed": 0,
         }
+
+        processed = {}
 
         for page in paginator.paginate(TableName=f"harvest-layers-js-{options['target_env']}"):
             for item in page["Items"]:
-                metrics["total_dynamo_layers"] += 1
+                log_metrics["distributions.total"] += 1
                 try:
                     ljs = LayersJSImport.from_dynamodb_item(item)
                     self.print(f"Parsed layers_js: {ljs.layer_id}")
-                    metrics["parsed_layers"] += 1
                 except Exception as e:  # noqa: BLE001
+                    log_metrics["distributions.failed"] += 1
                     self.print_error(f"Failed to parse item: {item}. Error: {e}")
                     continue
 
@@ -526,34 +533,34 @@ class Command(CustomBaseCommand):
                 else:
                     try:
                         dataset = Dataset.objects.get(
-                            dataset_id=layer_id, data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET
+                            dataset_id=layer_id, data_source=Dataset.DataSource.BOD_DATASET
                         )
                     except Dataset.DoesNotExist:
                         self.print_error(f"No Dataset found for layer_id {layer_id}")
                         continue
 
-                processed = set()
+                processed.setdefault(dataset.dataset_id, set())
 
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
                     dist, created = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
-                        metrics["created_wmts_distributions"] += 1
+                        log_metrics["distributions.created.wmts"] += 1
                     else:
-                        metrics["updated_wmts_distributions"] += 1
+                        log_metrics["distributions.updated.wmts"] += 1
                     # Set the preferred distribution to WMTS for WMTS layers
                     dataset.preferred_distribution = dist
                     dataset.save()
 
                 if ljs.layertype in ["wms", "wmts"]:
                     dist, created = self.import_wms_distribution(ljs, dataset, wms_dataservice)
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
-                        metrics["created_wms_distributions"] += 1
+                        log_metrics["distributions.created.wms"] += 1
                     else:
-                        metrics["updated_wms_distributions"] += 1
+                        log_metrics["distributions.updated.wms"] += 1
                     # If the preferred distribution is not set yet, we set it to the WMS
                     # distribution
                     if not dataset.preferred_distribution:
@@ -562,11 +569,11 @@ class Command(CustomBaseCommand):
 
                 if ljs.layertype == "geojson":
                     dist, created = self.import_geojson_distribution(ljs, dataset)
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
-                        metrics["created_geojson_distributions"] += 1
+                        log_metrics["distributions.created.geojson"] += 1
                     else:
-                        metrics["updated_geojson_distributions"] += 1
+                        log_metrics["distributions.updated.geojson"] += 1
                     # If the preferred distribution is not set yet,
                     # we set it to the GeoJSON distribution. Currently,
                     # layers of type geojson only have a GeoJSON distribution.
@@ -579,27 +586,29 @@ class Command(CustomBaseCommand):
                     dist, created = self.import_api3features_distribution(
                         ljs, dataset, geoadminfeature_dataservice
                     )
-                    processed.add(dist.distribution_id)
+                    processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
-                        metrics["created_api3feature_distributions"] += 1
+                        log_metrics["distributions.created.api3feature"] += 1
                     else:
-                        metrics["updated_api3feature_distributions"] += 1
+                        log_metrics["distributions.updated.api3feature"] += 1
 
-                obsolete = dataset.distribution_set.filter(  # ty: ignore[unresolved-attribute]
-                    data_source=Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
-                ).exclude(distribution_id__in=processed)
-                if obsolete:
-                    if options["clean"]:
-                        for distribution in obsolete:
-                            self.print_warning(f"Removing obsolete distribution {distribution}")
-                            distribution.delete()
-                    else:
-                        self.print_warning(
-                            f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
-                        )
-                    metrics["removed_distributions"] += len(obsolete)
+        for dataset_id, distribution_ids in processed.items():
+            dataset = Dataset.objects.get(dataset_id=dataset_id)
+            obsolete = dataset.distribution_set.filter(
+                data_source=Distribution.DataSource.BOD_LAYERS_JS
+            ).exclude(distribution_id__in=distribution_ids)
+            if obsolete:
+                if options["clean"]:
+                    for distribution in obsolete:
+                        self.print_warning(f"Removing obsolete distribution {distribution}")
+                        distribution.delete()
+                else:
+                    self.print_warning(
+                        f"Obsolete distribution found: {', '.join(str(d) for d in obsolete)}"
+                    )
+                log_metrics["distributions.removed"] += len(obsolete)
 
-        self.print_success(f"Distribution import completed. Metrics: {metrics}")
+        self.print_success(f"Distribution import completed. Metrics: {log_metrics}")
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
@@ -611,11 +620,20 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMTSDistribution.objects.get_or_create(
             distribution_id=wmts_distribution_id,
             dataset=dataset,
-            wmts_layer_name=ljs.layer_id,
+            wmts_layer_name_de=ljs.layer_id,
         )
         dist.dataservice = wmts_dataservice
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
-        dist.title = "WMTS Layer"
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
+        dist.title_de = dataset.title_short_de
+        dist.title_fr = dataset.title_short_fr
+        dist.title_it = dataset.title_short_it
+        dist.title_en = dataset.title_short_en
+        dist.title_rm = dataset.title_short_rm
+        dist.description_de = dataset.description_de
+        dist.description_fr = dataset.description_fr
+        dist.description_it = dataset.description_it
+        dist.description_en = dataset.description_en
+        dist.description_rm = dataset.description_rm
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -633,11 +651,20 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMSDistribution.objects.get_or_create(
             distribution_id=wms_distribution_id,
             dataset=dataset,
-            wms_layer_name=ljs.layer_id,
+            wms_layer_name_de=ljs.layer_id,
         )
         dist.dataservice = wms_dataservice
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
-        dist.title = "WMS Layer"
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
+        dist.title_de = dataset.title_short_de
+        dist.title_fr = dataset.title_short_fr
+        dist.title_it = dataset.title_short_it
+        dist.title_en = dataset.title_short_en
+        dist.title_rm = dataset.title_short_rm
+        dist.description_de = dataset.description_de
+        dist.description_fr = dataset.description_fr
+        dist.description_it = dataset.description_it
+        dist.description_en = dataset.description_en
+        dist.description_rm = dataset.description_rm
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
@@ -660,8 +687,17 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             defaults={"geojson_url_de": ljs.geojson_url_de},
         )
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
-        dist.title = "GeoJSON Layer"
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
+        dist.title_de = dataset.title_short_de
+        dist.title_fr = dataset.title_short_fr
+        dist.title_it = dataset.title_short_it
+        dist.title_en = dataset.title_short_en
+        dist.title_rm = dataset.title_short_rm
+        dist.description_de = dataset.description_de
+        dist.description_fr = dataset.description_fr
+        dist.description_it = dataset.description_it
+        dist.description_en = dataset.description_en
+        dist.description_rm = dataset.description_rm
         dist.geojson_url_de = ljs.geojson_url_de
         dist.geojson_url_fr = ljs.geojson_url_fr
         dist.geojson_url_it = ljs.geojson_url_it
@@ -691,8 +727,13 @@ class Command(CustomBaseCommand):
             layer_id=ljs.layer_id,
         )
         dist.dataservice = geoadminfeature_dataservice
-        dist.data_source = Distribution.DATA_SOURCE_CHOICE_BOD_LAYERS_JS
-        dist.title = "Geoadmin Features"
+        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
+        dist.title_de = "Geoadmin Features"
+        dist.title_fr = "Geoadmin Features"
+        dist.title_it = "Geoadmin Features"
+        dist.title_en = "Geoadmin Features"
+        dist.title_rm = "Geoadmin Features"
+        dist.meta_information = True
         # Note: This information is not relyable in the layers_js table. There are
         # layers with searchable=true that return 404 for search requests on ../SearchServer
         # with `type=features`, which indicates that they are not actually queryable.
@@ -729,17 +770,17 @@ class Command(CustomBaseCommand):
             "dynamodb", region_name="eu-central-1"
         )
 
-        metrics = {
-            "datasets_processed": 0,
-            "thesaurus_created": 0,
-            "keywords_created": 0,
-            "datasets_updated": 0,
+        log_metrics = {
+            "keywords.datasets_processed": 0,
+            "keywords.thesaurus_created": 0,
+            "keywords.keywords_created": 0,
+            "keywords.datasets_updated": 0,
         }
 
-        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
-            metrics["datasets_processed"] += 1
+            log_metrics["keywords.datasets_processed"] += 1
 
             response = dynamodb_client.get_item(
                 TableName=f"harvest-keywords-{options['target_env']}",
@@ -768,7 +809,7 @@ class Command(CustomBaseCommand):
                     thesaurus_id=item_keyword.thesaurus_id
                 )
                 if created:
-                    metrics["thesaurus_created"] += 1
+                    log_metrics["keywords.thesaurus_created"] += 1
                 keyword, created = Keyword.objects.get_or_create(
                     thesaurus=thesaurus,
                     keyword_id=item_keyword.concept,
@@ -781,12 +822,12 @@ class Command(CustomBaseCommand):
                     },
                 )
                 if created:
-                    metrics["keywords_created"] += 1
+                    log_metrics["keywords.keywords_created"] += 1
                 keywords.add(keyword)
 
             dataset.keywords.set(keywords)
-            metrics["datasets_updated"] += 1
-        self.print_success(f"Keyword import completed. Metrics: {metrics}")
+            log_metrics["keywords.datasets_updated"] += 1
+        self.print_success(f"Keyword import completed. Metrics: {log_metrics}")
 
     # ##########################################################################
     def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0912, PLR0915
@@ -818,16 +859,16 @@ class Command(CustomBaseCommand):
 
         mappings = DatasetToContactMapping.table()
 
-        metrics = {
-            "datasets_processed": 0,
-            "contacts_created": 0,
-            "datasets_updated": 0,
+        log_metrics = {
+            "contacts.datasets_processed": 0,
+            "contacts.contacts_created": 0,
+            "contacts.datasets_updated": 0,
         }
 
-        query = Dataset.objects.filter(data_source=Dataset.DATA_SOURCE_CHOICE_BOD_DATASET)
+        query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
-            metrics["datasets_processed"] += 1
+            log_metrics["contacts.datasets_processed"] += 1
 
             response = dynamodb_client.get_item(
                 TableName=f"harvest-contacts-{options['target_env']}",
@@ -928,9 +969,10 @@ class Command(CustomBaseCommand):
                         )
                 else:
                     self.print(f"Creating contact for organization {organization}")
-                    metrics["contacts_created"] += 1
+                    log_metrics["contacts.contacts_created"] += 1
                     contact = Contact.objects.create(
                         organization=organization,
+                        data_source=Contact.DataSource.GEOCAT,
                         name_de=item_contact.position_name_de,
                         name_fr=item_contact.position_name_fr,
                         name_en=item_contact.position_name_en,
@@ -951,8 +993,8 @@ class Command(CustomBaseCommand):
                     )
 
                 DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
-                metrics["datasets_updated"] += 1
-        self.print_success(f"Contact import completed. Metrics: {metrics}")
+                log_metrics["contacts.datasets_updated"] += 1
+        self.print_success(f"Contact import completed. Metrics: {log_metrics}")
 
     def find_organization(
         self,

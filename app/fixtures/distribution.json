@@ -1,0 +1,1190 @@
+[
+  {
+    "model": "distribution.distribution",
+    "pk": 1,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeojsondistribution"
+      ],
+      "distribution_id": "from_fixture.ch.meteoschweiz.messwerte-pollen-erle-1h:geojson",
+      "dataset": 1,
+      "title_de": "from_fixture Messwerte Erle, mittlere stündliche Pollenkonzentration",
+      "title_fr": "from_fixture Valeurs mesurées Aune, concentration pollinique moyenne horaire",
+      "title_en": "from_fixture Measurement values Alder, hourly average pollen concentration",
+      "title_it": "from_fixture Valori attuali Ontano, media oraria della concentrazione pollinica",
+      "title_rm": "from_fixture Valurs da mesiraziun ogn, concentraziun mesauna da pollen per ura",
+      "description_de": "Messwerte Erle, mittlere stündliche Pollenkonzentration [Pollen pro Kubikmeter Luft]. Daten werden stündlich aktualisiert. Der Datensatz enthält alle Messstationen des automatischen nationalen Pollenmessnetzes.",
+      "description_fr": "Valeurs mesurées Aune, concentration pollinique moyenne horaire [pollens par mètre cube d'air]. Données actualisées toutes les heures. Les données contiennent tous les stations du réseau automatique national de surveillance du pollen.",
+      "description_en": "Measurement values Alder, hourly average pollen concentration [pollen per cubic meter of air]. Data is updated every hour. The data set contains all stations of the automatic national pollen monitoring network.",
+      "description_it": "Valori attuali Ontano, media oraria della concentrazione pollinica [pollini per metro cubo d'aria]. Dati aggiornati ogni ora. Il set di dati contiene tutte le stazioni di misura automatiche della rete per il monitoraggio dei pollini.",
+      "description_rm": "Valurs da mesiraziun ogn, concentraziun mesauna da pollen per ura [pollen per meter cubic aria]. Las datas vegnan actualisadas mintga ura. L'unitad da datas cuntegna tut las staziuns da mesiraziun da la rait naziunala da mesiraziuns da pollens automaticas.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:16:44.94Z",
+      "updated_at": "2026-07-22T07:00:24.936Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeojsondistribution",
+    "fields": {
+      "distribution_ptr": 1,
+      "geojson_url_de": "https://data.geo.admin.ch/ch.meteoschweiz.messwerte-pollen-erle-1h/ch.meteoschweiz.messwerte-pollen-erle-1h_de.json",
+      "geojson_url_fr": "https://data.geo.admin.ch/ch.meteoschweiz.messwerte-pollen-erle-1h/ch.meteoschweiz.messwerte-pollen-erle-1h_fr.json",
+      "geojson_url_it": "https://data.geo.admin.ch/ch.meteoschweiz.messwerte-pollen-erle-1h/ch.meteoschweiz.messwerte-pollen-erle-1h_it.json",
+      "geojson_url_en": "https://data.geo.admin.ch/ch.meteoschweiz.messwerte-pollen-erle-1h/ch.meteoschweiz.messwerte-pollen-erle-1h_en.json",
+      "geojson_url_rm": "https://data.geo.admin.ch/ch.meteoschweiz.messwerte-pollen-erle-1h/ch.meteoschweiz.messwerte-pollen-erle-1h_rm.json",
+      "style_url": "https://api3.geo.admin.ch/static/vectorStyles/ch.meteoschweiz.messwerte-pollen-erle-1h.json"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 2,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeojsondistribution"
+      ],
+      "distribution_id": "from_fixture.ch.bafu.hydroweb-messstationen_temperatur:geojson",
+      "dataset": 2,
+      "title_de": "from_fixture Wassertemperatur der Flüsse",
+      "title_fr": "from_fixture Température des cours d'eau",
+      "title_en": "from_fixture Water temperature of rivers and streams",
+      "title_it": "from_fixture Temperature dei fiumi",
+      "title_rm": "from_fixture Temperatura da l'aua dals flums",
+      "description_de": "Die Karte liefert einen Überblick über die aktuellen Wassertemperaturen in den Schweizer Flüssen.",
+      "description_fr": "La carte donne une vue d'ensemble des températures actuelles des cours d'eau suisses.",
+      "description_en": "The map provides an overview of current water temperatures in Switzerland's rivers.",
+      "description_it": "La carta fornisce una panoramica sulle temperature attuali dell'acqua nei fiumi svizzeri.",
+      "description_rm": "La charta dat ina survista da las temperaturas actualas da l'aua en ils flums svizzers.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:16:46.278Z",
+      "updated_at": "2026-07-22T07:00:25.938Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeojsondistribution",
+    "fields": {
+      "distribution_ptr": 2,
+      "geojson_url_de": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_temperatur/ch.bafu.hydroweb-messstationen_temperatur_de.json",
+      "geojson_url_fr": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_temperatur/ch.bafu.hydroweb-messstationen_temperatur_fr.json",
+      "geojson_url_it": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_temperatur/ch.bafu.hydroweb-messstationen_temperatur_it.json",
+      "geojson_url_en": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_temperatur/ch.bafu.hydroweb-messstationen_temperatur_en.json",
+      "geojson_url_rm": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_temperatur/ch.bafu.hydroweb-messstationen_temperatur_de.json",
+      "style_url": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.hydroweb-messstationen_temperatur.json"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 3,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:wmts",
+      "dataset": 3,
+      "title_de": "from_fixture Hauptstrassennetz der Schweiz (MinVV)",
+      "title_fr": "from_fixture Réseau des routes principales suisses (OUMin)",
+      "title_en": "from_fixture Main roads network",
+      "title_it": "from_fixture Rete delle strade principali svizzere (OUMin)",
+      "title_rm": "from_fixture Rait da vias principalas",
+      "description_de": "Dieser Datensatz umfasst das Netz der schweizerischen Hauptstrassen, das in der Verordnung über die Verwendung der zweckgebundenen Mineralölsteuer im Strassenverkehr (MinVV) festgelegt ist. Der Bund, der den Kantonen Beiträge für das Hauptstrassennetz gewährt, definiert eindeutig, welche Infrastruktur zum Hauptstrassennetz gehört. Die Achsen der Hauptstrassen können für die Beschreibung und die Referenzierung von Sachverhalten entlang der Strassen verwendet werden. Im Gegensatz zum schweizerischen Hauptstrassennetz gem. MinVV wird das Hauptstrassennetz gemäss Durchgangsstrassenverordnung auf nationaler Ebene nicht kartografisch dargestellt. Die Durchgangsstrassenverordnung hält lediglich die Strassenverbindungen fest, die dem Durchgangsverkehr offenstehen müssen. Welcher Streckenverlauf resp. welche Strasseninfrastruktur genau betroffen ist, wird hingegen nicht angegeben.",
+      "description_fr": "Ce jeu de données comprend le réseau des routes principales suisses défini dans l'Ordonnance concernant l'utilisation de l'impôt sur les huiles minérales à affectation obligatoire dans le trafic routier (OUMin). La Confédération, qui alloue des contributions financières aux cantons pour le réseau de routes principales suisses, définit de façon univoque quelle infrastructure fait partie du réseau des routes principales suisses. Les axes des routes principales peuvent être utilisés pour la description et le référencement de faits matériels le long des routes.A la différence du réseau de routes principales défini par l'OUMin, le réseau des routes principales défini par l'Ordonnance concernant les routes de grand transit ne fait quant à lui pas l'objet d'une cartographie au niveau national. L'Ordonnance concernant les routes de grand transit définit les itinéraires routiers qui doivent être ouverts au grand transit, sans préciser exactement quel tracé, respectivement quelle infrastructure routière est directement concernée.",
+      "description_en": "Main roads network",
+      "description_it": "Questo set di dati rimanda alla rete delle strade principali svizzere definita nell'ordinanza concernente l'utilizzazione dell'imposta sugli oli minerali a destinazione vincolata e di altri mezzi a destinazione vincolata per il traffico stradale (OUMin). La rete è sovvenzionata mediante contributi erogati dalla Confederazione ai Cantoni ed è composta da infrastrutture specificate in modo univoco. I suoi assi stradali possono servire a descrivere e georeferenziare elementi e situazioni localizzati lungo il tracciato.Nonostante l'omonimia formale, la rete in oggetto si distingue nel merito da quella descritta nell'ordinanza concernente le strade di grande transito, che identifica un sistema viario distinto, non cartografato su scala nazionale. La predetta normativa indica solo i collegamenti garantiti, senza precisarne il tracciato né le infrastrutture coinvolte.",
+      "description_rm": "Rait da vias principalas",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:16:51.118Z",
+      "updated_at": "2026-07-22T07:00:29.873Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 3,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.astra.hauptstrassennetz",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "0.75"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 4,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:wms",
+      "dataset": 3,
+      "title_de": "from_fixture Hauptstrassennetz der Schweiz (MinVV)",
+      "title_fr": "from_fixture Réseau des routes principales suisses (OUMin)",
+      "title_en": "from_fixture Main roads network",
+      "title_it": "from_fixture Rete delle strade principali svizzere (OUMin)",
+      "title_rm": "from_fixture Rait da vias principalas",
+      "description_de": "Dieser Datensatz umfasst das Netz der schweizerischen Hauptstrassen, das in der Verordnung über die Verwendung der zweckgebundenen Mineralölsteuer im Strassenverkehr (MinVV) festgelegt ist. Der Bund, der den Kantonen Beiträge für das Hauptstrassennetz gewährt, definiert eindeutig, welche Infrastruktur zum Hauptstrassennetz gehört. Die Achsen der Hauptstrassen können für die Beschreibung und die Referenzierung von Sachverhalten entlang der Strassen verwendet werden. Im Gegensatz zum schweizerischen Hauptstrassennetz gem. MinVV wird das Hauptstrassennetz gemäss Durchgangsstrassenverordnung auf nationaler Ebene nicht kartografisch dargestellt. Die Durchgangsstrassenverordnung hält lediglich die Strassenverbindungen fest, die dem Durchgangsverkehr offenstehen müssen. Welcher Streckenverlauf resp. welche Strasseninfrastruktur genau betroffen ist, wird hingegen nicht angegeben.",
+      "description_fr": "Ce jeu de données comprend le réseau des routes principales suisses défini dans l'Ordonnance concernant l'utilisation de l'impôt sur les huiles minérales à affectation obligatoire dans le trafic routier (OUMin). La Confédération, qui alloue des contributions financières aux cantons pour le réseau de routes principales suisses, définit de façon univoque quelle infrastructure fait partie du réseau des routes principales suisses. Les axes des routes principales peuvent être utilisés pour la description et le référencement de faits matériels le long des routes.A la différence du réseau de routes principales défini par l'OUMin, le réseau des routes principales défini par l'Ordonnance concernant les routes de grand transit ne fait quant à lui pas l'objet d'une cartographie au niveau national. L'Ordonnance concernant les routes de grand transit définit les itinéraires routiers qui doivent être ouverts au grand transit, sans préciser exactement quel tracé, respectivement quelle infrastructure routière est directement concernée.",
+      "description_en": "Main roads network",
+      "description_it": "Questo set di dati rimanda alla rete delle strade principali svizzere definita nell'ordinanza concernente l'utilizzazione dell'imposta sugli oli minerali a destinazione vincolata e di altri mezzi a destinazione vincolata per il traffico stradale (OUMin). La rete è sovvenzionata mediante contributi erogati dalla Confederazione ai Cantoni ed è composta da infrastrutture specificate in modo univoco. I suoi assi stradali possono servire a descrivere e georeferenziare elementi e situazioni localizzati lungo il tracciato.Nonostante l'omonimia formale, la rete in oggetto si distingue nel merito da quella descritta nell'ordinanza concernente le strade di grande transito, che identifica un sistema viario distinto, non cartografato su scala nazionale. La predetta normativa indica solo i collegamenti garantiti, senza precisarne il tracciato né le infrastrutture coinvolte.",
+      "description_rm": "Rait da vias principalas",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:16:51.128Z",
+      "updated_at": "2026-07-22T07:00:29.883Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 4,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.astra.hauptstrassennetz",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "0.75",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 5,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:api3features",
+      "dataset": 3,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:16:51.158Z",
+      "updated_at": "2026-07-22T07:00:29.889Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 5,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.astra.hauptstrassennetz",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 6,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:api3features",
+      "dataset": 4,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:16:51.767Z",
+      "updated_at": "2026-07-22T07:00:30.373Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 6,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.swisstopo.swissnames3d",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 7,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.alpenkonvention:wmts",
+      "dataset": 5,
+      "title_de": "from_fixture Alpenkonvention",
+      "title_fr": "from_fixture Convention des Alpes",
+      "title_en": "from_fixture Alpine Convention",
+      "title_it": "from_fixture Convenzione delle alpi",
+      "title_rm": "from_fixture Convenziun da las Alps",
+      "description_de": "Perimeter der Alpenkonvention in der Schweiz. Die Alpenkonvention ist ein völkerrechtlicher Vertrag zwischen den acht Alpenländern Deutschland, Frankreich, Italien, Liechtenstein, Monaco, Österreich, Schweiz, Slowenien sowie der Europäischen Union. Das Ziel des Übereinkommens ist der Schutz der Alpen durch eine sektorübergreifende, ganzheitliche und nachhaltige Politik.",
+      "description_fr": "Périmètre de la Convention alpine en Suisse. La Convention alpine est un traité de droit international conclu par huit Etats alpins (Allemagne, Autriche, France, Italie, Liechtenstein, Monaco, Suisse, Slovénie) et l`Union européenne. L`accord vise à assurer la préservation et la protection des Alpes à travers une politique plurisectorielle, globale et durable.",
+      "description_en": "The perimeters of the Alpine Convention in Switzerland. The Alpine Convention is an international treaty between the eight Alpine countries: Germany, France, Italy, Liechtenstein, Monaco, Austria, Switzerland and Slovenia, plus the European Union. The aim of the treaty is to protect the Alps by means of cross-sectoral, integrated and sustainable policies.",
+      "description_it": "Il perimetro della Convenzione delle Alpi. La Convenzione delle Alpi è un trattato internazionale tra gli otto Paesi alpini Germania, Francia, Italia, Liechtenstein, Monaco, Austria, Svizzera, Slovenia e l'Unione europea. Lo scopo della Convenzione è la conservazione e la protezione delle Alpi mediante una politica intersettoriale, globale e durevole.",
+      "description_rm": "Perimeter da la Convenziun da las Alps en Svizra. La Convenziun da las Alps è in contract internaziunal tranter ils otg pajais alpins (Austria, Frantscha, Germania, Italia, Liechtenstein, Monaco, Slovenia, Svizra) e l'Uniun europeica. La convenziun ha la finamira da proteger las Alps cun agid d'ina politica intersecturiala, cumplessiva e duraivla.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:06.927Z",
+      "updated_at": "2026-07-22T07:00:40.853Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 7,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.are.alpenkonvention",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "0.75"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 8,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.alpenkonvention:wms",
+      "dataset": 5,
+      "title_de": "from_fixture Alpenkonvention",
+      "title_fr": "from_fixture Convention des Alpes",
+      "title_en": "from_fixture Alpine Convention",
+      "title_it": "from_fixture Convenzione delle alpi",
+      "title_rm": "from_fixture Convenziun da las Alps",
+      "description_de": "Perimeter der Alpenkonvention in der Schweiz. Die Alpenkonvention ist ein völkerrechtlicher Vertrag zwischen den acht Alpenländern Deutschland, Frankreich, Italien, Liechtenstein, Monaco, Österreich, Schweiz, Slowenien sowie der Europäischen Union. Das Ziel des Übereinkommens ist der Schutz der Alpen durch eine sektorübergreifende, ganzheitliche und nachhaltige Politik.",
+      "description_fr": "Périmètre de la Convention alpine en Suisse. La Convention alpine est un traité de droit international conclu par huit Etats alpins (Allemagne, Autriche, France, Italie, Liechtenstein, Monaco, Suisse, Slovénie) et l`Union européenne. L`accord vise à assurer la préservation et la protection des Alpes à travers une politique plurisectorielle, globale et durable.",
+      "description_en": "The perimeters of the Alpine Convention in Switzerland. The Alpine Convention is an international treaty between the eight Alpine countries: Germany, France, Italy, Liechtenstein, Monaco, Austria, Switzerland and Slovenia, plus the European Union. The aim of the treaty is to protect the Alps by means of cross-sectoral, integrated and sustainable policies.",
+      "description_it": "Il perimetro della Convenzione delle Alpi. La Convenzione delle Alpi è un trattato internazionale tra gli otto Paesi alpini Germania, Francia, Italia, Liechtenstein, Monaco, Austria, Svizzera, Slovenia e l'Unione europea. Lo scopo della Convenzione è la conservazione e la protezione delle Alpi mediante una politica intersettoriale, globale e durevole.",
+      "description_rm": "Perimeter da la Convenziun da las Alps en Svizra. La Convenziun da las Alps è in contract internaziunal tranter ils otg pajais alpins (Austria, Frantscha, Germania, Italia, Liechtenstein, Monaco, Slovenia, Svizra) e l'Uniun europeica. La convenziun ha la finamira da proteger las Alps cun agid d'ina politica intersecturiala, cumplessiva e duraivla.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:06.958Z",
+      "updated_at": "2026-07-22T07:00:40.862Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 8,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.are.alpenkonvention",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "0.75",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 9,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.alpenkonvention:api3features",
+      "dataset": 5,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:06.967Z",
+      "updated_at": "2026-07-22T07:00:40.868Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 9,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.are.alpenkonvention",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 10,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:wmts",
+      "dataset": 6,
+      "title_de": "from_fixture Beitragsberechtigte Städte und Agglomerationen",
+      "title_fr": "from_fixture Villes et agglomérations ayant droit aux contributions",
+      "title_en": "from_fixture Cities and conurbations which qualify for subsidies",
+      "title_it": "from_fixture Città e agglomerati aventi diritto ai contributi",
+      "title_rm": "from_fixture Citads ed aglomeraziuns subvenziunablas",
+      "description_de": "Die Liste der Beitragsberechtigten Städte und Agglomerationen bildet ab, welche Gemeinden im Rahmen des Programms Agglomerationsverkehr für Beiträge des Bundes beitragsberechtigt sind (gemäss Anhang der Verordnung des UVEK über das Programm Agglomerationsverkehr [PAVV, SR 725.116.214]). Die Grundlage für die Liste bildet die Definition des «Raums mit städtischem Charakter» des Bundesamts für Statistik BFS (2012). Dabei wurde die Beitragsberechtigung für alle Gemeinden erhalten, die aufgrund der Agglomerationsdefinition von 2000 beitragsberechtigt waren. Die Anzahl Gürtelgemeinden wurde gegenüber der Definition des BFS von 2012 durch die Anwendung statistischer Kriterien reduziert. Überdies wurden die Gemeinden Sarnen und Appenzell als Kantonshauptorte in die Liste der Beitragsberechtigten Städte und Agglomerationen aufgenommen. Mit Arrondierungen und Lückenfüllungen wurden noch kleine Bereinigungen durchgeführt.Die Aktualisierung vom 01.08.2025 basiert auf der Agglomerationsdefinition 2020 und umfasst die berücksichtigten Vorschläge der Kantone und Agglomerationen auf Aufnahme oder Streichung von Gemeinden.",
+      "description_fr": "La liste des villes et agglomérations ayant droit aux contributions indique quelles sont les communes ayant droit aux contributions fédérales dans le cadre du programme en faveur du trafic d'agglomération (conformément à l'annexe de l'ordonnance du DETEC concernant le programme en faveur du trafic d'agglomération [OPTA, RS 725.116.214]). La base de cette liste est la définition de l'espace à caractère urbain de l'Office fédéral de la statistique OFS (2012). Dans ce contexte, l'éligibilité aux contributions a été maintenue pour toutes les communes ayant droit aux contributions sur la base de la définition des agglomérations de 2000. Le nombre de communes couronnes a été réduit par rapport à la définition de l'OFS de 2012 en appliquant des critères statistiques. En outre, les communes de Sarnen et d'Appenzell ont été incluses dans la liste des villes et agglomérations ayant droit aux contributions en tant que chefs-lieux de canton. De petits ajustements ont été effectués en arrondissant et en comblant les lacunes.La mise à jour du 01.08.2025 se fonde sur la définition des agglomérations de 2020 et comprend les propositions d'ajout ou de suppression de communes faites par les cantons et les agglomérations et approuvées par la Confédération.",
+      "description_en": "The list of cities and conurbations which qualify for subsidies shows which municipalities are entitled to federal subsidies within the framework of the Urban Transport programme (in accordance with Annex of the DETEC Ordinance on the Urban Transport Programme [PAVV, SR 725.116.214]). The basis for the list shows the definition of “Spaces with an urban character” from the Federal Statistical Office, FSO (2012). This includes the right to subsidies for all municipalities that are entitled to subsidies based on the definition of a conurbation from 2000. The number of adjoining communities are reduced in accordance with the definition by the Federal Statistical Office, FSO in 2012, through the use of statistical criteria. The municipalities of Sarnen and Appenzell as canton capitals are also included in the list of cities and conurbations which qualify for subsidies. Small adjustments were made with realignments and fillings in the gaps.The update dated 1 August 2025 is based on the 2020 agglomeration definition and includes the proposals from the cantons and agglomerations regarding the inclusion or removal of municipalities.",
+      "description_it": "L'elenco delle città e degli agglomerati che possono beneficiare dei contributi indica quali Comuni possono beneficiare dei contributi federali nell'ambito del Programma Traffico d'agglomerato (conformemente all'allegato dell'ordinanza dal DATEC concernente il programma Traffico d'agglomerato [OPTA, RS 725.116.214]). La base dell'elenco è la definizione di «area a carattere urbano» dell'Ufficio federale di statistica UST (2012). In questo contesto, l'ammissibilità ai contributi è stata mantenuta per tutti i Comuni che erano ammissibili ai contributi in base alla definizione di agglomerato del 2000. Il numero di Comuni della cintura è stato ridotto rispetto alla definizione dell'UST del 2012 applicando criteri statistici. Inoltre, i Comuni di Sarnen e Appenzello sono stati inseriti nell'elenco delle città e degli agglomerati aventi diritto ai contributi in quanto capoluoghi cantonali. Sono stati effettuati piccoli aggiustamenti arrotondando e colmando le lacune.L'aggiornamento del 1° agosto 2025 si basa sulla definizione di agglomerato del 2020 e include le proposte prese in considerazione dai Cantoni e dagli agglomerati di aggiungere o stralciare singole Comuni.",
+      "description_rm": "La glista da las citads e da las aglomeraziuns subvenziunablas mussa tge vischnancas che han il dretg da survegnir contribuziuns da la Confederaziun en il rom dal program \"Traffic d'aglomeraziun\" (tenor l'agiunta 4 da l'Ordinaziun davart l'utilisaziun da la taglia liada sin l'ieli mineral e d'auters meds destinads al traffic sin via [(OUMin)]. La basa per la glista furma la definiziun dal «territori cun caracter urban» da l'Uffizi federal da statistica UFS (2012). En quest connex han tut las vischnancas che avevan il dretg da survegnir contribuziuns sin basa da la definiziun d'aglomeraziun da l'onn 2000, salvà quest dretg. Il dumber da vischnancas da la zona orasum in'aglomeraziun è vegnì reducì envers la definiziun dal UFS da l'onn 2012 pervia da l'applicaziun da criteris statistics. Ultra da quai èn las vischnancas da Sarnen e d'Appenzell sco chapitalas chantunalas vegnidas integradas en la glista da las citads ed aglomeraziuns subvenziunablas. Cun arrundaziuns e cun emplenir largias èn anc vegnidas realisadas pitschnas rectificaziuns.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:07.686Z",
+      "updated_at": "2026-07-22T07:00:41.359Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 10,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.are.agglomerationsverkehr",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "0.50"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 11,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:wms",
+      "dataset": 6,
+      "title_de": "from_fixture Beitragsberechtigte Städte und Agglomerationen",
+      "title_fr": "from_fixture Villes et agglomérations ayant droit aux contributions",
+      "title_en": "from_fixture Cities and conurbations which qualify for subsidies",
+      "title_it": "from_fixture Città e agglomerati aventi diritto ai contributi",
+      "title_rm": "from_fixture Citads ed aglomeraziuns subvenziunablas",
+      "description_de": "Die Liste der Beitragsberechtigten Städte und Agglomerationen bildet ab, welche Gemeinden im Rahmen des Programms Agglomerationsverkehr für Beiträge des Bundes beitragsberechtigt sind (gemäss Anhang der Verordnung des UVEK über das Programm Agglomerationsverkehr [PAVV, SR 725.116.214]). Die Grundlage für die Liste bildet die Definition des «Raums mit städtischem Charakter» des Bundesamts für Statistik BFS (2012). Dabei wurde die Beitragsberechtigung für alle Gemeinden erhalten, die aufgrund der Agglomerationsdefinition von 2000 beitragsberechtigt waren. Die Anzahl Gürtelgemeinden wurde gegenüber der Definition des BFS von 2012 durch die Anwendung statistischer Kriterien reduziert. Überdies wurden die Gemeinden Sarnen und Appenzell als Kantonshauptorte in die Liste der Beitragsberechtigten Städte und Agglomerationen aufgenommen. Mit Arrondierungen und Lückenfüllungen wurden noch kleine Bereinigungen durchgeführt.Die Aktualisierung vom 01.08.2025 basiert auf der Agglomerationsdefinition 2020 und umfasst die berücksichtigten Vorschläge der Kantone und Agglomerationen auf Aufnahme oder Streichung von Gemeinden.",
+      "description_fr": "La liste des villes et agglomérations ayant droit aux contributions indique quelles sont les communes ayant droit aux contributions fédérales dans le cadre du programme en faveur du trafic d'agglomération (conformément à l'annexe de l'ordonnance du DETEC concernant le programme en faveur du trafic d'agglomération [OPTA, RS 725.116.214]). La base de cette liste est la définition de l'espace à caractère urbain de l'Office fédéral de la statistique OFS (2012). Dans ce contexte, l'éligibilité aux contributions a été maintenue pour toutes les communes ayant droit aux contributions sur la base de la définition des agglomérations de 2000. Le nombre de communes couronnes a été réduit par rapport à la définition de l'OFS de 2012 en appliquant des critères statistiques. En outre, les communes de Sarnen et d'Appenzell ont été incluses dans la liste des villes et agglomérations ayant droit aux contributions en tant que chefs-lieux de canton. De petits ajustements ont été effectués en arrondissant et en comblant les lacunes.La mise à jour du 01.08.2025 se fonde sur la définition des agglomérations de 2020 et comprend les propositions d'ajout ou de suppression de communes faites par les cantons et les agglomérations et approuvées par la Confédération.",
+      "description_en": "The list of cities and conurbations which qualify for subsidies shows which municipalities are entitled to federal subsidies within the framework of the Urban Transport programme (in accordance with Annex of the DETEC Ordinance on the Urban Transport Programme [PAVV, SR 725.116.214]). The basis for the list shows the definition of “Spaces with an urban character” from the Federal Statistical Office, FSO (2012). This includes the right to subsidies for all municipalities that are entitled to subsidies based on the definition of a conurbation from 2000. The number of adjoining communities are reduced in accordance with the definition by the Federal Statistical Office, FSO in 2012, through the use of statistical criteria. The municipalities of Sarnen and Appenzell as canton capitals are also included in the list of cities and conurbations which qualify for subsidies. Small adjustments were made with realignments and fillings in the gaps.The update dated 1 August 2025 is based on the 2020 agglomeration definition and includes the proposals from the cantons and agglomerations regarding the inclusion or removal of municipalities.",
+      "description_it": "L'elenco delle città e degli agglomerati che possono beneficiare dei contributi indica quali Comuni possono beneficiare dei contributi federali nell'ambito del Programma Traffico d'agglomerato (conformemente all'allegato dell'ordinanza dal DATEC concernente il programma Traffico d'agglomerato [OPTA, RS 725.116.214]). La base dell'elenco è la definizione di «area a carattere urbano» dell'Ufficio federale di statistica UST (2012). In questo contesto, l'ammissibilità ai contributi è stata mantenuta per tutti i Comuni che erano ammissibili ai contributi in base alla definizione di agglomerato del 2000. Il numero di Comuni della cintura è stato ridotto rispetto alla definizione dell'UST del 2012 applicando criteri statistici. Inoltre, i Comuni di Sarnen e Appenzello sono stati inseriti nell'elenco delle città e degli agglomerati aventi diritto ai contributi in quanto capoluoghi cantonali. Sono stati effettuati piccoli aggiustamenti arrotondando e colmando le lacune.L'aggiornamento del 1° agosto 2025 si basa sulla definizione di agglomerato del 2020 e include le proposte prese in considerazione dai Cantoni e dagli agglomerati di aggiungere o stralciare singole Comuni.",
+      "description_rm": "La glista da las citads e da las aglomeraziuns subvenziunablas mussa tge vischnancas che han il dretg da survegnir contribuziuns da la Confederaziun en il rom dal program \"Traffic d'aglomeraziun\" (tenor l'agiunta 4 da l'Ordinaziun davart l'utilisaziun da la taglia liada sin l'ieli mineral e d'auters meds destinads al traffic sin via [(OUMin)]. La basa per la glista furma la definiziun dal «territori cun caracter urban» da l'Uffizi federal da statistica UFS (2012). En quest connex han tut las vischnancas che avevan il dretg da survegnir contribuziuns sin basa da la definiziun d'aglomeraziun da l'onn 2000, salvà quest dretg. Il dumber da vischnancas da la zona orasum in'aglomeraziun è vegnì reducì envers la definiziun dal UFS da l'onn 2012 pervia da l'applicaziun da criteris statistics. Ultra da quai èn las vischnancas da Sarnen e d'Appenzell sco chapitalas chantunalas vegnidas integradas en la glista da las citads ed aglomeraziuns subvenziunablas. Cun arrundaziuns e cun emplenir largias èn anc vegnidas realisadas pitschnas rectificaziuns.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:07.708Z",
+      "updated_at": "2026-07-22T07:00:41.368Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 11,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.are.agglomerationsverkehr",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "0.50",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 12,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:api3features",
+      "dataset": 6,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:07.716Z",
+      "updated_at": "2026-07-22T07:00:41.376Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 12,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.are.agglomerationsverkehr",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 13,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch:wmts",
+      "dataset": 7,
+      "title_de": "from_fixture Terrestrische Strahlung",
+      "title_fr": "from_fixture Radiation terrestre",
+      "title_en": "from_fixture Terrestrial Radiation",
+      "title_it": "from_fixture Radiazione terrestre",
+      "title_rm": "from_fixture Radiaziun terrestra",
+      "description_de": "In Böden und Gesteinen kommen natürliche instabile Isotope verschiedener Elemente – zum Beispiel Uran, Thorium oder Kalium – vor, die bei ihrem Zerfall radioaktive Strahlung abgeben. Die obersten 30 bis 40 cm des Bodens liefern den Hauptteil der an der Oberfläche gemessenen Strahlung. Erfasst wird die terrestrische Dosisleistung einen Meter über dem Boden in der Masseinheit Nanosievert pro Stunde (nSv/h). In der Schweiz findet man vor allem in den Alpen Gesteine mit höheren Konzentrationen an Uran, Thorium und Kalium. Der Karte der terrestrischen Dosisleistung liegen verschiedene Messmethoden zugrunde: Zum einen wird die Radioaktivität anhand von Bodenproben durch gammaspektrometrische Messungen im Labor bestimmt. Die Aktivitäten werden aber auch mit Hilfe aeroradiometrischer und in-situ-gammaspektrometrischer Messungen vorgenommen. Da die Messpunkte heterogen über die Schweiz verteilt sind, wurden die vorhandenen Daten auf ein Gitternetz von 2 × 2 km interpoliert.",
+      "description_fr": "Les sols et les roches renferment des éléments naturels instables, comme l’uranium, le thorium et le potassium, qui émettent un rayonnement radioactif en se désintégrant. La majeure partie du rayonnement mesuré en surface provient des 30 à 40 cm supérieurs du sol. Le débit de dose radioactive terrestre est enregistré à un mètre de hauteur et il est exprimé en nanosieverts par heure (nSv/h). En Suisse, on trouve des lithologies riches en uranium, thorium et potassium dans les Alpes principalement. La carte du débit de dose radioactive terrestre a été établie par spectrométrie gamma mise en oeuvre à différents niveaux: mesures d’échantillons de sol en laboratoire, mesures directes sur le terrain et mesures aériennes. Comme les points de mesure sont inégalement répartis sur le territoire suisse, les données existantes ont été interpolées pour obtenir un maillage régulier de 2 × 2 km.",
+      "description_en": "Naturally unstable elements - such as uranium, thorium, potassium - in the upper 30 to 40 cm of the ground yield the bulk of the measured terrestrial radiation at the surface. The terrestrial radiation level is recorded one meter above the ground in the unit of measure nano-Sievert per hour (nSv/h). In Switzerland, rocks with high concentrations of uranium, thorium and potassium are mainly found in the Alps. Various methods of measurement form the basis of the terrestrial radiation dosage map: gamma spectrometry measurements of soil samples in the laboratory and aero-radiometric and gamma spectrometric measurements on site. The data from the measured locations were interpolated into a grid of 2 × 2 km.",
+      "description_it": "Gli elementi naturali instabili, come l’uranio, il torio e il potassio, nei primi 30 - 40 cm di suolo forniscono la maggior parte della radiazione misurata in superficie. L’intensità della radiazione terrestre si misura a un metro dal suolo ed e espressa in nano-Sievert l’ora (nSv/h). In Svizzera le concentrazioni più elevate di uranio, torio e potassio si trovano soprattutto nelle rocce delle Alpi. La mappa dell’intensità della radiazione terrestre sfrutta diversi metodi di misurazione: quello spettrometrico di tipo gamma in laboratorio su campioni di terreno, quello aeroradiometrico e spettrometrico di tipo gamma in situ. I dati dei punti di misura sono interpolati su una griglia di 2 × 2 km.",
+      "description_rm": "En ils funs ed en la crappa èn avant maun isotops instabils natirals da differents elements – per exempel uran, torium u calium – che produceschan ina radiaziun radioactiva, cur ch'els scrodan. Dals 30 fin 40 cm ils pli sisum dal terren deriva la gronda part da la radiaziun mesirada a la surfatscha. L'intensitad da la radiaziun terrestra vegn mesirada 1 meter sur il terren ed inditgada cun nanosieverts per ura (nSv/h). En Svizra chattan ins en spezial en las Alps crappa cun concentraziuns pli grondas d'uran, da torium e da calium. La charta da l'intensitad da la radiaziun terrestra sa basa sin differentas metodas da mesirar: Per l'ina vegn eruida la radioactivitad cun mesiraziuns gammaspectrometricas da provas da terren en il labor. Las activitads vegnan però er fatgas cun agid da mesiraziuns eroradiometricas e gammaspectrometricas al lieu. Perquai ch'ils puncts da mesiraziun èn repartids en moda eterogena sur la Svizra, vegnan las datas avant maun interpoladas ad ina rait da 2 x 2 kilometers.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.629Z",
+      "updated_at": "2026-07-22T07:00:41.972Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 13,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "0.75"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 14,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch:wms",
+      "dataset": 7,
+      "title_de": "from_fixture Terrestrische Strahlung",
+      "title_fr": "from_fixture Radiation terrestre",
+      "title_en": "from_fixture Terrestrial Radiation",
+      "title_it": "from_fixture Radiazione terrestre",
+      "title_rm": "from_fixture Radiaziun terrestra",
+      "description_de": "In Böden und Gesteinen kommen natürliche instabile Isotope verschiedener Elemente – zum Beispiel Uran, Thorium oder Kalium – vor, die bei ihrem Zerfall radioaktive Strahlung abgeben. Die obersten 30 bis 40 cm des Bodens liefern den Hauptteil der an der Oberfläche gemessenen Strahlung. Erfasst wird die terrestrische Dosisleistung einen Meter über dem Boden in der Masseinheit Nanosievert pro Stunde (nSv/h). In der Schweiz findet man vor allem in den Alpen Gesteine mit höheren Konzentrationen an Uran, Thorium und Kalium. Der Karte der terrestrischen Dosisleistung liegen verschiedene Messmethoden zugrunde: Zum einen wird die Radioaktivität anhand von Bodenproben durch gammaspektrometrische Messungen im Labor bestimmt. Die Aktivitäten werden aber auch mit Hilfe aeroradiometrischer und in-situ-gammaspektrometrischer Messungen vorgenommen. Da die Messpunkte heterogen über die Schweiz verteilt sind, wurden die vorhandenen Daten auf ein Gitternetz von 2 × 2 km interpoliert.",
+      "description_fr": "Les sols et les roches renferment des éléments naturels instables, comme l’uranium, le thorium et le potassium, qui émettent un rayonnement radioactif en se désintégrant. La majeure partie du rayonnement mesuré en surface provient des 30 à 40 cm supérieurs du sol. Le débit de dose radioactive terrestre est enregistré à un mètre de hauteur et il est exprimé en nanosieverts par heure (nSv/h). En Suisse, on trouve des lithologies riches en uranium, thorium et potassium dans les Alpes principalement. La carte du débit de dose radioactive terrestre a été établie par spectrométrie gamma mise en oeuvre à différents niveaux: mesures d’échantillons de sol en laboratoire, mesures directes sur le terrain et mesures aériennes. Comme les points de mesure sont inégalement répartis sur le territoire suisse, les données existantes ont été interpolées pour obtenir un maillage régulier de 2 × 2 km.",
+      "description_en": "Naturally unstable elements - such as uranium, thorium, potassium - in the upper 30 to 40 cm of the ground yield the bulk of the measured terrestrial radiation at the surface. The terrestrial radiation level is recorded one meter above the ground in the unit of measure nano-Sievert per hour (nSv/h). In Switzerland, rocks with high concentrations of uranium, thorium and potassium are mainly found in the Alps. Various methods of measurement form the basis of the terrestrial radiation dosage map: gamma spectrometry measurements of soil samples in the laboratory and aero-radiometric and gamma spectrometric measurements on site. The data from the measured locations were interpolated into a grid of 2 × 2 km.",
+      "description_it": "Gli elementi naturali instabili, come l’uranio, il torio e il potassio, nei primi 30 - 40 cm di suolo forniscono la maggior parte della radiazione misurata in superficie. L’intensità della radiazione terrestre si misura a un metro dal suolo ed e espressa in nano-Sievert l’ora (nSv/h). In Svizzera le concentrazioni più elevate di uranio, torio e potassio si trovano soprattutto nelle rocce delle Alpi. La mappa dell’intensità della radiazione terrestre sfrutta diversi metodi di misurazione: quello spettrometrico di tipo gamma in laboratorio su campioni di terreno, quello aeroradiometrico e spettrometrico di tipo gamma in situ. I dati dei punti di misura sono interpolati su una griglia di 2 × 2 km.",
+      "description_rm": "En ils funs ed en la crappa èn avant maun isotops instabils natirals da differents elements – per exempel uran, torium u calium – che produceschan ina radiaziun radioactiva, cur ch'els scrodan. Dals 30 fin 40 cm ils pli sisum dal terren deriva la gronda part da la radiaziun mesirada a la surfatscha. L'intensitad da la radiaziun terrestra vegn mesirada 1 meter sur il terren ed inditgada cun nanosieverts per ura (nSv/h). En Svizra chattan ins en spezial en las Alps crappa cun concentraziuns pli grondas d'uran, da torium e da calium. La charta da l'intensitad da la radiaziun terrestra sa basa sin differentas metodas da mesirar: Per l'ina vegn eruida la radioactivitad cun mesiraziuns gammaspectrometricas da provas da terren en il labor. Las activitads vegnan però er fatgas cun agid da mesiraziuns eroradiometricas e gammaspectrometricas al lieu. Perquai ch'ils puncts da mesiraziun èn repartids en moda eterogena sur la Svizra, vegnan las datas avant maun interpoladas ad ina rait da 2 x 2 kilometers.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.658Z",
+      "updated_at": "2026-07-22T07:00:41.99Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 14,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "0.75",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 15,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch:api3features",
+      "dataset": 7,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.667Z",
+      "updated_at": "2026-07-22T07:00:42.035Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 15,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 16,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen:wmts",
+      "dataset": 8,
+      "title_de": "from_fixture Hartstein: Mächtigkeit und Qualität der geologischen Vorkommen",
+      "title_fr": "from_fixture Roches dures: Épaisseur et qualité des gisements géologiques",
+      "title_en": "from_fixture Hard rock aggregates: Thickness and quality of geological occurrences",
+      "title_it": "from_fixture Roccia dura: Potenza e qualità dei giacimenti geologici",
+      "title_rm": null,
+      "description_de": "Der Rohstoff Hartstein spielt beim Bau und Unterhalt des Schweizer Schienennetzes (Gleisschotter) sowie von Hochleistungs- und Hauptverkehrsstrassen (Hartsplitt) eine zentrale Rolle. Mehr dazu: <a href=\"https://rawmaterials.swissgeol.ch/de/hartstein\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Dieser Datensatz (Rasterzellengrösse: 50 x 50 m) zeigt die geschätzte räumliche Verteilung, nutzbare Mächtigkeit und Qualität der Hartstein führenden geologischen Einheiten unterhalb einer Terrainhöhe von 1300 m ü.M. und mächtiger als 30 m. Der Datensatz wurde auf der Grundlage von geologischen Profilen, stratigrafischen Beschreibungen und durch einen automatisierten Workflow erstellt, der auf den Datensatz swissGEOCOVER2D angewendet wurde. Weitere Informationen zu den berücksichtigten geologischen Einheiten befinden sich im <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Hartstein-Katalog</a>. Der Workflow und die Evaluationsmethodik für die gezeigten Daten sind in der <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Technischen Dokumentation</a> und in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a> dokumentiert. Die Hartstein-Produktions- und Abbaustandorte werden in einem eigenen Datensatz angezeigt (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Hartstein: Produktions- und Abbaustandorte</a>).Nutzende anerkennen, dass die Autoren alle zumutbaren Aufwände unternommen haben, um die Informationen des Datensatzes zu verifizieren. Es gibt keine Garantie, dass die angegebenen Daten an einem bestimmten Punkt korrekt sind. Für eine Standortentwicklung eines Rohstoffabbaus ist eine detaillierte geologische Untersuchung der Vorkommen vor Ort unumgänglich.",
+      "description_fr": "Les granulats issus de roches dures jouent un rôle central dans la construction et l'entretien du réseau ferroviaire suisse (ballast ferroviaire) ainsi que des routes à haute performance (gravillons durs). Pour en savoir plus: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Ce jeu de données (taille des tuiles : 50 x 50 m) présente une estimation de la répartition spatiale, de l'épaisseur utilisable et de la qualité des unités géologiques contenant des roches dures. Seules les unités géologiques situées à un niveau de terrain inférieur à 1300 m s.m. et ayant une épaisseur supérieure à 30 m sont affichées. Le jeu de données a été créé sur la base de coupes géologiques, de descriptions stratigraphiques et par l'intermédiaire d'un workflow automatisé, appliqué au jeu de données swissGEOCOVER2D. Des informations supplémentaires sur les unités géologiques prises en compte se trouvent dans le <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogue Roches Dures</a>. Le workflow et la méthodologie d'évaluation appliqués sont présentés dans la <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentation technique</a> et dans <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. Les sites de production et d'extraction des roches dures sont reportés dans un jeu de données dédié (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roches dures: Sites de production et d'extraction</a>).L'utilisateur reconnaît que les auteurs ont fait tous les efforts raisonnables pour vérifier les informations contenues dans le jeu de données présenté. Il n'y a aucune garantie que les données soient correctes à un endroit donné. Dans le cas où il est envisagé de développer un site d'extraction de matières premières, il est indispensable de procéder à une étude géologique détaillée sur place.",
+      "description_en": "Hard rock aggregates play a central role particularly for the construction and maintenance of the Swiss railway network (railway ballast) as well as of high-performance roads. For further information: <a href=\"https://rawmaterials.swissgeol.ch/de/hartstein\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. This dataset (raster cell size: 50 x 50 m) shows an estimation of the spatial distribution, the usable thickness and the quality of the hard rock-bearing geological units situated at a ground elevation lower than 1300 m a.s.l. and with a thickness exceeding 30 m. The dataset has been produced based on geological profiles, stratigraphic descriptions and through an automated workflow applied to the swissGEOCOVER2D dataset. Explanatory notes regarding the geological units considered and their characteristics can be found in the <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Hard rock catalog</a>. The workflow and methodology used for the compilation of the dataset are described in the <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Technical documentation</a> and in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. The hard rock aggregates production and mining sites are displayed in a dedicated dataset (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Hard rock aggregates: Production and mining sites</a>).The user acknowledges that the authors have taken every reasonable effort to ensure that information contained in this dataset is as accurate as possible. There is no guarantee that the given data related to a definite point in the subsurface is completely accurate. In case it is desired to develop a mining site, it is essential to conduct a detailed geological investigation on the location of interest.",
+      "description_it": "I granulati ottenuti dalla lavorazione della roccia dura svolgono un ruolo centrale nella costruzione e nella manutenzione della rete ferroviaria svizzera (massicciata ferroviaria) e di strade soggette a un forte carico di traffico. Per ulteriori informazioni: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Questo set di dati (dimensioni delle celle raster: 50 x 50 m) fornisce una stima della distribuzione spaziale, della potenza (spessore) utilizzabile e della qualità delle unità geologiche contenenti roccia dura. Visualizzate sono solo le unità geologiche che si trovano a una quota inferiore a 1300 m s.l.m. e aventi una potenza superiore a 30 m. Il set di dati è stato sviluppato sulla base di profili geologici e descrizioni stratigrafiche e tramite un workflow automatizzato, applicato al set di dati swissGEOCOVER2D. Ulteriori informazioni sulle unità geologiche prese in considerazione sono consultabili nel <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogo Rocce Dure</a>. Il workflow e la metodologia di valutazione applicata sono presentati nella <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentazione Tecnica</a> e in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. I siti di produzione e estrazione di rocce dure sono visualizzabili in un set di dati separato (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roccia dura: siti di produzione e estrazione</a>).L'utente riconosce che gli autori hanno applicato tutti gli sforzi ragionevoli per verificare le informazioni contenute nel set di dati presentato. Non c'è alcuna garanzia che i dati siano corretti in qualsiasi punto del sottosuolo. Nel caso si auspichi allo sviluppo di un sito di estrazione di materie prime, è essenziale condurre un'indagine geologica dettagliata in loco.",
+      "description_rm": null,
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.758Z",
+      "updated_at": "2026-07-22T07:00:42.113Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 16,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "0.75"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 17,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen:wms",
+      "dataset": 8,
+      "title_de": "from_fixture Hartstein: Mächtigkeit und Qualität der geologischen Vorkommen",
+      "title_fr": "from_fixture Roches dures: Épaisseur et qualité des gisements géologiques",
+      "title_en": "from_fixture Hard rock aggregates: Thickness and quality of geological occurrences",
+      "title_it": "from_fixture Roccia dura: Potenza e qualità dei giacimenti geologici",
+      "title_rm": null,
+      "description_de": "Der Rohstoff Hartstein spielt beim Bau und Unterhalt des Schweizer Schienennetzes (Gleisschotter) sowie von Hochleistungs- und Hauptverkehrsstrassen (Hartsplitt) eine zentrale Rolle. Mehr dazu: <a href=\"https://rawmaterials.swissgeol.ch/de/hartstein\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Dieser Datensatz (Rasterzellengrösse: 50 x 50 m) zeigt die geschätzte räumliche Verteilung, nutzbare Mächtigkeit und Qualität der Hartstein führenden geologischen Einheiten unterhalb einer Terrainhöhe von 1300 m ü.M. und mächtiger als 30 m. Der Datensatz wurde auf der Grundlage von geologischen Profilen, stratigrafischen Beschreibungen und durch einen automatisierten Workflow erstellt, der auf den Datensatz swissGEOCOVER2D angewendet wurde. Weitere Informationen zu den berücksichtigten geologischen Einheiten befinden sich im <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Hartstein-Katalog</a>. Der Workflow und die Evaluationsmethodik für die gezeigten Daten sind in der <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Technischen Dokumentation</a> und in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a> dokumentiert. Die Hartstein-Produktions- und Abbaustandorte werden in einem eigenen Datensatz angezeigt (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Hartstein: Produktions- und Abbaustandorte</a>).Nutzende anerkennen, dass die Autoren alle zumutbaren Aufwände unternommen haben, um die Informationen des Datensatzes zu verifizieren. Es gibt keine Garantie, dass die angegebenen Daten an einem bestimmten Punkt korrekt sind. Für eine Standortentwicklung eines Rohstoffabbaus ist eine detaillierte geologische Untersuchung der Vorkommen vor Ort unumgänglich.",
+      "description_fr": "Les granulats issus de roches dures jouent un rôle central dans la construction et l'entretien du réseau ferroviaire suisse (ballast ferroviaire) ainsi que des routes à haute performance (gravillons durs). Pour en savoir plus: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Ce jeu de données (taille des tuiles : 50 x 50 m) présente une estimation de la répartition spatiale, de l'épaisseur utilisable et de la qualité des unités géologiques contenant des roches dures. Seules les unités géologiques situées à un niveau de terrain inférieur à 1300 m s.m. et ayant une épaisseur supérieure à 30 m sont affichées. Le jeu de données a été créé sur la base de coupes géologiques, de descriptions stratigraphiques et par l'intermédiaire d'un workflow automatisé, appliqué au jeu de données swissGEOCOVER2D. Des informations supplémentaires sur les unités géologiques prises en compte se trouvent dans le <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogue Roches Dures</a>. Le workflow et la méthodologie d'évaluation appliqués sont présentés dans la <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentation technique</a> et dans <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. Les sites de production et d'extraction des roches dures sont reportés dans un jeu de données dédié (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roches dures: Sites de production et d'extraction</a>).L'utilisateur reconnaît que les auteurs ont fait tous les efforts raisonnables pour vérifier les informations contenues dans le jeu de données présenté. Il n'y a aucune garantie que les données soient correctes à un endroit donné. Dans le cas où il est envisagé de développer un site d'extraction de matières premières, il est indispensable de procéder à une étude géologique détaillée sur place.",
+      "description_en": "Hard rock aggregates play a central role particularly for the construction and maintenance of the Swiss railway network (railway ballast) as well as of high-performance roads. For further information: <a href=\"https://rawmaterials.swissgeol.ch/de/hartstein\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. This dataset (raster cell size: 50 x 50 m) shows an estimation of the spatial distribution, the usable thickness and the quality of the hard rock-bearing geological units situated at a ground elevation lower than 1300 m a.s.l. and with a thickness exceeding 30 m. The dataset has been produced based on geological profiles, stratigraphic descriptions and through an automated workflow applied to the swissGEOCOVER2D dataset. Explanatory notes regarding the geological units considered and their characteristics can be found in the <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Hard rock catalog</a>. The workflow and methodology used for the compilation of the dataset are described in the <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Technical documentation</a> and in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. The hard rock aggregates production and mining sites are displayed in a dedicated dataset (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Hard rock aggregates: Production and mining sites</a>).The user acknowledges that the authors have taken every reasonable effort to ensure that information contained in this dataset is as accurate as possible. There is no guarantee that the given data related to a definite point in the subsurface is completely accurate. In case it is desired to develop a mining site, it is essential to conduct a detailed geological investigation on the location of interest.",
+      "description_it": "I granulati ottenuti dalla lavorazione della roccia dura svolgono un ruolo centrale nella costruzione e nella manutenzione della rete ferroviaria svizzera (massicciata ferroviaria) e di strade soggette a un forte carico di traffico. Per ulteriori informazioni: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Questo set di dati (dimensioni delle celle raster: 50 x 50 m) fornisce una stima della distribuzione spaziale, della potenza (spessore) utilizzabile e della qualità delle unità geologiche contenenti roccia dura. Visualizzate sono solo le unità geologiche che si trovano a una quota inferiore a 1300 m s.l.m. e aventi una potenza superiore a 30 m. Il set di dati è stato sviluppato sulla base di profili geologici e descrizioni stratigrafiche e tramite un workflow automatizzato, applicato al set di dati swissGEOCOVER2D. Ulteriori informazioni sulle unità geologiche prese in considerazione sono consultabili nel <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogo Rocce Dure</a>. Il workflow e la metodologia di valutazione applicata sono presentati nella <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentazione Tecnica</a> e in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. I siti di produzione e estrazione di rocce dure sono visualizzabili in un set di dati separato (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roccia dura: siti di produzione e estrazione</a>).L'utente riconosce che gli autori hanno applicato tutti gli sforzi ragionevoli per verificare le informazioni contenute nel set di dati presentato. Non c'è alcuna garanzia che i dati siano corretti in qualsiasi punto del sottosuolo. Nel caso si auspichi allo sviluppo di un sito di estrazione di materie prime, è essenziale condurre un'indagine geologica dettagliata in loco.",
+      "description_rm": null,
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.769Z",
+      "updated_at": "2026-07-22T07:00:42.134Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 17,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "0.75",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 18,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen:api3features",
+      "dataset": 8,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.777Z",
+      "updated_at": "2026-07-22T07:00:42.143Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 18,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.swisstopo.geologie-hartsteinvorkommen",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 19,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit:wmts",
+      "dataset": 9,
+      "title_de": "from_fixture Digitale Bodeneignungskarte der Schweiz - Wasserdurchlässigkeit",
+      "title_fr": "from_fixture Carte digitale des aptitudes des sols de la Suisse - Perméabilité",
+      "title_en": "from_fixture Digital soil suitability map of Switzerland - Permeability",
+      "title_it": "from_fixture Carta digitale delle attitudini dei suoli svizzeri - Permeabilità",
+      "title_rm": "from_fixture Charta digitala da l'adattaziun dal terren da la Svizra – permeabilitad",
+      "description_de": "Die Wasserdurchlässigkeit wurde an gesättigten Stechzylinderproben im Labor bestimmt. Aus Beobachtungen im Feld ergaben sich Beziehungen zwischen dem Niederschlag, der Durchlässigkeit und den morphologischen Merkmalen. Berücksichtigt wurde der am schlechtesten durchlässige Horizont der obersten 50 cm.(Details: Bodeneignungskarte der Schweiz, März 1980)",
+      "description_fr": "La perméabilité est mesurée en laboratoire sur des échantillons cylindriques saturés. Les observations de terrain permettent d'etablir des relations entre les précipitations, la perméablilité et les traits morphologiques. On a pris en considération l'horizon le moins perméable des 50 cm supérieurs.",
+      "description_en": "Permeability is measured using saturated soil core samples in the laboratory. Observations in the field highlighted a relationship between precipitation, permeability and morphological features. The least permeable soil horizon of the top 50 cm was evaluated. (Details: Soil suitability map of Switzerland, March 1980).",
+      "description_it": "La permeabilità è misurata in laboratorio su campioni cilindrici saturi. Le osservazioni del terreno consentono di stabilire correlazioni tra le precipitazioni, la permeabilità e i tratti morfologici. È stato considerato l'orizzone meno permeabile dei 50 cm superiori. (Dettagli: carta delle attitudini dei suoli svizzeri, marzo 1980).",
+      "description_rm": "La permeabilitad vegn mesirada en il labor vi d'emprovas cilindricas saturadas. Las observaziuns dal terren permettan da descriver relaziuns tranter las precipitaziuns, la permeabilitad e las caracteristicas morfologicas. Ins ha resguardà l'orizont il main permeabel dals 50 cm il pli sisum. (Detagls: charta da l'adattaziun dal terren da la Svizra, mars 1980)",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.818Z",
+      "updated_at": "2026-07-22T07:00:42.174Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 19,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "0.75"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 20,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit:wms",
+      "dataset": 9,
+      "title_de": "from_fixture Digitale Bodeneignungskarte der Schweiz - Wasserdurchlässigkeit",
+      "title_fr": "from_fixture Carte digitale des aptitudes des sols de la Suisse - Perméabilité",
+      "title_en": "from_fixture Digital soil suitability map of Switzerland - Permeability",
+      "title_it": "from_fixture Carta digitale delle attitudini dei suoli svizzeri - Permeabilità",
+      "title_rm": "from_fixture Charta digitala da l'adattaziun dal terren da la Svizra – permeabilitad",
+      "description_de": "Die Wasserdurchlässigkeit wurde an gesättigten Stechzylinderproben im Labor bestimmt. Aus Beobachtungen im Feld ergaben sich Beziehungen zwischen dem Niederschlag, der Durchlässigkeit und den morphologischen Merkmalen. Berücksichtigt wurde der am schlechtesten durchlässige Horizont der obersten 50 cm.(Details: Bodeneignungskarte der Schweiz, März 1980)",
+      "description_fr": "La perméabilité est mesurée en laboratoire sur des échantillons cylindriques saturés. Les observations de terrain permettent d'etablir des relations entre les précipitations, la perméablilité et les traits morphologiques. On a pris en considération l'horizon le moins perméable des 50 cm supérieurs.",
+      "description_en": "Permeability is measured using saturated soil core samples in the laboratory. Observations in the field highlighted a relationship between precipitation, permeability and morphological features. The least permeable soil horizon of the top 50 cm was evaluated. (Details: Soil suitability map of Switzerland, March 1980).",
+      "description_it": "La permeabilità è misurata in laboratorio su campioni cilindrici saturi. Le osservazioni del terreno consentono di stabilire correlazioni tra le precipitazioni, la permeabilità e i tratti morfologici. È stato considerato l'orizzone meno permeabile dei 50 cm superiori. (Dettagli: carta delle attitudini dei suoli svizzeri, marzo 1980).",
+      "description_rm": "La permeabilitad vegn mesirada en il labor vi d'emprovas cilindricas saturadas. Las observaziuns dal terren permettan da descriver relaziuns tranter las precipitaziuns, la permeabilitad e las caracteristicas morfologicas. Ins ha resguardà l'orizont il main permeabel dals 50 cm il pli sisum. (Detagls: charta da l'adattaziun dal terren da la Svizra, mars 1980)",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.828Z",
+      "updated_at": "2026-07-22T07:00:42.188Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 20,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "0.75",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 21,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit:api3features",
+      "dataset": 9,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.836Z",
+      "updated_at": "2026-07-22T07:00:42.195Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 21,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
+      "queryable": true,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 22,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte:wmts",
+      "dataset": 10,
+      "title_de": "from_fixture VECTOR25 Einzelobjekte",
+      "title_fr": "from_fixture VECTOR25 Objets isolés",
+      "title_en": "from_fixture VECTOR25 Single objects",
+      "title_it": "from_fixture VECTOR25 Oggetti isolati",
+      "title_rm": "from_fixture VECTOR25 Objects singuls",
+      "description_de": "Die Ebene Einzelobjekte (Abkürzung eob) umfasst eine Auswahl von markanten topografischen Punkt- und Linienobjekten (Orientierungshilfen).",
+      "description_fr": "La couche thématique Objets isolés (abréviation eob) contient une sélection d'objets marquants figurant sous forme de points et de lignes (aides à l'orientation).",
+      "description_en": "The layer single objects (abbreviation \"eob\") includes a choice of prominent point and line objects (orientation aids).",
+      "description_it": "Il livello Oggetti isolati (abbreviazione eob) comprende una selezione di oggetti topografici marcati, puntuali e lineari (strumenti di orientamento).",
+      "description_rm": "Il plaun Objects singuls (abreviaziun eob) cumpiglia ina selecziun d'objects topografics marcants che figureschan en furma da puncts e da lingias (agids d'orientaziun).",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.925Z",
+      "updated_at": "2026-07-22T07:00:42.26Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 22,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "1.00"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 23,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte:wms",
+      "dataset": 10,
+      "title_de": "from_fixture VECTOR25 Einzelobjekte",
+      "title_fr": "from_fixture VECTOR25 Objets isolés",
+      "title_en": "from_fixture VECTOR25 Single objects",
+      "title_it": "from_fixture VECTOR25 Oggetti isolati",
+      "title_rm": "from_fixture VECTOR25 Objects singuls",
+      "description_de": "Die Ebene Einzelobjekte (Abkürzung eob) umfasst eine Auswahl von markanten topografischen Punkt- und Linienobjekten (Orientierungshilfen).",
+      "description_fr": "La couche thématique Objets isolés (abréviation eob) contient une sélection d'objets marquants figurant sous forme de points et de lignes (aides à l'orientation).",
+      "description_en": "The layer single objects (abbreviation \"eob\") includes a choice of prominent point and line objects (orientation aids).",
+      "description_it": "Il livello Oggetti isolati (abbreviazione eob) comprende una selezione di oggetti topografici marcati, puntuali e lineari (strumenti di orientamento).",
+      "description_rm": "Il plaun Objects singuls (abreviaziun eob) cumpiglia ina selecziun d'objects topografics marcants che figureschan en furma da puncts e da lingias (agids d'orientaziun).",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.935Z",
+      "updated_at": "2026-07-22T07:00:42.271Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 23,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "1.00",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 24,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte:api3features",
+      "dataset": 10,
+      "title_de": "from_fixture Geoadmin Features",
+      "title_fr": "from_fixture Geoadmin Features",
+      "title_en": "from_fixture Geoadmin Features",
+      "title_it": "from_fixture Geoadmin Features",
+      "title_rm": "from_fixture Geoadmin Features",
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": true,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-18T09:17:08.96Z",
+      "updated_at": "2026-07-22T07:00:42.278Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": 24,
+      "dataservice": [
+        "api3features-geoadminch"
+      ],
+      "layer_id": "ch.swisstopo.vec25-einzelobjekte",
+      "queryable": false,
+      "renderable": true
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 25,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:wmts",
+      "dataset": 4,
+      "title_de": "from_fixture swissNAMES3D Geografische Namen der Landesvermessung",
+      "title_fr": "from_fixture swissNAMES3D Noms géographiques de la mensuration nationale",
+      "title_en": "from_fixture swissNAMES3D geographical names of the national Survey",
+      "title_it": "from_fixture swissNAMES3D nomi geografici della misurazione nazionale",
+      "title_rm": "from_fixture swissNAMES3D Nums geografics da la mesiraziun naziunala",
+      "description_de": "swissNAMES3D ist die vollständigste Sammlung von geografische Namen über die Schweiz und das Fürstentum Liechtenstein. swissNAMES3D umfasst über 437000 georeferenzierte Einträge, die in verschiedene Kategorien unterteilt sind. Der Datensatz ersetzt ab 2015 das auf dem Namengut der Landeskartenwerke basierende und bis 2008 nachgeführte Produkt SwissNames. Die Darstellung der geografischen Namen im Geoportal des Bundes entspricht einer Auswahl aus swissNAMES3D, die auf die ausgewählte Zoomstufe zugeschnitten ist.",
+      "description_fr": "swissNAMES3D est le recueil de noms géographiques le plus complet de la Suisse et la Principauté du Liechtenstein. swissNAMES3D comprend plus de 437'000 entrées géoréférencées réparties en différentes catégories. Le jeu de données remplace dès 2015 le produit SwissNames basé sur les noms de la Carte nationale et mis à jour jusqu'en 2008. Dans le géoportail fédéral, la couche \"noms géographiques\" correspond à une sélection de swissNAMES3D en fonction des niveaux de zoom.",
+      "description_en": "swissNAMES3D is the most comprehensive collection of geographical names for Switzerland and Liechtenstein. swissNAMES3D contains over 437,000 georeferenced entries divided in different categories. The dataset replaces since 2015 the old product swissNAMES updated until 2008. In the federal geoportal the layer \"geographical names\" corresponds to a selection of swissNAMES3D for the different zoomlevels.",
+      "description_it": "swissNAMES3D è la raccolta dei nomi geografici la più completa della Svizzera e del Principato del Liechtenstein. swissNAMES3D comprende oltre 437'000 dati georeferenziati e suddivisi in diverse categorie. La nuova serie di dati sostituisce dal 2015 il precedente prodotto SwissNames che era basato sui nomi della Carta Nazionale ed era stato aggiornato nel 2008. All'interno del geoportale federale, il layer \"nomi geografici\" corrisponde a una selezione di swissNAMES3D in funzione del livello di zoom scelto.",
+      "description_rm": "swissNAMES3D è la collecziun la pli cumpletta da nums geografics da la Svizra e dal principadi da Liechtenstein. swissNAMES3D cumpiglia sur 437'000 inscripziuns georeferenziadas ch'èn repartidas en differentas categorias. L'unitad da datas remplazza a partir da l'onn 2015 il product SwissNames che sa basa sin ils nums da las ovras da la Charta naziunala e ch'è vegnì actualisà fin l'onn 2008. La preschentaziun dals nums geografics en il geoportal da la Confederaziun correspunda ad ina selecziun or da swissNAMES3D ch'èn accordads al stgalim da zoom tschernì.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-19T07:00:31.955Z",
+      "updated_at": "2026-07-22T07:00:30.356Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": 25,
+      "dataservice": [
+        "wmts-geoadminch"
+      ],
+      "wmts_layer_name_de": "ch.swisstopo.swissnames3d",
+      "wmts_layer_name_fr": null,
+      "wmts_layer_name_en": null,
+      "wmts_layer_name_it": null,
+      "wmts_layer_name_rm": null,
+      "opacity": "1.00"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 26,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:wms",
+      "dataset": 4,
+      "title_de": "from_fixture swissNAMES3D Geografische Namen der Landesvermessung",
+      "title_fr": "from_fixture swissNAMES3D Noms géographiques de la mensuration nationale",
+      "title_en": "from_fixture swissNAMES3D geographical names of the national Survey",
+      "title_it": "from_fixture swissNAMES3D nomi geografici della misurazione nazionale",
+      "title_rm": "from_fixture swissNAMES3D Nums geografics da la mesiraziun naziunala",
+      "description_de": "swissNAMES3D ist die vollständigste Sammlung von geografische Namen über die Schweiz und das Fürstentum Liechtenstein. swissNAMES3D umfasst über 437000 georeferenzierte Einträge, die in verschiedene Kategorien unterteilt sind. Der Datensatz ersetzt ab 2015 das auf dem Namengut der Landeskartenwerke basierende und bis 2008 nachgeführte Produkt SwissNames. Die Darstellung der geografischen Namen im Geoportal des Bundes entspricht einer Auswahl aus swissNAMES3D, die auf die ausgewählte Zoomstufe zugeschnitten ist.",
+      "description_fr": "swissNAMES3D est le recueil de noms géographiques le plus complet de la Suisse et la Principauté du Liechtenstein. swissNAMES3D comprend plus de 437'000 entrées géoréférencées réparties en différentes catégories. Le jeu de données remplace dès 2015 le produit SwissNames basé sur les noms de la Carte nationale et mis à jour jusqu'en 2008. Dans le géoportail fédéral, la couche \"noms géographiques\" correspond à une sélection de swissNAMES3D en fonction des niveaux de zoom.",
+      "description_en": "swissNAMES3D is the most comprehensive collection of geographical names for Switzerland and Liechtenstein. swissNAMES3D contains over 437,000 georeferenced entries divided in different categories. The dataset replaces since 2015 the old product swissNAMES updated until 2008. In the federal geoportal the layer \"geographical names\" corresponds to a selection of swissNAMES3D for the different zoomlevels.",
+      "description_it": "swissNAMES3D è la raccolta dei nomi geografici la più completa della Svizzera e del Principato del Liechtenstein. swissNAMES3D comprende oltre 437'000 dati georeferenziati e suddivisi in diverse categorie. La nuova serie di dati sostituisce dal 2015 il precedente prodotto SwissNames che era basato sui nomi della Carta Nazionale ed era stato aggiornato nel 2008. All'interno del geoportale federale, il layer \"nomi geografici\" corrisponde a una selezione di swissNAMES3D in funzione del livello di zoom scelto.",
+      "description_rm": "swissNAMES3D è la collecziun la pli cumpletta da nums geografics da la Svizra e dal principadi da Liechtenstein. swissNAMES3D cumpiglia sur 437'000 inscripziuns georeferenziadas ch'èn repartidas en differentas categorias. L'unitad da datas remplazza a partir da l'onn 2015 il product SwissNames che sa basa sin ils nums da las ovras da la Charta naziunala e ch'è vegnì actualisà fin l'onn 2008. La preschentaziun dals nums geografics en il geoportal da la Confederaziun correspunda ad ina selecziun or da swissNAMES3D ch'èn accordads al stgalim da zoom tschernì.",
+      "meta_information": false,
+      "data_source": "bod-layers-js",
+      "created_at": "2026-05-19T07:00:31.971Z",
+      "updated_at": "2026-07-22T07:00:30.366Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": 26,
+      "dataservice": [
+        "wms-geoadminch"
+      ],
+      "wms_layer_name_de": "ch.swisstopo.swissnames3d",
+      "wms_layer_name_fr": null,
+      "wms_layer_name_en": null,
+      "wms_layer_name_it": null,
+      "wms_layer_name_rm": null,
+      "opacity": "1.00",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 27,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalstacdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:stac",
+      "dataset": 6,
+      "title_de": "from_fixture STAC Download Collection",
+      "title_fr": null,
+      "title_en": null,
+      "title_it": null,
+      "title_rm": null,
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": false,
+      "data_source": "service-capabilities",
+      "created_at": "2026-05-28T08:00:05.896Z",
+      "updated_at": "2026-05-28T08:00:05.896Z"
+    }
+  },
+  {
+    "model": "distribution.externalstacdistribution",
+    "fields": {
+      "distribution_ptr": 27,
+      "dataservice": [
+        "stac-api-landingpage"
+      ],
+      "stac_collection_id": "ch.are.agglomerationsverkehr"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 28,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalstacdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.are.alpenkonvention:stac",
+      "dataset": 5,
+      "title_de": "from_fixture STAC Download Collection",
+      "title_fr": null,
+      "title_en": null,
+      "title_it": null,
+      "title_rm": null,
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": false,
+      "data_source": "service-capabilities",
+      "created_at": "2026-05-28T08:00:05.906Z",
+      "updated_at": "2026-05-28T08:00:05.906Z"
+    }
+  },
+  {
+    "model": "distribution.externalstacdistribution",
+    "fields": {
+      "distribution_ptr": 28,
+      "dataservice": [
+        "stac-api-landingpage"
+      ],
+      "stac_collection_id": "ch.are.alpenkonvention"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 29,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalstacdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:stac",
+      "dataset": 3,
+      "title_de": "from_fixture STAC Download Collection",
+      "title_fr": null,
+      "title_en": null,
+      "title_it": null,
+      "title_rm": null,
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": false,
+      "data_source": "service-capabilities",
+      "created_at": "2026-05-28T08:00:05.934Z",
+      "updated_at": "2026-05-28T08:00:05.934Z"
+    }
+  },
+  {
+    "model": "distribution.externalstacdistribution",
+    "fields": {
+      "distribution_ptr": 29,
+      "dataservice": [
+        "stac-api-landingpage"
+      ],
+      "stac_collection_id": "ch.astra.hauptstrassennetz"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "pk": 30,
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalstacdistribution"
+      ],
+      "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:stac",
+      "dataset": 4,
+      "title_de": "from_fixture STAC Download Collection",
+      "title_fr": null,
+      "title_en": null,
+      "title_it": null,
+      "title_rm": null,
+      "description_de": null,
+      "description_fr": null,
+      "description_en": null,
+      "description_it": null,
+      "description_rm": null,
+      "meta_information": false,
+      "data_source": "service-capabilities",
+      "created_at": "2026-05-28T08:00:06.916Z",
+      "updated_at": "2026-05-28T08:00:06.916Z"
+    }
+  },
+  {
+    "model": "distribution.externalstacdistribution",
+    "fields": {
+      "distribution_ptr": 30,
+      "dataservice": [
+        "stac-api-landingpage"
+      ],
+      "stac_collection_id": "ch.swisstopo.swissnames3d"
+    }
+  }
+]

@@ -94,11 +94,11 @@ class Command(CustomBaseCommand):
         self.print_success("Sync from STAC")
 
         metrics = {
-            "processed_collections": 0,
-            "added_distributions": 0,
-            "updated_distributions": 0,
-            "obsolete_distributions": 0,
-            "removed_distributions": 0,
+            "collections.processed": 0,
+            "distributions.added": 0,
+            "distributions.updated": 0,
+            "distributions.obsolete": 0,
+            "distributions.removed": 0,
         }
         success = True
         for service in OGCAPIStacDataservice.objects.all():
@@ -107,11 +107,11 @@ class Command(CustomBaseCommand):
                 processed, added, updated, obsolete = self.sync_stac_from_capabilities(
                     service,
                 )
-                metrics["processed_collections"] += processed
-                metrics["added_distributions"] += added
-                metrics["updated_distributions"] += updated
-                metrics["obsolete_distributions"] += obsolete if not self.options["clean"] else 0
-                metrics["removed_distributions"] += obsolete if self.options["clean"] else 0
+                metrics["collections.processed"] += processed
+                metrics["distributions.added"] += added
+                metrics["distributions.updated"] += updated
+                metrics["distributions.obsolete"] += obsolete if not self.options["clean"] else 0
+                metrics["distributions.removed"] += obsolete if self.options["clean"] else 0
                 self.print_success(
                     f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
                 )
@@ -197,8 +197,12 @@ class Command(CustomBaseCommand):
                 ExternalStacDistribution.objects.create(
                     distribution_id=f"{collection_id}:stac",
                     dataset=dataset,
-                    title="STAC Download Collection",
-                    data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES,
+                    title_de="STAC Download Collection",
+                    title_fr="STAC Download Collection",
+                    title_it="STAC Download Collection",
+                    title_en="STAC Download Collection",
+                    title_rm="STAC Download Collection",
+                    data_source=Distribution.DataSource.SERVICE_CAPABILITIES,
                     dataservice=dataservice,
                     stac_collection_id=collection_id,
                 )
@@ -235,7 +239,7 @@ class Command(CustomBaseCommand):
 
         obsolete = (
             ExternalStacDistribution.objects.filter(
-                data_source=Distribution.DATA_SOURCE_CHOICE_SERVICE_CAPABILITIES
+                data_source=Distribution.DataSource.SERVICE_CAPABILITIES
             )
             .exclude(stac_collection_id__in=processed)
             .all()
