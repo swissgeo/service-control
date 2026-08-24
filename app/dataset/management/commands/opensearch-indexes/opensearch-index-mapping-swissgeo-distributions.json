@@ -12,18 +12,18 @@
           "externalIds": {"type": "keyword", "index": false},
           "title": {
             "properties": {
-              "de": {"type": "text"},
-              "fr": {"type": "text"},
-              "it": {"type": "text"},
-              "en": {"type": "text"}
+              "de": {"type": "search_as_you_type"},
+              "fr": {"type": "search_as_you_type"},
+              "it": {"type": "search_as_you_type"},
+              "en": {"type": "search_as_you_type"}
             }
           },
           "description": {
             "properties": {
-              "de": {"type": "text"},
-              "fr": {"type": "text"},
-              "it": {"type": "text"},
-              "en": {"type": "text"}
+              "de": {"type": "search_as_you_type"},
+              "fr": {"type": "search_as_you_type"},
+              "it": {"type": "search_as_you_type"},
+              "en": {"type": "search_as_you_type"}
             }
           }
         }
