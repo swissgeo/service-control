@@ -1017,8 +1017,39 @@ def test_command_organization_mapping_for_contact(mock, client, db):
 # --------------------------------------------------------------------------------------------------
 # Datasets
 # --------------------------------------------------------------------------------------------------
+@patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_creates_datasets(mock, db):
+def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
+    org = Organization(
+        organization_id="ch.kgk",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+    )
+    org.save()
+
+    contact = Contact(
+        organization=org,
+        email="geodienste@kgk-cgc.ch",
+        phone="+41 31 300 09 20",
+        address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
+        address_postal_code="3001",
+        address_city="Bern",
+        address_country="CH",
+        url_de="https://kgk-cgc.ch/",
+        url_fr="https://kgk-cgc.ch/fr",
+        url_it="https://kgk-cgc.ch/it",
+    )
+
+    contact.save()
+
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
@@ -1108,6 +1139,39 @@ def test_command_creates_datasets(mock, db):
         aggregate.legacy_part_info_url_it
         == "https://geodienste.ch/services/av?locale=it#info_cantons"
     )
+    assert aggregate.legacy_contacts == [
+        {
+            "role": "custodian",
+            "org_name": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+            "org_name_de": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+            "org_name_en": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+            "org_name_fr": "Conférence des services cantonaux de la Géoinformation et du Cadastre",
+            "org_name_it": "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+            "org_name_rm": "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+            "org_acronym": "KGK",
+            "org_acronym_de": "KGK",
+            "org_acronym_fr": "CGC",
+            "org_acronym_en": "KGK",
+            "org_acronym_it": "CGC",
+            "org_acronym_rm": "CGC",
+            "contact_voice": "+41 31 300 09 20",
+            "contact_city": "Bern",
+            "contact_postal_code": "3001",
+            "contact_country": "CH",
+            "contact_electronic_mail_addresses": ["geodienste@kgk-cgc.ch"],
+            "contact_delivery_point": "Haus der Kantone, Speichergasse 6, Postfach",
+            "online_resources": [
+                {
+                    "url": "https://kgk-cgc.ch/",
+                    "url_de": "https://kgk-cgc.ch/",
+                    "url_fr": "https://kgk-cgc.ch/fr",
+                    "url_en": None,
+                    "url_it": "https://kgk-cgc.ch/it",
+                    "url_rm": None,
+                }
+            ],
+        }
+    ]
 
     part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
     assert part.data_source == Dataset.DataSource.GEODIENSTE
