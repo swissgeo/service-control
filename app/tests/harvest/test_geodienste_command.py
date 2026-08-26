@@ -50,7 +50,7 @@ def api_response(services, config=None, capabilities=None):
             match = re.match(r".*/(deu|fra|eng|ita)\?.*", url)
             language = Lang(pt3=match.groups()[0]).pt1
             mock.status_code = 200
-            mock.content = response.get(language, response)
+            mock.content = response.get(language, b"" if isinstance(response, dict) else response)
         else:
             raise NotImplementedError(f"Don't know how to handle request to {url}")
 
@@ -2608,9 +2608,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
                 "fixpunkte": {
                     "default": {
                         "layers": [{"name": "daten", "opacity": 0.9}],
-                        "legend_layer": "daten",
                         "wms": "https://geodienste.ch/db/fixpunkte_0/deu",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -2620,9 +2618,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
                 "fixpunkte": {
                     "default": {
                         "layers": [{"name": "donnees", "opacity": 0.9}],
-                        "legend_layer": "donnees",
                         "wms": "https://geodienste.ch/db/fixpunkte_0/fra",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -2632,9 +2628,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
                 "fixpunkte": {
                     "default": {
                         "layers": [{"name": "dati", "opacity": 0.9}],
-                        "legend_layer": "dati",
                         "wms": "https://geodienste.ch/db/fixpunkte_0/ita",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -2644,9 +2638,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
                 "fixpunkte": {
                     "default": {
                         "layers": [{"name": "data", "opacity": 0.9}],
-                        "legend_layer": "data",
                         "wms": "https://geodienste.ch/db/fixpunkte_0/eng",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -2774,6 +2766,9 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     distribution_data.wms_layer_name_rm = "fixme"
     distribution_data.save()
 
+    distribution_stac.stac_collection_id = "fixme"
+    distribution_stac.save()
+
     out = StringIO()
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -2789,6 +2784,8 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert (
         "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
     )
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:stac already exists" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:stac changed" in out
 
     dataservice_data.refresh_from_db()
     assert dataservice_data.default_language == "de"
@@ -2801,6 +2798,9 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     distribution_data.refresh_from_db()
     assert distribution_data.wms_layer_name_de == "daten"
     assert distribution_data.wms_layer_name_rm is None
+
+    distribution_stac.refresh_from_db()
+    assert distribution_stac.stac_collection_id == "fixpunkte"
 
     out = StringIO()
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
@@ -2821,26 +2821,28 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
 
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_creates_additional_distributions(mock, client, db):
+def test_command_creates_distributions_title_from_wms(mock, client, db):
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
     dataset = Dataset(
-        dataset_id="ch.kgk.av",
-        description_de="Abstract DE",
-        description_en="Abstract EN",
-        description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        dataset_id="ch.kgk.fixpunkte",
+        description_de="x",
+        description_en="x",
+        description_fr="x",
+        title_short_de="x",
+        title_short_en="x",
+        title_short_fr="x",
     )
     dataset.save()
 
-    # ------
-    # Create
-    # ------
     mock.side_effect = api_response(
         services={
             "services": [
                 {
-                    "base_topic": "av",
+                    "base_topic": "fixpunkte",
                     "canton": "lu",
                     "broker": None,
                 }
@@ -2848,50 +2850,42 @@ def test_command_creates_additional_distributions(mock, client, db):
         },
         config={
             "de": {
-                "av": {
+                "fixpunkte": {
                     "default": {
-                        "layers": [{"name": "daten", "opacity": 0.9}],
-                        "legend_layer": "daten",
-                        "wms": "https://geodienste.ch/db/av_0/deu",
-                        "swissgeo_distributions": [{"name": "fixpunkte", "opacity": 0.9}],
+                        "layers": [{"name": "fixpunkte", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/deu",
                     },
-                    "languages": ["deu", "fra", "ita"],
+                    "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
                 }
             },
             "fr": {
-                "av": {
+                "fixpunkte": {
                     "default": {
-                        "layers": [{"name": "donnees", "opacity": 0.9}],
-                        "legend_layer": "donnees",
-                        "wms": "https://geodienste.ch/db/av_0/fra",
-                        "swissgeo_distributions": [{"name": "points_fixes", "opacity": 0.9}],
+                        "layers": [{"name": "points_fixes", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/fra",
                     },
-                    "languages": ["deu", "fra", "ita"],
+                    "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
                 }
             },
             "it": {
-                "av": {
+                "fixpunkte": {
                     "default": {
-                        "layers": [{"name": "dati", "opacity": 0.9}],
-                        "legend_layer": "dati",
-                        "wms": "https://geodienste.ch/db/av_0/ita",
-                        "swissgeo_distributions": [{"name": "punti_fissi", "opacity": 0.9}],
+                        "layers": [{"name": "punti_fissi", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/ita",
                     },
-                    "languages": ["deu", "fra", "ita"],
+                    "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
                 }
             },
             "en": {
-                "av": {
+                "fixpunkte": {
                     "default": {
-                        "layers": [{"name": "data", "opacity": 0.9}],
-                        "legend_layer": "data",
-                        "wms": "https://geodienste.ch/db/av_0/eng",
-                        "swissgeo_distributions": [{"name": "fixpunkte", "opacity": 0.9}],
+                        "layers": [{"name": "control_points", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/eng",
                     },
-                    "languages": ["deu", "fra", "ita"],
+                    "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
                 }
             },
@@ -2927,6 +2921,16 @@ def test_command_creates_additional_distributions(mock, client, db):
                         </Layer>
                     </Capability>
                 </WMS_Capabilities>""",
+            "en": b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                <WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">
+                    <Capability>
+                        <Layer>
+                            <Name>control_points</Name>
+                            <Title>Title EN</Title>
+                            <Abstract>Abstract EN</Abstract>
+                        </Layer>
+                    </Capability>
+                </WMS_Capabilities>""",
         },
     )
 
@@ -2934,366 +2938,19 @@ def test_command_creates_additional_distributions(mock, client, db):
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Distribution with distribution_id ch.kgk.av-fixpunkte:wms does not exist yet" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist " in out
 
-    dataservice = Dataservice.objects.get(dataservice_id="wms-geodienste-av")
-
-    distribution = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.av-fixpunkte:wms")
-    assert distribution.data_source == "geodienste"
-    assert distribution.distribution_id == "ch.kgk.av-fixpunkte:wms"
-    assert distribution.title_de == "Title DE"
-    assert distribution.title_fr == "Title FR"
-    assert distribution.title_it == "Title IT"
-    assert distribution.title_en is None
-    assert distribution.title_rm is None
-    assert distribution.description_de == "Abstract DE"
-    assert distribution.description_fr == "Abstract FR"
-    assert distribution.description_it == "Abstract IT"
-    assert distribution.description_en is None
-    assert distribution.description_rm is None
-    assert distribution.wms_layer_name_de == "fixpunkte"
-    assert distribution.wms_layer_name_fr == "points_fixes"
-    assert distribution.wms_layer_name_it == "punti_fissi"
-    assert distribution.wms_layer_name_en is None
-    assert distribution.wms_layer_name_rm is None
-    assert distribution.opacity == Decimal("0.90")
-    assert distribution.meta_information is False
-    assert distribution.dataservice == dataservice
-    assert distribution.dataset == dataset
-
-
-@patch("organization.models.Client")
-@patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_creates_additional_av_distributions(mock, client, db):  # noqa: PLR0915
-    dataset = Dataset(
-        dataset_id="ch.kgk.av",
-        description_de="Abstract DE",
-        description_en="Abstract EN",
-        description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
-    )
-    dataset.save()
-
-    # ------
-    # Create
-    # ------
-    mock.side_effect = api_response(
-        services={
-            "services": [
-                {
-                    "base_topic": "av",
-                    "canton": "lu",
-                    "broker": None,
-                }
-            ]
-        },
-        config={
-            "de": {
-                "av": {
-                    "default": {
-                        "layers": [{"name": "daten", "opacity": 0.9}],
-                        "legend_layer": "daten",
-                        "wms": "https://geodienste.ch/db/av_0/deu",
-                        "swissgeo_distributions": [],
-                    },
-                    "languages": ["deu", "fra", "ita"],
-                    "derivates": {
-                        "24.0.0 (AV: Situationsplan (ÖREB))": {
-                            "layers": [{"name": "daten", "opacity": 0.9}],
-                            "legend_layer": "daten",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_oereb_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (AV: Situationsplan)": {
-                            "layers": [{"name": "daten", "opacity": 0.9}],
-                            "legend_layer": "daten",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (AV: Standard (farbig))": {
-                            "layers": [{"name": "daten", "opacity": 0.9}],
-                            "legend_layer": "daten",
-                            "wms": "https://dev2.geodienste.ch/db/avc_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (AV: Standard (schwarz/weiss))": {
-                            "layers": [{"name": "daten", "opacity": 0.9}],
-                            "legend_layer": "daten",
-                            "wms": "https://dev2.geodienste.ch/db/av_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                    },
-                }
-            },
-            "fr": {
-                "av": {
-                    "default": {
-                        "layers": [{"name": "donnees", "opacity": 0.9}],
-                        "legend_layer": "donnees",
-                        "wms": "https://geodienste.ch/db/av_0/fra",
-                        "swissgeo_distributions": [],
-                    },
-                    "languages": ["deu", "fra", "ita"],
-                    "derivates": {
-                        "24.0.0 (MO : Plan de situation (RDPPF))": {
-                            "layers": [{"name": "donnees", "opacity": 0.9}],
-                            "legend_layer": "donnees",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_oereb_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (MO : Plan de situation)": {
-                            "layers": [{"name": "donnees", "opacity": 0.9}],
-                            "legend_layer": "donnees",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (MO: Standard (en couleur))": {
-                            "layers": [{"name": "donnees", "opacity": 0.9}],
-                            "legend_layer": "donnees",
-                            "wms": "https://dev2.geodienste.ch/db/avc_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (MO : Standard (noir/blanc))": {
-                            "layers": [{"name": "donnees", "opacity": 0.9}],
-                            "legend_layer": "donnees",
-                            "wms": "https://dev2.geodienste.ch/db/av_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                    },
-                }
-            },
-            "it": {
-                "av": {
-                    "default": {
-                        "layers": [{"name": "dati", "opacity": 0.9}],
-                        "legend_layer": "dati",
-                        "wms": "https://geodienste.ch/db/av_0/ita",
-                        "swissgeo_distributions": [],
-                    },
-                    "languages": ["deu", "fra", "ita"],
-                    "derivates": {
-                        "24.0.0 (MU: piano di situazione (RDPP))": {
-                            "layers": [{"name": "dati", "opacity": 0.9}],
-                            "legend_layer": "dati",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_oereb_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (MU: piano di situazione)": {
-                            "layers": [{"name": "dati", "opacity": 0.9}],
-                            "legend_layer": "dati",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (MU: Standard (a colori))": {
-                            "layers": [{"name": "dati", "opacity": 0.9}],
-                            "legend_layer": "dati",
-                            "wms": "https://dev2.geodienste.ch/db/avc_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                        "24.0.0 (MU: Standard (nero/bianco))": {
-                            "layers": [{"name": "dati", "opacity": 0.9}],
-                            "legend_layer": "dati",
-                            "wms": "https://dev2.geodienste.ch/db/av_0/deu",
-                            "swissgeo_distributions": [],
-                        },
-                    },
-                }
-            },
-            "en": {
-                "av": {
-                    "default": {
-                        "layers": [{"name": "data", "opacity": 0.9}],
-                        "legend_layer": "data",
-                        "wms": "https://geodienste.ch/db/av_0/eng",
-                    },
-                    "languages": ["deu", "fra", "ita"],
-                    "derivates": {
-                        "24.0.0 (AV: Situationsplan (ÖREB))": {
-                            "layers": [{"name": "data", "opacity": 1.0}],
-                            "legend_layer": "data",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_oereb_0/deu",
-                        },
-                        "24.0.0 (AV: Situationsplan)": {
-                            "layers": [{"name": "data", "opacity": 1.0}],
-                            "legend_layer": "data",
-                            "wms": "https://dev2.geodienste.ch/db/av_situationsplan_0/deu",
-                        },
-                        "24.0.0 (AV: Standard (farbig))": {
-                            "layers": [{"name": "data", "opacity": 1.0}],
-                            "legend_layer": "data",
-                            "wms": "https://dev2.geodienste.ch/db/avc_0/deu",
-                        },
-                        "24.0.0 (AV: Standard (schwarz/weiss))": {
-                            "layers": [{"name": "data", "opacity": 1.0}],
-                            "legend_layer": "data",
-                            "wms": "https://dev2.geodienste.ch/db/av_0/deu",
-                        },
-                    },
-                }
-            },
-        },
-    )
-
-    out = StringIO()
-    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
-    out = out.getvalue()
-
-    assert "Dataservice with dataservice_id wms-geodienste-av does not exist yet" in out
-    assert "Dataservice with dataservice_id wms-geodienste-av_situationsplan_oereb does not" in out
-    assert "Dataservice with dataservice_id wms-geodienste-av_situationsplan does not exist" in out
-    assert "Dataservice with dataservice_id wms-geodienste-avc does not exist yet" in out
-    assert "Distribution with distribution_id ch.kgk.av:wms does not exist yet" in out
-    assert "Distribution with distribution_id ch.kgk.av_situationsplan_oereb:wms does not" in out
-    assert "Distribution with distribution_id ch.kgk.av_situationsplan:wms does not exist" in out
-    assert "Distribution with distribution_id ch.kgk.avc:wms does not exist yet" in out
-    assert "Setting ch.kgk.av:wms as preferred distribution for dataset ch.kgk.av" in out
-
-    assert Dataservice.objects.count() == 5
-
-    dataservice_1 = Dataservice.objects.get(dataservice_id="wms-geodienste-av")
-    assert dataservice_1.data_source == "geodienste"
-    assert dataservice_1.dataservice_id == "wms-geodienste-av"
-    assert dataservice_1.default_language == "de"
-    assert dataservice_1.languages == ["de", "fr", "it"]
-    assert dataservice_1.title == "WMS geodienste.ch av"
-    assert (
-        dataservice_1.capabilities_url
-        == "https://geodienste.ch/db/av_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
-    )
-
-    dataservice_2 = Dataservice.objects.get(dataservice_id="wms-geodienste-av_situationsplan_oereb")
-    assert dataservice_2.data_source == "geodienste"
-    assert dataservice_2.dataservice_id == "wms-geodienste-av_situationsplan_oereb"
-    assert dataservice_2.default_language == "de"
-    assert dataservice_2.languages == ["de", "fr", "it"]
-    assert dataservice_2.title == "WMS geodienste.ch av_situationsplan_oereb"
-    assert (
-        dataservice_2.capabilities_url
-        == "https://dev2.geodienste.ch/db/av_situationsplan_oereb_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
-    )
-
-    dataservice_3 = Dataservice.objects.get(dataservice_id="wms-geodienste-av_situationsplan")
-    assert dataservice_3.data_source == "geodienste"
-    assert dataservice_3.dataservice_id == "wms-geodienste-av_situationsplan"
-    assert dataservice_3.default_language == "de"
-    assert dataservice_3.languages == ["de", "fr", "it"]
-    assert dataservice_3.title == "WMS geodienste.ch av_situationsplan"
-    assert (
-        dataservice_3.capabilities_url
-        == "https://dev2.geodienste.ch/db/av_situationsplan_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
-    )
-
-    dataservice_4 = Dataservice.objects.get(dataservice_id="wms-geodienste-avc")
-    assert dataservice_4.data_source == "geodienste"
-    assert dataservice_4.dataservice_id == "wms-geodienste-avc"
-    assert dataservice_4.default_language == "de"
-    assert dataservice_4.languages == ["de", "fr", "it"]
-    assert dataservice_4.title == "WMS geodienste.ch avc"
-    assert (
-        dataservice_4.capabilities_url
-        == "https://dev2.geodienste.ch/db/avc_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
-    )
-
-    distribution_1 = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.av:wms")
-    assert distribution_1.data_source == "geodienste"
-    assert distribution_1.distribution_id == "ch.kgk.av:wms"
-    assert distribution_1.title_de == "Title DE"
-    assert distribution_1.title_fr == "Title FR"
-    assert distribution_1.title_en == "Title EN"
-    assert distribution_1.title_it is None
-    assert distribution_1.title_rm is None
-    assert distribution_1.description_de == "Abstract DE"
-    assert distribution_1.description_fr == "Abstract FR"
-    assert distribution_1.description_en == "Abstract EN"
-    assert distribution_1.description_it is None
-    assert distribution_1.description_rm is None
-    assert distribution_1.wms_layer_name_de == "daten"
-    assert distribution_1.wms_layer_name_fr == "donnees"
-    assert distribution_1.wms_layer_name_it == "dati"
-    assert distribution_1.wms_layer_name_en is None
-    assert distribution_1.wms_layer_name_rm is None
-    assert distribution_1.opacity == Decimal("0.90")
-    assert distribution_1.meta_information is False
-    assert distribution_1.dataservice == dataservice_1
-    assert distribution_1.dataset == dataset
-
-    distribution_2 = ExternalWMSDistribution.objects.get(
-        distribution_id="ch.kgk.av_situationsplan_oereb:wms"
-    )
-    assert distribution_2.data_source == "geodienste"
-    assert distribution_2.distribution_id == "ch.kgk.av_situationsplan_oereb:wms"
-    assert distribution_2.title_de == "Situationsplan (ÖREB)"
-    assert distribution_2.title_en is None
-    assert distribution_2.title_fr == "Plan de situation (RDPPF)"
-    assert distribution_2.title_it == "piano di situazione (RDPP)"
-    assert distribution_2.title_rm is None
-    assert distribution_2.description_de == "Abstract DE"
-    assert distribution_2.description_en == "Abstract EN"
-    assert distribution_2.description_fr == "Abstract FR"
-    assert distribution_2.description_it is None
-    assert distribution_2.description_rm is None
-    assert distribution_2.wms_layer_name_de == "daten"
-    assert distribution_2.wms_layer_name_fr == "donnees"
-    assert distribution_2.wms_layer_name_it == "dati"
-    assert distribution_2.wms_layer_name_en is None
-    assert distribution_2.wms_layer_name_rm is None
-    assert distribution_2.opacity == Decimal("0.90")
-    assert distribution_2.meta_information is False
-    assert distribution_2.dataservice == dataservice_2
-    assert distribution_2.dataset == dataset
-
-    distribution_2 = ExternalWMSDistribution.objects.get(
-        distribution_id="ch.kgk.av_situationsplan:wms"
-    )
-    assert distribution_2.data_source == "geodienste"
-    assert distribution_2.distribution_id == "ch.kgk.av_situationsplan:wms"
-    assert distribution_2.title_de == "Situationsplan"
-    assert distribution_2.title_en is None
-    assert distribution_2.title_fr == "Plan de situation"
-    assert distribution_2.title_it == "piano di situazione"
-    assert distribution_2.title_rm is None
-    assert distribution_2.description_de == "Abstract DE"
-    assert distribution_2.description_en == "Abstract EN"
-    assert distribution_2.description_fr == "Abstract FR"
-    assert distribution_2.description_it is None
-    assert distribution_2.description_rm is None
-    assert distribution_2.wms_layer_name_de == "daten"
-    assert distribution_2.wms_layer_name_fr == "donnees"
-    assert distribution_2.wms_layer_name_it == "dati"
-    assert distribution_2.wms_layer_name_en is None
-    assert distribution_2.wms_layer_name_rm is None
-    assert distribution_2.opacity == Decimal("0.90")
-    assert distribution_2.meta_information is False
-    assert distribution_2.dataservice == dataservice_3
-    assert distribution_2.dataset == dataset
-
-    distribution_3 = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.avc:wms")
-    assert distribution_3.data_source == "geodienste"
-    assert distribution_3.distribution_id == "ch.kgk.avc:wms"
-    assert distribution_3.title_de == "Standard (farbig)"
-    assert distribution_3.title_en is None
-    assert distribution_3.title_fr == "Standard (en couleur)"
-    assert distribution_3.title_it == "Standard (a colori)"
-    assert distribution_3.title_rm is None
-    assert distribution_3.description_de == "Abstract DE"
-    assert distribution_3.description_en == "Abstract EN"
-    assert distribution_3.description_fr == "Abstract FR"
-    assert distribution_3.description_it is None
-    assert distribution_3.description_rm is None
-    assert distribution_3.wms_layer_name_de == "daten"
-    assert distribution_3.wms_layer_name_fr == "donnees"
-    assert distribution_3.wms_layer_name_it == "dati"
-    assert distribution_3.wms_layer_name_en is None
-    assert distribution_3.wms_layer_name_rm is None
-    assert distribution_3.opacity == Decimal("0.90")
-    assert distribution_3.meta_information is False
-    assert distribution_3.dataservice == dataservice_4
-    assert distribution_3.dataset == dataset
-
-    dataset.refresh_from_db()
-    assert dataset.preferred_distribution == distribution_1
+    distribution_data = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.fixpunkte:wms")
+    assert distribution_data.title_de == "Title DE"
+    assert distribution_data.title_en == "Title EN"
+    assert distribution_data.title_fr == "Title FR"
+    assert distribution_data.title_it == "Title IT"
+    assert distribution_data.title_rm is None
+    assert distribution_data.description_de == "Abstract DE"
+    assert distribution_data.description_en == "Abstract EN"
+    assert distribution_data.description_fr == "Abstract FR"
+    assert distribution_data.description_it == "Abstract IT"
+    assert distribution_data.description_rm is None
 
 
 @patch("organization.models.Client")
@@ -3354,9 +3011,7 @@ def test_command_cleans_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "daten", "opacity": 0.9}],
-                        "legend_layer": "daten",
                         "wms": "https://geodienste.ch/db/av_0/deu",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3366,9 +3021,7 @@ def test_command_cleans_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "donnees", "opacity": 0.9}],
-                        "legend_layer": "donnees",
                         "wms": "https://geodienste.ch/db/av_0/fra",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3378,9 +3031,7 @@ def test_command_cleans_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "dati", "opacity": 0.9}],
-                        "legend_layer": "dati",
                         "wms": "https://geodienste.ch/db/av_0/ita",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3390,9 +3041,7 @@ def test_command_cleans_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "data", "opacity": 0.9}],
-                        "legend_layer": "data",
                         "wms": "https://geodienste.ch/db/av_0/eng",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3477,9 +3126,7 @@ def test_command_useses_dataset_mapping_for_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "daten", "opacity": 0.9}],
-                        "legend_layer": "daten",
                         "wms": "https://geodienste.ch/db/av_0/deu",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3489,9 +3136,7 @@ def test_command_useses_dataset_mapping_for_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "donnees", "opacity": 0.9}],
-                        "legend_layer": "donnees",
                         "wms": "https://geodienste.ch/db/av_0/fra",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3501,9 +3146,7 @@ def test_command_useses_dataset_mapping_for_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "dati", "opacity": 0.9}],
-                        "legend_layer": "dati",
                         "wms": "https://geodienste.ch/db/av_0/ita",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},
@@ -3513,9 +3156,7 @@ def test_command_useses_dataset_mapping_for_distributions(mock, client, db):
                 "av": {
                     "default": {
                         "layers": [{"name": "data", "opacity": 0.9}],
-                        "legend_layer": "data",
                         "wms": "https://geodienste.ch/db/av_0/eng",
-                        "swissgeo_distributions": [],
                     },
                     "languages": ["deu", "fra", "ita", "eng"],
                     "derivates": {},

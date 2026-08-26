@@ -1,5 +1,4 @@
 import json
-import re
 from decimal import Decimal
 from json import loads
 from pathlib import Path
@@ -1079,11 +1078,9 @@ class Command(CustomBaseCommand):
         """Import the distributions and dataservices used by the aggregate datasets.
 
         Ensures that per aggregate dataset (base topic):
-        - one default WMS data service is created (or updated)
-        - one default external WMS distribution for the data is created (or updated)
-
-        Also ensures that the additional av data services and WMS distributions are created or
-        updated.
+        - one default and one availability WMS data service is created (or updated)
+        - one default and one availability external WMS distribution for the data is created
+          (or updated)
 
         """
 
@@ -1124,8 +1121,6 @@ class Command(CustomBaseCommand):
                 self.import_dataservices_and_distributions(
                     dataset=dataset,
                     dataservice_name=base_topic,
-                    availability=True,
-                    stac=True,
                     distribution_id=f"{dataset_id}:wms",
                     base_topic=base_topic,
                     languages=languages,  # ty:ignore[invalid-argument-type]
@@ -1133,74 +1128,12 @@ class Command(CustomBaseCommand):
                     config_fr=configs["fr"][base_topic]["default"],
                     config_it=configs["it"][base_topic]["default"],
                     config_en=configs["en"][base_topic]["default"],
-                    preferred_distribution=True,
                 )
             )
             metrics["dataservices.created"] += ds_created
             metrics["dataservices.updated"] += ds_updated
             metrics["distributions.created"] += dist_created
             metrics["distributions.updated"] += dist_updated
-
-            # AV is a special case where the derivates returned by the API don't correspond to
-            # different topic versions but rather to different representations with their own WMS.
-            # We'll add them here as (non-preferred) distributions as well.
-            if base_topic == "av":
-                for number, (title_de, config_de) in enumerate(
-                    configs["de"][base_topic]["derivates"].items()
-                ):
-                    # Parse the WMS url to get a nice name similar to the base topic
-                    match = re.match(r".*/db/(.*)_0/deu.*", config_de["wms"])
-                    if not match:
-                        self.print_error(f"Unexpected WMS url {config_de['wms']}")
-                        continue
-
-                    name = match.group(1)
-                    if name == "av":
-                        continue
-
-                    title_fr = next(
-                        title
-                        for title, value in configs["fr"][base_topic]["derivates"].items()
-                        if f"/{name}_0" in value["wms"]
-                    )
-                    title_it = next(
-                        title
-                        for title, value in configs["it"][base_topic]["derivates"].items()
-                        if f"/{name}_0" in value["wms"]
-                    )
-                    titles_and_descriptions = {
-                        "title_de": title_de.split(":")[1][:-1].strip(),
-                        "title_fr": title_fr.split(":")[1][:-1].strip(),
-                        "title_it": title_it.split(":")[1][:-1].strip(),
-                        "title_en": None,
-                        "description_de": dataset.description_de,
-                        "description_fr": dataset.description_fr,
-                        "description_it": dataset.description_it,
-                        "description_en": dataset.description_en,
-                        "description_rm": dataset.description_rm,
-                    }
-
-                    ds_created, ds_updated, dist_created, dist_updated = (
-                        self.import_dataservices_and_distributions(
-                            dataset=dataset,
-                            dataservice_name=name,
-                            availability=False,
-                            stac=False,
-                            distribution_id=f"{dataset_id.replace('av', name)}:wms",
-                            base_topic=base_topic,
-                            languages=languages,  # ty:ignore[invalid-argument-type]
-                            config_de=config_de,
-                            config_fr=list(configs["fr"][base_topic]["derivates"].values())[number],
-                            config_it=list(configs["it"][base_topic]["derivates"].values())[number],
-                            config_en=list(configs["en"][base_topic]["derivates"].values())[number],
-                            preferred_distribution=False,
-                            titles_and_descriptions=titles_and_descriptions,
-                        )
-                    )
-                    metrics["dataservices.created"] += ds_created
-                    metrics["dataservices.updated"] += ds_updated
-                    metrics["distributions.created"] += dist_created
-                    metrics["distributions.updated"] += dist_updated
 
         (
             metrics["dataservices.removed"],
@@ -1218,8 +1151,6 @@ class Command(CustomBaseCommand):
         self,
         dataset: Dataset,
         dataservice_name: str,
-        availability: bool,
-        stac: bool,
         distribution_id: str,
         base_topic: str,
         languages: list[ISO639_1],
@@ -1227,8 +1158,6 @@ class Command(CustomBaseCommand):
         config_fr: dict,
         config_it: dict,
         config_en: dict,
-        preferred_distribution: bool,
-        titles_and_descriptions: dict | None = None,
     ) -> tuple[int, int, int, int]:
         """Creates the dataservices and all necessary distributions for the given layer
         layer.
@@ -1254,16 +1183,14 @@ class Command(CustomBaseCommand):
         ds_updated += updated
 
         # Data distribution
-        # TODO: The distribution ID (set similarly to the ones from the BOD) is not a valid slug
         layer_names = {
             "de": config_de["layers"][0]["name"],
             "fr": config_fr["layers"][0]["name"],
             "it": config_it["layers"][0]["name"] if "it" in languages else None,
             "en": config_en["layers"][0]["name"] if "en" in languages else None,
         }
-        titles_and_descriptions = (
-            titles_and_descriptions
-            or self.get_wms_layer_title_and_description(capabilities_url, layer_names, dataset)
+        titles_and_descriptions = self.get_wms_layer_title_and_description(
+            capabilities_url, layer_names, dataset
         )
         distribution, created, updated = self.import_wms_distribution(
             distribution_id=distribution_id,
@@ -1281,93 +1208,64 @@ class Command(CustomBaseCommand):
         dist_created += created
         dist_updated += updated
 
-        if preferred_distribution and dataset.preferred_distribution != distribution:
+        if dataset.preferred_distribution != distribution:
             self.print(f"Setting {distribution} as preferred distribution for dataset {dataset}")
             dataset.preferred_distribution = distribution
             dataset.save()
 
-        # Additional distributions
-        for number, alt_de in enumerate(config_de["swissgeo_distributions"]):
-            alt_fr = config_fr["swissgeo_distributions"][number]
-            alt_it = config_it["swissgeo_distributions"][number]
-            alt_en = config_en["swissgeo_distributions"][number]
-            layer_names = {
-                "de": alt_de["name"],
-                "fr": alt_fr["name"],
-                "it": alt_it["name"] if "it" in languages else None,
-                "en": alt_en["name"] if "en" in languages else None,
-            }
-            _, created, updated = self.import_wms_distribution(
-                distribution_id=distribution_id.replace(":wms", f"-{alt_de['name']}:wms"),
-                data_source_id=base_topic,
-                dataset=dataset,
-                dataservice=dataservice,
-                wms_layer_name_de=layer_names["de"],
-                wms_layer_name_fr=layer_names["fr"],
-                wms_layer_name_it=layer_names["it"],
-                wms_layer_name_en=layer_names["en"],
-                wms_layer_name_rm=None,
-                opacity=Decimal(str(alt_de["opacity"])),
-                **self.get_wms_layer_title_and_description(capabilities_url, layer_names, dataset),
-            )
-            dist_created += created
-            dist_updated += updated
-
         # Availability dataservice and distribution
-        if availability:
-            parts = urlsplit(config_de["wms"])
-            dataservice_availability, created, updated = self.import_wms_data_service(
-                dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
-                data_source_id=base_topic,
-                languages=["de", "fr", "it", "en"],
-                default_language="de",
-                capabilities_url=(
-                    f"{parts.scheme}://{parts.netloc}/db/availability/{base_topic}/portrayal/{{lang3}}"
-                    "?SERVICE=WMS&REQUEST=GetCapabilities"
-                ),
-                title=f"WMS geodienste.ch {dataservice_name} (availability)",
-            )
-            ds_created += created
-            ds_updated += updated
+        parts = urlsplit(config_de["wms"])
+        dataservice_availability, created, updated = self.import_wms_data_service(
+            dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
+            data_source_id=base_topic,
+            languages=["de", "fr", "it", "en"],
+            default_language="de",
+            capabilities_url=(
+                f"{parts.scheme}://{parts.netloc}/db/availability/{base_topic}/portrayal/{{lang3}}"
+                "?SERVICE=WMS&REQUEST=GetCapabilities"
+            ),
+            title=f"WMS geodienste.ch {dataservice_name} (availability)",
+        )
+        ds_created += created
+        ds_updated += updated
 
-            _, created, updated = self.import_wms_distribution(
-                distribution_id=distribution_id.replace(":wms", "-availability:wms"),
-                data_source_id=base_topic,
-                dataset=dataset,
-                dataservice=dataservice_availability,
-                title_de="Verfügbarkeit",
-                title_en="Availability",
-                title_fr="Disponibilité",
-                title_it="Disponibilità",
-                description_de="Kantonalen Verfügbarkeit der Daten.",
-                description_en="Availability of data at cantonal level.",
-                description_fr="Disponibilité des données au niveau cantonal.",
-                description_it="Disponibilità dei dati a livello cantonale.",
-                wms_layer_name_de="availability_cantons",
-                wms_layer_name_fr="availability_cantons",
-                wms_layer_name_it="availability_cantons",
-                wms_layer_name_en="availability_cantons",
-                wms_layer_name_rm=None,
-                meta_information=True,
-            )
-            dist_created += created
-            dist_updated += updated
+        _, created, updated = self.import_wms_distribution(
+            distribution_id=distribution_id.replace(":wms", "-availability:wms"),
+            data_source_id=base_topic,
+            dataset=dataset,
+            dataservice=dataservice_availability,
+            title_de="Verfügbarkeit",
+            title_en="Availability",
+            title_fr="Disponibilité",
+            title_it="Disponibilità",
+            description_de="Kantonalen Verfügbarkeit der Daten.",
+            description_en="Availability of data at cantonal level.",
+            description_fr="Disponibilité des données au niveau cantonal.",
+            description_it="Disponibilità dei dati a livello cantonale.",
+            wms_layer_name_de="availability_cantons",
+            wms_layer_name_fr="availability_cantons",
+            wms_layer_name_it="availability_cantons",
+            wms_layer_name_en="availability_cantons",
+            wms_layer_name_rm=None,
+            meta_information=True,
+        )
+        dist_created += created
+        dist_updated += updated
 
         # STAC distribution
-        if stac:
-            created, updated = self.import_stac_distribution(
-                distribution_id=distribution_id.replace(":wms", ":stac"),
-                data_source_id=base_topic,
-                dataset=dataset,
-                stac_collection_id=base_topic,
-                title_de="STAC Download Collection",
-                title_fr="STAC Download Collection",
-                title_it="STAC Download Collection",
-                title_en="STAC Download Collection",
-                title_rm="STAC Download Collection",
-            )
-            dist_created += created
-            dist_updated += updated
+        created, updated = self.import_stac_distribution(
+            distribution_id=distribution_id.replace(":wms", ":stac"),
+            data_source_id=base_topic,
+            dataset=dataset,
+            stac_collection_id=base_topic,
+            title_de="STAC Download Collection",
+            title_fr="STAC Download Collection",
+            title_it="STAC Download Collection",
+            title_en="STAC Download Collection",
+            title_rm="STAC Download Collection",
+        )
+        dist_created += created
+        dist_updated += updated
 
         return ds_created, ds_updated, dist_created, dist_updated
 
