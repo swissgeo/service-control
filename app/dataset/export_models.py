@@ -354,6 +354,7 @@ class OARDistribution(OARRecord):
             )
         )
         record.properties["protocol"] = dist.protocol
+        record.properties["metaInformation"] = dist.meta_information
 
         # GeoJSON Distributions behave slightly different as they are not linked to a dataservice
         # but directly to a file
