@@ -59,6 +59,7 @@ LANGS = {
     "de": Lang(code="de", name="Deutsch", dir="ltr", alternate="German"),
     "fr": Lang(code="fr", name="Français", dir="ltr", alternate="French"),
     "it": Lang(code="it", name="Italiano", dir="ltr", alternate="Italian"),
+    "rm": Lang(code="rm", name="Rumantsch", dir="ltr", alternate="Romansh"),
     "en": Lang(code="en", name="English", dir="ltr", alternate="English"),
 }
 
@@ -66,6 +67,7 @@ LANGS_ISO_639_2_B = {
     "de": "ger",
     "fr": "fra",
     "it": "ita",
+    "rm": "roh",
     "en": "eng",
 }
 
