@@ -9,7 +9,7 @@ from dataservice.models import (
     WMSDataservice,
     WMTSDataservice,
 )
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToDataset
 from distribution.models import (
     Distribution,
     ExternalGeoadminFeaturesDistribution,
@@ -289,6 +289,11 @@ class OARDataset(OARRecord):
                 typ="text/html",
             )
         )
+
+        is_aggregate = ds.related_datasets(DatasetToDataset.Role.PART)
+        if is_aggregate:
+            dataset.properties["aggregated"] = True
+
         # TODO: Needs clarification before it can be added
         # Link(
         #    href="https://www.some-external-website.ch",

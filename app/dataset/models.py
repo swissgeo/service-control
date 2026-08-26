@@ -107,6 +107,12 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     def related_datasets(
         self, role: DatasetToDataset.Role, reverse: bool = False
     ) -> QuerySet[Dataset]:
+        """Return all related dataset with the given role.
+
+        For example:
+        - related_datasets(DatasetToDataset.Role.PART) returns all parts of the dataset.
+        - related_datasets(DatasetToDataset.Role.CHILD, True) returns all parents of the dataset.
+        """
         if reverse:
             return Dataset.objects.filter(
                 dataset_relations_as_object__role=role,
