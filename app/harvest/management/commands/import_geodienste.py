@@ -579,7 +579,7 @@ class Command(CustomBaseCommand):
         return len(removed), len(obsolete)
 
     # ##########################################################################
-    def import_datasets(self, services: dict, clean: bool) -> None:
+    def import_datasets(self, services: dict, clean: bool) -> None:  # noqa: PLR0915
         """Imports datasets.
 
         For each basic topic,
@@ -616,6 +616,44 @@ class Command(CustomBaseCommand):
 
         processed = set()
 
+        # Add a legacy contact to the record, since the OAR export currently uses legacy contacts
+        legacy_aggregate_contacts = [
+            {
+                "org_name": contact.organization.name_de,
+                "org_name_de": contact.organization.name_de,
+                "org_name_fr": contact.organization.name_fr,
+                "org_name_en": contact.organization.name_en,
+                "org_name_it": contact.organization.name_it,
+                "org_name_rm": contact.organization.name_rm,
+                "org_acronym": contact.organization.acronym_de,
+                "org_acronym_de": contact.organization.acronym_de,
+                "org_acronym_fr": contact.organization.acronym_fr,
+                "org_acronym_en": contact.organization.acronym_en,
+                "org_acronym_it": contact.organization.acronym_it,
+                "org_acronym_rm": contact.organization.acronym_rm,
+                "contact_voice": contact.phone,
+                "contact_city": contact.address_city,
+                "contact_postal_code": contact.address_postal_code,
+                "contact_country": contact.address_country,
+                "contact_electronic_mail_addresses": [contact.email],
+                "contact_delivery_point": contact.address_delivery_point,
+                "online_resources": [
+                    {
+                        "url": contact.url_de,
+                        "url_de": contact.url_de,
+                        "url_fr": contact.url_fr,
+                        "url_en": contact.url_en,
+                        "url_it": contact.url_it,
+                        "url_rm": contact.url_rm,
+                    }
+                ],
+                "role": "custodian",
+            }
+            for contact in Contact.objects.filter(
+                organization__organization_id=self.organization_id(self.provider_id())
+            ).all()
+        ]
+
         for key, service in services["de"].items():
             common = {
                 "title_short_de": service["topic_title"],
@@ -627,7 +665,6 @@ class Command(CustomBaseCommand):
                 "description_fr": services["fr"][key]["abstract"],
                 "description_it": services["it"][key]["abstract"],
             }
-
             # Dataset: Aggregate
             base_topic = service["base_topic"]
             aggregate_dataset_id = self.dataset_id(service, aggregate=True)
@@ -638,6 +675,7 @@ class Command(CustomBaseCommand):
                 processed.add(data_source_id)
                 extra: dict = {
                     **common,
+                    "legacy_contacts": legacy_aggregate_contacts,
                     "legacy_part_info_url_de": f"{service['website']}?locale=de#info_cantons",
                     "legacy_part_info_url_fr": f"{service['website']}?locale=fr#info_cantons",
                     "legacy_part_info_url_it": f"{service['website']}?locale=it#info_cantons",
