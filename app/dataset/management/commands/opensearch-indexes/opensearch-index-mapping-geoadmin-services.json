@@ -15,7 +15,7 @@
               "en": {"type": "search_as_you_type"}
             }
           },
-          "type": {"type": "keyword", "index": false}
+          "protocol": {"type": "keyword", "index": false}
         }
       }
     }
