@@ -529,6 +529,7 @@ def test_dump_distribution_document(db, tmp_path):
             },
             "protocol": "ogc:wms",
             "externalIds": ["ch.bafu.moose"],
+            "metaInformation": False,
         },
     }
 
