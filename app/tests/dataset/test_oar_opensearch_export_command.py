@@ -28,7 +28,7 @@ from dataset.management.commands.oar_opensearch_export import (
     _is_generation_of,
     _rewrite_dist_links,
 )
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
 
 MODULE = "dataset.management.commands.oar_opensearch_export"
@@ -61,6 +61,41 @@ def _make_dataset() -> Dataset:
     )
     dataset.save()
     return dataset
+
+
+def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
+    aggregate = Dataset(
+        dataset_id="ch.kgk.av",
+        title_short_de="Amtliche Vermessung",
+        title_short_fr="Mensuration officielle",
+        title_short_en="Amtliche Vermessung",
+        title_short_it="Misurazione ufficiale",
+        description_de="Beschreibung",
+        description_fr="Description",
+        description_en="Description",
+        description_it="Descrizione",
+        geocat_id="d929eef4-791d-4728-9d56-226b6952cf1f",
+        legacy_part_info_url_de="https://geodienste.ch/services/av?locale=de#info_cantons",
+    )
+    aggregate.save()
+
+    part = Dataset(
+        dataset_id="ch.geodienste-lu.av",
+        title_short_de="Amtliche Vermessung",
+        title_short_fr="Mensuration officielle",
+        title_short_en="Amtliche Vermessung",
+        title_short_it="Misurazione ufficiale",
+        description_de="Beschreibung",
+        description_fr="Description",
+        description_en="Description",
+        description_it="Descrizione",
+        geocat_id=None,
+    )
+    part.save()
+
+    DatasetToDataset(subject=part, role=DatasetToDataset.Role.PART, object=aggregate).save()
+
+    return aggregate, part
 
 
 def _make_distribution(
@@ -413,6 +448,32 @@ def test_dump_dataset_document_without_featureinfo_distribution_has_no_such_link
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == []
+
+
+def test_dump_dataset_skips_part_datasets(db, tmp_path):
+    """A part dataset should not be exported."""
+    _make_aggregate_part_datasets()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert (tmp_path / "swissgeo-catalog" / "ch.kgk.av.json").exists()
+    assert not (tmp_path / "swissgeo-catalog" / "ch.geodienste-lu.av.json").exists()
+
+
+def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
+    """An aggregate dataset contains some additional fields."""
+    _make_aggregate_part_datasets()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.kgk.av")
+    assert dataset_doc["properties"]["aggregated"] is True
+    assert {
+        "href": "https://geodienste.ch/services/av?locale=de#info_cantons",
+        "rel": "partinfo",
+        "title": "Information page about the part datasets",
+        "type": "text/html",
+    } in dataset_doc["links"]
 
 
 def test_dump_distribution_document(db, tmp_path):

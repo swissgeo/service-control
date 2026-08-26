@@ -86,14 +86,28 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         help_text=_(_context, "Date and time when the dataset was last updated"),
     )
 
-    class Role(models.TextChoices):
-        PARENT = "parent", _("DatasetToDataset Role", "Parent")
-        AGGREGATE = "aggregate", _("DatasetToDataset Role", "Aggregate")
-        DERIVATE = "derivate", _("DatasetToDataset Role", "Derivate")
-        CLIPPAGE = "clippage", _("DatasetToDataset Role", "Clippage")
-
     # Stores the contacts as defined in geocat (until service-control becomes data master for these)
     legacy_contacts = models.JSONField(_(_context, "Contacts (Legacy)"), default=list, blank=True)
+
+    # Stores the links to the information page about cantonal data, e.g. https://geodienste.ch/services/av
+    legacy_part_info_url_de = models.URLField(
+        _(_context, "URL to the German information about the part datasets"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    legacy_part_info_url_fr = models.URLField(
+        _(_context, "URL to the French information about the part datasets"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    legacy_part_info_url_it = models.URLField(
+        _(_context, "URL to the Italian information about the part datasets"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
 
     objects = DatasetManager()
 
@@ -107,6 +121,12 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     def related_datasets(
         self, role: DatasetToDataset.Role, reverse: bool = False
     ) -> QuerySet[Dataset]:
+        """Return all related dataset with the given role.
+
+        For example:
+        - related_datasets(DatasetToDataset.Role.PART) returns all parts of the dataset.
+        - related_datasets(DatasetToDataset.Role.CHILD, True) returns all parents of the dataset.
+        """
         if reverse:
             return Dataset.objects.filter(
                 dataset_relations_as_object__role=role,
@@ -115,6 +135,10 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         return Dataset.objects.filter(
             dataset_relations_as_subject__role=role.value, dataset_relations_as_subject__object=self
         )
+
+    @property
+    def is_aggregate(self) -> bool:
+        return self.related_datasets(DatasetToDataset.Role.PART).exists()
 
 
 class DatasetToDataset(models.Model):

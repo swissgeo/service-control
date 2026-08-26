@@ -1032,6 +1032,7 @@ def test_command_creates_datasets(mock, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1044,6 +1045,7 @@ def test_command_creates_datasets(mock, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1056,6 +1058,7 @@ def test_command_creates_datasets(mock, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1093,6 +1096,18 @@ def test_command_creates_datasets(mock, db):
     assert aggregate.title_short_fr == "Title FR"
     assert aggregate.title_short_it == "Title IT"
     assert aggregate.title_short_rm is None
+    assert (
+        aggregate.legacy_part_info_url_de
+        == "https://geodienste.ch/services/av?locale=de#info_cantons"
+    )
+    assert (
+        aggregate.legacy_part_info_url_fr
+        == "https://geodienste.ch/services/av?locale=fr#info_cantons"
+    )
+    assert (
+        aggregate.legacy_part_info_url_it
+        == "https://geodienste.ch/services/av?locale=it#info_cantons"
+    )
 
     part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
     assert part.data_source == Dataset.DataSource.GEODIENSTE
@@ -1176,6 +1191,7 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1188,6 +1204,7 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1200,6 +1217,7 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1328,6 +1346,7 @@ def test_command_uses_dataset_mapping(mock, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1340,6 +1359,7 @@ def test_command_uses_dataset_mapping(mock, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1352,6 +1372,7 @@ def test_command_uses_dataset_mapping(mock, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1442,6 +1463,7 @@ def test_command_cleans_datasets(mock, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": {},
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1454,6 +1476,7 @@ def test_command_cleans_datasets(mock, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": {},
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1466,6 +1489,7 @@ def test_command_cleans_datasets(mock, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": {},
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1522,6 +1546,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1534,6 +1559,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1546,6 +1572,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1698,6 +1725,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1710,6 +1738,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1722,6 +1751,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1798,6 +1828,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1810,6 +1841,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1822,6 +1854,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1925,6 +1958,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1937,6 +1971,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -1949,6 +1984,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -2111,6 +2147,7 @@ def test_command_uses_contact_mappings(mock, client, db):
                     "topic_title": "Title DE",
                     "abstract": "Abstract DE",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -2123,6 +2160,7 @@ def test_command_uses_contact_mappings(mock, client, db):
                     "topic_title": "Title FR",
                     "abstract": "Abstract FR",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },
@@ -2135,6 +2173,7 @@ def test_command_uses_contact_mappings(mock, client, db):
                     "topic_title": "Title IT",
                     "abstract": "Abstract IT",
                     "meta_data": meta_data,
+                    "website": "https://geodienste.ch/services/av",
                 }
             ]
         },

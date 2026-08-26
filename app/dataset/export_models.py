@@ -289,6 +289,23 @@ class OARDataset(OARRecord):
                 typ="text/html",
             )
         )
+
+        if ds.is_aggregate:
+            dataset.properties["aggregated"] = True
+
+            legacy_part_info_url = getattr(
+                ds, f"legacy_part_info_url_{lang}", ds.legacy_part_info_url_de
+            )
+            if legacy_part_info_url:
+                dataset.links.append(
+                    Link(
+                        href=legacy_part_info_url,
+                        rel="partinfo",
+                        title="Information page about the part datasets",
+                        typ="text/html",
+                    )
+                )
+
         # TODO: Needs clarification before it can be added
         # Link(
         #    href="https://www.some-external-website.ch",

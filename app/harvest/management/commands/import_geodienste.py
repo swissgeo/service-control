@@ -636,12 +636,18 @@ class Command(CustomBaseCommand):
                 provider_id = self.provider_id()
                 data_source_id = f"{provider_id}.{base_topic}"
                 processed.add(data_source_id)
+                extra: dict = {
+                    **common,
+                    "legacy_part_info_url_de": f"{service['website']}?locale=de#info_cantons",
+                    "legacy_part_info_url_fr": f"{service['website']}?locale=fr#info_cantons",
+                    "legacy_part_info_url_it": f"{service['website']}?locale=it#info_cantons",
+                }
                 aggregate, created, updated = self.import_dataset(
                     aggregate_dataset_id,
                     data_source_id,
                     dataset_mappings,
                     geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
-                    **common,
+                    **extra,
                 )
                 aggregated[aggregate_dataset_id] = aggregate
                 metrics["datasets.created"] += created
