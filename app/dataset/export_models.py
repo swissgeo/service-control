@@ -9,7 +9,7 @@ from dataservice.models import (
     WMSDataservice,
     WMTSDataservice,
 )
-from dataset.models import Dataset, DatasetToDataset
+from dataset.models import Dataset
 from distribution.models import (
     Distribution,
     ExternalGeoadminFeaturesDistribution,
@@ -290,9 +290,21 @@ class OARDataset(OARRecord):
             )
         )
 
-        is_aggregate = ds.related_datasets(DatasetToDataset.Role.PART)
-        if is_aggregate:
+        if ds.is_aggregate:
             dataset.properties["aggregated"] = True
+
+            legacy_part_info_url = getattr(
+                ds, f"legacy_part_info_url_{lang}", ds.legacy_part_info_url_de
+            )
+            if legacy_part_info_url:
+                dataset.links.append(
+                    Link(
+                        href=legacy_part_info_url,
+                        rel="partinfo",
+                        title="Information page about the part datasets",
+                        typ="text/html",
+                    )
+                )
 
         # TODO: Needs clarification before it can be added
         # Link(

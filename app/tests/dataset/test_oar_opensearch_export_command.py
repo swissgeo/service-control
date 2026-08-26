@@ -75,6 +75,7 @@ def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
         description_en="Description",
         description_it="Descrizione",
         geocat_id="d929eef4-791d-4728-9d56-226b6952cf1f",
+        legacy_part_info_url_de="https://geodienste.ch/services/av?locale=de#info_cantons",
     )
     aggregate.save()
 
@@ -467,6 +468,12 @@ def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.kgk.av")
     assert dataset_doc["properties"]["aggregated"] is True
+    assert {
+        "href": "https://geodienste.ch/services/av?locale=de#info_cantons",
+        "rel": "partinfo",
+        "title": "Information page about the part datasets",
+        "type": "text/html",
+    } in dataset_doc["links"]
 
 
 def test_dump_distribution_document(db, tmp_path):
