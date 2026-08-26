@@ -28,7 +28,7 @@ from dataset.export_models import (
     OARDistribution,
     featureinfo_distribution,
 )
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToDataset
 from dataset.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
@@ -425,7 +425,9 @@ class Command(CustomBaseCommand):
                 self.print(f" - {service.dataservice_id}")
                 documents.append(self.build_service_doc(service, OAR_BASE_URL))
         elif document_type == "datasets":
-            for dataset in Dataset.objects.all():
+            for dataset in Dataset.objects.exclude(
+                dataset_relations_as_subject__role=DatasetToDataset.Role.PART
+            ).all():
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_dataset_doc(dataset, OAR_BASE_URL))
         elif document_type == "distributions":

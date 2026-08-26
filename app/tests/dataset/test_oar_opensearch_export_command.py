@@ -448,6 +448,17 @@ def test_dump_dataset_document_without_featureinfo_distribution_has_no_such_link
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == []
 
+
+def test_dump_dataset_skips_part_datasets(db, tmp_path):
+    """A part dataset should not be exported."""
+    _make_aggregate_part_datasets()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert (tmp_path / "swissgeo-catalog" / "ch.kgk.av.json").exists()
+    assert not (tmp_path / "swissgeo-catalog" / "ch.geodienste-lu.av.json").exists()
+
+
 def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
     """An aggregate dataset contains some additional fields."""
     _make_aggregate_part_datasets()
