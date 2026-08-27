@@ -504,7 +504,7 @@ class OARDataservice(OARRecord):
                 record.linkTemplates.append(
                     LinkTemplate(
                         uriTemplate=url,
-                        rel="about",
+                        rel="describedby",
                         typ="application/xml",
                         title="WMTS Capabilities File",
                         variables={
@@ -522,7 +522,7 @@ class OARDataservice(OARRecord):
                 record.links.append(
                     Link(
                         href=url,
-                        rel="about",
+                        rel="describedby",
                         typ="application/xml",
                         title="WMTS Capabilities File",
                     )
@@ -532,7 +532,7 @@ class OARDataservice(OARRecord):
             record.links.append(
                 Link(
                     href=ds.localized_capabilities_url(lang),
-                    rel="about",
+                    rel="describedby",
                     typ="application/xml",
                     title="WMS Capabilities File",
                 )
@@ -541,7 +541,7 @@ class OARDataservice(OARRecord):
             record.links.append(
                 Link(
                     href=ds.landing_page_url,
-                    rel="describes",
+                    rel="describedby",
                     typ="application/json",
                     title="Landing Page of the OGC API Features/STAC Dataservice",
                 )

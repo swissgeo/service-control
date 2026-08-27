@@ -14,6 +14,7 @@
               "de": {"type": "search_as_you_type"},
               "fr": {"type": "search_as_you_type"},
               "it": {"type": "search_as_you_type"},
+              "rm": {"type": "search_as_you_type"},
               "en": {"type": "search_as_you_type"}
             }
           },
@@ -22,6 +23,7 @@
               "de": {"type": "search_as_you_type"},
               "fr": {"type": "search_as_you_type"},
               "it": {"type": "search_as_you_type"},
+              "rm": {"type": "search_as_you_type"},
               "en": {"type": "search_as_you_type"}
             }
           },

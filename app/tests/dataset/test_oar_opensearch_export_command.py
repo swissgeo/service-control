@@ -23,7 +23,6 @@ import pytest
 
 from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import (
-    OAR_BASE_URL,
     OAS_BASE_URL,
     _is_generation_of,
     _rewrite_dist_links,
@@ -313,29 +312,13 @@ def test_dump_service_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # The per-language 'alternate' self links are dropped; the (de) self/collection and the
-    # external links are kept. 'title' becomes a {lang: value} object.
+    # The 'self', 'collection' and per-language 'alternate' links are dropped, only the external
+    # links are kept. 'title' becomes a {lang: value} object, 'type' is the constant record kind
+    # and the concrete service protocol is exposed as 'protocol'.
     assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
         "id": "wmts-geoadminch",
         "type": "Feature",
         "links": [
-            {
-                "href": (
-                    f"{OAR_BASE_URL}/collections/geoadmin.services"
-                    "/items/wmts-geoadminch?language=de"
-                ),
-                "rel": "self",
-                "title": "This Record",
-                "type": "application/json",
-                "hreflang": "de",
-            },
-            {
-                "href": f"{OAR_BASE_URL}/collections/geoadmin.services?language=de",
-                "rel": "collection",
-                "title": "Link to the collection this item belongs to",
-                "type": "application/json",
-                "hreflang": "de",
-            },
             {
                 "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
                 "rel": "service-doc",
@@ -344,13 +327,14 @@ def test_dump_service_document(db, tmp_path):
             },
             {
                 "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
-                "rel": "about",
+                "rel": "describedby",
                 "title": "WMS Capabilities File",
                 "type": "application/xml",
             },
         ],
         "properties": {
-            "type": "ogc:wms",
+            "type": "DataService",
+            "protocol": "ogc:wms",
             "title": {
                 "de": "WMTS geo.admin.ch",
                 "fr": "WMTS geo.admin.ch",
