@@ -63,7 +63,7 @@ def test_update_geopolitical_entitites(mock, client, db):
         {
             "id": 34481,
             "parent": 32395,
-            "level": "corp",
+            "level": "region",
             "bfsNumber": None,
             "parentBfsNumber": 4,
             "filterDisplay": "Korporation  Ursern (UR)",
@@ -113,7 +113,7 @@ def test_update_geopolitical_entitites(mock, client, db):
     saved_entities = GeopoliticalEntity.objects.all()
     assert len(saved_entities) == 2
     corp_entry = saved_entities.get(geopolitical_entity_id="34481")
-    assert corp_entry.type == "corporal"
+    assert corp_entry.type == "districtal"
     assert corp_entry.parent == saved_entities.get(geopolitical_entity_id="32395")
     assert (
         "Geopolitical entities import complete. Metrics: "
@@ -203,5 +203,6 @@ def test_sanitize_json_response():
 def test_map_levels():
     assert Command().map_levels("region") == GeopoliticalEntity.Level.DISTRICTAL
     assert Command().map_levels("county") == GeopoliticalEntity.Level.DISTRICTAL
+    assert Command().map_levels("federal") == GeopoliticalEntity.Level.FEDERAL
     assert Command().map_levels("") == GeopoliticalEntity.Level.COMMUNAL
     assert Command().map_levels("nonsense") == GeopoliticalEntity.Level.COMMUNAL
