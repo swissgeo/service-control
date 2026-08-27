@@ -725,10 +725,10 @@ class Command(CustomBaseCommand):
             metrics["datasets.created"] += created
             metrics["datasets.updated"] += updated
 
-            # Relationship: Part --Child--> Aggregate
-            if not part.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first():
+            # Relationship: Part --> Aggregate
+            if not part.related_datasets(DatasetToDataset.Role.PART, reverse=True).first():
                 relationship = DatasetToDataset(
-                    subject=part, role=DatasetToDataset.Role.CHILD, object=aggregate
+                    subject=part, role=DatasetToDataset.Role.PART, object=aggregate
                 )
                 relationship.save()
                 self.print(f"Adding relationship '{relationship}'")
