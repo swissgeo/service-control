@@ -1,11 +1,9 @@
 from io import StringIO
 from json import dumps
-from unittest.mock import patch
 
 from django.core.management import call_command
 
 
-@patch("organization.models.Client")
 def test_legal_command_creates_geopolitical_entities_from_file(client, db, tmp_path):
     file = tmp_path / "geopolitical_entities.json"
     file.write_text(
@@ -43,7 +41,6 @@ def test_legal_command_creates_geopolitical_entities_from_file(client, db, tmp_p
     )
 
 
-@patch("organization.models.Client")
 def test_legal_command_file_not_existing(client, db, tmp_path):
 
     err = StringIO()
@@ -57,7 +54,6 @@ def test_legal_command_file_not_existing(client, db, tmp_path):
     assert f"Failed to load file {tmp_path}" in err
 
 
-@patch("organization.models.Client")
 def test_legal_command_path_not_existing(client, db):
 
     err = StringIO()
