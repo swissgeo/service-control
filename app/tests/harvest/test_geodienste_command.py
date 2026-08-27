@@ -1,10 +1,16 @@
+import re
+from decimal import Decimal
 from io import StringIO
 from json import dumps
 from unittest.mock import Mock, patch
 
+from iso639 import Lang
+
 from django.core.management import call_command
 
+from dataservice.models import Dataservice, WMSDataservice
 from dataset.models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
+from distribution.models import Distribution, ExternalStacDistribution, ExternalWMSDistribution
 from harvest.models import (
     DatasetMapping,
     DatasetToContactMapping,
@@ -15,15 +21,53 @@ from organization.models import Contact, Organization, Unit
 from thesaurus.models import Thesaurus
 
 
+def api_response(services, config=None, capabilities=None):
+    """Creates an API mock with the given responses.
+
+    The arguments can either be a dictionary with the responses per language, or a dictionary with
+    on response taken for all languages.
+
+    Use it like this:
+
+        with patch("harvest.management.commands.import_geodienste.get"):
+            mock.side_effect = api_response(...)
+
+    """
+
+    def side_effect(url, timeout) -> dict:
+        mock = Mock()
+
+        if "services" in url:
+            response = services
+            language = url[-2:]
+            mock.json.return_value = response.get(language, response)
+        elif "viewer_config" in url:
+            response = config or {}
+            language = url[-2:]
+            mock.json.return_value = response.get(language, response)
+        elif "GetCapabilities" in url:
+            response = capabilities or {}
+            match = re.match(r".*/(deu|fra|eng|ita)\?.*", url)
+            language = Lang(pt3=match.groups()[0]).pt1
+            mock.status_code = 200
+            mock.content = response.get(language, b"" if isinstance(response, dict) else response)
+        else:
+            raise NotImplementedError(f"Don't know how to handle request to {url}")
+
+        return mock
+
+    return side_effect
+
+
 # --------------------------------------------------------------------------------------------------
 # Organizations
 # --------------------------------------------------------------------------------------------------
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_aggregate_organization(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -72,9 +116,9 @@ def test_command_updates_aggregate_organization(mock, client, db):
     )
     org.save()
 
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -130,9 +174,9 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
     )
     mapping.save()
 
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
 
     # ---------
     # No update
@@ -183,9 +227,9 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_cantonal_organization(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -237,9 +281,9 @@ def test_command_updates_cantonal_organization(mock, client, db):
     )
     org.save()
 
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -272,9 +316,9 @@ def test_command_updates_cantonal_organization(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_broker_organization(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [{"canton": "Broker", "broker": "BFE", "base_topic": "av"}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"canton": "Broker", "broker": "BFE", "base_topic": "av"}]}
+    )
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -317,9 +361,9 @@ def test_command_updates_broker_organization(mock, client, db):
     )
     org.save()
 
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": None, "broker": "BFE"}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": None, "broker": "BFE"}]}
+    )
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -351,16 +395,21 @@ def test_command_updates_broker_organization(mock, client, db):
 
 @patch("organization.models.Client")
 def test_command_creates_organization_from_file(client, db, tmp_path):
-    file = tmp_path / "services_de.json"
-    file.write_text(
-        dumps({"services": [{"base_topic": "av", "canton": "Broker", "broker": "BFE"}]})
-    )
+    for language in ("de", "fr", "it"):
+        file = tmp_path / f"services_{language}.json"
+        file.write_text(
+            dumps({"services": [{"base_topic": "av", "canton": "Broker", "broker": "BFE"}]})
+        )
+
+    for language in ("de", "fr", "it", "en"):
+        file = tmp_path / f"viewer_config_{language}.json"
+        file.write_text(dumps({}))
 
     out = StringIO()
     call_command(
         "import_geodienste",
         organizations=True,
-        services_directory=tmp_path,
+        directory=tmp_path,
         verbosity=2,
         stdout=out,
     )
@@ -405,9 +454,9 @@ def test_command_uses_organization_mapping(mock, client, db):
     )
     org_2.save()
 
-    mock.return_value.json.return_value = {
-        "services": [{"base_topic": "av", "canton": "LU", "broker": None}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
 
     # ---------
     # No update
@@ -487,9 +536,9 @@ def test_command_cleans_organizations(mock, client, db):
         data_source_ids=["removed"],
     ).save()
 
-    mock.return_value.json.return_value = {
-        "services": [{"canton": "LU", "broker": None, "base_topic": "av"}]
-    }
+    mock.side_effect = api_response(
+        {"services": [{"canton": "LU", "broker": None, "base_topic": "av"}]}
+    )
 
     # --------
     # No clean
@@ -498,7 +547,7 @@ def test_command_cleans_organizations(mock, client, db):
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (provider) found: removed" in out
+    assert "Removed data_source_ids (organization) found: removed" in out
     assert "Obsolete organizations found: obsolete" in out
 
     assert Organization.objects.filter(organization_id="obsolete").first()
@@ -525,17 +574,19 @@ def test_command_cleans_organizations(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_skips_aggregate_contact_if_no_org(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": None,
-                "contact_specialist_department": None,
-            },
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": None,
+                    "contact_specialist_department": None,
+                },
+            ]
+        }
+    )
 
     out = StringIO()
     call_command("import_geodienste", contacts=True, verbosity=2, stdout=out)
@@ -547,17 +598,19 @@ def test_command_skips_aggregate_contact_if_no_org(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_aggregate_contact(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": None,
-                "contact_specialist_department": None,
-            },
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": None,
+                    "contact_specialist_department": None,
+                },
+            ]
+        }
+    )
 
     org = Organization(
         organization_id="ch.kgk",
@@ -621,17 +674,19 @@ def test_command_creates_aggregate_contact(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_updates_aggregate_contact(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": None,
-                "contact_specialist_department": None,
-            },
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": None,
+                    "contact_specialist_department": None,
+                },
+            ]
+        }
+    )
 
     org = Organization(
         organization_id="ch.kgk",
@@ -703,17 +758,19 @@ def test_command_updates_aggregate_contact(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_aggregate_contact_mapping(mock, client, db):
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": None,
-                "contact_specialist_department": None,
-            },
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": None,
+                    "contact_specialist_department": None,
+                },
+            ]
+        }
+    )
 
     org = Organization(
         organization_id="ch.kgk-cgc",
@@ -848,31 +905,33 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     # --------------
     # Create
     # --------------
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": "Foo",
-                "contact_specialist_department": "Bar",
-            },
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "gefahrenkarten",
-                "contact_geo": "Foo",
-                "contact_specialist_department": "Baz",
-            },
-            {
-                "canton": None,
-                "broker": "missing",
-                "base_topic": "missing",
-                "contact_geo": "Qux",
-                "contact_specialist_department": "Quz",
-            },
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": "Foo",
+                    "contact_specialist_department": "Bar",
+                },
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "gefahrenkarten",
+                    "contact_geo": "Foo",
+                    "contact_specialist_department": "Baz",
+                },
+                {
+                    "canton": None,
+                    "broker": "missing",
+                    "base_topic": "missing",
+                    "contact_geo": "Qux",
+                    "contact_specialist_department": "Quz",
+                },
+            ]
+        }
+    )
 
     out = StringIO()
     call_command("import_geodienste", contacts=True, verbosity=2, stdout=out)
@@ -887,7 +946,7 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     assert "Contact LU for organization ch.geodienste-lu already exists" in out
     assert "Organization with organization_id ch.missing does not exist, skipping" in out
 
-    assert "Removed data_source_ids (provider) found: removed" in out
+    assert "Removed data_source_ids (contact) found: removed" in out
     assert "Obsolete contacts found: ch.geodienste-lu (obsolete)" in out
 
     assert Contact.objects.count() == 6
@@ -906,17 +965,19 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     # --------------
     # Update
     # --------------
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": "Foobar",
-                "contact_specialist_department": "Quux",
-            }
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": "Foobar",
+                    "contact_specialist_department": "Quux",
+                }
+            ]
+        }
+    )
 
     out = StringIO()
     call_command("import_geodienste", contacts=True, clean=False, verbosity=2, stdout=out)
@@ -926,7 +987,7 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     assert "Contact LU for organization ch.geodienste-lu updated" in out
     assert "Contact LU.av for organization ch.geodienste-lu already exists" in out
     assert "Contact LU.av for organization ch.geodienste-lu updated" in out
-    assert "Removed data_source_ids (provider) found: LU.gefahrenkarten, removed" in out
+    assert "Removed data_source_ids (contact) found: LU.gefahrenkarten, removed" in out
     assert "Obsolete contacts found: ch.geodienste-lu (obsolete)" in out
 
     assert Contact.objects.count() == 6
@@ -988,17 +1049,19 @@ def test_command_organization_mapping_for_contact(mock, client, db):
         provider_id_prefix="LU", organization_id="ch.geodienste-lu", update=True
     ).save()
 
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "contact_geo": "Foo",
-                "contact_specialist_department": None,
-            }
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "contact_geo": "Foo",
+                    "contact_specialist_department": None,
+                }
+            ]
+        }
+    )
 
     out = StringIO()
     call_command("import_geodienste", contacts=True, verbosity=2, stdout=out)
@@ -1053,54 +1116,53 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     # ------
     # Create
     # ------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1193,9 +1255,6 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     # ------
     # Re-Run
     # ------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1205,13 +1264,13 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
 
 @patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_updates_datasets(mock, db):  # noqa:PLR0915
+def test_command_updates_datasets(mock, db):
     aggregate = Dataset(
         dataset_id="ch.kgk.av",
         data_source=Dataset.DataSource.GEODIENSTE,
         data_source_ids=["KGK.av"],
         description_de="Abstract DE",
-        description_en="Abstract DE",
+        description_en="Abstract EN",
         description_fr="Abstract FR",
         description_it="Abstract IT",
         description_rm=None,
@@ -1229,7 +1288,7 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
         data_source=Dataset.DataSource.GEODIENSTE,
         data_source_ids=["LU.av"],
         description_de="Abstract DE",
-        description_en="Abstract DE",
+        description_en="Abstract EN",
         description_fr="",
         description_it="Abstract IT",
         description_rm=None,
@@ -1245,54 +1304,53 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     # ------
     # Create
     # ------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1340,9 +1398,6 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
     # ------
     # Re-Run
     # ------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1400,53 +1455,53 @@ def test_command_uses_dataset_mapping(mock, db):
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     # ---------
     # No update
     # ---------
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1467,8 +1522,6 @@ def test_command_uses_dataset_mapping(mock, db):
     aggregate_mapping.save()
     part_mapping.update = True
     part_mapping.save()
-
-    mock.return_value.json.side_effect = side_effect
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
@@ -1517,54 +1570,53 @@ def test_command_cleans_datasets(mock, db):
         title_short_fr="Removed",
     ).save()
 
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": {},
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": {},
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": {},
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": {},
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": {},
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": {},
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     # ---------
     # No clean
     # --------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1577,9 +1629,6 @@ def test_command_cleans_datasets(mock, db):
     # ------
     # Clean
     # ------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1600,53 +1649,53 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     # ------
     # No org
     # ------
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1690,8 +1739,6 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     )
     org_part.save()
 
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1713,8 +1760,6 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     # ------
     # Rerun
     # ------
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -1732,8 +1777,6 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     unit = org_aggregate.unit_set.get()
     DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.MAINTAINER).save()
     DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER).save()
-
-    mock.return_value.json.side_effect = side_effect
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
@@ -1779,52 +1822,52 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     OrganizationMapping(provider_id_prefix="KGK", organization_id="ch.kgk-cgc").save()
     OrganizationMapping(provider_id_prefix="LU", organization_id="ch.rawi").save()
-
-    mock.return_value.json.side_effect = side_effect
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
@@ -1882,47 +1925,49 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     DatasetToUnitMapping(
         dataset_id_prefix="ch.kgk.av", organization_id="ch.kgk-cgc", unit_id="aggregate"
@@ -1930,8 +1975,6 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
     DatasetToUnitMapping(
         dataset_id_prefix="ch.geodienste-lu.av", organization_id="ch.rawi", unit_id="part"
     ).save()
-
-    mock.return_value.json.side_effect = side_effect
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
@@ -2012,54 +2055,53 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     # ------
     # Create
     # ------
-
-    mock.return_value.json.side_effect = side_effect
-
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
@@ -2097,8 +2139,6 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
         name_en="kgk_new",
     )
     contact_aggregate_new.save()
-
-    mock.return_value.json.side_effect = side_effect
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
@@ -2201,49 +2241,49 @@ def test_command_uses_contact_mappings(mock, client, db):
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
     }
-    side_effect = [
+    mock.side_effect = api_response(
         {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title DE",
-                    "abstract": "Abstract DE",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title FR",
-                    "abstract": "Abstract FR",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-        {
-            "services": [
-                {
-                    "canton": "LU",
-                    "broker": None,
-                    "base_topic": "av",
-                    "topic_title": "Title IT",
-                    "abstract": "Abstract IT",
-                    "meta_data": meta_data,
-                    "website": "https://geodienste.ch/services/av",
-                }
-            ]
-        },
-    ]
-
-    mock.return_value.json.side_effect = side_effect
+            "de": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "LU",
+                        "broker": None,
+                        "base_topic": "av",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "website": "https://geodienste.ch/services/av",
+                    }
+                ]
+            },
+        }
+    )
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
@@ -2289,7 +2329,7 @@ def test_command_creates_keywords(rdf, mock, client, db):
     aggregate_dataset = Dataset(
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
-        description_en="Abstract DE",
+        description_en="Abstract EN",
         description_fr="Abstract FR",
         title_short_de="Title DE",
         title_short_en="Title EN",
@@ -2300,7 +2340,7 @@ def test_command_creates_keywords(rdf, mock, client, db):
     part_dataset = Dataset(
         dataset_id="ch.geodienste-lu.av",
         description_de="Abstract DE",
-        description_en="Abstract DE",
+        description_en="Abstract EN",
         description_fr="Abstract FR",
         title_short_de="Title DE",
         title_short_en="Title EN",
@@ -2308,17 +2348,19 @@ def test_command_creates_keywords(rdf, mock, client, db):
     )
     part_dataset.save()
 
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "keywords_gemet": "foo de",
-                "keywords_geocat": "bar de, baz de",
-            }
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "keywords_gemet": "foo de",
+                    "keywords_geocat": "bar de, baz de",
+                }
+            ]
+        }
+    )
 
     gemet_response = Mock()
     gemet_response.status_code = 200
@@ -2419,7 +2461,7 @@ def test_command_use_mapping_for_keywords(rdf, mock, client, db):
     aggregate_dataset = Dataset(
         dataset_id="ch.kgk-cgc.av",
         description_de="Abstract DE",
-        description_en="Abstract DE",
+        description_en="Abstract EN",
         description_fr="Abstract FR",
         title_short_de="Title DE",
         title_short_en="Title EN",
@@ -2430,7 +2472,7 @@ def test_command_use_mapping_for_keywords(rdf, mock, client, db):
     part_dataset = Dataset(
         dataset_id="ch.rawi.av",
         description_de="Abstract DE",
-        description_en="Abstract DE",
+        description_en="Abstract EN",
         description_fr="Abstract FR",
         title_short_de="Title DE",
         title_short_en="Title EN",
@@ -2448,17 +2490,19 @@ def test_command_use_mapping_for_keywords(rdf, mock, client, db):
     )
     part_mapping.save()
 
-    mock.return_value.json.return_value = {
-        "services": [
-            {
-                "canton": "LU",
-                "broker": None,
-                "base_topic": "av",
-                "keywords_gemet": "foo de",
-                "keywords_geocat": None,
-            }
-        ]
-    }
+    mock.side_effect = api_response(
+        {
+            "services": [
+                {
+                    "canton": "LU",
+                    "broker": None,
+                    "base_topic": "av",
+                    "keywords_gemet": "foo de",
+                    "keywords_geocat": None,
+                }
+            ]
+        }
+    )
 
     gemet_response = Mock()
     gemet_response.status_code = 200
@@ -2522,3 +2566,611 @@ def test_command_use_mapping_for_keywords(rdf, mock, client, db):
 
     assert aggregate_dataset.keywords.count() == 1
     assert part_dataset.keywords.count() == 1
+
+
+# --------------------------------------------------------------------------------------------------
+# Distributions
+# --------------------------------------------------------------------------------------------------
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR0915
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    dataset = Dataset(
+        dataset_id="ch.kgk.fixpunkte",
+        description_de="Abstract DE",
+        description_en="Abstract EN",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    dataset.save()
+
+    # ------
+    # Create
+    # ------
+    mock.side_effect = api_response(
+        services={
+            "services": [
+                {
+                    "base_topic": "fixpunkte",
+                    "canton": "lu",
+                    "broker": None,
+                }
+            ]
+        },
+        config={
+            "de": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "daten", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/deu",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "fr": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "donnees", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/fra",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "it": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "dati", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/ita",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "en": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "data", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/eng",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+        },
+    )
+
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert (
+        "Dataservice with dataservice_id wms-geodienste-fixpunkte does not exist yet, creating"
+        in out
+    )
+    assert (
+        "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability does not exist"
+        in out
+    )
+    assert (
+        "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist yet, creating" in out
+    )
+    assert (
+        "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms does not exist" in out
+    )
+    assert (
+        "Setting ch.kgk.fixpunkte:wms as preferred distribution for dataset ch.kgk.fixpunkte" in out
+    )
+
+    dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-fixpunkte")
+    assert dataservice_data.data_source == "geodienste"
+    assert dataservice_data.default_language == "de"
+    assert dataservice_data.languages == ["de", "fr", "it", "en"]
+    assert dataservice_data.title == "WMS geodienste.ch fixpunkte"
+    assert (
+        dataservice_data.capabilities_url
+        == "https://geodienste.ch/db/fixpunkte_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
+    )
+
+    dataservice_availability = Dataservice.objects.get(
+        dataservice_id="wms-geodienste-fixpunkte-availability"
+    )
+    assert dataservice_availability.data_source == "geodienste"
+    assert dataservice_availability.default_language == "de"
+    assert dataservice_availability.languages == ["de", "fr", "it", "en"]
+    assert dataservice_availability.title == "WMS geodienste.ch fixpunkte (availability)"
+    assert (
+        dataservice_availability.capabilities_url
+        == "https://geodienste.ch/db/availability/fixpunkte/portrayal/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
+    )
+
+    distribution_data = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.fixpunkte:wms")
+    assert distribution_data.data_source == "geodienste"
+    assert distribution_data.title_de == "Title DE"
+    assert distribution_data.title_en == "Title EN"
+    assert distribution_data.title_fr == "Title FR"
+    assert distribution_data.description_de == "Abstract DE"
+    assert distribution_data.description_en == "Abstract EN"
+    assert distribution_data.description_fr == "Abstract FR"
+    assert distribution_data.wms_layer_name_de == "daten"
+    assert distribution_data.wms_layer_name_fr == "donnees"
+    assert distribution_data.wms_layer_name_it == "dati"
+    assert distribution_data.wms_layer_name_en == "data"
+    assert distribution_data.wms_layer_name_rm is None
+    assert distribution_data.opacity == Decimal("0.90")
+    assert distribution_data.meta_information is False
+    assert distribution_data.dataservice == dataservice_data
+    assert distribution_data.dataset == dataset
+
+    distribution_availability = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.kgk.fixpunkte-availability:wms"
+    )
+    assert distribution_availability.data_source == "geodienste"
+    assert distribution_availability.title_de == "Verfügbarkeit"
+    assert distribution_availability.title_en == "Availability"
+    assert distribution_availability.title_fr == "Disponibilité"
+    assert distribution_availability.title_it == "Disponibilità"
+    assert distribution_availability.description_de == "Kantonalen Verfügbarkeit der Daten."
+    assert distribution_availability.description_en == "Availability of data at cantonal level."
+    assert (
+        distribution_availability.description_fr == "Disponibilité des données au niveau cantonal."
+    )
+    assert distribution_availability.description_it == "Disponibilità dei dati a livello cantonale."
+    assert distribution_availability.wms_layer_name_de == "availability_cantons"
+    assert distribution_availability.wms_layer_name_fr == "availability_cantons"
+    assert distribution_availability.wms_layer_name_it == "availability_cantons"
+    assert distribution_availability.wms_layer_name_en == "availability_cantons"
+    assert distribution_availability.wms_layer_name_rm is None
+    assert distribution_availability.meta_information is True
+    assert distribution_availability.dataservice == dataservice_availability
+    assert distribution_availability.dataset == dataset
+
+    distribution_stac = ExternalStacDistribution.objects.get(
+        distribution_id="ch.kgk.fixpunkte:stac"
+    )
+    assert distribution_stac.data_source == "geodienste"
+    assert distribution_stac.title_de == "STAC Download Collection"
+    assert distribution_stac.title_en == "STAC Download Collection"
+    assert distribution_stac.title_fr == "STAC Download Collection"
+    assert distribution_stac.title_it == "STAC Download Collection"
+    assert distribution_stac.title_rm == "STAC Download Collection"
+    assert distribution_stac.description_de is None
+    assert distribution_stac.description_en is None
+    assert distribution_stac.description_fr is None
+    assert distribution_stac.description_it is None
+    assert distribution_stac.description_rm is None
+    assert distribution_stac.stac_collection_id == "fixpunkte"
+    assert distribution_stac.meta_information is False
+    assert distribution_stac.dataservice.dataservice_id == "stac-geodienste"
+    assert distribution_stac.dataset == dataset
+
+    dataset.refresh_from_db()
+    assert dataset.preferred_distribution == distribution_data
+
+    # ------
+    # Update
+    # ------
+    dataservice_data.default_language = ""
+    dataservice_data.languages = []
+    dataservice_data.capabilities_url = "fixme"
+    dataservice_data.save()
+
+    distribution_data.wms_layer_name_de = "fixme"
+    distribution_data.wms_layer_name_rm = "fixme"
+    distribution_data.save()
+
+    distribution_stac.stac_collection_id = "fixme"
+    distribution_stac.save()
+
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte already exists" in out
+    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte changed" in out
+    assert (
+        "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability already exists"
+        in out
+    )
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms already exists" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms changed" in out
+    assert (
+        "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
+    )
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:stac already exists" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:stac changed" in out
+
+    dataservice_data.refresh_from_db()
+    assert dataservice_data.default_language == "de"
+    assert dataservice_data.languages == ["de", "fr", "it", "en"]
+    assert (
+        dataservice_data.capabilities_url
+        == "https://geodienste.ch/db/fixpunkte_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
+    )
+
+    distribution_data.refresh_from_db()
+    assert distribution_data.wms_layer_name_de == "daten"
+    assert distribution_data.wms_layer_name_rm is None
+
+    distribution_stac.refresh_from_db()
+    assert distribution_stac.stac_collection_id == "fixpunkte"
+
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte already exists" in out
+    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte changed" not in out
+    assert (
+        "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability already exists"
+        in out
+    )
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms already exists" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms changed" not in out
+    assert (
+        "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
+    )
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_distributions_title_from_wms(mock, client, db):
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    dataset = Dataset(
+        dataset_id="ch.kgk.fixpunkte",
+        description_de="x",
+        description_en="x",
+        description_fr="x",
+        title_short_de="x",
+        title_short_en="x",
+        title_short_fr="x",
+    )
+    dataset.save()
+
+    mock.side_effect = api_response(
+        services={
+            "services": [
+                {
+                    "base_topic": "fixpunkte",
+                    "canton": "lu",
+                    "broker": None,
+                }
+            ]
+        },
+        config={
+            "de": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "fixpunkte", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/deu",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "fr": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "points_fixes", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/fra",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "it": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "punti_fissi", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/ita",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "en": {
+                "fixpunkte": {
+                    "default": {
+                        "layers": [{"name": "control_points", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/fixpunkte_0/eng",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+        },
+        capabilities={
+            "de": b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                <WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">
+                    <Capability>
+                        <Layer>
+                            <Name>fixpunkte</Name>
+                            <Title>Title DE</Title>
+                            <Abstract>Abstract DE</Abstract>
+                        </Layer>
+                    </Capability>
+                </WMS_Capabilities>""",
+            "fr": b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                <WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">
+                    <Capability>
+                        <Layer>
+                            <Name>points_fixes</Name>
+                            <Title>Title FR</Title>
+                            <Abstract>Abstract FR</Abstract>
+                        </Layer>
+                    </Capability>
+                </WMS_Capabilities>""",
+            "it": b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                <WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">
+                    <Capability>
+                        <Layer>
+                            <Name>punti_fissi</Name>
+                            <Title>Title IT</Title>
+                            <Abstract>Abstract IT</Abstract>
+                        </Layer>
+                    </Capability>
+                </WMS_Capabilities>""",
+            "en": b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                <WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">
+                    <Capability>
+                        <Layer>
+                            <Name>control_points</Name>
+                            <Title>Title EN</Title>
+                            <Abstract>Abstract EN</Abstract>
+                        </Layer>
+                    </Capability>
+                </WMS_Capabilities>""",
+        },
+    )
+
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist " in out
+
+    distribution_data = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.fixpunkte:wms")
+    assert distribution_data.title_de == "Title DE"
+    assert distribution_data.title_en == "Title EN"
+    assert distribution_data.title_fr == "Title FR"
+    assert distribution_data.title_it == "Title IT"
+    assert distribution_data.title_rm is None
+    assert distribution_data.description_de == "Abstract DE"
+    assert distribution_data.description_en == "Abstract EN"
+    assert distribution_data.description_fr == "Abstract FR"
+    assert distribution_data.description_it == "Abstract IT"
+    assert distribution_data.description_rm is None
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_cleans_distributions(mock, client, db):
+    dataset = Dataset(
+        dataset_id="ch.kgk.av",
+        description_de="Abstract DE",
+        description_en="Abstract EN",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    dataset.save()
+
+    WMSDataservice(
+        dataservice_id="obsolete",
+        data_source=Dataservice.DataSource.GEODIENSTE,
+        data_source_ids=[],
+    ).save()
+    WMSDataservice(
+        dataservice_id="removed",
+        data_source=Dataservice.DataSource.GEODIENSTE,
+        data_source_ids=["removed"],
+    ).save()
+
+    ExternalWMSDistribution(
+        distribution_id="obsolete",
+        data_source=Distribution.DataSource.GEODIENSTE,
+        data_source_ids=[],
+        wms_layer_name_de="daten",
+        dataset=dataset,
+    ).save()
+    ExternalWMSDistribution(
+        distribution_id="removed",
+        data_source=Distribution.DataSource.GEODIENSTE,
+        data_source_ids=["removed"],
+        wms_layer_name_de="daten",
+        dataset=dataset,
+    ).save()
+
+    mock.side_effect = api_response(
+        services={
+            "services": [
+                {
+                    "base_topic": "av",
+                    "canton": "lu",
+                    "broker": None,
+                    "getcapabilities_wms": [
+                        "https://geodienste.ch/db/av_0/deu?SERVICE=WMS&REQUEST=GetCapabilities"
+                    ],
+                }
+            ]
+        },
+        config={
+            "de": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "daten", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/deu",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "fr": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "donnees", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/fra",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "it": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "dati", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/ita",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "en": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "data", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/eng",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+        },
+    )
+
+    # --------
+    # No clean
+    # --------
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removed data_source_ids (dataservice) found: removed" in out
+    assert "Obsolete dataservices found: obsolete" in out
+    assert "Removed data_source_ids (distribution) found: removed" in out
+    assert "Obsolete distributions found: obsolete" in out
+
+    assert Dataservice.objects.count() == 4
+    assert Distribution.objects.count() == 4
+
+    # --------
+    # Clean
+    # --------
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, clean=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removing obsolete data_source_id (dataservice) removed" in out
+    assert "Removing obsolete dataservice obsolete" in out
+    assert "Removing obsolete dataservice removed" in out
+    assert "Removing obsolete data_source_id (distribution) removed" in out
+    assert "Removing obsolete distribution obsolete" in out
+    assert "Removing obsolete distribution removed" in out
+
+    assert Dataservice.objects.count() == 2
+    assert Distribution.objects.count() == 2
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_useses_dataset_mapping_for_distributions(mock, client, db):
+    Dataset(
+        dataset_id="ch.kgk.av",
+        description_de="Abstract DE",
+        description_en="Abstract EN",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    ).save()
+    dataset = Dataset(
+        dataset_id="ch.kgk-cgc.av",
+        description_de="Abstract DE",
+        description_en="Abstract EN",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    dataset.save()
+
+    DatasetMapping(dataset_id_prefix="ch.kgk.av", dataset_id="ch.kgk-cgc.av").save()
+
+    mock.side_effect = api_response(
+        services={
+            "services": [
+                {
+                    "base_topic": "av",
+                    "canton": "lu",
+                    "broker": None,
+                    "getcapabilities_wms": [
+                        "https://geodienste.ch/db/av_0/deu?SERVICE=WMS&REQUEST=GetCapabilities"
+                    ],
+                }
+            ]
+        },
+        config={
+            "de": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "daten", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/deu",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "fr": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "donnees", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/fra",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "it": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "dati", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/ita",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "en": {
+                "av": {
+                    "default": {
+                        "layers": [{"name": "data", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/av_0/eng",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+        },
+    )
+
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset mapping found for dataset_id ch.kgk.av: ch.kgk-cgc.av" in out
+    assert "Setting ch.kgk.av:wms as preferred distribution for dataset ch.kgk-cgc.av" in out
+
+    dataset.refresh_from_db()
+    assert dataset.preferred_distribution.distribution_id == "ch.kgk.av:wms"

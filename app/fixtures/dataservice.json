@@ -91,5 +91,27 @@
       "dataservice_ptr": ["api3features-geoadminch"],
       "landing_page_url": "https://api3.geo.admin.ch/rest/services/ech/MapServer"
     }
+  },
+  {
+    "model": "dataservice.dataservice",
+    "fields": {
+      "polymorphic_ctype": ["dataservice", "ogcapistacdataservice"],
+      "dataservice_id": "stac-geodienste",
+      "title": "STAC API Geodienste",
+      "openapi_spec_url": null,
+      "documentation_url_de": "https://geodienste.ch/api-docs/index.html?urls.primaryName=geodienste.ch%20STAC%20API",
+      "documentation_url_fr": null,
+      "documentation_url_en": null,
+      "documentation_url_it": null,
+      "created_at": "2026-03-17T08:35:06.131Z",
+      "updated_at": "2026-03-17T08:35:06.131Z"
+    }
+  },
+  {
+    "model": "dataservice.ogcapistacdataservice",
+    "fields": {
+      "dataservice_ptr": ["stac-geodienste"],
+      "landing_page_url": "https://geodienste.ch/stac/"
+    }
   }
 ]

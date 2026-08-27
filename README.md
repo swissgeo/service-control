@@ -20,6 +20,9 @@
   - [Visual Studio Code Integration](#visual-studio-code-integration)
     - [Debug from Visual Studio Code](#debug-from-visual-studio-code)
     - [Run Tests From Within Visual Studio Code](#run-tests-from-within-visual-studio-code)
+- [Importing Data](#importing-data)
+  - [Importing from Harvest Tables](#importing-from-harvest-tables)
+  - [Importing from geodienste.ch](#importing-from-geodienstech)
 - [Exporting To OpenSearch](#exporting-to-opensearch)
   - [Atomic Replacement Without Downtime](#atomic-replacement-without-downtime)
   - [Inspecting The Documents With --dump](#inspecting-the-documents-with---dump)
@@ -166,6 +169,55 @@ For the automatic test discovery to work, make sure that vs code has the Python
 interpreter of your venv selected (`.venv/bin/python`).
 You can change the Python interpreter via menu "Python: Select Interpreter"
 in the Command Palette.
+
+## Importing Data
+
+### Importing from Harvest Tables
+
+To import swisstopo data from the harvest tables, run:
+
+```bash
+aws sso login --profile swisstopo-swissgeo
+
+app/manage.py loaddata app/fixtures/dataservice.json
+app/manage.py loaddata app/fixtures/mapping.json
+app/manage.py import_harvest_tables --organizations --datasets --distributions --keywords --contacts --profile swisstopo-swissgeo --target-env prod
+app/manage.py sync_from_capabilities --stac
+```
+
+To import from
+
+- INT, use `swisstopo-swissgeo` profile and `--target-env int`
+- DEV, use `swisstopo-swissgeo-dev` profile and `--target-env dev`
+
+### Importing from geodienste.ch
+
+To import geodienste data from the API, run:
+
+```bash
+app/manage.py loaddata app/fixtures/mapping.json
+app/manage.py import_geodienste --organizations --contacts --datasets --keywords --distributions
+```
+
+To import from INT or DEV, you need to manually download the files and place them in a directory since the are behind a HTTP Basic Auth.
+
+```bash
+mkdir services
+curl "https://{url}/info/services.json?language=de" > services/services_de.json
+curl "https://{url}/info/services.json?language=fr" > services/services_fr.json
+curl "https://{url}/info/services.json?language=en" > services/services_en.json
+curl "https://{url}/info/services.json?language=it" > services/services_it.json
+curl "https://{url}/info/viewer_config?language=de" > services/viewer_config_de.json
+curl "https://{url}/info/viewer_config?language=fr" > services/viewer_config_fr.json
+curl "https://{url}/info/viewer_config?language=en" > services/viewer_config_en.json
+curl "https://{url}/info/viewer_config?language=it" > services/viewer_config_it.json
+app/manage.py import_geodienste --organizations --contacts --datasets --keywords --distributions --directory services
+```
+
+Use
+
+- `int.geodienste.ch` for INT
+- `dev2.geodienste.ch` for DEV
 
 ## Exporting To OpenSearch
 

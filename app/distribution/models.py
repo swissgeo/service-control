@@ -5,18 +5,24 @@ from typing import ClassVar
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
+from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 
 logger = logging.getLogger(__name__)
 
 _context = "Distribution Model"
 
 
-class Distribution(PolymorphicModel):
+class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
+    pass
+
+
+class Distribution(DataSourceIdModelMixin, PolymorphicModel):
     """Abstract Base Distribution model."""
 
     # TODO: should this identifier be globally unique or just unique per dataset?
@@ -59,9 +65,17 @@ class Distribution(PolymorphicModel):
             ),
         )
         USER_INPUT = "user-input", _("Distribution DataSource", "User Input (Via Admin Interface)")
+        GEODIENSTE = "geodienste", _("Distribution DataSource", "geodienste.ch")
 
     data_source = models.CharField(
         _(_context, "Data Source"), choices=DataSource.choices, max_length=255
+    )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
     )
 
     created_at = models.DateTimeField(
@@ -75,7 +89,7 @@ class Distribution(PolymorphicModel):
         help_text=_(_context, "Date and time when the distribution was last updated"),
     )
 
-    objects = PolymorphicManager()
+    objects = DistributionManager()
 
     class Meta:
         verbose_name = _("Distribution", "Distributions")

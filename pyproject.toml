@@ -13,6 +13,8 @@ dependencies = [
     "django~=6.0",
     "gevent~=26.4",
     "gunicorn~=26.0",
+    "iso639-lang>=2.6.3",
+    "lxml>=6.1.1",
     "opensearch-py~=3.2",
     "opentelemetry-exporter-otlp~=1.39",
     "opentelemetry-instrumentation-botocore==0.60b1",
