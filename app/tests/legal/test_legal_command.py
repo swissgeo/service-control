@@ -6,7 +6,7 @@ from django.core.management import call_command
 
 
 @patch("organization.models.Client")
-def test_command_creates_organization_from_file(client, db, tmp_path):
+def test_legal_command_creates_geopolitical_entities_from_file(client, db, tmp_path):
     file = tmp_path / "geopolitical_entities.json"
     file.write_text(
         dumps(
@@ -41,3 +41,31 @@ def test_command_creates_organization_from_file(client, db, tmp_path):
         "Geopolitical entities import complete. Metrics: "
         "{'entities.created': 1, 'entities.updated': 1}" in out
     )
+
+
+@patch("organization.models.Client")
+def test_legal_command_file_not_existing(client, db, tmp_path):
+
+    err = StringIO()
+    call_command(
+        "import_legal",
+        geopolitical_entities_directory=tmp_path,
+        stderr=err,
+    )
+    err = err.getvalue()
+
+    assert f"Failed to load file {tmp_path}" in err
+
+
+@patch("organization.models.Client")
+def test_legal_command_path_not_existing(client, db):
+
+    err = StringIO()
+    call_command(
+        "import_legal",
+        geopolitical_entities_directory="testpath",
+        stderr=err,
+    )
+    err = err.getvalue()
+
+    assert "testpath does not exist" in err

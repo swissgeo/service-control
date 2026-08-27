@@ -178,46 +178,48 @@ class Command(CustomBaseCommand):
             )
 
             created_geopolitical_entity_id = str(created_entry.geopolitical_entity_id)
-            if created_geopolitical_entity_id in existing_geopolitical_entities:
-                existing_geopolitical_entity = existing_geopolitical_entities[
-                    created_geopolitical_entity_id
-                ]
+            if created_geopolitical_entity_id not in existing_geopolitical_entities:
+                continue
 
-                # alle necessary fields for comparison
-                fields_to_update = ["type", "name_de", "name_fr", "name_it", "name_rm", "abbr"]
-                changed_fields = []
+            existing_geopolitical_entity = existing_geopolitical_entities[
+                created_geopolitical_entity_id
+            ]
 
-                # special check for entity parent
-                geopolitical_entity_parent = None
-                if geopolitical_entity["parent"] is not None:
-                    geopolitical_entity_parent = str(geopolitical_entity["parent"])
+            # alle necessary fields for comparison
+            fields_to_update = ["type", "name_de", "name_fr", "name_it", "name_rm", "abbr"]
+            changed_fields = []
 
-                if (
-                    getattr(existing_geopolitical_entity.parent, "geopolitical_entity_id", None)
-                    != geopolitical_entity_parent
+            # special check for entity parent
+            geopolitical_entity_parent = None
+            if geopolitical_entity["parent"] is not None:
+                geopolitical_entity_parent = str(geopolitical_entity["parent"])
+
+            if (
+                getattr(existing_geopolitical_entity.parent, "geopolitical_entity_id", None)
+                != geopolitical_entity_parent
+            ):
+                if geopolitical_entity_parent is None:
+                    existing_geopolitical_entity.parent = None
+                else:
+                    existing_geopolitical_entity.parent = existing_geopolitical_entities.get(
+                        geopolitical_entity_parent
+                    )
+                changed_fields.append("parent")
+
+            # check for all other attribute values
+            for field in fields_to_update:
+                if getattr(existing_geopolitical_entity, field) != getattr(
+                    created_entry, field
                 ):
-                    if geopolitical_entity_parent is None:
-                        existing_geopolitical_entity.parent = None
-                    else:
-                        existing_geopolitical_entity.parent = existing_geopolitical_entities.get(
-                            geopolitical_entity_parent
-                        )
-                    changed_fields.append("parent")
+                    setattr(existing_geopolitical_entity, field, getattr(created_entry, field))
+                    changed_fields.append(field)
 
-                # check for all other attribute values
-                for field in fields_to_update:
-                    if getattr(existing_geopolitical_entity, field) != getattr(
-                        created_entry, field
-                    ):
-                        setattr(existing_geopolitical_entity, field, getattr(created_entry, field))
-                        changed_fields.append(field)
-
-                # save change if there was one
-                if changed_fields:
-                    existing_geopolitical_entity.updated_at = timezone.now()
-                    changed_fields.append("updated_at")
-                    existing_geopolitical_entity.save(update_fields=changed_fields)
-                    updated += 1
+            # save change if there was one
+            if changed_fields:
+                existing_geopolitical_entity.updated_at = timezone.now()
+                changed_fields.append("updated_at")
+                existing_geopolitical_entity.save(update_fields=changed_fields)
+                updated += 1
 
         return updated
 

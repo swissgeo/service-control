@@ -7,7 +7,6 @@ from legal.management.commands.import_legal import Command
 from legal.models import GeopoliticalEntity
 
 
-@patch("organization.models.Client")
 @patch("legal.management.commands.import_legal.get", name="mocks")
 def test_new_geopolitical_entitites(mock, client, db):
     mock.return_value.json.return_value = [
@@ -56,7 +55,6 @@ def test_new_geopolitical_entitites(mock, client, db):
     )
 
 
-@patch("organization.models.Client")
 @patch("legal.management.commands.import_legal.get", name="mock")
 def test_update_geopolitical_entitites(mock, client, db):
     mock.return_value.json.return_value = [
@@ -121,9 +119,63 @@ def test_update_geopolitical_entitites(mock, client, db):
     )
 
 
-@patch("organization.models.Client")
 @patch("legal.management.commands.import_legal.get", name="mock")
 def test_geopolitical_entitites_parent_not_existing(mock, client, db):
+    mock.return_value.json.return_value = [
+        {
+            "id": 34481,
+            "parent": None,
+            "level": "corp",
+            "bfsNumber": None,
+            "parentBfsNumber": 4,
+            "filterDisplay": "Korporation  Ursern (UR)",
+            "abbr": "KOPORATI",
+            "name": " Ursern",
+            "nameDe": " Ursern",
+            "nameFr": "Corporation d'Ursern",
+            "nameIt": "Corporazione di Ursern",
+            "nameRm": "Corporaziun d'Ursern",
+        }
+    ]
+
+    parent = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="32395",
+        parent=None,
+        type="canton",
+        name_de="Uri",
+        name_fr="Uri",
+        name_it="Uri",
+        name_rm="Uri",
+        abbr="UR",
+    )
+
+    GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="34481",
+        parent=parent,
+        type="corporal",
+        name_de="Ursern",
+        name_fr="Corporation d'Ursern",
+        name_it="Corporazione di Ursern",
+        name_rm="Corporaziun d'Ursern",
+        abbr="KOPORATI",
+    )
+
+    out = StringIO()
+    call_command("import_legal", verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    saved_entities = GeopoliticalEntity.objects.all()
+    assert len(saved_entities) == 2
+    corp_entry = saved_entities.get(geopolitical_entity_id="34481")
+    assert corp_entry.parent is None
+    assert (
+        "Geopolitical entities import complete. Metrics: "
+        "{'entities.created': 0, 'entities.updated': 1}" in out
+    )
+
+
+@patch("legal.management.commands.import_legal.get", name="mock")
+def test_geopolitical_entitites_parent_is_removed(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
