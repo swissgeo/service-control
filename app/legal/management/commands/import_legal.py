@@ -208,9 +208,7 @@ class Command(CustomBaseCommand):
 
             # check for all other attribute values
             for field in fields_to_update:
-                if getattr(existing_geopolitical_entity, field) != getattr(
-                    created_entry, field
-                ):
+                if getattr(existing_geopolitical_entity, field) != getattr(created_entry, field):
                     setattr(existing_geopolitical_entity, field, getattr(created_entry, field))
                     changed_fields.append(field)
 
