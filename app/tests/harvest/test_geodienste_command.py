@@ -1109,7 +1109,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert (
         "Dataset with dataset_id ch.geodienste-lu.av does not exist yet, creating a new one" in out
     )
-    assert "Adding relationship 'ch.geodienste-lu.av is a child of ch.kgk.av'" in out
+    assert "Adding relationship 'ch.geodienste-lu.av is a part of ch.kgk.av'" in out
 
     assert Dataset.objects.count() == 2
 
@@ -1188,7 +1188,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert part.title_short_it == "Title IT"
     assert part.title_short_rm is None
 
-    assert aggregate.related_datasets(DatasetToDataset.Role.CHILD).first() == part
+    assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
 
     # ------
     # Re-Run
@@ -1301,7 +1301,7 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
     assert "Dataset with dataset_id ch.geodienste-lu.av already exists" in out
     assert "Dataset with dataset_id ch.kgk.av changed, updating" in out
     assert "Dataset with dataset_id ch.geodienste-lu.av changed, updating" in out
-    assert "Adding relationship 'ch.geodienste-lu.av is a child of ch.kgk.av'" in out
+    assert "Adding relationship 'ch.geodienste-lu.av is a part of ch.kgk.av'" in out
 
     aggregate.refresh_from_db()
     assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
@@ -1335,7 +1335,7 @@ def test_command_updates_datasets(mock, db):  # noqa:PLR0915
     assert part.title_short_it == "Title IT"
     assert part.title_short_rm is None
 
-    assert aggregate.related_datasets(DatasetToDataset.Role.CHILD).first() == part
+    assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
 
     # ------
     # Re-Run
@@ -1489,7 +1489,7 @@ def test_command_uses_dataset_mapping(mock, db):
     assert part.data_source_ids == []
     assert part.title_short_de == "Title DE"
 
-    assert aggregate.related_datasets(DatasetToDataset.Role.CHILD).first() == part
+    assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
 
 
 @patch("harvest.management.commands.import_geodienste.get", name="get")
