@@ -1,3 +1,4 @@
+from io import StringIO
 from unittest.mock import patch
 
 from django.core.management import call_command
@@ -40,13 +41,19 @@ def test_new_geopolitical_entitites(mock, client, db):
         },
     ]
 
-    call_command("import_legal", verbosity=2)
+    out = StringIO()
+    call_command("import_legal", verbosity=2, stdout=out)
+    out = out.getvalue()
 
     saved_entities = GeopoliticalEntity.objects.all()
     assert len(saved_entities) == 2
     corp_entry = saved_entities.get(geopolitical_entity_id="34481")
     assert corp_entry.type == "corporal"
     assert corp_entry.parent == saved_entities.get(geopolitical_entity_id="32395")
+    assert (
+        "Geopolitical entities import complete. Metrics: "
+        "{'entities.created': 2, 'entities.updated': 1}" in out
+    )
 
 
 @patch("organization.models.Client")
@@ -99,13 +106,19 @@ def test_update_geopolitical_entitites(mock, client, db):
     corp_entry = saved_entities.get(geopolitical_entity_id="34481")
     assert corp_entry.parent is None
 
-    call_command("import_legal", verbosity=2)
+    out = StringIO()
+    call_command("import_legal", verbosity=2, stdout=out)
+    out = out.getvalue()
 
     saved_entities = GeopoliticalEntity.objects.all()
     assert len(saved_entities) == 2
     corp_entry = saved_entities.get(geopolitical_entity_id="34481")
     assert corp_entry.type == "corporal"
     assert corp_entry.parent == saved_entities.get(geopolitical_entity_id="32395")
+    assert (
+        "Geopolitical entities import complete. Metrics: "
+        "{'entities.created': 1, 'entities.updated': 1}" in out
+    )
 
 
 @patch("organization.models.Client")
@@ -142,7 +155,9 @@ def test_geopolitical_entitites_parent_not_existing(mock, client, db):
         },
     ]
 
-    call_command("import_legal", verbosity=2)
+    out = StringIO()
+    call_command("import_legal", verbosity=2, stdout=out)
+    out = out.getvalue()
 
     saved_entities = GeopoliticalEntity.objects.all()
     assert len(saved_entities) == 2
@@ -152,6 +167,10 @@ def test_geopolitical_entitites_parent_not_existing(mock, client, db):
     corp_entry = saved_entities.get(geopolitical_entity_id="32395")
     assert corp_entry.type == "cantonal"
     assert corp_entry.parent is None
+    assert (
+        "Geopolitical entities import complete. Metrics: "
+        "{'entities.created': 2, 'entities.updated': 2}" in out
+    )
 
 
 def test_sanitize_json_response():

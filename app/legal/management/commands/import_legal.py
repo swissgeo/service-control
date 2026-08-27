@@ -1,5 +1,4 @@
 import json
-import time
 from json import loads
 from pathlib import Path
 from typing import Any
@@ -7,6 +6,7 @@ from typing import Any
 from requests import get
 
 from django.core.management.base import CommandParser
+from django.utils import timezone
 
 from legal.models import GeopoliticalEntity
 from utils.command import CustomBaseCommand
@@ -95,21 +95,32 @@ class Command(CustomBaseCommand):
         return result
 
     def import_geopolitical_entitites(self, geopolitical_entities: list[dict]) -> None:
+
+        self.print_success("Start importing geopolitical entities")
+
+        metrics = {"entities.created": 0, "entities.updated": 0}
+
         "Import non existing entities"
-        self.add_new_entries(geopolitical_entities)
+        created = self.add_new_entries(geopolitical_entities)
+        metrics["entities.created"] += created
 
         "Update existing entitites"
-        self.update_existing_entries(geopolitical_entities)
+        updated = self.update_existing_entries(geopolitical_entities)
+        metrics["entities.updated"] += updated
 
-    def add_new_entries(self, geopolitical_entities: list[dict]) -> None:
+        self.print_success(f"Geopolitical entities import complete. Metrics: {metrics}")
+
+    def add_new_entries(self, geopolitical_entities: list[dict]) -> int:
         """
         Checks if an entry of the fetched api data exists already in the db.
         If not it creates a new entry
         """
 
+        created = 0
+
         # fetch all existing entries from the db
         existing_geopolitical_entity_objects = GeopoliticalEntity.objects.all()
-        exsiting_geopolitical_entities = {
+        existing_geopolitical_entities = {
             entity.geopolitical_entity_id: entity for entity in existing_geopolitical_entity_objects
         }
 
@@ -124,22 +135,27 @@ class Command(CustomBaseCommand):
                 name_it=geopolitical_entity["nameIt"],
                 name_rm=geopolitical_entity["nameRm"],
                 abbr=geopolitical_entity["abbr"],
-                created_at=time.localtime(),
-                updated_at=time.localtime(),
+                created_at=timezone.now(),
+                updated_at=timezone.now(),
             )
 
-            if str(created_entry.geopolitical_entity_id) not in exsiting_geopolitical_entities:
+            if str(created_entry.geopolitical_entity_id) not in existing_geopolitical_entities:
                 created_entries.append(created_entry)
+                created += 1
 
         GeopoliticalEntity.objects.bulk_create(created_entries)
 
-    def update_existing_entries(self, geopolitical_entities: list[dict]) -> None:
+        return created
+
+    def update_existing_entries(self, geopolitical_entities: list[dict]) -> int:
         """
         Checks if an entry of the fetched api data exists already in the db.
         If the entry already exists it checks if the data attribute values has changed
-        and apply the change if necessary to the db data. Also adds the parent attribute
+        and apply the change if necessary to the db data. Also adds the parent
         if it exists and is missing
         """
+
+        updated = 0
 
         # fetch all existing entries from the db
         existing_geopolitical_entity_objects = GeopoliticalEntity.objects.all()
@@ -157,8 +173,8 @@ class Command(CustomBaseCommand):
                 name_it=geopolitical_entity["nameIt"],
                 name_rm=geopolitical_entity["nameRm"],
                 abbr=geopolitical_entity["abbr"],
-                created_at=time.localtime(),
-                updated_at=time.localtime(),
+                created_at=timezone.now(),
+                updated_at=timezone.now(),
             )
 
             created_geopolitical_entity_id = str(created_entry.geopolitical_entity_id)
@@ -183,10 +199,8 @@ class Command(CustomBaseCommand):
                     if geopolitical_entity_parent is None:
                         existing_geopolitical_entity.parent = None
                     else:
-                        existing_geopolitical_entity.parent = (
-                            existing_geopolitical_entity_objects.filter(
-                                geopolitical_entity_id=geopolitical_entity_parent
-                            ).first()
+                        existing_geopolitical_entity.parent = existing_geopolitical_entities.get(
+                            geopolitical_entity_parent
                         )
                     changed_fields.append("parent")
 
@@ -200,9 +214,12 @@ class Command(CustomBaseCommand):
 
                 # save change if there was one
                 if changed_fields:
-                    existing_geopolitical_entity.updated_at = time.localtime()
+                    existing_geopolitical_entity.updated_at = timezone.now()
                     changed_fields.append("updated_at")
                     existing_geopolitical_entity.save(update_fields=changed_fields)
+                    updated += 1
+
+        return updated
 
     def map_levels(self, input_level: str) -> str:
         match input_level:
