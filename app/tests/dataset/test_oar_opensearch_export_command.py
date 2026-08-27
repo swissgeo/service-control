@@ -313,8 +313,8 @@ def test_dump_service_document(db, tmp_path):
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     # The 'self', 'collection' and per-language 'alternate' links are dropped, only the external
-    # links are kept. 'title' becomes a {lang: value} object and the service type is exposed as
-    # 'protocol'.
+    # links are kept. 'title' becomes a {lang: value} object, 'type' is the constant record kind
+    # and the concrete service protocol is exposed as 'protocol'.
     assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
         "id": "wmts-geoadminch",
         "type": "Feature",
@@ -333,6 +333,7 @@ def test_dump_service_document(db, tmp_path):
             },
         ],
         "properties": {
+            "type": "DataService",
             "protocol": "ogc:wms",
             "title": {
                 "de": "WMTS geo.admin.ch",
