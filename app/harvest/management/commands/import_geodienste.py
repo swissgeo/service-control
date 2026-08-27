@@ -1,9 +1,9 @@
 import json
+import re
 from decimal import Decimal
 from json import loads
 from pathlib import Path
 from typing import Any, Literal
-from urllib.parse import urlsplit
 
 from iso639 import Lang
 from lxml import etree  # ty:ignore[unresolved-import]
@@ -1214,16 +1214,12 @@ class Command(CustomBaseCommand):
             dataset.save()
 
         # Availability dataservice and distribution
-        parts = urlsplit(config_de["wms"])
         dataservice_availability, created, updated = self.import_wms_data_service(
             dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
             data_source_id=base_topic,
             languages=["de", "fr", "it", "en"],
             default_language="de",
-            capabilities_url=(
-                f"{parts.scheme}://{parts.netloc}/db/availability/{base_topic}/portrayal/{{lang3}}"
-                "?SERVICE=WMS&REQUEST=GetCapabilities"
-            ),
+            capabilities_url=self.get_availability_wms_address(capabilities_url),
             title=f"WMS geodienste.ch {dataservice_name} (availability)",
         )
         ds_created += created
@@ -1402,6 +1398,25 @@ class Command(CustomBaseCommand):
             return {}
 
         return result
+
+    def get_availability_wms_address(self, wms_url: str) -> str:
+        """Returns the address of the availability WMS for the given WMS URL.
+
+        Note: The address would be rather straight forward:
+
+                {scheme}://{netloc}/db/availability/{topic}/portrayal/{{lang3}}
+
+              The problem is, that the viewer config does not include the topic name of the default
+              topic. The workaround here is to transform the given URL and just strip the last
+              version part (e.g. _0, _1 etc.) from the version and add an exception for
+              planerischer_gewaesserschutz_v1_1_1 (which actually is planerischer_gewaesserschutz).
+        """
+        result = wms_url.replace(
+            "planerischer_gewaesserschutz_v1_1_1", "planerischer_gewaesserschutz"
+        )
+        result = result.replace("/db/", "/db/availability/")
+        result = result.replace("/{lang3}", "/portrayal/{lang3}")
+        return re.sub(r"_\d/", "/", result)
 
     def import_stac_distribution(
         self, distribution_id: str, data_source_id: str, **kwargs
