@@ -28,7 +28,7 @@ from dataset.export_models import (
     OARDistribution,
     featureinfo_distribution,
 )
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToDataset
 from dataset.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
@@ -425,7 +425,9 @@ class Command(CustomBaseCommand):
                 self.print(f" - {service.dataservice_id}")
                 documents.append(self.build_service_doc(service, OAR_BASE_URL))
         elif document_type == "datasets":
-            for dataset in Dataset.objects.all():
+            for dataset in Dataset.objects.exclude(
+                dataset_relations_as_subject__role=DatasetToDataset.Role.PART
+            ).all():
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_dataset_doc(dataset, OAR_BASE_URL))
         elif document_type == "distributions":
@@ -443,15 +445,21 @@ class Command(CustomBaseCommand):
             for lang in LANG_CODES
         }
         base = features["de"]
-        # Keep the (de) self/collection links and external links; drop the per-language
-        # 'alternate' self links.
-        links = [link for link in base["links"] if link.get("rel") != "alternate"]
+        # Keep the external links only; drop the intra-service 'self'/'collection' links and the
+        # per-language 'alternate' self links.
+        links = [
+            link
+            for link in base["links"]
+            if link.get("rel") not in ("self", "collection", "alternate")
+        ]
         return {
             "id": base["id"],
             "type": base["type"],
             "links": links,
             "properties": {
-                "type": base["properties"].get("type"),
+                # Constant record kind; the concrete service protocol is in 'protocol'.
+                "type": "DataService",
+                "protocol": base["properties"].get("type"),
                 "title": {
                     lang: features[lang]["properties"].get("title") or "" for lang in LANG_CODES
                 },

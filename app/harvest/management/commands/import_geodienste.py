@@ -1,13 +1,19 @@
 import json
+import re
+from decimal import Decimal
 from json import loads
 from pathlib import Path
 from typing import Any, Literal
 
+from iso639 import Lang
+from lxml import etree  # ty:ignore[unresolved-import]
 from requests import get
 
 from django.core.management.base import CommandParser
 
+from dataservice.models import Dataservice, OGCAPIStacDataservice, WMSDataservice
 from dataset.models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
+from distribution.models import Distribution, ExternalStacDistribution, ExternalWMSDistribution
 from harvest.models import (
     DatasetMapping,
     DatasetToContactMapping,
@@ -26,8 +32,11 @@ from thesaurus.models import Keyword, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 
-# The services API only supports German, French and Italian - no English!
-Language = Literal["de", "fr", "it"]
+# Note: The services API only supports German, French and Italian - no English. Also two kind of
+#       language codes are used: two-letter ISO 639-1 for API parameters and three-letter ISO 639-3
+#       for WMS/WFS/OGC Feature API server URLs.
+ISO639_1 = Literal["de", "fr", "it"]
+ISO639_3 = Literal["deu", "fra", "ita"]
 
 
 class Command(CustomBaseCommand):
@@ -58,18 +67,23 @@ class Command(CustomBaseCommand):
             action="store_true",
             help="Import keywords",
         )
+        parser.add_argument(
+            "--distributions",
+            action="store_true",
+            help="Import distributions",
+        )
 
         parser.add_argument(
-            "--services-endpoint",
-            default="https://geodienste.ch/info/services.json",
-            help="Services information (JSON) endpoint URL.",
+            "--endpoint",
+            default="https://geodienste.ch",
+            help="Endpoint base URL.",
         )
         parser.add_argument(
-            "--services-directory",
+            "--directory",
             help=(
-                "Path to a local folder containing the response of the services information (JSON) "
-                "endpoint URL. It expects one JSON file per language: services_de.json, "
-                "services_fr.json, services_it.json. Useful for local development."
+                "Path to a local folder containing the response of the services information and "
+                "viewer config API. It expects one JSON file per language: "
+                "services_[de/fr/it].json, viewer_config_[de/fr/it].json."
             ),
         )
         parser.add_argument(
@@ -96,99 +110,110 @@ class Command(CustomBaseCommand):
             help="Clean up",
         )
 
-    def handle(self, *args: Any, **options: Any) -> None:  # noqa:ARG002
+    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Main entry point of command."""
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
             self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
-        # Some entities like organizations and contacts have no localized contents, it is sufficient
-        # to just use the German response from the API. For localized content on the other hand, we
-        # need to query German, French and Italian (no English available!).
-        languages: set[Language] = set()
-        if options["organizations"] or options["contacts"] or options["keywords"]:
-            languages.add("de")
-        if options["datasets"]:
-            languages.update({"de", "fr", "it"})
-
         services = {}
-        if languages:
-            services = self.get_services(
-                options["services_endpoint"],
-                options["services_directory"],
-                languages,
-                options["timeout"],
-            )
-        if not services:
-            self.print_warning("No services available, aborting")
+        services, configs = self.get_services(
+            options["endpoint"], options["directory"], options["timeout"]
+        )
+        if not services or not configs:
+            self.print_warning("No services/configurations available, aborting")
             return
 
         # Handle sub-commands
+        clean = options["clean"]
         if options["organizations"]:
-            self.import_organizations(services, options["clean"])
+            self.import_organizations(services, clean)
         if options["contacts"]:
-            self.import_contacts(services, options["clean"])
+            self.import_contacts(services, clean)
         if options["datasets"]:
-            self.import_datasets(services, options["clean"])
+            self.import_datasets(services, clean)
         if options["keywords"]:
             self.import_keywords(services, options["gemet_thesaurus"], options["geocat_thesaurus"])
+        if options["distributions"]:
+            self.import_distributions(configs, clean)
 
     # ##########################################################################
-    def get_services(
-        self,
-        services_endpoint: str,
-        services_directory: str,
-        languages: set[Language],
-        timeout: int,
-    ) -> dict:
-        """Download the service information as JSON from the provided endpoint URL or load the from
-        the given directory for each requested language.
+    def get_services(self, endpoint: str, directory: str, timeout: int) -> tuple[dict, dict]:
+        """Download the service information and viewer configuration as JSON from the provided
+        endpoint URL or load them from the given directory for each requested language.
 
-        Transform the result to be indexable by provider and base topic.
+        Note that the services API only supports German, French and Italian - but not English. The
+        viewer configuration on the other hand also supports English, but falls back mostly to
+        German.
+
+        Transform the services result to be indexable by provider and base topic.
         """
 
-        result = {}
+        services = {}
+        configs = {}
 
         # Load from local files
-        if services_directory:
-            path = Path(services_directory)
+        if directory:
+            path = Path(directory)
             if not path.exists():
-                self.print_error(f"{services_directory} does not exist")
-                return {}
+                self.print_error(f"{directory} does not exist")
+                return {}, {}
 
-            for language in sorted(languages):
-                filename = path / f"services_{language}.json"
-                if not filename.exists():
-                    self.print_error(f"{services_directory} does not exist")
-                    return {}
+            for language in ("de", "fr", "it"):
+                services[language] = self.read_json_file(path / f"services_{language}.json")
 
-                try:
-                    with open(filename) as file:
-                        result[language] = loads(file.read())
-                except Exception as e:  # noqa: BLE001
-                    self.print_error(f"Failed to load file {filename}: {e}")
-                    return {}
+            for language in ("de", "fr", "it", "en"):
+                configs[language] = self.read_json_file(path / f"viewer_config_{language}.json")
 
         # Load from remote endpoint
         else:
-            for language in sorted(languages):
-                try:
-                    url = f"{services_endpoint}?language={language}"
-                    response = get(url, timeout=timeout)
-                    response.raise_for_status()
-                    result[language] = response.json()
-                except Exception as e:  # noqa: BLE001
-                    self.print_error(f"Failed to retreive services: {e}")
-                    return {}
+            for language in ("de", "fr", "it"):
+                services[language] = self.read_json_url(
+                    f"{endpoint}/info/services.json?language={language}", timeout
+                )
+
+            for language in ("de", "fr", "it", "en"):
+                configs[language] = self.read_json_url(
+                    f"{endpoint}/info/viewer_config?language={language}", timeout
+                )
+
+        # Check if everything is there
+        if any(service is None for service in services.values()) or any(
+            config is None for config in configs.values()
+        ):
+            return {}, {}
 
         # Transform the result
-        for language in languages:
-            result[language] = {
-                self.service_key(service): service for service in result[language]["services"]
+        for language in ("de", "fr", "it"):
+            services[language] = {
+                self.service_key(service): service for service in services[language]["services"]
             }
 
-        return result
+        return services, configs
+
+    def read_json_file(self, filename: Path) -> dict | None:
+        """Reads the given JSON file."""
+        if not filename.exists():
+            self.print_error(f"{filename} does not exist")
+            return None
+
+        try:
+            with open(filename) as file:
+                return loads(file.read())
+        except Exception as e:  # noqa: BLE001
+            self.print_error(f"Failed to load file {filename}: {e}")
+            return None
+
+    def read_json_url(self, url: str, timeout: int) -> dict | None:
+        """Reads the given JSON response."""
+        try:
+            response = get(url, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:  # noqa: BLE001
+            self.print_error(f"Failed to retreive {url}: {e}")
+            return None
 
     def service_key(self, service: dict) -> str:
         """Returns the key under which the given service entry will be available in the transformed
@@ -230,7 +255,7 @@ class Command(CustomBaseCommand):
 
         return f"ch.{provider_id.lower()}"
 
-    def dataset_id(self, service: dict, aggregate: bool = False) -> str:
+    def dataset_id(self, service: dict, aggregate: bool) -> str:
         """Returns the dataset ID for the given service entry. Returns the dataset ID for the
         aggregate dataset of the given service entry if aggregate=True. This follows the naming
         scheme used for the service-control entities elsewhere.
@@ -244,6 +269,50 @@ class Command(CustomBaseCommand):
         provider_id = self.provider_id(None if aggregate else service)
         organization_id = self.organization_id(provider_id)
         return "{}.{}".format(organization_id, service["base_topic"].lower())
+
+    def cleanup_objects(
+        self,
+        cls: type[Dataset | Dataservice | Distribution | Contact | Organization],
+        processed: set[str],
+        clean: bool,
+    ) -> tuple[int, int]:
+        """Cleanup organizations
+
+        - Check for data source IDs referenced in the organizations but not present anymore in the
+          geodienste Services Information API; optionally clean them
+        - Check for obsolete organizations, i.e. organizations created by this command but with no
+          data source ID reference; optionally delete them
+
+        """
+
+        existing = cls.objects.existing_data_source_ids(cls.DataSource.GEODIENSTE)
+        name = cls.__name__.lower()
+
+        if removed := existing - processed:
+            if clean:
+                for data_source_id in removed:
+                    self.print_warning(
+                        f"Removing obsolete data_source_id ({name}) {data_source_id}"
+                    )
+                    cls.objects.remove_data_source_id(data_source_id)
+            else:
+                ids = sorted(str(r) for r in removed)
+                self.print_warning(f"Removed data_source_ids ({name}) found: {', '.join(ids)}")
+
+        obsolete = cls.objects.filter(
+            data_source=cls.DataSource.GEODIENSTE,
+            data_source_ids=[],
+        )
+        if obsolete.count():
+            if clean:
+                for obj in obsolete:
+                    self.print_warning(f"Removing obsolete {name} {obj}")
+                    obj.delete()
+            else:
+                ids = sorted(str(obj) for obj in obsolete)
+                self.print_warning(f"Obsolete {name}s found: {', '.join(ids)}")
+
+        return len(removed), len(obsolete)
 
     # ##########################################################################
     def import_organizations(self, services: dict, clean: bool) -> None:
@@ -314,7 +383,7 @@ class Command(CustomBaseCommand):
         (
             metrics["organizations.removed"],
             metrics["organizations.obsoleted"],
-        ) = self.cleanup_organizations(processed, clean)
+        ) = self.cleanup_objects(Organization, processed, clean)
 
         self.print_success(f"Organization import completed. Metrics: {metrics}")
 
@@ -371,44 +440,6 @@ class Command(CustomBaseCommand):
         org.save()
 
         return 1 if created else 0, 1 if updated else 0
-
-    def cleanup_organizations(self, processed: set[str], clean: bool) -> tuple[int, int]:
-        """Cleanup organizations
-
-        - Check for data source IDs referenced in the organizations but not present anymore in the
-          geodienste Services Information API; optionally clean them
-        - Check for obsolete organizations, i.e. organizations created by this command but with no
-          data source ID reference; optionally delete them
-
-        """
-
-        existing = Organization.objects.existing_data_source_ids(Organization.DataSource.GEODIENSTE)
-
-        if removed := existing - processed:
-            if clean:
-                for data_source_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id (organization) {data_source_id}"
-                    )
-                    Organization.objects.remove_data_source_id(data_source_id)
-            else:
-                ids = sorted(str(r) for r in removed)
-                self.print_warning(f"Removed data_source_ids (provider) found: {', '.join(ids)}")
-
-        obsolete = Organization.objects.filter(
-            data_source=Organization.DataSource.GEODIENSTE,
-            data_source_ids=[],
-        )
-        if obsolete.count():
-            if clean:
-                for organization in obsolete:
-                    self.print_warning(f"Removing obsolete organization {organization}")
-                    organization.delete()
-            else:
-                ids = sorted(str(c) for c in obsolete)
-                self.print_warning(f"Obsolete organizations found: {', '.join(ids)}")
-
-        return len(removed), len(obsolete)
 
     # ##########################################################################
     def import_contacts(self, services: dict, clean: bool) -> None:
@@ -483,7 +514,7 @@ class Command(CustomBaseCommand):
         (
             metrics["contacts.removed"],
             metrics["contacts.obsoleted"],
-        ) = self.cleanup_contacts(processed, clean)
+        ) = self.cleanup_objects(Contact, processed, clean)
 
         self.print_success(f"Contact import completed. Metrics: {metrics}")
 
@@ -540,46 +571,8 @@ class Command(CustomBaseCommand):
 
         return 0, 1 if updated else 0
 
-    def cleanup_contacts(self, processed: set[str], clean: bool) -> tuple[int, int]:
-        """Cleanup contacts
-
-        - Check for data source IDs referenced in the contacts but not present anymore in the
-          geodienste Services Information API; optionally clean them
-        - Check for obsolete contacts, i.e. contacts created by this command but with no
-          data source ID reference; optionally delete them
-
-        """
-
-        existing = Contact.objects.existing_data_source_ids(Contact.DataSource.GEODIENSTE)
-
-        if removed := existing - processed:
-            if clean:
-                for data_source_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id (contact) {data_source_id}"
-                    )
-                    Contact.objects.remove_data_source_id(data_source_id)
-            else:
-                ids = sorted(str(r) for r in removed)
-                self.print_warning(f"Removed data_source_ids (provider) found: {', '.join(ids)}")
-
-        obsolete = Contact.objects.filter(
-            data_source=Contact.DataSource.GEODIENSTE,
-            data_source_ids=[],
-        )
-        if obsolete.count():
-            if clean:
-                for contact in obsolete:
-                    self.print_warning(f"Removing obsolete contact {contact}")
-                    contact.delete()
-            else:
-                ids = sorted(str(c) for c in obsolete)
-                self.print_warning(f"Obsolete contacts found: {', '.join(ids)}")
-
-        return len(removed), len(obsolete)
-
     # ##########################################################################
-    def import_datasets(self, services: dict, clean: bool) -> None:
+    def import_datasets(self, services: dict, clean: bool) -> None:  # noqa: PLR0915
         """Imports datasets.
 
         For each basic topic,
@@ -616,6 +609,44 @@ class Command(CustomBaseCommand):
 
         processed = set()
 
+        # Add a legacy contact to the record, since the OAR export currently uses legacy contacts
+        legacy_aggregate_contacts = [
+            {
+                "org_name": contact.organization.name_de,
+                "org_name_de": contact.organization.name_de,
+                "org_name_fr": contact.organization.name_fr,
+                "org_name_en": contact.organization.name_en,
+                "org_name_it": contact.organization.name_it,
+                "org_name_rm": contact.organization.name_rm,
+                "org_acronym": contact.organization.acronym_de,
+                "org_acronym_de": contact.organization.acronym_de,
+                "org_acronym_fr": contact.organization.acronym_fr,
+                "org_acronym_en": contact.organization.acronym_en,
+                "org_acronym_it": contact.organization.acronym_it,
+                "org_acronym_rm": contact.organization.acronym_rm,
+                "contact_voice": contact.phone,
+                "contact_city": contact.address_city,
+                "contact_postal_code": contact.address_postal_code,
+                "contact_country": contact.address_country,
+                "contact_electronic_mail_addresses": [contact.email],
+                "contact_delivery_point": contact.address_delivery_point,
+                "online_resources": [
+                    {
+                        "url": contact.url_de,
+                        "url_de": contact.url_de,
+                        "url_fr": contact.url_fr,
+                        "url_en": contact.url_en,
+                        "url_it": contact.url_it,
+                        "url_rm": contact.url_rm,
+                    }
+                ],
+                "role": "custodian",
+            }
+            for contact in Contact.objects.filter(
+                organization__organization_id=self.organization_id(self.provider_id())
+            ).all()
+        ]
+
         for key, service in services["de"].items():
             common = {
                 "title_short_de": service["topic_title"],
@@ -627,7 +658,6 @@ class Command(CustomBaseCommand):
                 "description_fr": services["fr"][key]["abstract"],
                 "description_it": services["it"][key]["abstract"],
             }
-
             # Dataset: Aggregate
             base_topic = service["base_topic"]
             aggregate_dataset_id = self.dataset_id(service, aggregate=True)
@@ -636,12 +666,19 @@ class Command(CustomBaseCommand):
                 provider_id = self.provider_id()
                 data_source_id = f"{provider_id}.{base_topic}"
                 processed.add(data_source_id)
+                extra: dict = {
+                    **common,
+                    "legacy_contacts": legacy_aggregate_contacts,
+                    "legacy_part_info_url_de": f"{service['website']}?locale=de#info_cantons",
+                    "legacy_part_info_url_fr": f"{service['website']}?locale=fr#info_cantons",
+                    "legacy_part_info_url_it": f"{service['website']}?locale=it#info_cantons",
+                }
                 aggregate, created, updated = self.import_dataset(
                     aggregate_dataset_id,
                     data_source_id,
                     dataset_mappings,
                     geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
-                    **common,
+                    **extra,
                 )
                 aggregated[aggregate_dataset_id] = aggregate
                 metrics["datasets.created"] += created
@@ -673,7 +710,7 @@ class Command(CustomBaseCommand):
             data_source_id = f"{provider_id}.{base_topic}"
             processed.add(data_source_id)
             part, created, updated = self.import_dataset(
-                self.dataset_id(service),
+                self.dataset_id(service, aggregate=False),
                 data_source_id,
                 dataset_mappings,
                 **common,
@@ -681,10 +718,10 @@ class Command(CustomBaseCommand):
             metrics["datasets.created"] += created
             metrics["datasets.updated"] += updated
 
-            # Relationship: Part --Child--> Aggregate
-            if not part.related_datasets(DatasetToDataset.Role.CHILD, reverse=True).first():
+            # Relationship: Part --> Aggregate
+            if not part.related_datasets(DatasetToDataset.Role.PART, reverse=True).first():
                 relationship = DatasetToDataset(
-                    subject=part, role=DatasetToDataset.Role.CHILD, object=aggregate
+                    subject=part, role=DatasetToDataset.Role.PART, object=aggregate
                 )
                 relationship.save()
                 self.print(f"Adding relationship '{relationship}'")
@@ -721,12 +758,10 @@ class Command(CustomBaseCommand):
             metrics["dataset_contacts.created"] += created
             metrics["dataset_contacts.removed"] += removed
 
-            # TODO: preferred_distribution
-
         (
             metrics["datasets.removed"],
             metrics["datasets.obsoleted"],
-        ) = self.cleanup_datasets(processed, clean)
+        ) = self.cleanup_objects(Dataset, processed, clean)
 
         self.print_success(f"Dataset import completed. Metrics: {metrics}")
 
@@ -877,44 +912,6 @@ class Command(CustomBaseCommand):
 
         return added, removed
 
-    def cleanup_datasets(self, processed: set[str], clean: bool) -> tuple[int, int]:
-        """Cleanup datasets
-
-        - Check for data source IDs referenced in the datasets but not present anymore in the
-          geodienste Services Information API; optionally clean them
-        - Check for obsolete datasets, i.e. datasets created by this command but with no
-          data source ID reference; optionally delete them
-
-        """
-
-        existing = Dataset.objects.existing_data_source_ids(Dataset.DataSource.GEODIENSTE)
-
-        if removed := existing - processed:
-            if clean:
-                for data_source_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id (dataset) {data_source_id}"
-                    )
-                    Dataset.objects.remove_data_source_id(data_source_id)
-            else:
-                ids = sorted(str(r) for r in removed)
-                self.print_warning(f"Removed data_source_ids (dataset) found: {', '.join(ids)}")
-
-        obsolete = Dataset.objects.filter(
-            data_source=Dataset.DataSource.GEODIENSTE,
-            data_source_ids=[],
-        )
-        if obsolete.count():
-            if clean:
-                for dataset in obsolete:
-                    self.print_warning(f"Removing obsolete dataset {dataset}")
-                    dataset.delete()
-            else:
-                ids = sorted(str(c) for c in obsolete)
-                self.print_warning(f"Obsolete datasets found: {', '.join(ids)}")
-
-        return len(removed), len(obsolete)
-
     # ##########################################################################
     def import_keywords(self, services: dict, gemet_thesaurus: str, geocat_thesaurus: str) -> None:  # noqa: C901
         """Import keywords.
@@ -979,7 +976,7 @@ class Command(CustomBaseCommand):
                     self.print(f"Dataset with dataset_id {dataset_id} does not exist, skipping")
 
             # Get cantonal dataset
-            dataset_id = self.dataset_id(service)
+            dataset_id = self.dataset_id(service, aggregate=False)
             part, mapping = mappings.match(dataset_id)
             update_part = mapping.update if mapping else True
             if part:
@@ -1075,3 +1072,395 @@ class Command(CustomBaseCommand):
                 keywords.append(keyword)
 
         return keywords, created
+
+    # ##########################################################################
+    def import_distributions(self, configs: dict, clean: bool) -> None:
+        """Import the distributions and dataservices used by the aggregate datasets.
+
+        Ensures that per aggregate dataset (base topic):
+        - one default and one availability WMS data service is created (or updated)
+        - one default and one availability external WMS distribution for the data is created
+          (or updated)
+
+        """
+
+        self.print_success("Importing distributions")
+
+        mappings = DatasetMapping.table()
+
+        metrics = {
+            "dataservices.created": 0,
+            "dataservices.updated": 0,
+            "datservices.removed": 0,
+            "datservices.obsoleted": 0,
+            "distributions.created": 0,
+            "distributions.updated": 0,
+            "distributions.removed": 0,
+            "distributions.obsoleted": 0,
+        }
+
+        processed = set()
+        for base_topic in configs["de"]:
+            processed.add(base_topic)
+
+            # Dataset
+            dataset_id = self.dataset_id({"base_topic": base_topic}, aggregate=True)
+            dataset, _ = mappings.match(dataset_id)
+            if dataset:
+                self.print(f"Dataset mapping found for dataset_id {dataset_id}: {dataset}")
+            else:
+                dataset = Dataset.objects.filter(dataset_id=dataset_id).first()
+                if not dataset:
+                    self.print_warning(f"No dataset {dataset_id}")
+                    continue
+
+            languages = [Lang(pt3=lang).pt1 for lang in configs["de"][base_topic]["languages"]]
+
+            # Data Service and Distributions
+            ds_created, ds_updated, dist_created, dist_updated = (
+                self.import_dataservices_and_distributions(
+                    dataset=dataset,
+                    dataservice_name=base_topic,
+                    distribution_id=f"{dataset_id}:wms",
+                    base_topic=base_topic,
+                    languages=languages,  # ty:ignore[invalid-argument-type]
+                    config_de=configs["de"][base_topic]["default"],
+                    config_fr=configs["fr"][base_topic]["default"],
+                    config_it=configs["it"][base_topic]["default"],
+                    config_en=configs["en"][base_topic]["default"],
+                )
+            )
+            metrics["dataservices.created"] += ds_created
+            metrics["dataservices.updated"] += ds_updated
+            metrics["distributions.created"] += dist_created
+            metrics["distributions.updated"] += dist_updated
+
+        (
+            metrics["dataservices.removed"],
+            metrics["dataservices.obsoleted"],
+        ) = self.cleanup_objects(Dataservice, processed, clean)
+
+        (
+            metrics["distributions.removed"],
+            metrics["distributions.obsoleted"],
+        ) = self.cleanup_objects(Distribution, processed, clean)
+
+        self.print_success(f"Distribution import completed. Metrics: {metrics}")
+
+    def import_dataservices_and_distributions(  # noqa: PLR0913, PLR0917
+        self,
+        dataset: Dataset,
+        dataservice_name: str,
+        distribution_id: str,
+        base_topic: str,
+        languages: list[ISO639_1],
+        config_de: dict,
+        config_fr: dict,
+        config_it: dict,
+        config_en: dict,
+    ) -> tuple[int, int, int, int]:
+        """Creates the dataservices and all necessary distributions for the given layer
+        layer.
+
+        Returns a tuple with the number of created dataservices, updated dataservices, created
+        distributions and updated distributions.
+        """
+        ds_created, ds_updated, dist_created, dist_updated = 0, 0, 0, 0
+
+        # Data dataservice
+        capabilities_url = config_de["wms"].replace(
+            "/deu", "/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
+        )
+        dataservice, created, updated = self.import_wms_data_service(
+            dataservice_id=f"wms-geodienste-{dataservice_name}",
+            data_source_id=base_topic,
+            languages=languages,
+            default_language="de",
+            capabilities_url=capabilities_url,
+            title=f"WMS geodienste.ch {dataservice_name}",
+        )
+        ds_created += created
+        ds_updated += updated
+
+        # Data distribution
+        layer_names = {
+            "de": config_de["layers"][0]["name"],
+            "fr": config_fr["layers"][0]["name"],
+            "it": config_it["layers"][0]["name"] if "it" in languages else None,
+            "en": config_en["layers"][0]["name"] if "en" in languages else None,
+        }
+        titles_and_descriptions = self.get_wms_layer_title_and_description(
+            capabilities_url, layer_names, dataset
+        )
+        distribution, created, updated = self.import_wms_distribution(
+            distribution_id=distribution_id,
+            data_source_id=base_topic,
+            dataset=dataset,
+            dataservice=dataservice,
+            wms_layer_name_de=layer_names["de"],
+            wms_layer_name_fr=layer_names["fr"],
+            wms_layer_name_it=layer_names["it"],
+            wms_layer_name_en=layer_names["en"],
+            wms_layer_name_rm=None,
+            opacity=Decimal(str(config_de["layers"][0]["opacity"])),
+            **titles_and_descriptions,
+        )
+        dist_created += created
+        dist_updated += updated
+
+        if dataset.preferred_distribution != distribution:
+            self.print(f"Setting {distribution} as preferred distribution for dataset {dataset}")
+            dataset.preferred_distribution = distribution
+            dataset.save()
+
+        # Availability dataservice and distribution
+        dataservice_availability, created, updated = self.import_wms_data_service(
+            dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
+            data_source_id=base_topic,
+            languages=["de", "fr", "it", "en"],
+            default_language="de",
+            capabilities_url=self.get_availability_wms_address(capabilities_url),
+            title=f"WMS geodienste.ch {dataservice_name} (availability)",
+        )
+        ds_created += created
+        ds_updated += updated
+
+        _, created, updated = self.import_wms_distribution(
+            distribution_id=distribution_id.replace(":wms", "-availability:wms"),
+            data_source_id=base_topic,
+            dataset=dataset,
+            dataservice=dataservice_availability,
+            title_de="Verfügbarkeit",
+            title_en="Availability",
+            title_fr="Disponibilité",
+            title_it="Disponibilità",
+            description_de="Kantonalen Verfügbarkeit der Daten.",
+            description_en="Availability of data at cantonal level.",
+            description_fr="Disponibilité des données au niveau cantonal.",
+            description_it="Disponibilità dei dati a livello cantonale.",
+            wms_layer_name_de="availability_cantons",
+            wms_layer_name_fr="availability_cantons",
+            wms_layer_name_it="availability_cantons",
+            wms_layer_name_en="availability_cantons",
+            wms_layer_name_rm=None,
+            meta_information=True,
+        )
+        dist_created += created
+        dist_updated += updated
+
+        # STAC distribution
+        created, updated = self.import_stac_distribution(
+            distribution_id=distribution_id.replace(":wms", ":stac"),
+            data_source_id=base_topic,
+            dataset=dataset,
+            stac_collection_id=base_topic,
+            title_de="STAC Download Collection",
+            title_fr="STAC Download Collection",
+            title_it="STAC Download Collection",
+            title_en="STAC Download Collection",
+            title_rm="STAC Download Collection",
+        )
+        dist_created += created
+        dist_updated += updated
+
+        return ds_created, ds_updated, dist_created, dist_updated
+
+    def import_wms_data_service(
+        self, dataservice_id: str, data_source_id: str, **kwargs
+    ) -> tuple[WMSDataservice, int, int]:
+        """Ensures that the WMS dataservice with the given ID exists and that it has the given
+        attributes.
+
+        Returns a tuple with the dataservice and the number of created and updated dataservices.
+
+        """
+        dataservice = WMSDataservice.objects.filter(dataservice_id=dataservice_id).first()
+        if dataservice:
+            self.print(f"Dataservice with dataservice_id {dataservice_id} already exists")
+        else:
+            self.print(
+                f"Dataservice with dataservice_id {dataservice_id} does not exist yet, "
+                "creating a new one"
+            )
+            dataservice = WMSDataservice(
+                dataservice_id=dataservice_id,
+                data_source=Dataservice.DataSource.GEODIENSTE,
+                data_source_ids=[data_source_id],
+                **kwargs,
+            )
+            dataservice.save()
+            return dataservice, 1, 0
+
+        updated = False
+        for key, value in kwargs.items():
+            if value != getattr(dataservice, key):
+                updated = True
+                setattr(dataservice, key, value)
+        if updated:
+            self.print(f"Dataservice with dataservice_id {dataservice_id} changed")
+            dataservice.save()
+            return dataservice, 0, 1
+
+        return dataservice, 0, 0
+
+    def import_wms_distribution(
+        self, distribution_id: str, data_source_id: str, **kwargs
+    ) -> tuple[ExternalWMSDistribution, int, int]:
+        """Ensures that the external WMS distribution with the given ID exists and that it has the
+        given attributes.
+
+        Returns a tuple with the distribution and the number of created and updated distributions.
+
+        """
+        distribution = ExternalWMSDistribution.objects.filter(
+            distribution_id=distribution_id
+        ).first()
+        if distribution:
+            self.print(f"Distribution with distribution_id {distribution_id} already exists")
+        else:
+            self.print(
+                f"Distribution with distribution_id {distribution_id} does not exist yet, "
+                "creating a new one"
+            )
+            distribution = ExternalWMSDistribution(
+                distribution_id=distribution_id,
+                data_source=Distribution.DataSource.GEODIENSTE,
+                data_source_ids=[data_source_id],
+                **kwargs,
+            )
+            distribution.save()
+            return distribution, 1, 0
+
+        updated = False
+        for key, value in kwargs.items():
+            if value != getattr(distribution, key):
+                updated = True
+                setattr(distribution, key, value)
+        if updated:
+            self.print(f"Distribution with distribution_id {distribution_id} changed")
+            distribution.save()
+            return distribution, 0, 1
+
+        return distribution, 0, 0
+
+    def get_wms_layer_title_and_description(
+        self,
+        capabilities_url: str,
+        layer_names: dict,
+        dataset: Dataset,
+    ) -> dict:
+        """Fetches the title and description of a layer from the WMS GetCapabilities. Falls back
+        to the dataset title and description in case of generic data layers as these are not
+        meaningful.
+
+        Returns a dictionary with titles and descriptions or an empty dict in case of an error.
+        """
+
+        if layer_names["de"] == "daten":
+            return {
+                "title_de": dataset.title_short_de,
+                "title_fr": dataset.title_short_fr,
+                "title_en": dataset.title_short_en,
+                "title_it": dataset.title_short_it,
+                "title_rm": dataset.title_short_rm,
+                "description_de": dataset.description_de,
+                "description_fr": dataset.description_fr,
+                "description_en": dataset.description_en,
+                "description_it": dataset.description_it,
+                "description_rm": dataset.description_rm,
+            }
+
+        def get_tag(root: etree._Element, tag_name: str) -> str:
+            tag = root.find(f"{{http://www.opengis.net/wms}}{tag_name}")
+            if tag is not None:
+                return (tag.text or "").strip()
+            return ""
+
+        result = {}
+        try:
+            for lang, layer_name in layer_names.items():
+                if not layer_name:
+                    continue
+
+                url = capabilities_url.replace("{lang3}", Lang(pt1=lang).pt3)
+                response = get(url, timeout=self.options["timeout"])
+                response.raise_for_status()
+                root = etree.fromstring(response.content)
+                for layer in root.iter("{http://www.opengis.net/wms}Layer"):
+                    name = get_tag(layer, "Name")
+                    if name.strip() != layer_name:
+                        continue
+                    result[f"title_{lang}"] = get_tag(layer, "Title")
+                    result[f"description_{lang}"] = get_tag(layer, "Abstract")
+
+        except Exception as e:  # noqa: BLE001
+            self.print_error(f"Failed to retreive {url}: {e}")
+            return {}
+
+        return result
+
+    def get_availability_wms_address(self, wms_url: str) -> str:
+        """Returns the address of the availability WMS for the given WMS URL.
+
+        Note: The address would be rather straight forward:
+
+                {scheme}://{netloc}/db/availability/{topic}/portrayal/{{lang3}}
+
+              The problem is, that the viewer config does not include the topic name of the default
+              topic. The workaround here is to transform the given URL and just strip the last
+              version part (e.g. _0, _1 etc.) from the version and add an exception for
+              planerischer_gewaesserschutz_v1_1_1 (which actually is planerischer_gewaesserschutz).
+        """
+        result = wms_url.replace(
+            "planerischer_gewaesserschutz_v1_1_1", "planerischer_gewaesserschutz"
+        )
+        result = result.replace("/db/", "/db/availability/")
+        result = result.replace("/{lang3}", "/portrayal/{lang3}")
+        return re.sub(r"_\d/", "/", result)
+
+    def import_stac_distribution(
+        self, distribution_id: str, data_source_id: str, **kwargs
+    ) -> tuple[int, int]:
+        """Ensures that the external STAC dataservice and distribution with the given ID exists and
+        that it has the given attributes.
+
+        Returns a tuple with the number of created and updated distributions.
+
+        """
+
+        dataservice = OGCAPIStacDataservice.objects.filter(dataservice_id="stac-geodienste").first()
+        if not dataservice:
+            self.print_warning("Dataservice stac-geodienste not found, import fixtures first")
+            return 0, 0
+
+        distribution = ExternalStacDistribution.objects.filter(
+            distribution_id=distribution_id
+        ).first()
+        if distribution:
+            self.print(f"Distribution with distribution_id {distribution_id} already exists")
+        else:
+            self.print(
+                f"Distribution with distribution_id {distribution_id} does not exist yet, "
+                "creating a new one"
+            )
+            distribution = ExternalStacDistribution(
+                distribution_id=distribution_id,
+                data_source=Distribution.DataSource.GEODIENSTE,
+                data_source_ids=[data_source_id],
+                dataservice=dataservice,
+                **kwargs,
+            )
+            distribution.save()
+            return 1, 0
+
+        updated = False
+        for key, value in kwargs.items():
+            if value != getattr(distribution, key):
+                updated = True
+                setattr(distribution, key, value)
+        if updated:
+            self.print(f"Distribution with distribution_id {distribution_id} changed")
+            distribution.save()
+            return 0, 1
+
+        return 0, 0

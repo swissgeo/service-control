@@ -59,6 +59,7 @@ LANGS = {
     "de": Lang(code="de", name="Deutsch", dir="ltr", alternate="German"),
     "fr": Lang(code="fr", name="Français", dir="ltr", alternate="French"),
     "it": Lang(code="it", name="Italiano", dir="ltr", alternate="Italian"),
+    "rm": Lang(code="rm", name="Rumantsch", dir="ltr", alternate="Romansh"),
     "en": Lang(code="en", name="English", dir="ltr", alternate="English"),
 }
 
@@ -66,6 +67,7 @@ LANGS_ISO_639_2_B = {
     "de": "ger",
     "fr": "fra",
     "it": "ita",
+    "rm": "roh",
     "en": "eng",
 }
 
@@ -289,6 +291,23 @@ class OARDataset(OARRecord):
                 typ="text/html",
             )
         )
+
+        if ds.is_aggregate:
+            dataset.properties["aggregated"] = True
+
+            legacy_part_info_url = getattr(
+                ds, f"legacy_part_info_url_{lang}", ds.legacy_part_info_url_de
+            )
+            if legacy_part_info_url:
+                dataset.links.append(
+                    Link(
+                        href=legacy_part_info_url,
+                        rel="partinfo",
+                        title="Information page about the part datasets",
+                        typ="text/html",
+                    )
+                )
+
         # TODO: Needs clarification before it can be added
         # Link(
         #    href="https://www.some-external-website.ch",
@@ -337,6 +356,7 @@ class OARDistribution(OARRecord):
             )
         )
         record.properties["protocol"] = dist.protocol
+        record.properties["metaInformation"] = dist.meta_information
 
         # GeoJSON Distributions behave slightly different as they are not linked to a dataservice
         # but directly to a file
@@ -484,7 +504,7 @@ class OARDataservice(OARRecord):
                 record.linkTemplates.append(
                     LinkTemplate(
                         uriTemplate=url,
-                        rel="about",
+                        rel="describedby",
                         typ="application/xml",
                         title="WMTS Capabilities File",
                         variables={
@@ -502,7 +522,7 @@ class OARDataservice(OARRecord):
                 record.links.append(
                     Link(
                         href=url,
-                        rel="about",
+                        rel="describedby",
                         typ="application/xml",
                         title="WMTS Capabilities File",
                     )
@@ -512,7 +532,7 @@ class OARDataservice(OARRecord):
             record.links.append(
                 Link(
                     href=ds.localized_capabilities_url(lang),
-                    rel="about",
+                    rel="describedby",
                     typ="application/xml",
                     title="WMS Capabilities File",
                 )
@@ -521,7 +541,7 @@ class OARDataservice(OARRecord):
             record.links.append(
                 Link(
                     href=ds.landing_page_url,
-                    rel="describes",
+                    rel="describedby",
                     typ="application/json",
                     title="Landing Page of the OGC API Features/STAC Dataservice",
                 )

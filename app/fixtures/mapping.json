@@ -7,5 +7,14 @@
             "update": false
         },
         "model": "harvest.organizationmapping"
+    },
+    {
+        "fields": {
+            "description": "Used to map BFE to the organization created by the geodienste broker BFE",
+            "organization_id": "ch.bfe",
+            "provider_id_prefix": "ch.bfe",
+            "update": true
+        },
+        "model": "harvest.organizationmapping"
     }
 ]

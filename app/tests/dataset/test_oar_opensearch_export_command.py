@@ -23,12 +23,11 @@ import pytest
 
 from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import (
-    OAR_BASE_URL,
     OAS_BASE_URL,
     _is_generation_of,
     _rewrite_dist_links,
 )
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
 
 MODULE = "dataset.management.commands.oar_opensearch_export"
@@ -39,7 +38,7 @@ def _make_dataservice() -> WMSDataservice:
         dataservice_id="wmts-geoadminch",
         title="WMTS geo.admin.ch",
         documentation_url_de="https://docs.geo.admin.ch/visualize-data/wmts.html",
-        languages=["de", "fr", "en", "it"],
+        languages=["de", "fr", "en", "it", "rm"],
         capabilities_url="https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}",
     )
     dataservice.save()
@@ -53,14 +52,51 @@ def _make_dataset() -> Dataset:
         title_short_fr="Liste rouge mousses",
         title_short_en="Red list bryophytes",
         title_short_it="Lista rossa biofite",
+        title_short_rm="idk",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
         description_it="Descrizione",
+        description_rm="Descripziun",
         geocat_id="07b046a7-1b21-4cd0-b605-a113f2e5e94d",
     )
     dataset.save()
     return dataset
+
+
+def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
+    aggregate = Dataset(
+        dataset_id="ch.kgk.av",
+        title_short_de="Amtliche Vermessung",
+        title_short_fr="Mensuration officielle",
+        title_short_en="Amtliche Vermessung",
+        title_short_it="Misurazione ufficiale",
+        description_de="Beschreibung",
+        description_fr="Description",
+        description_en="Description",
+        description_it="Descrizione",
+        geocat_id="d929eef4-791d-4728-9d56-226b6952cf1f",
+        legacy_part_info_url_de="https://geodienste.ch/services/av?locale=de#info_cantons",
+    )
+    aggregate.save()
+
+    part = Dataset(
+        dataset_id="ch.geodienste-lu.av",
+        title_short_de="Amtliche Vermessung",
+        title_short_fr="Mensuration officielle",
+        title_short_en="Amtliche Vermessung",
+        title_short_it="Misurazione ufficiale",
+        description_de="Beschreibung",
+        description_fr="Description",
+        description_en="Description",
+        description_it="Descrizione",
+        geocat_id=None,
+    )
+    part.save()
+
+    DatasetToDataset(subject=part, role=DatasetToDataset.Role.PART, object=aggregate).save()
+
+    return aggregate, part
 
 
 def _make_distribution(
@@ -76,10 +112,12 @@ def _make_distribution(
         title_de="WMS Layer (DE)",
         title_fr="WMS Layer (FR)",
         title_it="WMS Layer (IT)",
+        title_rm="WMS Layer (RM)",
         title_en="WMS Layer (EN)",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_it="Description (IT)",
+        description_rm="Description (RM)",
         description_en="Description (EN)",
         dataservice=dataservice,
         wms_layer_name_de=wms_layer_name,
@@ -274,29 +312,13 @@ def test_dump_service_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # The per-language 'alternate' self links are dropped; the (de) self/collection and the
-    # external links are kept. 'title' becomes a {lang: value} object.
+    # The 'self', 'collection' and per-language 'alternate' links are dropped, only the external
+    # links are kept. 'title' becomes a {lang: value} object, 'type' is the constant record kind
+    # and the concrete service protocol is exposed as 'protocol'.
     assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
         "id": "wmts-geoadminch",
         "type": "Feature",
         "links": [
-            {
-                "href": (
-                    f"{OAR_BASE_URL}/collections/geoadmin.services"
-                    "/items/wmts-geoadminch?language=de"
-                ),
-                "rel": "self",
-                "title": "This Record",
-                "type": "application/json",
-                "hreflang": "de",
-            },
-            {
-                "href": f"{OAR_BASE_URL}/collections/geoadmin.services?language=de",
-                "rel": "collection",
-                "title": "Link to the collection this item belongs to",
-                "type": "application/json",
-                "hreflang": "de",
-            },
             {
                 "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
                 "rel": "service-doc",
@@ -305,17 +327,19 @@ def test_dump_service_document(db, tmp_path):
             },
             {
                 "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
-                "rel": "about",
+                "rel": "describedby",
                 "title": "WMS Capabilities File",
                 "type": "application/xml",
             },
         ],
         "properties": {
-            "type": "ogc:wms",
+            "type": "DataService",
+            "protocol": "ogc:wms",
             "title": {
                 "de": "WMTS geo.admin.ch",
                 "fr": "WMTS geo.admin.ch",
                 "it": "WMTS geo.admin.ch",
+                "rm": "WMTS geo.admin.ch",
                 "en": "WMTS geo.admin.ch",
             },
         },
@@ -359,6 +383,7 @@ def test_dump_dataset_document(db, tmp_path):
                 {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
                 {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
                 {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
                 {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
             ],
             "type": "Dataset",
@@ -366,12 +391,14 @@ def test_dump_dataset_document(db, tmp_path):
                 "de": "Rote Liste Moose",
                 "fr": "Liste rouge mousses",
                 "it": "Lista rossa biofite",
+                "rm": "idk",
                 "en": "Red list bryophytes",
             },
             "description": {
                 "de": "Beschreibung",
                 "fr": "Description",
                 "it": "Descrizione",
+                "rm": "Descripziun",
                 "en": "Description",
             },
         },
@@ -413,6 +440,32 @@ def test_dump_dataset_document_without_featureinfo_distribution_has_no_such_link
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == []
+
+
+def test_dump_dataset_skips_part_datasets(db, tmp_path):
+    """A part dataset should not be exported."""
+    _make_aggregate_part_datasets()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert (tmp_path / "swissgeo-catalog" / "ch.kgk.av.json").exists()
+    assert not (tmp_path / "swissgeo-catalog" / "ch.geodienste-lu.av.json").exists()
+
+
+def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
+    """An aggregate dataset contains some additional fields."""
+    _make_aggregate_part_datasets()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.kgk.av")
+    assert dataset_doc["properties"]["aggregated"] is True
+    assert {
+        "href": "https://geodienste.ch/services/av?locale=de#info_cantons",
+        "rel": "partinfo",
+        "title": "Information page about the part datasets",
+        "type": "text/html",
+    } in dataset_doc["links"]
 
 
 def test_dump_distribution_document(db, tmp_path):
@@ -458,16 +511,19 @@ def test_dump_distribution_document(db, tmp_path):
                 "de": "WMS Layer (DE)",
                 "fr": "WMS Layer (FR)",
                 "it": "WMS Layer (IT)",
+                "rm": "WMS Layer (RM)",
                 "en": "WMS Layer (EN)",
             },
             "description": {
                 "de": "Description (DE)",
                 "fr": "Description (FR)",
                 "it": "Description (IT)",
+                "rm": "Description (RM)",
                 "en": "Description (EN)",
             },
             "protocol": "ogc:wms",
             "externalIds": ["ch.bafu.moose"],
+            "metaInformation": False,
         },
     }
 

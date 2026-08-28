@@ -1,5 +1,6 @@
 import logging
 
+from iso639 import Lang
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
@@ -9,21 +10,40 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
+from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 
 logger = logging.getLogger(__name__)
 
 _context = "Dataservice Module"
 
 
-class DataserviceManager(PolymorphicManager):
+class DataserviceManager(DataSourceIdManagerMixin, PolymorphicManager):
     def get_by_natural_key(self, dataservice_id: str) -> models.Model:
         return self.get(dataservice_id=dataservice_id)
 
 
-class Dataservice(PolymorphicModel):
+class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
     """Dataservice model."""
 
     dataservice_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
+
+    class DataSource(models.TextChoices):
+        USER_INPUT = "user-input", _("Dataservice DataSource", "User Input (Via Admin Interface)")
+        GEODIENSTE = "geodienste", _("Dataservice DataSource", "geodienste.ch")
+
+    data_source = models.CharField(
+        _(_context, "Data Source"),
+        choices=DataSource.choices,
+        default=DataSource.USER_INPUT,
+        max_length=255,
+    )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
+    )
 
     title = models.CharField(_(_context, "Title"), max_length=128)
     openapi_spec_url = models.URLField(
@@ -98,20 +118,24 @@ class LocalizedCapabilitiesUrlMixin:
     languages: list[str]
     default_language: str | None
 
-    def localized_capabilities_url(self, lang: str) -> str:
-        """Returns the capabilities URL for the given language.
+    def localized_capabilities_url(self, requested: str) -> str:
+        """Returns the capabilities URL for the requested language.
 
-        Only tries to interpolate the language, if the URL contains the {lang} placeholder.
+        Expects a 2 letter ISO 639-1 code.
+
+        Only tries to interpolate the language, if the URL contains the {lang}
+        (for 2 letter ISO 639-1) or {lang3} (for 3 letter ISO 639-3) placeholder.
 
         Uses the given language if supported, falls back to the default language.
         """
 
         url = self.capabilities_url
+        lang = requested if requested in self.languages else (self.default_language or "")
         if "{lang}" in url:
-            if lang in self.languages:
-                url = url.replace("{lang}", lang)
-            else:
-                url = url.replace("{lang}", self.default_language or "")
+            url = url.replace("{lang}", lang)
+        if "{lang3}" in url:
+            lang = Lang(pt1=lang).pt3 if lang else ""
+            url = url.replace("{lang3}", lang)
         return url
 
 
@@ -123,10 +147,12 @@ class WMSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
         default=list,
         blank=True,
         verbose_name=_(_context, "Supported Languages"),
-        help_text=_(_context, "List of supported languages for the WMS Dataservice"),
+        help_text=_(
+            _context, "List of supported languages (2 letter ISO 639-1) for the WMS Dataservice"
+        ),
     )
     default_language = models.CharField(
-        _(_context, "Default languages"), max_length=2, blank=True, null=True
+        _(_context, "Default languages (2 letter ISO 639-1)"), max_length=2, blank=True, null=True
     )
     capabilities_url = models.URLField(
         _(_context, "Capabilities URL"),
@@ -134,8 +160,9 @@ class WMSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
         help_text=_(
             _context,
             "URL to the capabilities document of the WMS Dataservice. "
-            "The URL can contain the following placeholders: {lang} for the "
-            "different languages in which the WMS is available.",
+            "The URL can contain the following placeholders: {lang} (2 letter ISO 639-1) or "
+            "{lang3} (3 letter ISO 639-3) for the different languages in which the WMS is "
+            "available.",
         ),
     )
 
@@ -165,10 +192,12 @@ class WMTSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
         default=list,
         blank=True,
         verbose_name=_(_context, "Supported Languages"),
-        help_text=_(_context, "List of supported languages for the WMS Dataservice"),
+        help_text=_(
+            _context, "List of supported languages (2 letter ISO 639-1) for the WMS Dataservice"
+        ),
     )
     default_language = models.CharField(
-        _(_context, "Default languages"),
+        _(_context, "Default languages (2 letter ISO 639-1)"),
         max_length=2,
         null=True,
         blank=True,

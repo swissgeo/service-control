@@ -9,13 +9,15 @@
         "properties": {
           "title": {
             "properties": {
-              "de": {"type": "text"},
-              "fr": {"type": "text"},
-              "it": {"type": "text"},
-              "en": {"type": "text"}
+              "de": {"type": "search_as_you_type"},
+              "fr": {"type": "search_as_you_type"},
+              "it": {"type": "search_as_you_type"},
+              "rm": {"type": "search_as_you_type"},
+              "en": {"type": "search_as_you_type"}
             }
           },
-          "type": {"type": "keyword", "index": false}
+          "type": {"type": "keyword", "index": false},
+          "protocol": {"type": "keyword", "index": false}
         }
       }
     }
