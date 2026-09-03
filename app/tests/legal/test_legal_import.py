@@ -8,7 +8,7 @@ from legal.models import GeopoliticalEntity
 
 
 @patch("legal.management.commands.import_legal.get", name="mocks")
-def test_new_entitites(mock, client, db):
+def test_new_entities(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -56,7 +56,7 @@ def test_new_entitites(mock, client, db):
 
 
 @patch("legal.management.commands.import_legal.get", name="mock")
-def test_update_entitites(mock, client, db):
+def test_update_entities(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -120,7 +120,7 @@ def test_update_entitites(mock, client, db):
 
 
 @patch("legal.management.commands.import_legal.get", name="mock")
-def test_entitites_parent_not_existing(mock, client, db):
+def test_entities_parent_not_existing(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -175,7 +175,7 @@ def test_entitites_parent_not_existing(mock, client, db):
 
 
 @patch("legal.management.commands.import_legal.get", name="mock")
-def test_entitites_parent_is_removed(mock, client, db):
+def test_entities_parent_is_removed(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
