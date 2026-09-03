@@ -4,7 +4,7 @@ from json import dumps
 from django.core.management import call_command
 
 
-def test_legal_command_creates_geopolitical_entities_from_file(client, db, tmp_path):
+def test_legal_command_creates_entities_from_file(client, db, tmp_path):
     file = tmp_path / "geopolitical_entities.json"
     file.write_text(
         dumps(
@@ -30,7 +30,7 @@ def test_legal_command_creates_geopolitical_entities_from_file(client, db, tmp_p
     out = StringIO()
     call_command(
         "import_legal",
-        geopolitical_entities_directory=tmp_path,
+        directory=tmp_path,
         stdout=out,
     )
     out = out.getvalue()
@@ -46,7 +46,7 @@ def test_legal_command_file_not_existing(client, db, tmp_path):
     err = StringIO()
     call_command(
         "import_legal",
-        geopolitical_entities_directory=tmp_path,
+        directory=tmp_path,
         stderr=err,
     )
     err = err.getvalue()
@@ -59,7 +59,7 @@ def test_legal_command_path_not_existing(client, db):
     err = StringIO()
     call_command(
         "import_legal",
-        geopolitical_entities_directory="testpath",
+        directory="testpath",
         stderr=err,
     )
     err = err.getvalue()

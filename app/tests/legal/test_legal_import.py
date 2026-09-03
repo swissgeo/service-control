@@ -8,7 +8,7 @@ from legal.models import GeopoliticalEntity
 
 
 @patch("legal.management.commands.import_legal.get", name="mocks")
-def test_new_geopolitical_entitites(mock, client, db):
+def test_new_entitites(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -56,7 +56,7 @@ def test_new_geopolitical_entitites(mock, client, db):
 
 
 @patch("legal.management.commands.import_legal.get", name="mock")
-def test_update_geopolitical_entitites(mock, client, db):
+def test_update_entitites(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -120,7 +120,7 @@ def test_update_geopolitical_entitites(mock, client, db):
 
 
 @patch("legal.management.commands.import_legal.get", name="mock")
-def test_geopolitical_entitites_parent_not_existing(mock, client, db):
+def test_entitites_parent_not_existing(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -175,7 +175,7 @@ def test_geopolitical_entitites_parent_not_existing(mock, client, db):
 
 
 @patch("legal.management.commands.import_legal.get", name="mock")
-def test_geopolitical_entitites_parent_is_removed(mock, client, db):
+def test_entitites_parent_is_removed(mock, client, db):
     mock.return_value.json.return_value = [
         {
             "id": 34481,
@@ -250,6 +250,31 @@ def test_sanitize_json_response():
     assert sanitized_json[0]["nameFr"] == "Uri"
     assert sanitized_json[0]["nameIt"] == "Uri"
     assert sanitized_json[0]["nameRm"] == "Uri"
+
+
+def test_sanitize_json_is_not_a_list():
+    not_json_list = {
+        "id": 32395,
+        "parent": None,
+        "level": "canton",
+        "bfsNumber": 4,
+        "parentBfsNumber": None,
+        "filterDisplay": "Kanton Uri",
+        "abbr": " UR",
+        "name": " Uri ",
+        "nameDe": "Uri ",
+        "nameFr": "Uri   ",
+        "nameIt": "   Uri",
+        "nameRm": "   Uri   ",
+    }
+
+    out = StringIO()
+    cmd = Command(stderr=out)
+    cmd.options = {"logger": False}
+    cmd.sanitize_json_response(not_json_list)
+    out = out.getvalue()
+
+    assert "Entities arg was not a list" in out
 
 
 def test_map_levels():

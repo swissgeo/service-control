@@ -6,7 +6,6 @@ from typing import Any
 from requests import get
 
 from django.core.management.base import CommandParser
-from django.utils import timezone
 
 from legal.models import GeopoliticalEntity
 from utils.command import CustomBaseCommand
@@ -21,12 +20,12 @@ class Command(CustomBaseCommand):
         super().add_arguments(parser)
 
         parser.add_argument(
-            "--geopolitical-entities-endpoint",
+            "--endpoint",
             default="https://api.geobasisdaten.ch/api/v1/corp/?format=json",
-            help="Geopolitical Entities endpoint URL.",
+            help="Geopolitical entities endpoint URL.",
         )
         parser.add_argument(
-            "--geopolitical-entities-directory",
+            "--directory",
             help=(
                 "Path to a local folder containing the response of the legal information (JSON) "
                 "Useful for local development."
@@ -36,7 +35,7 @@ class Command(CustomBaseCommand):
             "--timeout",
             type=int,
             default="60",
-            help="Timeout when calling services information (JSON) endpoint",
+            help="Timeout when calling geopolitical entities (JSON) endpoint",
         )
 
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -46,34 +45,34 @@ class Command(CustomBaseCommand):
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
             self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
-        geopolitical_entities = {}
-        geopolitical_entities = self.get_service(
-            options["geopolitical_entities_endpoint"],
-            options["geopolitical_entities_directory"],
+        entities = {}
+        entities = self.get_service(
+            options["endpoint"],
+            options["directory"],
             options["timeout"],
         )
 
-        geopolitical_entities = self.sanitize_json_response(geopolitical_entities)
+        entities = self.sanitize_json_response(entities)
 
-        self.import_geopolitical_entitites(geopolitical_entities)
+        self.import_entities(entities)
 
     def get_service(
         self,
-        geopolitical_entities_endpoint: str,
-        geopolitical_entities_directory: str,
+        endpoint: str,
+        directory: str,
         timeout: int,
     ) -> list[dict]:
         """
-        Download the service information as JSON from the provided endpoint URL or load the from
+        Download the geopolitical entities as JSON from the provided endpoint URL or load the from
         the given directory
         """
 
         result = []
 
-        if geopolitical_entities_directory:
-            path = Path(geopolitical_entities_directory)
+        if directory:
+            path = Path(directory)
             if not path.exists():
-                self.print_error(f"{geopolitical_entities_directory} does not exist")
+                self.print_error(f"{directory} does not exist")
                 return []
 
             filename = path / "geopolitical_entities.json"
@@ -85,32 +84,32 @@ class Command(CustomBaseCommand):
                 return []
         else:
             try:
-                url = f"{geopolitical_entities_endpoint}"
+                url = f"{endpoint}"
                 response = get(url, timeout=timeout)
                 response.raise_for_status()
                 result = response.json()
             except Exception as e:  # noqa: BLE001
-                self.print_error(f"Failed to retreive geopolitical entities: {e}")
+                self.print_error(f"Failed to retrieve geopolitical entities: {e}")
 
         return result
 
-    def import_geopolitical_entitites(self, geopolitical_entities: list[dict]) -> None:
+    def import_entities(self, entities: list[dict]) -> None:
 
         self.print_success("Start importing geopolitical entities")
 
         metrics = {"entities.created": 0, "entities.updated": 0}
 
-        "Import non existing entities"
-        created = self.add_new_entries(geopolitical_entities)
+        # import non existing entities
+        created = self.add_new_entries(entities)
         metrics["entities.created"] += created
 
-        "Update existing entitites"
-        updated = self.update_existing_entries(geopolitical_entities)
+        # Update existing entities
+        updated = self.update_existing_entries(entities)
         metrics["entities.updated"] += updated
 
         self.print_success(f"Geopolitical entities import complete. Metrics: {metrics}")
 
-    def add_new_entries(self, geopolitical_entities: list[dict]) -> int:
+    def add_new_entries(self, entities: list[dict]) -> int:
         """
         Checks if an entry of the fetched api data exists already in the db.
         If not it creates a new entry
@@ -119,35 +118,34 @@ class Command(CustomBaseCommand):
         created = 0
 
         # fetch all existing entries from the db
-        existing_geopolitical_entity_objects = GeopoliticalEntity.objects.all()
-        existing_geopolitical_entities = {
-            entity.geopolitical_entity_id: entity for entity in existing_geopolitical_entity_objects
+        existing_entity_objects = GeopoliticalEntity.objects.all()
+        existing_entities = {
+            entity.geopolitical_entity_id: entity for entity in existing_entity_objects
         }
 
         # iterate over api data and check for changes
         created_entries = []
-        for geopolitical_entity in geopolitical_entities:
+        for entity in entities:
             created_entry = GeopoliticalEntity(
-                geopolitical_entity_id=geopolitical_entity["id"],
-                type=self.map_levels(geopolitical_entity["level"]),
-                name_de=geopolitical_entity["nameDe"],
-                name_fr=geopolitical_entity["nameFr"],
-                name_it=geopolitical_entity["nameIt"],
-                name_rm=geopolitical_entity["nameRm"],
-                abbr=geopolitical_entity["abbr"],
-                created_at=timezone.now(),
-                updated_at=timezone.now(),
+                geopolitical_entity_id=str(entity["id"]),
+                type=self.map_levels(entity["level"]),
+                name_de=entity["nameDe"],
+                name_fr=entity["nameFr"],
+                name_it=entity["nameIt"],
+                name_rm=entity["nameRm"],
+                abbr=entity["abbr"],
             )
 
-            if str(created_entry.geopolitical_entity_id) not in existing_geopolitical_entities:
+            if created_entry.geopolitical_entity_id not in existing_entities:
                 created_entries.append(created_entry)
                 created += 1
+                self.print(f"Added entity: {created_entry.geopolitical_entity_id}")
 
         GeopoliticalEntity.objects.bulk_create(created_entries)
 
         return created
 
-    def update_existing_entries(self, geopolitical_entities: list[dict]) -> int:
+    def update_existing_entries(self, entities: list[dict]) -> int:
         """
         Checks if an entry of the fetched api data exists already in the db.
         If the entry already exists it checks if the data attribute values has changed
@@ -158,66 +156,66 @@ class Command(CustomBaseCommand):
         updated = 0
 
         # fetch all existing entries from the db
-        existing_geopolitical_entity_objects = GeopoliticalEntity.objects.all()
-        existing_geopolitical_entities = {
-            entity.geopolitical_entity_id: entity for entity in existing_geopolitical_entity_objects
+        existing_entity_objects = GeopoliticalEntity.objects.all()
+        existing_entities = {
+            entity.geopolitical_entity_id: entity for entity in existing_entity_objects
         }
 
         # iterate over api data and check for changes
-        for geopolitical_entity in geopolitical_entities:
+        for entity in entities:
             created_entry = GeopoliticalEntity(
-                geopolitical_entity_id=geopolitical_entity["id"],
-                type=self.map_levels(geopolitical_entity["level"]),
-                name_de=geopolitical_entity["nameDe"],
-                name_fr=geopolitical_entity["nameFr"],
-                name_it=geopolitical_entity["nameIt"],
-                name_rm=geopolitical_entity["nameRm"],
-                abbr=geopolitical_entity["abbr"],
-                created_at=timezone.now(),
-                updated_at=timezone.now(),
+                geopolitical_entity_id=str(entity["id"]),
+                type=self.map_levels(entity["level"]),
+                name_de=entity["nameDe"],
+                name_fr=entity["nameFr"],
+                name_it=entity["nameIt"],
+                name_rm=entity["nameRm"],
+                abbr=entity["abbr"],
             )
 
-            created_geopolitical_entity_id = str(created_entry.geopolitical_entity_id)
-            if created_geopolitical_entity_id not in existing_geopolitical_entities:
+            created_entity_id = created_entry.geopolitical_entity_id
+            if created_entity_id not in existing_entities:
                 continue
 
-            existing_geopolitical_entity = existing_geopolitical_entities[
-                created_geopolitical_entity_id
-            ]
+            existing_entity = existing_entities[created_entity_id]
 
             # alle necessary fields for comparison
             fields_to_update = ["type", "name_de", "name_fr", "name_it", "name_rm", "abbr"]
             changed_fields = []
 
             # special check for entity parent
-            geopolitical_entity_parent = None
-            if geopolitical_entity["parent"] is not None:
-                geopolitical_entity_parent = str(geopolitical_entity["parent"])
+            entity_parent = None
+            if entity["parent"] is not None:
+                entity_parent = str(entity["parent"])
 
-            if (
-                getattr(existing_geopolitical_entity.parent, "geopolitical_entity_id", None)
-                != geopolitical_entity_parent
-            ):
-                if geopolitical_entity_parent is None:
-                    existing_geopolitical_entity.parent = None
-                else:
-                    existing_geopolitical_entity.parent = existing_geopolitical_entities.get(
-                        geopolitical_entity_parent
+            if getattr(existing_entity.parent, "geopolitical_entity_id", None) != entity_parent:
+                if entity_parent is None:
+                    existing_entity.parent = None
+                    self.print(
+                        f"Parent removed for entity: {existing_entity.geopolitical_entity_id}"
                     )
+                else:
+                    existing_entity.parent = existing_entities.get(entity_parent)
+                    self.print(
+                        f"Parent added/updated for entity: {existing_entity.geopolitical_entity_id}"
+                    )
+
                 changed_fields.append("parent")
+            else:
+                self.print(f"No Parent exists for entity: {existing_entity.geopolitical_entity_id}")
 
             # check for all other attribute values
             for field in fields_to_update:
-                if getattr(existing_geopolitical_entity, field) != getattr(created_entry, field):
-                    setattr(existing_geopolitical_entity, field, getattr(created_entry, field))
+                if getattr(existing_entity, field) != getattr(created_entry, field):
+                    setattr(existing_entity, field, getattr(created_entry, field))
                     changed_fields.append(field)
 
             # save change if there was one
             if changed_fields:
-                existing_geopolitical_entity.updated_at = timezone.now()
                 changed_fields.append("updated_at")
-                existing_geopolitical_entity.save(update_fields=changed_fields)
+                existing_entity.save(update_fields=changed_fields)
                 updated += 1
+                self.print(f"Updated entity: {existing_entity.geopolitical_entity_id}")
 
         return updated
 
@@ -236,11 +234,16 @@ class Command(CustomBaseCommand):
             case _:
                 return GeopoliticalEntity.Level.COMMUNAL
 
-    def sanitize_json_response(self, geopolitical_entities: list[dict]) -> list[dict]:
-        for geopolitical_entity in geopolitical_entities:
-            keys = geopolitical_entity.keys()
-            for key in keys:
-                if type(geopolitical_entity[key]) is str:
-                    geopolitical_entity[key] = geopolitical_entity[key].strip()
+    def sanitize_json_response(self, entities: list[dict]) -> list[dict]:
+        """Remove any leading and trailing white spaces for all values of the received JSON"""
+        if not isinstance(entities, list):
+            self.print_error("Entities arg was not a list")
+            return entities
 
-        return geopolitical_entities
+        for entity in entities:
+            keys = entity.keys()
+            for key in keys:
+                if isinstance(entity[key], str):
+                    entity[key] = entity[key].strip()
+
+        return entities
