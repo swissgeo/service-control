@@ -17,12 +17,19 @@
             "standort", "station", "statistik", "strahlung", "strasse", "strom", "stufe",
             "stunde", "system", "temperatur", "tunnel", "umwelt", "verbreitung", "verkehr",
             "vermessung", "verordnung", "verwaltung", "vorkommen", "wald", "wander", "wasser",
-            "weg", "wirtschaft"
+            "weg", "wirtschaft", "zone"
           ],
           "min_word_size": 6,
           "min_subword_size": 4,
           "max_subword_size": 22,
           "only_longest_match": true
+        }
+      },
+      "normalizer": {
+        "sort_normalizer": {
+          "//": "Sort-only. A raw keyword sorts by code point, which puts every uppercase title before every lowercase one and 'Zürich' after 'Zwingen'. 'lowercase' + 'asciifolding' gives the case- and umlaut-insensitive order German expects (ä sorts as a). Deliberately NOT 'german_normalization', which also folds ß->ss and strips a trailing -e: right for matching, wrong for display order.",
+          "type": "custom",
+          "filter": ["lowercase", "asciifolding"]
         }
       },
       "analyzer": {
@@ -54,12 +61,35 @@
               "de": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
-                "search_analyzer": "german_search"
+                "search_analyzer": "german_search",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
               },
-              "fr": {"type": "search_as_you_type"},
-              "it": {"type": "search_as_you_type"},
-              "rm": {"type": "search_as_you_type"},
-              "en": {"type": "search_as_you_type"}
+              "fr": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "it": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "rm": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "en": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              }
             }
           },
           "description": {
