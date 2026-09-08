@@ -39,6 +39,11 @@ ISO639_1 = Literal["de", "fr", "it"]
 ISO639_3 = Literal["deu", "fra", "ita"]
 
 
+def keyword_split(keywords: str | None) -> list[str]:
+    """Split and strip a comma separated keywords string."""
+    return [keyword for token in (keywords or "").split(",") if (keyword := token.strip())]
+
+
 class Command(CustomBaseCommand):
     """Import data from geodienste.ch."""
 
@@ -657,6 +662,9 @@ class Command(CustomBaseCommand):
                 "description_en": service["abstract"],
                 "description_fr": services["fr"][key]["abstract"],
                 "description_it": services["it"][key]["abstract"],
+                "additional_search_text_de": keyword_split(service["keywords"]),
+                "additional_search_text_fr": keyword_split(services["fr"][key]["keywords"]),
+                "additional_search_text_it": keyword_split(services["it"][key]["keywords"]),
             }
             # Dataset: Aggregate
             base_topic = service["base_topic"]

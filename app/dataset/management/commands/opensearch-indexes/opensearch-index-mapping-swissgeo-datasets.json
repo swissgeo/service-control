@@ -105,6 +105,15 @@
               "en": {"type": "search_as_you_type"}
             }
           },
+          "additionalSearchText": {
+            "properties": {
+              "de": {"type": "search_as_you_type"},
+              "fr": {"type": "search_as_you_type"},
+              "it": {"type": "search_as_you_type"},
+              "rm": {"type": "search_as_you_type"},
+              "en": {"type": "search_as_you_type"}
+            }
+          },
           "keywords": {"type": "keyword"},
           "languages": {"type": "object", "enabled": false},
           "contacts": {"type": "object", "enabled": false},
