@@ -84,6 +84,7 @@ start-local-services: ## Run the the support services (cognito, otel)
 .PHONY: seed-local-testdata
 seed-local-testdata: start-local-services start-local-db ## Seed local organizations/users/roles in db + cognito
 	USE_LOCAL_VERIFIED_PERMISSIONS=true $(PYTHON) $(DJANGO_MANAGER) seed_local_testdata
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/ech0166.json
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/mapping.json
 	# dataset and distribution reference each other, so they must load in one transaction
@@ -93,6 +94,7 @@ seed-local-testdata: start-local-services start-local-db ## Seed local organizat
 .PHONY: reset-local-testdata
 reset-local-testdata: start-local-services start-local-db ## Reset local users/orgs and seed again
 	USE_LOCAL_VERIFIED_PERMISSIONS=true $(PYTHON) $(DJANGO_MANAGER) seed_local_testdata --reset --recreate-cognito-users
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/ech0166.json
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataservice.json
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/mapping.json
 	# dataset and distribution reference each other, so they must load in one transaction

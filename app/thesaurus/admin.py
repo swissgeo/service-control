@@ -15,7 +15,12 @@ class ThesaurusAdmin(admin.ModelAdmin):
 class ConceptAdmin(admin.ModelAdmin):
     """Admin View for Concept"""
 
-    list_display = ("concept_id", "label_en", "thesaurus")
+    list_display = (
+        "concept_id",
+        "label_en",
+        "thesaurus",
+        "parent__label_en",
+    )
     list_filter = ("thesaurus",)
     readonly_fields = ("created_at", "updated_at")
     search_fields = ("concept_id", "label_en", "label_de")

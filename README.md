@@ -23,6 +23,7 @@
 - [Importing Data](#importing-data)
   - [Importing from Harvest Tables](#importing-from-harvest-tables)
   - [Importing from geodienste.ch](#importing-from-geodienstech)
+  - [Importing eCH-0166 concepts from geocat.ch](#importing-ech-0166-concepts-from-geocatch)
 - [Exporting To OpenSearch](#exporting-to-opensearch)
   - [Atomic Replacement Without Downtime](#atomic-replacement-without-downtime)
   - [Inspecting The Documents With --dump](#inspecting-the-documents-with---dump)
@@ -218,6 +219,16 @@ Use
 
 - `int.geodienste.ch` for INT
 - `dev2.geodienste.ch` for DEV
+
+
+### Importing eCH-0166 concepts from geocat.ch
+
+To import the eCH-0166 concepts for all currently defined datasets (with a geocat id set), run:
+
+```bash
+app/manage.py loaddata app/fixtures/ech0166.json
+app/manage.py app/manage.py import_geocat --ech0166
+```
 
 ## Exporting To OpenSearch
 
