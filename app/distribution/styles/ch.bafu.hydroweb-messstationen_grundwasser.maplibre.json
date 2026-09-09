@@ -1,0 +1,100 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.bafu.hydroweb-messstationen_grundwasser": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasser-0-circle",
+        "type": "circle",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasser",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "#808080",
+          "circle-stroke-color": "#FFFFFF",
+          "circle-stroke-width": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "grundwasser-class"
+            ]
+          ],
+          "2"
+        ]
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasser-1-symbol",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasser",
+        "layout": {
+          "icon-image": "sg-triangle-12-#808080-#FFFFFF-1",
+          "icon-allow-overlap": true,
+          "icon-rotation-alignment": "map",
+          "icon-rotate": 59.99999999999999
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "grundwasser-class"
+            ]
+          ],
+          "1"
+        ]
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasser-2-symbol",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasser",
+        "layout": {
+          "icon-image": "sg-square-10-#808080-#FFFFFF-1",
+          "icon-allow-overlap": true,
+          "icon-rotation-alignment": "map",
+          "icon-rotate": 45
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "grundwasser-class"
+            ]
+          ],
+          "3"
+        ]
+      }
+    ]
+  },
+  "icons": [
+    {
+      "name": "sg-triangle-12-#808080-#FFFFFF-1",
+      "shape": "triangle",
+      "radius": 12,
+      "fillColor": "#808080",
+      "strokeColor": "#FFFFFF",
+      "strokeWidth": 1
+    },
+    {
+      "name": "sg-square-10-#808080-#FFFFFF-1",
+      "shape": "square",
+      "radius": 10,
+      "fillColor": "#808080",
+      "strokeColor": "#FFFFFF",
+      "strokeWidth": 1
+    }
+  ]
+}

@@ -1,0 +1,211 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.meteoschweiz.messnetz-atmosphaere": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.meteoschweiz.messnetz-atmosphaere-0-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messnetz-atmosphaere",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "white",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "station_symbol"
+            ]
+          ],
+          "1"
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messnetz-atmosphaere-1-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messnetz-atmosphaere",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "white",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "station_symbol"
+            ]
+          ],
+          "1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messnetz-atmosphaere-1-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messnetz-atmosphaere",
+        "layout": {
+          "text-field": [
+            "get",
+            "station_name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "station_symbol"
+            ]
+          ],
+          "1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messnetz-atmosphaere-2-symbol",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messnetz-atmosphaere",
+        "layout": {
+          "icon-image": "sg-triangle-6-white-rgba(14,80,114,0.9)-2",
+          "icon-allow-overlap": true,
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "station_symbol"
+            ]
+          ],
+          "2"
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messnetz-atmosphaere-3-symbol",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messnetz-atmosphaere",
+        "layout": {
+          "icon-image": "sg-triangle-8-white-rgba(14,80,114,0.9)-2",
+          "icon-allow-overlap": true,
+          "icon-rotation-alignment": "map",
+          "text-field": [
+            "get",
+            "station_name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "station_symbol"
+            ]
+          ],
+          "2"
+        ],
+        "minzoom": 4
+      }
+    ]
+  },
+  "icons": [
+    {
+      "name": "sg-triangle-6-white-rgba(14,80,114,0.9)-2",
+      "shape": "triangle",
+      "radius": 6,
+      "fillColor": "white",
+      "strokeColor": "rgba(14,80,114,0.9)",
+      "strokeWidth": 2
+    },
+    {
+      "name": "sg-triangle-8-white-rgba(14,80,114,0.9)-2",
+      "shape": "triangle",
+      "radius": 8,
+      "fillColor": "white",
+      "strokeColor": "rgba(14,80,114,0.9)",
+      "strokeWidth": 2
+    }
+  ]
+}
