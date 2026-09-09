@@ -56,6 +56,52 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     description_it = models.TextField(_(_context, "Description (Italian)"), null=True, blank=True)
     description_rm = models.TextField(_(_context, "Description (Romansh)"), null=True, blank=True)
 
+    additional_search_text_de = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Additional text for search (German)"),
+        help_text=_(
+            _context, "List of additional terms used for the German search (comma-separated list)"
+        ),
+    )
+    additional_search_text_fr = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Additional text for search (French)"),
+        help_text=_(
+            _context, "List of additional terms used for the French search (comma-separated list)"
+        ),
+    )
+    additional_search_text_en = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Additional text for search (English)"),
+        help_text=_(
+            _context, "List of additional terms used for the English search (comma-separated list)"
+        ),
+    )
+    additional_search_text_it = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Additional text for search (Italian)"),
+        help_text=_(
+            _context, "List of additional terms used for the Italian search (comma-separated list)"
+        ),
+    )
+    additional_search_text_rm = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Additional text for search (Romansh)"),
+        help_text=_(
+            _context, "List of additional terms used for the Romansh search (comma-separated list)"
+        ),
+    )
+
     geocat_id = models.CharField(_(_context, "Geocat ID"), max_length=100, null=True, blank=True)
 
     preferred_distribution = models.ForeignKey(

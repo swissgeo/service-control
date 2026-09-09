@@ -259,6 +259,7 @@ class OARDataset(OARRecord):
         properties = {
             "contacts": contacts,
             "description": getattr(ds, f"description_{lang}", None),
+            "additionalSearchText": ", ".join(getattr(ds, f"additional_search_text_{lang}", [])),
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
             "preferredDistributionId": ds.preferred_distribution.distribution_id

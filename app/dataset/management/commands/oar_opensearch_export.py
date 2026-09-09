@@ -509,6 +509,10 @@ class Command(CustomBaseCommand):
         properties["description"] = {
             lang: features[lang]["properties"].get("description") or "" for lang in LANG_CODES
         }
+        properties["additionalSearchText"] = {
+            lang: features[lang]["properties"].get("additionalSearchText") or ""
+            for lang in LANG_CODES
+        }
 
         return {
             "$schema": OGC_SCHEMA,

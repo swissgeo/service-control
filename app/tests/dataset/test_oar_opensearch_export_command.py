@@ -58,6 +58,11 @@ def _make_dataset() -> Dataset:
         description_en="Description",
         description_it="Descrizione",
         description_rm="Descripziun",
+        additional_search_text_de=["DE 1", "DE 2"],
+        additional_search_text_fr=["FR 1", "FR 2"],
+        additional_search_text_en=["EN 2"],
+        additional_search_text_it=[],
+        additional_search_text_rm=[],
         geocat_id="07b046a7-1b21-4cd0-b605-a113f2e5e94d",
     )
     dataset.save()
@@ -400,6 +405,13 @@ def test_dump_dataset_document(db, tmp_path):
                 "it": "Descrizione",
                 "rm": "Descripziun",
                 "en": "Description",
+            },
+            "additionalSearchText": {
+                "de": "DE 1, DE 2",
+                "fr": "FR 1, FR 2",
+                "it": "",
+                "rm": "",
+                "en": "EN 2",
             },
         },
     }
