@@ -1,0 +1,550 @@
+[
+  {
+    "model": "thesaurus.thesaurus",
+    "fields": {
+      "thesaurus_id": "ech0166",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+    }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": null,
+      "concept_id": "root",
+      "label_de": "root",
+      "label_fr": "root",
+      "label_en": "root",
+      "label_it": "root",
+      "label_rm": "root",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+    }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "root"],
+      "concept_id": "parent_1",
+      "label_de": "Grundlagen und Planung",
+      "label_fr": "Données de base et planification",
+      "label_en": "Base information and Planning",
+      "label_it": "Dati di base e pianificazione",
+      "label_rm": "Datas da basa e e planisaziun",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_1"],
+      "concept_id": "imageryBaseMapsEarthCover",
+      "label_de": "Grundlagen, Bilddaten",
+      "label_fr": "Références, images",
+      "label_en": "Base Maps, Imagery",
+      "label_it": "Carte di base, immagini",
+      "label_rm": "Chartas basas, maletgs",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "imageryBaseMapsEarthCover"],
+      "concept_id": "imageryBaseMapsEarthCover_BaseMaps",
+      "label_de": "Basiskarten",
+      "label_fr": "Cartes de référence",
+      "label_en": "Base Maps",
+      "label_it": "Carte di base",
+      "label_rm": "Chartas basas",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "imageryBaseMapsEarthCover"],
+      "concept_id": "imageryBaseMapsEarthCover_EarthCover",
+      "label_de": "Bodenbedeckung, -nutzung",
+      "label_fr": "Couverture/utilisation sol",
+      "label_en": "Land Cover, Land Use",
+      "label_it": "Copertura/utilizzo suolo",
+      "label_rm": "Cuvrida/utilisaziun terren",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "imageryBaseMapsEarthCover"],
+      "concept_id": "imageryBaseMapsEarthCover_Imagery",
+      "label_de": "Luft-, Satellitenbilder",
+      "label_fr": "Images",
+      "label_en": "Imagery",
+      "label_it": "Immagini",
+      "label_rm": "Maletgs",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_1"],
+      "concept_id": "location",
+      "label_de": "Ortsangaben",
+      "label_fr": "Localisation",
+      "label_en": "Location",
+      "label_it": "Localizzazione",
+      "label_rm": "Localitads",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_1"],
+      "concept_id": "elevation",
+      "label_de": "Höhen",
+      "label_fr": "Altimétrie",
+      "label_en": "Elevation",
+      "label_it": "Altimetria",
+      "label_rm": "Altimetria",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_1"],
+      "concept_id": "boundaries",
+      "label_de": "Grenzen",
+      "label_fr": "Limites",
+      "label_en": "Boundaries",
+      "label_it": "Confini",
+      "label_rm": "Cunfins",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_1"],
+      "concept_id": "planningCadastre",
+      "label_de": "Raumplanung, Kataster",
+      "label_fr": "Dévelop. territorial, cadastre",
+      "label_en": "Planning, Cadastre",
+      "label_it": "Pianificazione, catasto",
+      "label_rm": "Planisaziun, cataster",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "planningCadastre"],
+      "concept_id": "planningCadastre_Planning",
+      "label_de": "Raumplanung",
+      "label_fr": "Développement territorial",
+      "label_en": "Spatial Planning",
+      "label_it": "Pianificazione territoriale",
+      "label_rm": "Planisaziun dal territori",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "planningCadastre"],
+      "concept_id": "planningCadastre_Cadastre",
+      "label_de": "Grundstückskataster",
+      "label_fr": "Cadastre foncier",
+      "label_en": "Cadastre, Land Registry",
+      "label_it": "Catasto fondiario",
+      "label_rm": "Cataster",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "root"],
+      "concept_id": "parent_2",
+      "label_de": "Natur und Umwelt",
+      "label_fr": "Nature et environnement",
+      "label_en": "Nature and Environment",
+      "label_it": "Natura ed ambiente",
+      "label_rm": "Natira ed ambient",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_2"],
+      "concept_id": "geoscientificInformation",
+      "label_de": "Geowissenschaften, Risiken",
+      "label_fr": "Géosciences, dangers naturels",
+      "label_en": "Geosciences, Hazards",
+      "label_it": "Geoscienze, rischi",
+      "label_rm": "Geoscienzas, ristgs",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "geoscientificInformation"],
+      "concept_id": "geoscientificInformation_Geology",
+      "label_de": "Geologie",
+      "label_fr": "Géologie",
+      "label_en": "Geology",
+      "label_it": "Geologia",
+      "label_rm": "Geologia",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "geoscientificInformation"],
+      "concept_id": "geoscientificInformation_Soils",
+      "label_de": "Boden",
+      "label_fr": "Sols",
+      "label_en": "Soils",
+      "label_it": "Suolo",
+      "label_rm": "Terren",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "geoscientificInformation"],
+      "concept_id": "geoscientificInformation_NaturalHazards",
+      "label_de": "Naturbedingte Risiken",
+      "label_fr": "Dangers naturels",
+      "label_en": "Natural Hazards",
+      "label_it": "Rischi naturali",
+      "label_rm": "Ristgs natirals",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_2"],
+      "concept_id": "biota",
+      "label_de": "Wald, Flora, Fauna",
+      "label_fr": "Forêt, flore, faune",
+      "label_en": "Forest, Flora, Fauna",
+      "label_it": "Bosco, flora, fauna",
+      "label_rm": "Guaud, flora, fauna",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_2"],
+      "concept_id": "oceans",
+      "label_de": "Meere",
+      "label_fr": "Océans",
+      "label_en": "Oceans",
+      "label_it": "Oceani",
+      "label_rm": "Oceans",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_2"],
+      "concept_id": "inlandWaters",
+      "label_de": "Gewässer",
+      "label_fr": "Hydrographie",
+      "label_en": "Inland Waters",
+      "label_it": "Idrografia",
+      "label_rm": "Idrografia",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_2"],
+      "concept_id": "climatologyMeteorologyAtmosphere",
+      "label_de": "Atmosphäre, Luft, Klima",
+      "label_fr": "Atmosphère, climatologie",
+      "label_en": "Atmosphere, Climatology",
+      "label_it": "Atmosfera, climatologia",
+      "label_rm": "Atmosfera, clima",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_2"],
+      "concept_id": "environment",
+      "label_de": "Umwelt-, Naturschutz",
+      "label_fr": "Environnement, nature",
+      "label_en": "Environment, Nature",
+      "label_it": "Protezione ambiente e natura",
+      "label_rm": "Protecziun ambient e natira",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "environment"],
+      "concept_id": "environment_EnvironmentalProtection",
+      "label_de": "Umweltschutz, Lärm",
+      "label_fr": "Protection de l'environnement",
+      "label_en": "Environmental Protection",
+      "label_it": "Protezione ambiente, rumore",
+      "label_rm": "Protecziun ambient, canera",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "environment"],
+      "concept_id": "environment_NatureProtection",
+      "label_de": "Natur- und Landschaftsschutz",
+      "label_fr": "Protection de la nature",
+      "label_en": "Nature Protection",
+      "label_it": "Protezione della natura",
+      "label_rm": "Protecziun da la natira",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "root"],
+      "concept_id": "parent_3",
+      "label_de": "Bevölkerung und Wirtschaft",
+      "label_fr": "Population et économie",
+      "label_en": "Population and Economy",
+      "label_it": "Popolazione ed economia",
+      "label_rm": "Populaziun ed economia",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "society",
+      "label_de": "Gesellschaft, Kultur",
+      "label_fr": "Société, culture",
+      "label_en": "Society, Culture",
+      "label_it": "Società, cultura",
+      "label_rm": "Societad, cultura",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "health",
+      "label_de": "Gesundheit",
+      "label_fr": "Santé",
+      "label_en": "Health",
+      "label_it": "Salute",
+      "label_rm": "Sanadad",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "structure",
+      "label_de": "Gebäude, Anlagen",
+      "label_fr": "Edifices, infrastructures",
+      "label_en": "Buildings, Infrastructure",
+      "label_it": "Edifici, infrastrutture",
+      "label_rm": "Edifizis, infrastructuras",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "transportation",
+      "label_de": "Verkehr",
+      "label_fr": "Transport",
+      "label_en": "Transportation",
+      "label_it": "Trasporto",
+      "label_rm": "Transport",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "utilitiesCommunication",
+      "label_de": "Ver-, Entsorgung",
+      "label_fr": "Approvisionnement, élimination",
+      "label_en": "Utilities, Communication",
+      "label_it": "Approvvigionamento, smaltimento",
+      "label_rm": "Provediment, dismessa",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "utilitiesCommunication"],
+      "concept_id": "utilitiesCommunication_Energy",
+      "label_de": "Energie",
+      "label_fr": "Energie",
+      "label_en": "Energy",
+      "label_it": "Energia",
+      "label_rm": "Energia",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "utilitiesCommunication"],
+      "concept_id": "utilitiesCommunication_Utilities",
+      "label_de": "Wasser- und Abfallsysteme",
+      "label_fr": "Systèmes eaux et déchets",
+      "label_en": "Water and Waste Systems",
+      "label_it": "Sistemi acqua e rifiuti",
+      "label_rm": "Sistems aua e rument",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "utilitiesCommunication"],
+      "concept_id": "utilitiesCommunication_Communication",
+      "label_de": "Kommunikation",
+      "label_fr": "Communication",
+      "label_en": "Communication",
+      "label_it": "Comunicazioni",
+      "label_rm": "Communicaziun",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "intelligenceMilitary",
+      "label_de": "Militär, Sicherheit",
+      "label_fr": "Armée, sécurité",
+      "label_en": "Military, Security",
+      "label_it": "Esercito, sicurezza",
+      "label_rm": "Armada, segirezza",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "farming",
+      "label_de": "Landwirtschaft",
+      "label_fr": "Agriculture",
+      "label_en": "Agriculture",
+      "label_it": "Agricoltura",
+      "label_rm": "Agricultura",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  },
+  {
+    "model": "thesaurus.concept",
+    "fields": {
+      "thesaurus": ["ech0166"],
+      "parent": ["ech0166", "parent_3"],
+      "concept_id": "economy",
+      "label_de": "Wirtschaftliche Aktivitäten",
+      "label_fr": "Activités économiques",
+      "label_en": "Economical Activities",
+      "label_it": "Attività economiche",
+      "label_rm": "Activitads economicas",
+      "created_at": "2026-09-09T01:00:00.000Z",
+      "updated_at": "2026-09-09T01:00:00.000Z"
+      }
+  }
+]
