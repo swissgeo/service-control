@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Keyword, Thesaurus
+from .models import Concept, Thesaurus
 
 
 @admin.register(Thesaurus)
@@ -11,10 +11,11 @@ class ThesaurusAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
 
-@admin.register(Keyword)
-class KeywordAdmin(admin.ModelAdmin):
-    """Admin View for Keyword"""
+@admin.register(Concept)
+class ConceptAdmin(admin.ModelAdmin):
+    """Admin View for Concept"""
 
-    list_display = ("keyword_id", "label_en", "thesaurus")
+    list_display = ("concept_id", "label_en", "thesaurus")
     list_filter = ("thesaurus",)
     readonly_fields = ("created_at", "updated_at")
+    search_fields = ("concept_id", "label_en", "label_de")

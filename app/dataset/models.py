@@ -112,7 +112,7 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         related_name="preferred_for_datasets",
     )
 
-    keywords = models.ManyToManyField("thesaurus.Keyword", related_name="keywords", blank=True)
+    concepts = models.ManyToManyField("thesaurus.Concept", related_name="datasets", blank=True)
 
     units = models.ManyToManyField(
         "organization.Unit", through="DatasetToUnit", related_name="datasets"

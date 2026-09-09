@@ -32,17 +32,17 @@ class Thesaurus(models.Model):
         return str(self.thesaurus_id)
 
 
-class Keyword(models.Model):
-    """Thesaurus model."""
+class Concept(models.Model):
+    """Concept model."""
 
-    _context = "Keyword Model"
+    _context = "Concept Model"
 
     thesaurus = models.ForeignKey(
         Thesaurus,
         on_delete=models.CASCADE,
     )
 
-    keyword_id = models.CharField(_(_context, "External ID"), max_length=200)
+    concept_id = models.CharField(_(_context, "External ID"), max_length=200)
 
     label_de = models.CharField(_(_context, "Label (German)"))
     label_fr = models.CharField(_(_context, "Label (French)"))
@@ -65,8 +65,8 @@ class Keyword(models.Model):
         ordering = ("thesaurus__thesaurus_id", "label_en")
         constraints = (
             models.UniqueConstraint(
-                fields=("thesaurus", "keyword_id"),
-                name="unique_keyword_id_per_thesaurus",
+                fields=("thesaurus", "concept_id"),
+                name="unique_concept_id_per_thesaurus",
             ),
         )
 

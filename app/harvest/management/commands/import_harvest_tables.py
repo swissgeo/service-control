@@ -32,7 +32,7 @@ from harvest.models import (
     PrefixLookupTable,
 )
 from organization.models import Contact, Organization, Unit
-from thesaurus.models import Keyword, Thesaurus
+from thesaurus.models import Concept, Thesaurus
 from utils.command import CustomBaseCommand
 
 if TYPE_CHECKING:
@@ -69,9 +69,9 @@ class Command(CustomBaseCommand):
             help="Import datasets",
         )
         parser.add_argument(
-            "--keywords",
+            "--concepts",
             action="store_true",
-            help="Import keywords",
+            help="Import concepts",
         )
         parser.add_argument(
             "--contacts",
@@ -121,8 +121,8 @@ class Command(CustomBaseCommand):
             self.import_datasets(*args, **options)
         if options["distributions"]:
             self.import_distributions(*args, **options)
-        if options["keywords"]:
-            self.import_keywords(*args, **options)
+        if options["concepts"]:
+            self.import_concepts(*args, **options)
         if options["contacts"]:
             self.import_contacts(*args, **options)
 
@@ -746,41 +746,41 @@ class Command(CustomBaseCommand):
         return dist, created
 
     # ##########################################################################
-    def import_keywords(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
-        """Imports keywords from the harvest table.
+    def import_concepts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+        """Imports concepts from the harvest table.
 
         Processes all datasets that:
 
         - originate from the BOD source, and
-        - have a corresponding keyword entry in the harvest table.
+        - have a corresponding concept entry in the harvest table.
 
         For each matching dataset:
 
-        1. Retrieve the harvested keyword list from DynamoDB.
-        2. Process each harvested keyword:
+        1. Retrieve the harvested concept list from DynamoDB.
+        2. Process each harvested concept:
         - Create the thesaurus if not yet existing.
-        - Create the keyword if not yet existing.
-        3. Replace the dataset's keyword associations with the harvested keywords.
+        - Create the concept if not yet existing.
+        3. Replace the dataset's concept associations with the harvested concepts.
 
         """
 
-        self.print_success("Importing keywords")
+        self.print_success("Importing concepts")
 
         dynamodb_client: DynamoDBClient = self.session.client(
             "dynamodb", region_name="eu-central-1"
         )
 
         log_metrics = {
-            "keywords.datasets_processed": 0,
-            "keywords.thesaurus_created": 0,
-            "keywords.keywords_created": 0,
-            "keywords.datasets_updated": 0,
+            "concepts.datasets_processed": 0,
+            "concepts.thesaurus_created": 0,
+            "concepts.concepts_created": 0,
+            "concepts.datasets_updated": 0,
         }
 
         query = Dataset.objects.filter(data_source=Dataset.DataSource.BOD_DATASET)
         for dataset in query.iterator():
             self.print(f"Processing {dataset.dataset_id}")
-            log_metrics["keywords.datasets_processed"] += 1
+            log_metrics["concepts.datasets_processed"] += 1
 
             response = dynamodb_client.get_item(
                 TableName=f"harvest-keywords-{options['target_env']}",
@@ -793,41 +793,43 @@ class Command(CustomBaseCommand):
                 continue
 
             try:
-                item_keywords = KeywordList.from_dynamodb_item(item)
+                keywords = KeywordList.from_dynamodb_item(item)
             except ParsingError as e:
                 self.print_error(
                     "Failed to parse keyword list for dataset %s: %s", dataset.dataset_id, e
                 )
                 continue
 
-            keywords = set()
-            for item_keyword in item_keywords.keywords:
-                if not item_keyword.thesaurus_id or not item_keyword.concept:
+            concepts = set()
+            for keyword in keywords.keywords:
+                if not keyword.thesaurus_id or not keyword.concept:
                     continue
 
                 thesaurus, created = Thesaurus.objects.get_or_create(
-                    thesaurus_id=item_keyword.thesaurus_id
+                    thesaurus_id=keyword.thesaurus_id
                 )
                 if created:
-                    log_metrics["keywords.thesaurus_created"] += 1
-                keyword, created = Keyword.objects.get_or_create(
+                    self.print(f"Added thesaurus {thesaurus}")
+                    log_metrics["concepts.thesaurus_created"] += 1
+                concept, created = Concept.objects.get_or_create(
                     thesaurus=thesaurus,
-                    keyword_id=item_keyword.concept,
+                    concept_id=keyword.concept,
                     defaults={
-                        "label_de": item_keyword.translation_de,
-                        "label_fr": item_keyword.translation_fr,
-                        "label_en": item_keyword.translation_en,
-                        "label_it": item_keyword.translation_it,
-                        "label_rm": item_keyword.translation_rm,
+                        "label_de": keyword.translation_de,
+                        "label_fr": keyword.translation_fr,
+                        "label_en": keyword.translation_en,
+                        "label_it": keyword.translation_it,
+                        "label_rm": keyword.translation_rm,
                     },
                 )
                 if created:
-                    log_metrics["keywords.keywords_created"] += 1
-                keywords.add(keyword)
+                    self.print(f"Added concept {concept.concept_id} to thesaurus {thesaurus}")
+                    log_metrics["concepts.concepts_created"] += 1
+                concepts.add(concept)
 
-            dataset.keywords.set(keywords)
-            log_metrics["keywords.datasets_updated"] += 1
-        self.print_success(f"Keyword import completed. Metrics: {log_metrics}")
+            dataset.concepts.set(concepts)
+            log_metrics["concepts.datasets_updated"] += 1
+        self.print_success(f"Concept import completed. Metrics: {log_metrics}")
 
     # ##########################################################################
     def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0912, PLR0915
