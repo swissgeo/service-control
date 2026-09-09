@@ -28,7 +28,7 @@ from harvest.utils import (
     CANTONAL_PROVIDER_ORGANIZATIONS,
 )
 from organization.models import Contact, Organization, Unit
-from thesaurus.models import Keyword, Thesaurus
+from thesaurus.models import Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 
@@ -68,9 +68,9 @@ class Command(CustomBaseCommand):
             help="Import datasets",
         )
         parser.add_argument(
-            "--keywords",
+            "--concepts",
             action="store_true",
-            help="Import keywords",
+            help="Import concepts",
         )
         parser.add_argument(
             "--distributions",
@@ -101,12 +101,12 @@ class Command(CustomBaseCommand):
         parser.add_argument(
             "--gemet-thesaurus",
             default="https://www.geocat.ch/geonetwork/srv/api/registries/vocabularies/external.theme.gemet",
-            help="URL to the thesaurus / RDF containing the GEMET keywords.",
+            help="URL to the thesaurus / RDF containing the GEMET concepts.",
         )
         parser.add_argument(
             "--geocat-thesaurus",
             default="https://www.geocat.ch/geonetwork/srv/api/registries/vocabularies/local.theme.geocat.ch",
-            help="URL to the thesaurus / RDF containing the GEOCAT keywords.",
+            help="URL to the thesaurus / RDF containing the GEOCAT concepts.",
         )
 
         parser.add_argument(
@@ -138,8 +138,8 @@ class Command(CustomBaseCommand):
             self.import_contacts(services, clean)
         if options["datasets"]:
             self.import_datasets(services, clean)
-        if options["keywords"]:
-            self.import_keywords(services, options["gemet_thesaurus"], options["geocat_thesaurus"])
+        if options["concepts"]:
+            self.import_concepts(services, options["gemet_thesaurus"], options["geocat_thesaurus"])
         if options["distributions"]:
             self.import_distributions(configs, clean)
 
@@ -921,10 +921,10 @@ class Command(CustomBaseCommand):
         return added, removed
 
     # ##########################################################################
-    def import_keywords(self, services: dict, gemet_thesaurus: str, geocat_thesaurus: str) -> None:  # noqa: C901
-        """Import keywords.
+    def import_concepts(self, services: dict, gemet_thesaurus: str, geocat_thesaurus: str) -> None:  # noqa: C901
+        """Import concepts.
 
-        There are three types of keywords / thesauri:
+        There are three types of concepts / thesauri:
 
         - GEMET:      These are currently only present in the German response and should correspond
                       to the German translation of concepts defined in the according thesaurus on
@@ -935,18 +935,18 @@ class Command(CustomBaseCommand):
         - Geodienste: These are present in all languages, but are not yet present in a thesaurus and
                       do not correspond to each other by order. Not yet supported.
 
-        Replaces all keywords of the corresponding aggregate and cantonal dataset.
+        Replaces all concepts of the corresponding aggregate and cantonal dataset.
 
-        No keywords and thesauri are updated or cleaned.
+        No concepts and thesauri are updated or cleaned.
 
         """
-        self.print_success("Importing keywords")
+        self.print_success("Importing concepts")
 
         mappings = DatasetMapping.table()
 
         metrics = {
             "thesauri.created": 0,
-            "keywords.created": 0,
+            "concepts.created": 0,
         }
 
         # Load thesauri
@@ -997,25 +997,25 @@ class Command(CustomBaseCommand):
             if not aggregate and not part:
                 continue
 
-            # Create keywords
-            gemet_keywords, created = self.create_keywords(
+            # Create concepts
+            gemet_concepts, created = self.create_concepts(
                 service["keywords_gemet"] or "", gemet, gemet_lookup
             )
-            metrics["keywords.created"] += created
+            metrics["concepts.created"] += created
 
-            geocat_keywords, created = self.create_keywords(
+            geocat_concepts, created = self.create_concepts(
                 service["keywords_geocat"] or "", geocat, geocat_lookup
             )
-            metrics["keywords.created"] += created
+            metrics["concepts.created"] += created
 
-            # Replace dataset keywords
-            keywords = gemet_keywords + geocat_keywords
+            # Replace dataset concepts
+            concepts = gemet_concepts + geocat_concepts
             if aggregate and update_aggregate:
-                aggregate.keywords.set(keywords)
+                aggregate.concepts.set(concepts)
             if part and update_part:
-                part.keywords.set(keywords)
+                part.concepts.set(concepts)
 
-        self.print_success(f"Keyword import completed. Metrics: {metrics}")
+        self.print_success(f"Concept import completed. Metrics: {metrics}")
 
     def load_thesaurus(
         self, thesaurus_id: str, url: str
@@ -1035,51 +1035,51 @@ class Command(CustomBaseCommand):
 
         return thesaurus, lookup, created
 
-    def create_keywords(
-        self, keyword_strings: str, thesaurus: Thesaurus, lookup: ThesaurusLookup
-    ) -> tuple[list[Keyword], int]:
-        """Lookup the given list of comma-seprated keywords and create the keywords in the DB if
+    def create_concepts(
+        self, concept_strings: str, thesaurus: Thesaurus, lookup: ThesaurusLookup
+    ) -> tuple[list[Concept], int]:
+        """Lookup the given list of comma-seprated concepts and create the concepts in the DB if
         not yet existing.
 
-        Returns the keywords and the number of created keywords.
+        Returns the concepts and the number of created concepts.
         """
 
-        keywords = []
+        concepts = []
         created = 0
-        for token in keyword_strings.split(","):
+        for token in concept_strings.split(","):
             term = token.strip()
             if not term:
                 continue
 
-            concept, translations = lookup.find_concept(term)
-            if not concept:
-                self.print_warning(f"Keyword {term} not found in thesaurus {lookup}")
+            concept_id, translations = lookup.find_concept(term)
+            if not concept_id:
+                self.print_warning(f"Concept {term} not found in thesaurus {lookup}")
             elif "de" not in translations:
-                self.print_warning(f"Keyword {term} has no German translation")
+                self.print_warning(f"Concept {term} has no German translation")
             elif "fr" not in translations:
-                self.print_warning(f"Keyword {term} has no French translation")
+                self.print_warning(f"Concept {term} has no French translation")
             elif "en" not in translations:
-                self.print_warning(f"Keyword {term} has no English translation")
+                self.print_warning(f"Concept {term} has no English translation")
             else:
-                keyword = thesaurus.keyword_set.filter(keyword_id=concept).first()  # ty:ignore[unresolved-attribute]
-                if not keyword:
+                concept = thesaurus.concept_set.filter(concept_id=concept_id).first()  # ty:ignore[unresolved-attribute]
+                if not concept:
                     self.print(
-                        f"Adding keyword {concept} / {translations} to thesaurus {thesaurus}"
+                        f"Adding concept {concept_id} / {translations} to thesaurus {thesaurus}"
                     )
-                    keyword = Keyword(
+                    concept = Concept(
                         thesaurus=thesaurus,
-                        keyword_id=concept,
+                        concept_id=concept_id,
                         label_de=translations["de"],
                         label_fr=translations["fr"],
                         label_en=translations["en"],
                         label_it=translations.get("it"),
                         label_rm=translations.get("rm"),
                     )
-                    keyword.save()
+                    concept.save()
                     created += 1
-                keywords.append(keyword)
+                concepts.append(concept)
 
-        return keywords, created
+        return concepts, created
 
     # ##########################################################################
     def import_distributions(self, configs: dict, clean: bool) -> None:

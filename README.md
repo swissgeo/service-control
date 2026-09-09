@@ -181,7 +181,7 @@ aws sso login --profile swisstopo-swissgeo
 
 app/manage.py loaddata app/fixtures/dataservice.json
 app/manage.py loaddata app/fixtures/mapping.json
-app/manage.py import_harvest_tables --organizations --datasets --distributions --keywords --contacts --profile swisstopo-swissgeo --target-env prod
+app/manage.py import_harvest_tables --organizations --datasets --distributions --concepts --contacts --profile swisstopo-swissgeo --target-env prod
 app/manage.py sync_from_capabilities --stac
 ```
 
@@ -196,7 +196,7 @@ To import geodienste data from the API, run:
 
 ```bash
 app/manage.py loaddata app/fixtures/mapping.json
-app/manage.py import_geodienste --organizations --contacts --datasets --keywords --distributions
+app/manage.py import_geodienste --organizations --contacts --datasets --concepts --distributions
 ```
 
 To import from INT or DEV, you need to manually download the files and place them in a directory since the are behind a HTTP Basic Auth.
@@ -211,7 +211,7 @@ curl "https://{url}/info/viewer_config?language=de" > services/viewer_config_de.
 curl "https://{url}/info/viewer_config?language=fr" > services/viewer_config_fr.json
 curl "https://{url}/info/viewer_config?language=en" > services/viewer_config_en.json
 curl "https://{url}/info/viewer_config?language=it" > services/viewer_config_it.json
-app/manage.py import_geodienste --organizations --contacts --datasets --keywords --distributions --directory services
+app/manage.py import_geodienste --organizations --contacts --datasets --concepts --distributions --directory services
 ```
 
 Use

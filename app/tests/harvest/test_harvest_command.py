@@ -26,8 +26,7 @@ from harvest.models import (
 )
 from organization.models import Contact as ContactModel
 from organization.models import Organization, Unit
-from thesaurus.models import Keyword as KeywordModel
-from thesaurus.models import Thesaurus
+from thesaurus.models import Concept, Thesaurus
 
 
 @pytest.fixture(name="dynamodb")
@@ -1403,9 +1402,9 @@ def test_command_uses_distribution_mapping(dynamodb, db):
 
 
 # --------------------------------------------------------------------------------------------------
-# Keywords
+# Concepts
 # --------------------------------------------------------------------------------------------------
-def test_command_creates_and_updates_keywords(dynamodb, db):
+def test_command_creates_and_updates_concepts(dynamodb, db):
     ds = Dataset(
         dataset_id="ch.bafu.moose",
         title_short_de="x",
@@ -1465,29 +1464,29 @@ def test_command_creates_and_updates_keywords(dynamodb, db):
     dynamodb.get_item.return_value = {"Item": keywords.as_dynamodb_item()}
 
     out = StringIO()
-    call_command("import_harvest_tables", keywords=True, verbosity=2, stdout=out)
+    call_command("import_harvest_tables", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     thesaurus = Thesaurus.objects.first()
     assert thesaurus
     assert thesaurus.thesaurus_id == "geonetwork.thesaurus.external.theme.gemet"
-    assert {keyword.keyword_id for keyword in thesaurus.keyword_set.all()} == {
+    assert {concept.concept_id for concept in thesaurus.concept_set.all()} == {
         "http://www.eionet.europa.eu/gemet/concept/25",
         "http://www.eionet.europa.eu/gemet/concept/245",
     }
 
-    keyword = KeywordModel.objects.filter(
-        keyword_id="http://www.eionet.europa.eu/gemet/concept/25"
+    concept = Concept.objects.filter(
+        concept_id="http://www.eionet.europa.eu/gemet/concept/25"
     ).first()
-    assert keyword
-    assert keyword.label_de == "Unfall"
-    assert keyword.label_fr == "accident"
-    assert keyword.label_en == "accident"
-    assert keyword.label_it == "incidente"
-    assert keyword.label_rm is None
+    assert concept
+    assert concept.label_de == "Unfall"
+    assert concept.label_fr == "accident"
+    assert concept.label_en == "accident"
+    assert concept.label_it == "incidente"
+    assert concept.label_rm is None
 
     ds.refresh_from_db()
-    assert {keyword.keyword_id for keyword in ds.keywords.all()} == {
+    assert {concept.concept_id for concept in ds.concepts.all()} == {
         "http://www.eionet.europa.eu/gemet/concept/25",
         "http://www.eionet.europa.eu/gemet/concept/245",
     }
@@ -1497,14 +1496,14 @@ def test_command_creates_and_updates_keywords(dynamodb, db):
     dynamodb.get_item.return_value = {"Item": keywords.as_dynamodb_item()}
 
     out = StringIO()
-    call_command("import_harvest_tables", keywords=True, verbosity=2, stdout=out)
+    call_command("import_harvest_tables", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     thesaurus.refresh_from_db()
-    assert thesaurus.keyword_set.count() == 3
+    assert thesaurus.concept_set.count() == 3
 
     ds.refresh_from_db()
-    assert {keyword.keyword_id for keyword in ds.keywords.all()} == {
+    assert {concept.concept_id for concept in ds.concepts.all()} == {
         "http://www.eionet.europa.eu/gemet/concept/245",
         "http://www.eionet.europa.eu/gemet/concept/253",
     }
