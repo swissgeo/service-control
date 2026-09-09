@@ -1,4 +1,51 @@
 {
+  "settings": {
+    "analysis": {
+      "filter": {
+        "german_decompound": {
+          "type": "dictionary_decompounder",
+          "//": "Curated geodata vocabulary: split German compounds so a query for a part ('wander') matches the whole ('Wanderwege'). Short/ambiguous stems ('ort', 'tier', 'satz', 'berg') are deliberately left out -- they match inside unrelated words ('gePORTal', 'dokumenTIERt', 'gegenSATZ').",
+          "word_list": [
+            "abbau", "alpen", "anlage", "arbeit", "bahn", "bedeckung", "beitrag", "bereich",
+            "bestand", "betrieb", "bevölkerung", "bezirk", "boden", "brücke", "daten", "dienst",
+            "dosis", "druck", "eignung", "einheit", "einzel", "eisenbahn", "energie", "fahr",
+            "fluss", "fläche", "gebiet", "gebäude", "gefahr", "gemeinde", "gewässer", "grenze",
+            "grün", "haupt", "höhe", "industrie", "information", "kanton", "karte", "klasse",
+            "konzentration", "kraft", "landschaft", "leistung", "leitung", "luft", "messung",
+            "messwert", "modell", "natur", "netz", "nutzung", "objekt", "perimeter", "pflanze",
+            "plan", "quelle", "raum", "region", "schicht", "schutz", "siedlung", "stadt",
+            "standort", "station", "statistik", "strahlung", "strasse", "strom", "stufe",
+            "stunde", "system", "temperatur", "tunnel", "umwelt", "verbreitung", "verkehr",
+            "vermessung", "verordnung", "verwaltung", "vorkommen", "wald", "wander", "wasser",
+            "weg", "wirtschaft", "zone"
+          ],
+          "min_word_size": 6,
+          "min_subword_size": 4,
+          "max_subword_size": 22,
+          "only_longest_match": true
+        }
+      },
+      "normalizer": {
+        "sort_normalizer": {
+          "//": "Sort-only. A raw keyword sorts by code point, which puts every uppercase title before every lowercase one and 'Zürich' after 'Zwingen'. 'lowercase' + 'asciifolding' gives the case- and umlaut-insensitive order German expects (ä sorts as a). Deliberately NOT 'german_normalization', which also folds ß->ss and strips a trailing -e: right for matching, wrong for display order.",
+          "type": "custom",
+          "filter": ["lowercase", "asciifolding"]
+        }
+      },
+      "analyzer": {
+        "german_decompound": {
+          "//": "Index-time. 'lowercase' MUST come first: dictionary_decompounder is case-sensitive, so 'Wanderwege' would otherwise never match the lowercase word list. 'german_normalization' MUST come last: it folds ä/ö/ü/ß, and running it first would stop 'fläche' in the word list from matching.",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "german_decompound", "german_normalization"]
+        },
+        "german_search": {
+          "//": "Search-time. Deliberately does NOT decompound: splitting the query too makes 'wanderkarte' match 'Wanderwege' (shared 'wander' subword). Splitting only at index time keeps that false positive out.",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "german_normalization"]
+        }
+      }
+    }
+  },
   "mappings": {
     "properties": {
       "$schema": {"type": "keyword"},
@@ -11,14 +58,54 @@
           "type": {"type": "keyword", "index": false},
           "title": {
             "properties": {
-              "de": {"type": "search_as_you_type"},
+              "de": {
+                "type": "search_as_you_type",
+                "analyzer": "german_decompound",
+                "search_analyzer": "german_search",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "fr": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "it": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "rm": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              },
+              "en": {
+                "type": "search_as_you_type",
+                "fields": {
+                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
+                }
+              }
+            }
+          },
+          "description": {
+            "properties": {
+              "de": {
+                "type": "search_as_you_type",
+                "analyzer": "german_decompound",
+                "search_analyzer": "german_search"
+              },
               "fr": {"type": "search_as_you_type"},
               "it": {"type": "search_as_you_type"},
               "rm": {"type": "search_as_you_type"},
               "en": {"type": "search_as_you_type"}
             }
           },
-          "description": {
+          "additionalSearchText": {
             "properties": {
               "de": {"type": "search_as_you_type"},
               "fr": {"type": "search_as_you_type"},

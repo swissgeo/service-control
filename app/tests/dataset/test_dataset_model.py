@@ -4,7 +4,7 @@ import pytest
 
 from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
 from organization.models import Unit
-from thesaurus.models import Keyword, Thesaurus
+from thesaurus.models import Concept, Thesaurus
 
 
 @pytest.fixture(name="dataset")
@@ -140,15 +140,15 @@ def test_dataset_contact(dataset, unit):
     assert Unit.objects.count() > 0
 
 
-def test_dataset_keywords(dataset):
+def test_dataset_concepts(dataset):
     thesaurus = Thesaurus.objects.create(thesaurus_id="thesaurus")
-    keyword = Keyword.objects.create(keyword_id="http://example/concept#1", thesaurus=thesaurus)
-    dataset.keywords.set([keyword])
+    concept = Concept.objects.create(concept_id="http://example/concept#1", thesaurus=thesaurus)
+    dataset.concepts.set([concept])
 
     dataset.delete()
     assert Dataset.objects.count() == 0
     assert Thesaurus.objects.count() > 0
-    assert Keyword.objects.count() > 0
+    assert Concept.objects.count() > 0
 
 
 def test_add_data_source_id(dataset):

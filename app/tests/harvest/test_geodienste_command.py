@@ -1128,6 +1128,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keyword 1 DE, Keyword 2 DE",
                     }
                 ]
             },
@@ -1141,6 +1142,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "",
                     }
                 ]
             },
@@ -1154,6 +1156,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": None,
                     }
                 ]
             },
@@ -1189,6 +1192,11 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert aggregate.title_short_fr == "Title FR"
     assert aggregate.title_short_it == "Title IT"
     assert aggregate.title_short_rm is None
+    assert aggregate.additional_search_text_de == ["Keyword 1 DE", "Keyword 2 DE"]
+    assert aggregate.additional_search_text_en == []
+    assert aggregate.additional_search_text_fr == []
+    assert aggregate.additional_search_text_it == []
+    assert aggregate.additional_search_text_rm == []
     assert (
         aggregate.legacy_part_info_url_de
         == "https://geodienste.ch/services/av?locale=de#info_cantons"
@@ -1316,6 +1324,7 @@ def test_command_updates_datasets(mock, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -1329,6 +1338,7 @@ def test_command_updates_datasets(mock, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -1342,6 +1352,7 @@ def test_command_updates_datasets(mock, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -1467,6 +1478,7 @@ def test_command_uses_dataset_mapping(mock, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -1480,6 +1492,7 @@ def test_command_uses_dataset_mapping(mock, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -1493,6 +1506,7 @@ def test_command_uses_dataset_mapping(mock, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -1582,6 +1596,7 @@ def test_command_cleans_datasets(mock, db):
                         "abstract": "Abstract DE",
                         "meta_data": {},
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -1595,6 +1610,7 @@ def test_command_cleans_datasets(mock, db):
                         "abstract": "Abstract FR",
                         "meta_data": {},
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -1608,6 +1624,7 @@ def test_command_cleans_datasets(mock, db):
                         "abstract": "Abstract IT",
                         "meta_data": {},
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -1661,6 +1678,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -1674,6 +1692,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -1687,6 +1706,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -1834,6 +1854,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -1847,6 +1868,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -1860,6 +1882,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -1937,6 +1960,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -1950,6 +1974,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -1963,6 +1988,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -2067,6 +2093,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -2080,6 +2107,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -2093,6 +2121,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -2253,6 +2282,7 @@ def test_command_uses_contact_mappings(mock, client, db):
                         "abstract": "Abstract DE",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords DE",
                     }
                 ]
             },
@@ -2266,6 +2296,7 @@ def test_command_uses_contact_mappings(mock, client, db):
                         "abstract": "Abstract FR",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords FR",
                     }
                 ]
             },
@@ -2279,6 +2310,7 @@ def test_command_uses_contact_mappings(mock, client, db):
                         "abstract": "Abstract IT",
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
+                        "keywords": "Keywords IT",
                     }
                 ]
             },
@@ -2320,12 +2352,12 @@ def test_command_uses_contact_mappings(mock, client, db):
 
 
 # --------------------------------------------------------------------------------------------------
-# Keywords
+# Concepts
 # --------------------------------------------------------------------------------------------------
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 @patch("thesaurus.utils.get", name="rdf")
-def test_command_creates_keywords(rdf, mock, client, db):
+def test_command_creates_concepts(rdf, mock, client, db):
     aggregate_dataset = Dataset(
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
@@ -2407,7 +2439,7 @@ def test_command_creates_keywords(rdf, mock, client, db):
     rdf.side_effect = [gemet_response, geocat_response]
 
     out = StringIO()
-    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    call_command("import_geodienste", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     assert "Thesaurus geonetwork.thesaurus.external.theme.gemet created" in out
@@ -2415,49 +2447,49 @@ def test_command_creates_keywords(rdf, mock, client, db):
     assert "Loading lookup table / RDF from" in out
     assert "www.geocat.ch/geonetwork/srv/api/registries/vocabularies/external.theme.gemet" in out
     assert "www.geocat.ch/geonetwork/srv/api/registries/vocabularies/local.theme.geocat.ch" in out
-    assert "Adding keyword concept/1" in out
-    assert "Adding keyword http://geocat.ch/concept#1" in out
-    assert "Keyword baz de not found in thesaurus ThesaurusLookup" in out
+    assert "Adding concept concept/1" in out
+    assert "Adding concept http://geocat.ch/concept#1" in out
+    assert "Concept baz de not found in thesaurus ThesaurusLookup" in out
 
-    assert {k.label_fr for k in aggregate_dataset.keywords.all()} == {"bar fr", "foo fr"}
-    assert {k.label_fr for k in part_dataset.keywords.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in aggregate_dataset.concepts.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in part_dataset.concepts.all()} == {"bar fr", "foo fr"}
     assert Thesaurus.objects.count() == 2
 
     gemet = Thesaurus.objects.get(thesaurus_id="geonetwork.thesaurus.external.theme.gemet")
-    keyword = gemet.keyword_set.first()
-    assert keyword.label_de == "foo de"
-    assert keyword.label_fr == "foo fr"
-    assert keyword.label_en == "foo en"
-    assert keyword.label_it == "foo it"
-    assert keyword.label_rm is None
+    concept = gemet.concept_set.first()
+    assert concept.label_de == "foo de"
+    assert concept.label_fr == "foo fr"
+    assert concept.label_en == "foo en"
+    assert concept.label_it == "foo it"
+    assert concept.label_rm is None
 
     geocat = Thesaurus.objects.get(thesaurus_id="geonetwork.thesaurus.local.theme.geocat.ch")
-    keyword = geocat.keyword_set.first()
-    assert keyword.label_de == "bar de"
-    assert keyword.label_fr == "bar fr"
-    assert keyword.label_en == "bar en"
-    assert keyword.label_it == "bar it"
-    assert keyword.label_rm == "bar rm"
+    concept = geocat.concept_set.first()
+    assert concept.label_de == "bar de"
+    assert concept.label_fr == "bar fr"
+    assert concept.label_en == "bar en"
+    assert concept.label_it == "bar it"
+    assert concept.label_rm == "bar rm"
 
     # ------
     # Re-run
     # ------
-    part_dataset.keywords.clear()
+    part_dataset.concepts.clear()
 
     rdf.side_effect = [gemet_response, geocat_response]
 
     out = StringIO()
-    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    call_command("import_geodienste", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert {k.label_fr for k in aggregate_dataset.keywords.all()} == {"bar fr", "foo fr"}
-    assert {k.label_fr for k in part_dataset.keywords.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in aggregate_dataset.concepts.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in part_dataset.concepts.all()} == {"bar fr", "foo fr"}
 
 
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 @patch("thesaurus.utils.get", name="rdf")
-def test_command_use_mapping_for_keywords(rdf, mock, client, db):
+def test_command_use_mapping_for_concepts(rdf, mock, client, db):
     aggregate_dataset = Dataset(
         dataset_id="ch.kgk-cgc.av",
         description_de="Abstract DE",
@@ -2540,14 +2572,14 @@ def test_command_use_mapping_for_keywords(rdf, mock, client, db):
     rdf.side_effect = [gemet_response, geocat_response]
 
     out = StringIO()
-    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    call_command("import_geodienste", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     assert "Dataset mapping found for dataset_id ch.kgk.av: ch.kgk-cgc.av" in out
     assert "Dataset mapping found for dataset_id ch.geodienste-lu.av: ch.rawi.av" in out
 
-    assert aggregate_dataset.keywords.count() == 0
-    assert part_dataset.keywords.count() == 0
+    assert aggregate_dataset.concepts.count() == 0
+    assert part_dataset.concepts.count() == 0
 
     # ------
     # Re-run
@@ -2561,11 +2593,11 @@ def test_command_use_mapping_for_keywords(rdf, mock, client, db):
     rdf.side_effect = [gemet_response, geocat_response]
 
     out = StringIO()
-    call_command("import_geodienste", keywords=True, verbosity=2, stdout=out)
+    call_command("import_geodienste", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert aggregate_dataset.keywords.count() == 1
-    assert part_dataset.keywords.count() == 1
+    assert aggregate_dataset.concepts.count() == 1
+    assert part_dataset.concepts.count() == 1
 
 
 # --------------------------------------------------------------------------------------------------
