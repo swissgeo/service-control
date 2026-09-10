@@ -536,7 +536,7 @@ class Command(CustomBaseCommand):
                             dataset_id=layer_id, data_source=Dataset.DataSource.BOD_DATASET
                         )
                     except Dataset.DoesNotExist:
-                        self.print_error(f"No Dataset found for layer_id {layer_id}")
+                        self.print_warning(f"No Dataset found for layer_id {layer_id}")
                         continue
 
                 processed.setdefault(dataset.dataset_id, set())
@@ -934,7 +934,7 @@ class Command(CustomBaseCommand):
                     )
 
                     if not organization:
-                        self.print_error(f"{dataset}: organization for {role} not found")
+                        self.print_warning(f"{dataset}: organization for {role} not found")
                         continue
 
                     contact = self.find_contact(
