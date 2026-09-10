@@ -2,6 +2,7 @@ import logging
 from traceback import format_exception
 from typing import Any, TextIO
 
+from django.core.management import CommandError
 from django.core.management.base import BaseCommand, CommandParser
 
 
@@ -34,6 +35,7 @@ class CustomBaseCommand(BaseCommand):
         super().__init__(stdout, stderr, no_color, force_color)
         self.logger = logging.getLogger(self.__module__)
         self.options: dict[str, Any] = {}
+        self.errors = False
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -65,6 +67,8 @@ class CustomBaseCommand(BaseCommand):
                 self.print_error(e, exc_info=True)
         else:
             super().execute(*args, **options)
+        if self.errors:
+            raise CommandError("Command encountered some errors, see the log for details.")
 
     def print(self, message: str, *args: Any, level: int = 2, **kwargs: Any) -> None:
         if self.options["verbosity"] >= level:
@@ -100,6 +104,7 @@ class CustomBaseCommand(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(message % (args)))
 
     def print_error(self, message: str | Exception, *args: Any, **kwargs: Any) -> None:
+        self.errors = True
         if self.options["logger"]:
             self.logger.error(message, *args, **kwargs)
         else:

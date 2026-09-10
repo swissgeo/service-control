@@ -14,7 +14,7 @@ class Command(CustomBaseCommand):
 
     help = "Database management"
 
-    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
+    def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
         host = env.str("DB_HOST", default="").strip()
         port = env.str("DB_PORT", default="").strip()
         admin_name = env.str("DB_ADMIN_USER", default="").strip()
@@ -37,6 +37,8 @@ class Command(CustomBaseCommand):
             self.print_error("no DB_PW provided")
         if not database_name:
             self.print_error("no DB_NAME provided")
+        if self.errors:
+            return
 
         connection_string = (
             f"host={host} port={port} user={admin_name} password={admin_password} dbname=postgres"
