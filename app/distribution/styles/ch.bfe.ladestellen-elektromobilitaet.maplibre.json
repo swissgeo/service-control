@@ -1,0 +1,955 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.bfe.ladestellen-elektromobilitaet": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-0-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-no-status-information-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Unknown_False"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-1-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-no-status-information-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Unknown_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-2-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-no-status-information-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Unknown_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-3-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-available-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Available_False"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-4-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-available-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Available_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-5-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-available-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Available_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-6-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-reserved-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Reserved_False"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-7-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-reserved-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Reserved_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-8-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-reserved-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Reserved_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-9-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-occupied-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Occupied_False"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-10-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-occupied-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Occupied_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-11-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-occupied-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Occupied_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-12-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "OutOfService_False"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-13-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "OutOfService_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-14-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "OutOfService_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-15-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Offline_False"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-16-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Offline_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-17-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Offline_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-18-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "EVSENotFound_False"
+        ],
+        "minzoom": 7
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-19-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "EVSENotFound_False"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-20-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-shadow-offline-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "EVSENotFound_False"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-21-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-unknown-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Unknown_True"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-22-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-unknown-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Unknown_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-23-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-unknown-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Unknown_True"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-24-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-avilable-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Available_True"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-25-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-avilable-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Available_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-26-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-avilable-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Available_True"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-27-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-reserved-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Reserved_True"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-28-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-reserved-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Reserved_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-29-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-reserved-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Reserved_True"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-30-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-occupied-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Occupied_True"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-31-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-occupied-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Occupied_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-32-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-occupied-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Occupied_True"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-33-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "OutOfService_True"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-34-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "OutOfService_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-35-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "OutOfService_True"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-36-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Offline_True"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-37-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Offline_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-38-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "Offline_True"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-39-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-50px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "EVSENotFound_True"
+        ],
+        "minzoom": 7
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-40-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-40px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "EVSENotFound_True"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.ladestellen-elektromobilitaet-41-icon",
+        "type": "symbol",
+        "source": "ch.bfe.ladestellen-elektromobilitaet",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/icons/icon-pin-fastforward-offline-30px.png",
+          "icon-allow-overlap": true,
+          "icon-size": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbology"
+            ]
+          ],
+          "EVSENotFound_True"
+        ],
+        "maxzoom": 3
+      }
+    ]
+  },
+  "icons": []
+}

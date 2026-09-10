@@ -1,0 +1,495 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.bafu.hydroweb-messstationen_grundwasserzustand": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-0-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "0"
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-1-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "0"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-2-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow16_239_163_127.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "1"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-3-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow20_239_163_127.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "1"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-4-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow20_239_163_127.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map",
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-5-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow16_203_247_146.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "2"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-6-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow20_203_247_146.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "2"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-7-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow20_203_247_146.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map",
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "2"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-8-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow16_128_194_208.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "3"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-9-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow20_128_194_208.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map"
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "3"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_grundwasserzustand-10-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_grundwasserzustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_grundwasserzustand/images/arrow20_128_194_208.png",
+          "icon-allow-overlap": true,
+          "icon-rotate": [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "quant-class-radiant"
+              ]
+            ],
+            57.29577951308232
+          ],
+          "icon-rotation-alignment": "map",
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "quant-class"
+            ]
+          ],
+          "3"
+        ],
+        "minzoom": 4
+      }
+    ]
+  },
+  "icons": []
+}

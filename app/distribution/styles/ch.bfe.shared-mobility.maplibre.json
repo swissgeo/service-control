@@ -1,0 +1,1809 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.bfe.shared-mobility": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.bfe.shared-mobility-0-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Bike_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Bike"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-1-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Bike_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Bike"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-2-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Bike_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Bike"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-3-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Bike0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Bike0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-4-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Bike0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Bike0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-5-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Bike0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Bike0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-6-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Bike_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Bike"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-7-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Bike_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Bike"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-8-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Bike_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Bike"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-9-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Bike0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Bike0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-10-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Bike0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Bike0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-11-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Bike0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Bike0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-12-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/CargoBike_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "CargoBike"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-13-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/CargoBike_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "CargoBike"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-14-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/CargoBike_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "CargoBike"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-15-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/CargoBike0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "CargoBike0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-16-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/CargoBike0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "CargoBike0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-17-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/CargoBike0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "CargoBike0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-18-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-CargoBike_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-CargoBike"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-19-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-CargoBike_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-CargoBike"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-20-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-CargoBike_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-CargoBike"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-21-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-CargoBike0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-CargoBike0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-22-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-CargoBike0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-CargoBike0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-23-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-CargoBike0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-CargoBike0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-24-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Scooter_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Scooter"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-25-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Scooter_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Scooter"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-26-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Scooter_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Scooter"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-27-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Scooter0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Scooter0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-28-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Scooter0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Scooter0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-29-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Scooter0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Scooter0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-30-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Scooter_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Scooter"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-31-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Scooter_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Scooter"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-32-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Scooter_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Scooter"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-33-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Scooter0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Scooter0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-34-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Scooter0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Scooter0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-35-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Scooter0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Scooter0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-36-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Moped_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Moped"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-37-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Moped_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Moped"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-38-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Moped_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Moped"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-39-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Moped0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Moped0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-40-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Moped0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Moped0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-41-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Moped0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Moped0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-42-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Moped_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Moped"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-43-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Moped_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Moped"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-44-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Moped_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Moped"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-45-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Moped0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Moped0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-46-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Moped0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Moped0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-47-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Moped0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Moped0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-48-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Car_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Car"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-49-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Car_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Car"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-50-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Car_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Car"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-51-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Car0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Car0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-52-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Car0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Car0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-53-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Car0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Car0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-54-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Car_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Car"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-55-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Car_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Car"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-56-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Car_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Car"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-57-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Car0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Car0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-58-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Car0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Car0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-59-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Car0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Car0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-60-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Taxi_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Taxi"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-61-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Taxi_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Taxi"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-62-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Taxi_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Taxi"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-63-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Taxi0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Taxi0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-64-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Taxi0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Taxi0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-65-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Taxi0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Taxi0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-66-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Taxi_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Taxi"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-67-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Taxi_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Taxi"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-68-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Taxi_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Taxi"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-69-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Taxi0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Taxi0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-70-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Taxi0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Taxi0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-71-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Taxi0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Taxi0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-72-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Other_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Other"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-73-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Other_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Other"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-74-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Other_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Other"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-75-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Other0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Other0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-76-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Other0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Other0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-77-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/Other0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "Other0"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-78-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Other_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Other"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-79-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Other_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Other"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-80-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Other_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Other"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-81-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Other0_50px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Other0"
+        ],
+        "minzoom": 6
+      },
+      {
+        "id": "ch.bfe.shared-mobility-82-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Other0_40px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Other0"
+        ],
+        "maxzoom": 6,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bfe.shared-mobility-83-icon",
+        "type": "symbol",
+        "source": "ch.bfe.shared-mobility",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bfe.shared-mobility/icons/E-Other0_30px.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol"
+            ]
+          ],
+          "E-Other0"
+        ],
+        "maxzoom": 3
+      }
+    ]
+  },
+  "icons": []
+}
