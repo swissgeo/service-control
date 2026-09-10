@@ -775,7 +775,9 @@ class Command(CustomBaseCommand):
         style_exists = False
         for style_file in style_dir.iterdir():
             if str(style_file.name).startswith(ljs.layer_id):
-                values["style_url"] = str(style_file)
+                values["style_url"] = (
+                    f"https://services.swissgeo.ch/api/oas/v0/styles/{style_file.name}"
+                )
                 style_exists = True
                 self.print(f"Found style {style_file.name} for layer_id {ljs.layer_id}")
                 break
