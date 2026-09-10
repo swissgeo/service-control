@@ -9,6 +9,7 @@ from iso639 import Lang
 from lxml import etree  # ty:ignore[unresolved-import]
 from requests import get
 
+from django.core.management import CommandError
 from django.core.management.base import CommandParser
 
 from dataservice.models import Dataservice, OGCAPIStacDataservice, WMSDataservice
@@ -127,8 +128,8 @@ class Command(CustomBaseCommand):
             options["endpoint"], options["directory"], options["timeout"]
         )
         if not services or not configs:
-            self.print_warning("No services/configurations available, aborting")
-            return
+            self.print_error("No services/configurations available, aborting")
+            raise CommandError("No services/configurations available, aborting")
 
         # Handle sub-commands
         clean = options["clean"]
