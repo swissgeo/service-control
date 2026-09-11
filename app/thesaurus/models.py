@@ -6,6 +6,11 @@ from django.utils.translation import pgettext_lazy as _
 logger = logging.getLogger(__name__)
 
 
+class ThesaurusManager(models.Manager):
+    def get_by_natural_key(self, thesaurus_id: str) -> Thesaurus:
+        return self.get(thesaurus_id=thesaurus_id)
+
+
 class Thesaurus(models.Model):
     """Thesaurus model."""
 
@@ -24,12 +29,22 @@ class Thesaurus(models.Model):
         help_text=_(_context, "Date and time when the thesaurus was last updated"),
     )
 
+    objects = ThesaurusManager()
+
     class Meta:
         verbose_name_plural = "thesauri"
         ordering = ("thesaurus_id",)
 
     def __str__(self) -> str:
         return str(self.thesaurus_id)
+
+    def natural_key(self) -> tuple:
+        return (self.thesaurus_id,)
+
+
+class ConceptManager(models.Manager):
+    def get_by_natural_key(self, thesaurus_id: str, concept_id: str) -> Concept:
+        return self.get(thesaurus__thesaurus_id=thesaurus_id, concept_id=concept_id)
 
 
 class Concept(models.Model):
@@ -40,6 +55,13 @@ class Concept(models.Model):
     thesaurus = models.ForeignKey(
         Thesaurus,
         on_delete=models.CASCADE,
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="children",
+        null=True,
+        blank=True,
     )
 
     concept_id = models.CharField(_(_context, "External ID"), max_length=200)
@@ -61,6 +83,8 @@ class Concept(models.Model):
         help_text=_(_context, "Date and time when the thesaurus was last updated"),
     )
 
+    objects = ConceptManager()
+
     class Meta:
         ordering = ("thesaurus__thesaurus_id", "label_en")
         constraints = (
@@ -72,3 +96,8 @@ class Concept(models.Model):
 
     def __str__(self) -> str:
         return f"{self.thesaurus.thesaurus_id}: {self.label_en}"
+
+    def natural_key(self) -> tuple:
+        return (self.thesaurus.thesaurus_id, self.concept_id)
+
+    natural_key.dependencies = ["thesaurus.thesaurus"]  # ty: ignore[unresolved-attribute]  # noqa: RUF012
