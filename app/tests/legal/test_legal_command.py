@@ -1,7 +1,9 @@
 from io import StringIO
 from json import dumps
 
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
+
+import pytest
 
 
 def test_legal_command_creates_entities_from_file(client, db, tmp_path):
@@ -44,11 +46,12 @@ def test_legal_command_creates_entities_from_file(client, db, tmp_path):
 def test_legal_command_file_not_existing(client, db, tmp_path):
 
     err = StringIO()
-    call_command(
-        "import_legal",
-        directory=tmp_path,
-        stderr=err,
-    )
+    with pytest.raises(CommandError):
+        call_command(
+            "import_legal",
+            directory=tmp_path,
+            stderr=err,
+        )
     err = err.getvalue()
 
     assert f"Failed to load file {tmp_path}" in err
@@ -57,11 +60,12 @@ def test_legal_command_file_not_existing(client, db, tmp_path):
 def test_legal_command_path_not_existing(client, db):
 
     err = StringIO()
-    call_command(
-        "import_legal",
-        directory="testpath",
-        stderr=err,
-    )
+    with pytest.raises(CommandError):
+        call_command(
+            "import_legal",
+            directory="testpath",
+            stderr=err,
+        )
     err = err.getvalue()
 
     assert "testpath does not exist" in err
