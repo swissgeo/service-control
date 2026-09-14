@@ -1,0 +1,3353 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.meteoschweiz.messwerte-niederschlag-1h": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-0-icon",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            -100000
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ]
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-1-icon",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n - mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            -100000
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-2-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(255,255,255,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-3-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(255,255,255,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-3-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-4-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(255,255,255,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-4-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-5-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(237,250,194,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-6-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(237,250,194,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-6-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-7-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(237,250,194,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-7-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            0.1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-8-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(205,255,205,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-9-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(205,255,205,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-9-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-10-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(205,255,205,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-10-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-11-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(153,240,178,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-12-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(153,240,178,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-12-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-13-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(153,240,178,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-13-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            2
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-14-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(83,189,159,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-15-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(83,189,159,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-15-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-16-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(83,189,159,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-16-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            4
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-17-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(50,166,150,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-18-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(50,166,150,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-18-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-19-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(50,166,150,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-19-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            6
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-20-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(50,150,180,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-21-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(50,150,180,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-21-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-22-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(50,150,180,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-22-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            9
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-23-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(5,112,176,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-24-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(5,112,176,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-24-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-25-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(5,112,176,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-25-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            12
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-26-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(5,80,140,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-27-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(5,80,140,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-27-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-28-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(5,80,140,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-28-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            15
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-29-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(10,31,150,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-30-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(10,31,150,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-30-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-31-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(10,31,150,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-31-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            20
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-32-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(44,2,70,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-33-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(44,2,70,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-33-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-34-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(44,2,70,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-34-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            25
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-35-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 6,
+          "circle-color": "rgba(106,44,90,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ]
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-36-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 7,
+          "circle-color": "rgba(106,44,90,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-36-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -1.6666666666666667
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ]
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-37-circle",
+        "type": "circle",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "rgba(106,44,90,0.9)",
+          "circle-stroke-color": "rgba(14,80,114,0.9)",
+          "circle-stroke-width": 2
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-37-label",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n ",
+            [
+              "get",
+              "value"
+            ],
+            " mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            30
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ]
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-38-icon",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            100000
+          ]
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.meteoschweiz.messwerte-niederschlag-1h-39-icon",
+        "type": "symbol",
+        "source": "ch.meteoschweiz.messwerte-niederschlag-1h",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "concat",
+            [
+              "get",
+              "station_name"
+            ],
+            "\n - mm"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "all",
+          [
+            ">=",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            80
+          ],
+          [
+            "<",
+            [
+              "to-number",
+              [
+                "get",
+                "value"
+              ]
+            ],
+            100000
+          ]
+        ],
+        "minzoom": 4
+      }
+    ]
+  },
+  "icons": []
+}
