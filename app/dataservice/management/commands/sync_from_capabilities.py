@@ -4,6 +4,7 @@ from typing import Any
 import environ
 from pystac_client import Client
 
+from django.conf import settings
 from django.core.management.base import CommandParser
 
 from dataservice.models import OGCAPIStacDataservice
@@ -102,7 +103,7 @@ class Command(CustomBaseCommand):
         }
         success = True
         for service in OGCAPIStacDataservice.objects.all():
-            if service.dataservice_id == "stac-geodienste":
+            if service.dataservice_id == settings.STAC_DATASERVICE_ID_GEODIENSTE:
                 continue
 
             self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")

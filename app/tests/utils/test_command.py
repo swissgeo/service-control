@@ -1,7 +1,7 @@
 from io import StringIO
 from unittest.mock import MagicMock, call
 
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 
 import pytest
 
@@ -64,7 +64,8 @@ def test_exception_stdout():
 
 def test_exception_log():
     command = Command(raise_exception=True)
-    call_command(command, logger=True)
+    with pytest.raises(CommandError):
+        call_command(command, logger=True)
     calls = command.logger.mock_calls
     assert call.error(command.exception, exc_info=True) in calls
 
@@ -73,7 +74,8 @@ def test_print_to_stdout_default_verbosity():
     # default verbosity == 1
     out = StringIO()
     err = StringIO()
-    call_command(Command(), stdout=out, stderr=err)
+    with pytest.raises(CommandError):
+        call_command(Command(), stdout=out, stderr=err)
     assert "Print default" not in out.getvalue()
     assert "Print 0" in out.getvalue()
     assert "Print 1" in out.getvalue()
@@ -94,7 +96,8 @@ def test_print_to_stdout_default_verbosity():
 def test_print_to_stdout_verbosity_0():
     out = StringIO()
     err = StringIO()
-    call_command(Command(), verbosity=0, stdout=out, stderr=err)
+    with pytest.raises(CommandError):
+        call_command(Command(), verbosity=0, stdout=out, stderr=err)
     assert "Print 0" in out.getvalue()
     assert "Print 1" not in out.getvalue()
     assert "Print 2" not in out.getvalue()
@@ -112,7 +115,8 @@ def test_print_to_stdout_verbosity_0():
 def test_print_to_stdout_verbosity_3():
     out = StringIO()
     err = StringIO()
-    call_command(Command(), verbosity=3, stdout=out, stderr=err)
+    with pytest.raises(CommandError):
+        call_command(Command(), verbosity=3, stdout=out, stderr=err)
     assert "Print 0" in out.getvalue()
     assert "Print 1" in out.getvalue()
     assert "Print 2" in out.getvalue()
@@ -130,7 +134,8 @@ def test_print_to_stdout_verbosity_3():
 def test_print_to_stdout_args_kwargs():
     out = StringIO()
     err = StringIO()
-    call_command(Command(), verbosity=3, stdout=out, stderr=err)
+    with pytest.raises(CommandError):
+        call_command(Command(), verbosity=3, stdout=out, stderr=err)
     assert "Print JohnDoe" in out.getvalue()
     assert "Print extra={'n': 'JohnDoe'}" in out.getvalue()
     assert "Print John extra={'n': 'Doe'}" in out.getvalue()
@@ -150,7 +155,8 @@ def test_print_to_stdout_args_kwargs():
 def test_print_to_log_default_verbosity():
     # default verbosity == 1
     command = Command()
-    call_command(command, logger=True)
+    with pytest.raises(CommandError):
+        call_command(command, logger=True)
     calls = command.logger.mock_calls
     assert call.info("Print default") not in calls
     assert call.info("Print 0") in calls
@@ -170,7 +176,8 @@ def test_print_to_log_default_verbosity():
 
 def test_print_to_log_verbosity_0():
     command = Command()
-    call_command(command, verbosity=0, logger=True)
+    with pytest.raises(CommandError):
+        call_command(command, verbosity=0, logger=True)
     calls = command.logger.mock_calls
     assert call.info("Print 0") in calls
     assert call.info("Print 1") not in calls
@@ -187,7 +194,8 @@ def test_print_to_log_verbosity_0():
 
 def test_print_to_log_verbosity_3():
     command = Command()
-    call_command(command, verbosity=3, logger=True)
+    with pytest.raises(CommandError):
+        call_command(command, verbosity=3, logger=True)
     calls = command.logger.mock_calls
     assert call.info("Print 0") in calls
     assert call.info("Print 1") in calls
@@ -204,7 +212,8 @@ def test_print_to_log_verbosity_3():
 
 def test_print_to_log_args_kwargs():
     command = Command()
-    call_command(command, verbosity=3, logger=True)
+    with pytest.raises(CommandError):
+        call_command(command, verbosity=3, logger=True)
     calls = command.logger.mock_calls
     assert call.info("Print %s", "JohnDoe") in calls
     assert call.info("Print", extra={"n": "JohnDoe"}) in calls

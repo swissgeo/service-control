@@ -4,11 +4,14 @@ from decimal import Decimal
 from json import loads
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from iso639 import Lang
 from lxml import etree  # ty:ignore[unresolved-import]
 from requests import get
 
+from django.conf import settings
+from django.core.management import CommandError
 from django.core.management.base import CommandParser
 
 from dataservice.models import Dataservice, OGCAPIStacDataservice, WMSDataservice
@@ -127,8 +130,8 @@ class Command(CustomBaseCommand):
             options["endpoint"], options["directory"], options["timeout"]
         )
         if not services or not configs:
-            self.print_warning("No services/configurations available, aborting")
-            return
+            self.print_error("No services/configurations available, aborting")
+            raise CommandError("No services/configurations available, aborting")
 
         # Handle sub-commands
         clean = options["clean"]
@@ -1260,6 +1263,7 @@ class Command(CustomBaseCommand):
         created, updated = self.import_stac_distribution(
             distribution_id=distribution_id.replace(":wms", ":stac"),
             data_source_id=base_topic,
+            wms_url=capabilities_url,
             dataset=dataset,
             stac_collection_id=base_topic,
             title_de="STAC Download Collection",
@@ -1427,19 +1431,29 @@ class Command(CustomBaseCommand):
         return re.sub(r"_\d/", "/", result)
 
     def import_stac_distribution(
-        self, distribution_id: str, data_source_id: str, **kwargs
+        self, distribution_id: str, data_source_id: str, wms_url: str, **kwargs
     ) -> tuple[int, int]:
         """Ensures that the external STAC dataservice and distribution with the given ID exists and
         that it has the given attributes.
 
         Returns a tuple with the number of created and updated distributions.
 
+        Doesn't set a data source on the STAC dataservice since the same one is used for all
+        geodienste STAC distributions and we don't want it to be cleaned-up.
         """
 
-        dataservice = OGCAPIStacDataservice.objects.filter(dataservice_id="stac-geodienste").first()
-        if not dataservice:
-            self.print_warning("Dataservice stac-geodienste not found, import fixtures first")
-            return 0, 0
+        parts = urlsplit(wms_url)
+        dataservice, created = OGCAPIStacDataservice.objects.update_or_create(
+            dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE,
+            defaults={
+                "title": "STAC API Geodienste",
+                "landing_page_url": f"{parts.scheme}://{parts.netloc}/stac",
+                "documentation_url_de": None,
+                "documentation_url_en": f"{parts.scheme}://{parts.netloc}/api-docs/index.html?urls.primaryName=geodienste.ch%20STAC%20API",
+            },
+        )
+        if created:
+            self.print(f"Dataservice {dataservice.dataservice_id} not found, created")
 
         distribution = ExternalStacDistribution.objects.filter(
             distribution_id=distribution_id
