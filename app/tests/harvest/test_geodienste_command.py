@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from iso639 import Lang
 
+from django.conf import settings
 from django.core.management import call_command
 
 from dataservice.models import Dataservice, WMSDataservice
@@ -2606,11 +2607,6 @@ def test_command_use_mapping_for_concepts(rdf, mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR0915
-    out = StringIO()
-    call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)
-    out = out.getvalue()
-    assert "Installed" in out
-
     dataset = Dataset(
         dataset_id="ch.kgk.fixpunkte",
         description_de="Abstract DE",
@@ -2683,23 +2679,12 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert (
-        "Dataservice with dataservice_id wms-geodienste-fixpunkte does not exist yet, creating"
-        in out
-    )
-    assert (
-        "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability does not exist"
-        in out
-    )
-    assert (
-        "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist yet, creating" in out
-    )
-    assert (
-        "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms does not exist" in out
-    )
-    assert (
-        "Setting ch.kgk.fixpunkte:wms as preferred distribution for dataset ch.kgk.fixpunkte" in out
-    )
+    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte does not exist yet" in out
+    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability does not" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist yet" in out
+    assert "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms does not" in out
+    assert "ch.kgk.fixpunkte:wms as preferred distribution for dataset ch.kgk.fixpunkte" in out
+    assert "Dataservice stac-geodienste not found, created" in out
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-fixpunkte")
     assert dataservice_data.data_source == "geodienste"
@@ -2763,6 +2748,16 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_availability.meta_information is True
     assert distribution_availability.dataservice == dataservice_availability
     assert distribution_availability.dataset == dataset
+
+    dataservice_stac = Dataservice.objects.get(
+        dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
+    )
+    assert dataservice_stac.title == "STAC API Geodienste"
+    assert (
+        dataservice_stac.documentation_url_en
+        == "https://geodienste.ch/api-docs/index.html?urls.primaryName=geodienste.ch%20STAC%20API"
+    )
+    assert dataservice_stac.landing_page_url == "https://geodienste.ch/stac"
 
     distribution_stac = ExternalStacDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte:stac"
@@ -3094,8 +3089,8 @@ def test_command_cleans_distributions(mock, client, db):
     assert "Removed data_source_ids (distribution) found: removed" in out
     assert "Obsolete distributions found: obsolete" in out
 
-    assert Dataservice.objects.count() == 4
-    assert Distribution.objects.count() == 4
+    assert Dataservice.objects.count() == 5
+    assert Distribution.objects.count() == 5
 
     # --------
     # Clean
@@ -3111,8 +3106,8 @@ def test_command_cleans_distributions(mock, client, db):
     assert "Removing obsolete distribution obsolete" in out
     assert "Removing obsolete distribution removed" in out
 
-    assert Dataservice.objects.count() == 2
-    assert Distribution.objects.count() == 2
+    assert Dataservice.objects.count() == 3
+    assert Distribution.objects.count() == 3
 
 
 @patch("organization.models.Client")

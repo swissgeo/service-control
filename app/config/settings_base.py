@@ -274,3 +274,6 @@ API_PATH_PREFIX = env.str("API_PATH_PREFIX", default="api/")
 # Django Admin interface logout redirect URL, if left empty it default to the django admin
 # root domain
 DJANGO_ADMIN_LOGOUT_REDIRECT_URL = env.str("DJANGO_ADMIN_LOGOUT_REDIRECT_URL", default="")
+
+# geodienste.ch STAC Dataservice ID, created during import_geodienste management command
+STAC_DATASERVICE_ID_GEODIENSTE = "stac-geodienste"
