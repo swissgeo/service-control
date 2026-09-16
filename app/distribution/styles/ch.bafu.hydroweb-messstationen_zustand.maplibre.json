@@ -1,0 +1,1149 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.bafu.hydroweb-messstationen_zustand": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-0-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "0.1"
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-1-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "0.2"
+        ],
+        "maxzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-2-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "0.1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-3-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "0.2"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-4-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake16_194_94_38.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "1.1"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-5-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_194_94_38.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "1.1"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-6-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_194_94_38.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "1.1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-7-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river16_194_94_38.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "1.2"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-8-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_194_94_38.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "1.2"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-9-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_194_94_38.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "1.2"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-10-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake16_253_201_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "2.1"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-11-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_253_201_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "2.1"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-12-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_253_201_141.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "2.1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-13-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river16_253_201_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "2.2"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-14-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_253_201_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "2.2"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-15-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_253_201_141.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "2.2"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-16-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake16_220_239_196.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "3.1"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-17-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_220_239_196.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "3.1"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-18-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_220_239_196.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "3.1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-19-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river16_220_239_196.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "3.2"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-20-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_220_239_196.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "3.2"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-21-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_220_239_196.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "3.2"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-22-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake16_131_196_200.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "4.1"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-23-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_131_196_200.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "4.1"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-24-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_131_196_200.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "4.1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-25-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river16_131_196_200.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "4.2"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-26-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_131_196_200.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "4.2"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-27-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_131_196_200.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "4.2"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-28-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake16_55_137_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "5.1"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-29-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_55_137_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "5.1"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-30-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_lake20_55_137_141.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "5.1"
+        ],
+        "minzoom": 4
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-31-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river16_55_137_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "5.2"
+        ],
+        "maxzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-32-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_55_137_141.png",
+          "icon-allow-overlap": true
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "5.2"
+        ],
+        "maxzoom": 4,
+        "minzoom": 3
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_zustand-33-icon",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_zustand",
+        "layout": {
+          "icon-image": "https://data.geo.admin.ch/ch.bafu.hydroweb-messstationen_zustand/images/quantile_river20_55_137_141.png",
+          "icon-allow-overlap": true,
+          "text-field": [
+            "get",
+            "name"
+          ],
+          "text-allow-overlap": true,
+          "text-max-width": 100,
+          "text-size": 12,
+          "text-font": [
+            "FrutigerNeueW02-Regular",
+            "Frutiger",
+            "sans-serif"
+          ],
+          "text-anchor": "center",
+          "text-justify": "center",
+          "text-offset": [
+            0,
+            -2.3333333333333335
+          ]
+        },
+        "paint": {
+          "text-color": "white",
+          "text-halo-color": "rgba(14,80,114,0.9)",
+          "text-halo-width": 3
+        },
+        "metadata": {
+          "ol:text-background": {
+            "fill": "rgba(14,80,114,0.9)",
+            "padding": [
+              2,
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "symbol_design"
+            ]
+          ],
+          "5.2"
+        ],
+        "minzoom": 4
+      }
+    ]
+  },
+  "icons": []
+}

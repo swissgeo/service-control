@@ -1,0 +1,70 @@
+{
+  "style": {
+    "version": 8,
+    "sources": {
+      "ch.bafu.hydroweb-messstationen_vorhersage": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "ch.bafu.hydroweb-messstationen_vorhersage-0-circle",
+        "type": "circle",
+        "source": "ch.bafu.hydroweb-messstationen_vorhersage",
+        "paint": {
+          "circle-radius": 8,
+          "circle-color": "#808080",
+          "circle-stroke-color": "#FFFFFF",
+          "circle-stroke-width": 1
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "vorhersage-class"
+            ]
+          ],
+          "0"
+        ]
+      },
+      {
+        "id": "ch.bafu.hydroweb-messstationen_vorhersage-1-symbol",
+        "type": "symbol",
+        "source": "ch.bafu.hydroweb-messstationen_vorhersage",
+        "layout": {
+          "icon-image": "sg-triangle-12-#808080-#FFFFFF-1",
+          "icon-allow-overlap": true,
+          "icon-rotation-alignment": "map",
+          "icon-rotate": 59.99999999999999
+        },
+        "filter": [
+          "==",
+          [
+            "to-string",
+            [
+              "get",
+              "vorhersage-class"
+            ]
+          ],
+          "1"
+        ]
+      }
+    ]
+  },
+  "icons": [
+    {
+      "name": "sg-triangle-12-#808080-#FFFFFF-1",
+      "shape": "triangle",
+      "radius": 12,
+      "fillColor": "#808080",
+      "strokeColor": "#FFFFFF",
+      "strokeWidth": 1
+    }
+  ]
+}
