@@ -454,23 +454,16 @@ class Command(CustomBaseCommand):
     def build_dataset_doc(self, dataset: Dataset, oar_base_url: str) -> dict:
         """Build a `swissgeo-catalog` document from a Dataset."""
         features = {
-            lang: _dump(OARDataset.from_dataset(dataset, lang, CATALOG_COLLECTION_ID, oar_base_url))
+            lang: _dump(
+                OARDataset.from_dataset(
+                    dataset, lang, CATALOG_COLLECTION_ID, DISTRIBUTIONS_INDEX, oar_base_url
+                )
+            )
             for lang in LANG_CODES
         }
         base = features["de"]
 
-        # Keep external links only (drop OAR self/alternate/collection/items links), then add
-        # the link to the distributions collection in the OpenSearch (relative) form.
-        links = [
-            link for link in base["links"] if not link.get("href", "").startswith(oar_base_url)
-        ]
-        links.append(
-            {
-                "href": f"/collections/{DISTRIBUTIONS_INDEX}/items?dataset={base['id']}",
-                "rel": "distributions",
-                "title": "Distributions",
-            }
-        )
+        links = base["links"]
 
         properties = _clean_props(
             base["properties"], skip=frozenset({"title", "description", "language"})

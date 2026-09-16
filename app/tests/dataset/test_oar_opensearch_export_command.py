@@ -354,15 +354,15 @@ def test_dump_dataset_document(db, tmp_path):
         },
         "links": [
             {
+                "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                "rel": "distributions",
+                "title": "Distributions",
+            },
+            {
                 "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
                 "rel": "alternate",
                 "title": "GeoCat Metadata",
                 "type": "text/html",
-            },
-            {
-                "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
-                "rel": "distributions",
-                "title": "Distributions",
             },
         ],
         "properties": {

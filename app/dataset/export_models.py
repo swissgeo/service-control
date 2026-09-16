@@ -1,4 +1,5 @@
 from typing import Annotated, Literal
+from urllib.parse import urlencode
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
@@ -133,6 +134,7 @@ class OARCollectionLink(OARLink):
 
 class OARCollectionItemsLink(OARLink):
     collectionId: str = Field(exclude=True)  # noqa: N815
+    query: dict = Field(default_factory=dict, exclude=True)
 
     @model_validator(mode="after")
     def generate_href_value(self) -> OARLink:
@@ -142,8 +144,13 @@ class OARCollectionItemsLink(OARLink):
         based on the origin, basepath, collectionId and recordId.
         """
         self.href = f"{self.base_url}/collections/{self.collectionId}/items"
+
+        params = self.query
         if self.hreflang:
-            self.href += f"?language={self.hreflang}"
+            params["language"] = self.hreflang
+        if params:
+            self.href += f"?{urlencode(params)}"
+
         return self
 
 
@@ -203,7 +210,14 @@ class OARDataset(OARRecord):
     }
 
     @classmethod
-    def from_dataset(cls, ds: Dataset, lang: str, collection_id: str, base_url: str) -> OARDataset:
+    def from_dataset(
+        cls,
+        ds: Dataset,
+        lang: str,
+        collection_id: str,
+        distribution_collection_id: str,
+        base_url: str,
+    ) -> OARDataset:
 
         contacts = [
             Contact(
@@ -235,13 +249,15 @@ class OARDataset(OARRecord):
         )
         dataset.links.append(
             OARCollectionItemsLink(
-                collectionId=f"{ds.dataset_id}.distributions",
+                collectionId=distribution_collection_id,
                 rel="distributions",
                 title="Distributions",
-                base_url=base_url,
-                hreflang=lang,
+                base_url="",
+                typ=None,
+                query={"dataset": ds.dataset_id},
             )
         )
+
         dataset.links.append(
             Link(
                 href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_ISO_639_2_B[lang]}/catalog.search#/metadata/{ds.geocat_id}",
