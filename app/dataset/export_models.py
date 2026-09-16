@@ -292,7 +292,13 @@ class OARDistribution(OARRecord):
 
     @classmethod
     def from_distribution(  # noqa: C901
-        cls, dist: Distribution, lang: str, collection_id: str
+        cls,
+        dist: Distribution,
+        lang: str,
+        collection_id: str,
+        datasets_collection_id: str,
+        dataservices_collection_id: str,
+        distributions_collection_id: str,
     ) -> OARDistribution:
         record = OARDistribution(
             id=dist.distribution_id,
@@ -307,11 +313,11 @@ class OARDistribution(OARRecord):
 
         record.links.append(
             OARRecordLink(
-                collectionId="swissgeo.catalog",
+                collectionId=datasets_collection_id,
                 recordId=dist.dataset.dataset_id,
                 rel="dataset",
-                hreflang=lang,
-                title=f"Link to parent dataset {dist.dataset.dataset_id}",
+                title="Dataset Record",
+                typ=None,
             )
         )
         record.properties["protocol"] = dist.protocol
@@ -348,10 +354,10 @@ class OARDistribution(OARRecord):
             # in the child classes of the distribution base class
             record.links.append(
                 OARRecordLink(
-                    collectionId="geoadmin.services",
+                    collectionId=dataservices_collection_id,
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
-                    hreflang=lang,
+                    typ=None,
                 )
             )
             record.properties["externalIds"] = [dist.external_record_id(lang)]
@@ -360,10 +366,10 @@ class OARDistribution(OARRecord):
         if info_dist:
             record.links.append(
                 OARRecordLink(
-                    collectionId=f"{info_dist.dataset.dataset_id}.distributions",
+                    collectionId=distributions_collection_id,
                     recordId=info_dist.distribution_id,
                     rel="featureinfo",
-                    hreflang=lang,
+                    typ=None,
                 )
             )
 

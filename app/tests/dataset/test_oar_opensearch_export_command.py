@@ -21,10 +21,7 @@ from django.core.management.base import CommandError
 import pytest
 
 from dataservice.models import WMSDataservice
-from dataset.management.commands.oar_opensearch_export import (
-    _is_generation_of,
-    _rewrite_dist_links,
-)
+from dataset.management.commands.oar_opensearch_export import _is_generation_of
 from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
 
@@ -172,59 +169,6 @@ def _mock_client_with_generations(existing: dict[str, list[str]]) -> MagicMock:
 
     client.indices.get.side_effect = get
     return client
-
-
-def test_rewrite_dist_links_keeps_external_link_as_is():
-    """A link with an unhandled rel and a non-OAR/OAS href falls through and is kept verbatim."""
-    links = [
-        {"href": "https://not-rewritten.org", "rel": "license", "title": "License"},  # kept as-is
-    ]
-
-    result = _rewrite_dist_links(links, "ch.bafu.moose")
-
-    assert result == [{"href": "https://not-rewritten.org", "rel": "license", "title": "License"}]
-
-
-def test_rewrite_dist_links_keeps_externally_hosted_style_link_absolute():
-    """A style file hosted outside OAS (e.g. a GeoJSON vector style) keeps its full URL."""
-    links = [
-        {
-            "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
-            "rel": "styledBy",
-            "title": "Link to style file for the GeoJSON layer",
-        }
-    ]
-
-    result = _rewrite_dist_links(links, "ch.bafu.moose")
-
-    assert result == links
-
-
-def test_rewrite_dist_links_rewrites_featureinfo_to_the_distributions_index():
-    """`featureinfo` keeps only the distribution id -- all distributions share one index.
-
-    The OAR href names the dataset's own `<dataset_id>.distributions` collection, which has no
-    OpenSearch counterpart, and the target distribution may belong to another dataset than the
-    one the link is rewritten for.
-    """
-    links = [
-        {
-            "href": (
-                "/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:features?language=de"
-            ),
-            "rel": "featureinfo",
-            "hreflang": "de",
-        }
-    ]
-
-    result = _rewrite_dist_links(links, "ch.bafu.moose")
-
-    assert result == [
-        {
-            "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:features",
-            "rel": "featureinfo",
-        }
-    ]
 
 
 def test_dump_writes_one_file_per_document(db, tmp_path):

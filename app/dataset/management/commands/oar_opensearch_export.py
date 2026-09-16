@@ -49,8 +49,9 @@ TYPE_TO_INDEX = {
 }
 
 # OAR collection ids used when building records with the export models.
-SERVICES_COLLECTION_ID = "geoadmin.services"
-CATALOG_COLLECTION_ID = "swissgeo.catalog"
+SERVICES_COLLECTION_ID = "geoadmin.services"  # FIXME: why is this with a dot?
+CATALOG_COLLECTION_ID = "swissgeo.catalog"  # FIXME: why is this with a dot?
+DISTRIBUTIONS_COLLECTION_ID = "swissgeo-distributions"
 
 OGC_SCHEMA = (
     "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml"
@@ -110,48 +111,6 @@ def _clean_props(properties: dict, skip: frozenset[str] = frozenset()) -> dict:
 def _record_id_from_href(href: str) -> str:
     """Extract the record id from an OAR item href like `.../items/<record_id>?language=de`."""
     return href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
-
-
-def _rewrite_dist_links(links: list[dict], dataset_id: str) -> list[dict]:
-    """Rewrite a distribution feature's links into the OpenSearch form.
-
-    The `dataset`, `dataservice` and `featureinfo` links are rewritten to relative
-    `/collections/.../items/...` paths, genuinely external links are kept as-is.
-    """
-    rewritten: list[dict] = []
-    for link in links:
-        rel = link.get("rel", "")
-        href = link.get("href", "")
-        if rel == "dataset":
-            rewritten.append(
-                {
-                    "href": f"/collections/{DATASETS_INDEX}/items/{dataset_id}",
-                    "rel": "dataset",
-                    "title": "Dataset Record",
-                }
-            )
-        elif rel == "dataservice":
-            rewritten.append(
-                {
-                    "href": f"/collections/{SERVICES_INDEX}/items/{_record_id_from_href(href)}",
-                    "rel": "dataservice",
-                }
-            )
-        elif rel == "featureinfo":
-            # Points at another distribution record (or at this one). In OAR that record lives in
-            # the dataset's own `<dataset_id>.distributions` collection, in OpenSearch all
-            # distributions share a single index, so only the distribution id carries over.
-            rewritten.append(
-                {
-                    "href": (
-                        f"/collections/{DISTRIBUTIONS_INDEX}/items/{_record_id_from_href(href)}"
-                    ),
-                    "rel": "featureinfo",
-                }
-            )
-        else:
-            rewritten.append(link)
-    return rewritten
 
 
 class Command(CustomBaseCommand):
@@ -424,7 +383,9 @@ class Command(CustomBaseCommand):
         """Build a `swissgeo-catalog` document from a Dataset."""
         features = {
             lang: _dump(
-                OARDataset.from_dataset(dataset, lang, CATALOG_COLLECTION_ID, DISTRIBUTIONS_INDEX)
+                OARDataset.from_dataset(
+                    dataset, lang, CATALOG_COLLECTION_ID, DISTRIBUTIONS_COLLECTION_ID
+                )
             )
             for lang in LANG_CODES
         }
@@ -462,11 +423,20 @@ class Command(CustomBaseCommand):
         documents = []
         for distribution in dataset.distribution_set.all():  # ty:ignore[unresolved-attribute]
             per_lang = {
-                lang: _dump(OARDistribution.from_distribution(distribution, lang, collection_id))
+                lang: _dump(
+                    OARDistribution.from_distribution(
+                        distribution,
+                        lang,
+                        collection_id,
+                        DATASETS_INDEX,  # FIXME: shouldn't this be CATALOG_COLLECTION_ID
+                        SERVICES_INDEX,  # FIXME: shouldn't this be SERVICES_COLLECTION_ID
+                        DISTRIBUTIONS_COLLECTION_ID,
+                    )
+                )
                 for lang in LANG_CODES
             }
             document = per_lang["de"]
-            document["links"] = _rewrite_dist_links(document.get("links", []), dataset.dataset_id)
+            document["links"] = document.get("links", [])
             document["properties"]["dataset"] = dataset.dataset_id
             # Turn the translated fields into {lang: value} objects.
             document["properties"]["title"] = {
