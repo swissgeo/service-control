@@ -178,31 +178,28 @@ def _mock_client_with_generations(existing: dict[str, list[str]]) -> MagicMock:
 
 # Stand-in base URLs for the `_rewrite_dist_links` unit tests below, so they don't depend on the
 # environment the command happens to build its documents with.
-EXAMPLE_OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
 EXAMPLE_OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
 
 
 def test_rewrite_dist_links_keeps_external_link_as_is():
     """A link with an unhandled rel and a non-OAR/OAS href falls through and is kept verbatim."""
     links = [
-        {"href": f"{EXAMPLE_OAR_BASE_URL}/collections/x/items/y", "rel": "self"},  # dropped
         {"href": "https://not-rewritten.org", "rel": "license", "title": "License"},  # kept as-is
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license", "title": "License"}]
 
 
-def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
-    """An OAR/OAS-internal link with no defined mapping is dropped."""
+def test_rewrite_dist_links_drops_internal_oas_link_without_mapping():
+    """An OAS-internal link with no defined mapping is dropped."""
     links = [
-        {"href": f"{EXAMPLE_OAR_BASE_URL}/some/thing", "rel": "unmapped"},
         {"href": f"{EXAMPLE_OAS_BASE_URL}/some/other", "rel": "unmapped"},
         {"href": "https://not-rewritten.org", "rel": "license"},
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
 
@@ -218,7 +215,7 @@ def test_rewrite_dist_links_makes_oas_style_link_relative():
         }
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [
         {
@@ -239,7 +236,7 @@ def test_rewrite_dist_links_keeps_externally_hosted_style_link_absolute():
         }
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == links
 
@@ -254,15 +251,14 @@ def test_rewrite_dist_links_rewrites_featureinfo_to_the_distributions_index():
     links = [
         {
             "href": (
-                f"{EXAMPLE_OAR_BASE_URL}/collections/ch.bafu.moose.distributions"
-                "/items/ch.bafu.moose:features?language=de"
+                "/collections/ch.bafu.moose.distributions/items/ch.bafu.moose:features?language=de"
             ),
             "rel": "featureinfo",
             "hreflang": "de",
         }
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
 
     assert result == [
         {
