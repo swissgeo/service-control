@@ -18,6 +18,7 @@ from harvest.models import (
     DatasetToUnitMapping,
     OrganizationMapping,
 )
+from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Thesaurus
 
@@ -66,6 +67,17 @@ def api_response(services, config=None, capabilities=None):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_aggregate_organization(mock, client, db):
+    geopolitical_entity = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="federal",
+        name_de="Bund",
+        name_fr="Confédération",
+        name_it="Confederazione",
+        name_rm="Confederaziun",
+        abbr="CH",
+    )
+
     mock.side_effect = api_response(
         {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
     )
@@ -89,12 +101,43 @@ def test_command_creates_aggregate_organization(mock, client, db):
     assert org.acronym_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
+    assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     assert "Organization with organization_id ch.kgk already exists" in out
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_aggregate_organization_federal_political_entity_not_existing(mock, client, db):
+    mock.side_effect = api_response(
+        {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
+    )
+
+    out = StringIO()
+    call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Organization with organization_id ch.kgk does not exist yet, creating a new one" in out
+    assert "Federal geopolitical entity is None! Import geopolitical entities first" in out
+
+    org = Organization.objects.get(organization_id="ch.kgk")
+    assert org.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert org.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
+    assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
+    assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
+    assert org.acronym_de == "KGK"
+    assert org.acronym_fr == "CGC"
+    assert org.acronym_en == "KGK"
+    assert org.acronym_it == "CGC"
+    assert org.acronym_rm == "CGC"
+    assert org.data_source == Organization.DataSource.GEODIENSTE
+    assert org.data_source_ids == ["KGK"]
+    assert org.geopolitical_entity is None
 
 
 @patch("organization.models.Client")
@@ -116,6 +159,17 @@ def test_command_updates_aggregate_organization(mock, client, db):
         data_source_ids=["KGK"],
     )
     org.save()
+
+    geopolitical_entity = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="federal",
+        name_de="Bund",
+        name_fr="Confédération",
+        name_it="Confederazione",
+        name_rm="Confederaziun",
+        abbr="CH",
+    )
 
     mock.side_effect = api_response(
         {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
@@ -141,6 +195,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
     assert org.acronym_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
+    assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -228,6 +283,17 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_cantonal_organization(mock, client, db):
+    geopolitical_entity = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="cantonal",
+        name_de="Luzern",
+        name_fr="Lucerne",
+        name_it="Lucerna",
+        name_rm="Lucerna",
+        abbr="LU",
+    )
+
     mock.side_effect = api_response(
         {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
     )
@@ -254,6 +320,7 @@ def test_command_creates_cantonal_organization(mock, client, db):
     assert org.acronym_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["LU"]
+    assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -282,6 +349,17 @@ def test_command_updates_cantonal_organization(mock, client, db):
     )
     org.save()
 
+    geopolitical_entity = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="cantonal",
+        name_de="Luzern",
+        name_fr="Lucerne",
+        name_it="Lucerna",
+        name_rm="Lucerna",
+        abbr="LU",
+    )
+
     mock.side_effect = api_response(
         {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
     )
@@ -306,6 +384,7 @@ def test_command_updates_cantonal_organization(mock, client, db):
     assert org.acronym_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["LU"]
+    assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -340,6 +419,7 @@ def test_command_creates_broker_organization(mock, client, db):
     assert org.acronym_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["BFE"]
+    assert org.geopolitical_entity is None
 
 
 @patch("organization.models.Client")
@@ -386,6 +466,7 @@ def test_command_updates_broker_organization(mock, client, db):
     assert org.acronym_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["BFE"]
+    assert org.geopolitical_entity is None
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -3112,7 +3193,7 @@ def test_command_cleans_distributions(mock, client, db):
 
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_useses_dataset_mapping_for_distributions(mock, client, db):
+def test_command_uses_dataset_mapping_for_distributions(mock, client, db):
     Dataset(
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
