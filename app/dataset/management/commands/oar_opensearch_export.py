@@ -430,8 +430,6 @@ class Command(CustomBaseCommand):
         }
         base = features["de"]
 
-        links = base["links"]
-
         properties = _clean_props(
             base["properties"], skip=frozenset({"title", "description", "language"})
         )
@@ -451,7 +449,7 @@ class Command(CustomBaseCommand):
             "id": base["id"],
             "type": base["type"],
             "geometry": base.get("geometry"),
-            "links": links,
+            "links": base["links"],
             "properties": properties,
         }
 
