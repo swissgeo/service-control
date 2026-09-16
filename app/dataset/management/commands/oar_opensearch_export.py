@@ -135,8 +135,6 @@ def _rewrite_dist_links(
     for link in links:
         rel = link.get("rel", "")
         href = link.get("href", "")
-        if rel in ("self", "collection", "alternate"):
-            continue
         if rel == "dataset":
             rewritten.append(
                 {
@@ -439,17 +437,10 @@ class Command(CustomBaseCommand):
             for lang in LANG_CODES
         }
         base = features["de"]
-        # Keep the external links only; drop the intra-service 'self'/'collection' links and the
-        # per-language 'alternate' self links.
-        links = [
-            link
-            for link in base["links"]
-            if link.get("rel") not in ("self", "collection", "alternate")
-        ]
         return {
             "id": base["id"],
             "type": base["type"],
-            "links": links,
+            "links": base["links"],
             "properties": {
                 "type": base["properties"]["type"],
                 "protocol": base["properties"]["protocol"],

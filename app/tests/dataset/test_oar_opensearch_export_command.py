@@ -194,23 +194,6 @@ def test_rewrite_dist_links_keeps_external_link_as_is():
     assert result == [{"href": "https://not-rewritten.org", "rel": "license", "title": "License"}]
 
 
-@pytest.mark.parametrize("rel", ["self", "collection", "alternate"])
-def test_rewrite_dist_links_drops_intra_service_links(rel):
-    """`self`/`collection`/`alternate` are dropped on their rel alone, whatever the href is.
-
-    The href here is deliberately external, so an intra-service link that got rewritten to some
-    other host is still dropped rather than falling through to the 'keep external links' branch.
-    """
-    links = [
-        {"href": "https://elsewhere.example.org/collections/x/items/y", "rel": rel},
-        {"href": "https://not-rewritten.org", "rel": "license"},
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
-
-
 def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
     """An OAR/OAS-internal link with no defined mapping is dropped."""
     links = [

@@ -182,41 +182,6 @@ class OARRecord(BaseModel):
     collection_id: str = Field(default="MISSING", exclude=True)
     base_url: str = Field(exclude=True)
 
-    @model_validator(mode="after")
-    def add_links(self) -> OARRecord:
-        self.links.append(
-            OARRecordLink(
-                collectionId=self.collection_id,
-                recordId=self.id,
-                rel="self",
-                title="This Record",
-                hreflang=self.lang,
-                base_url=self.base_url,
-            )
-        )
-        for lang, value in LANGS.items():
-            if lang != self.lang:
-                self.links.append(
-                    OARRecordLink(
-                        collectionId=self.collection_id,
-                        recordId=self.id,
-                        rel="alternate",
-                        title=f"This Record ({value.alternate})",
-                        hreflang=lang,
-                        base_url=self.base_url,
-                    )
-                )
-        self.links.append(
-            OARCollectionLink(
-                collectionId=self.collection_id,
-                rel="collection",
-                title="Link to the collection this item belongs to",
-                hreflang=self.lang,
-                base_url=self.base_url,
-            )
-        )
-        return self
-
     def get_key(self) -> str:
         return f"/collections/{self.collection_id}/items/{self.id}.{self.lang}"
 
