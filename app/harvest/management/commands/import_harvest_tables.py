@@ -31,6 +31,7 @@ from harvest.models import (
     OrganizationMapping,
     PrefixLookupTable,
 )
+from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Concept, Thesaurus
 from utils.command import CustomBaseCommand
@@ -128,7 +129,10 @@ class Command(CustomBaseCommand):
 
     # ##########################################################################
     def import_organization(
-        self, item: dict[str, Any], mappings: PrefixLookupTable
+        self,
+        item: dict[str, Any],
+        mappings: PrefixLookupTable,
+        geopolitical_entity: GeopoliticalEntity | None = None,
     ) -> tuple[str | None, str]:
         """Import a single organization from a dynamoDB item.
 
@@ -164,6 +168,7 @@ class Command(CustomBaseCommand):
                 update = False
                 org = Organization(
                     data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
+                    legal=geopolitical_entity,
                     **import_org.model_dump(by_alias=True),
                 )
 
@@ -171,6 +176,10 @@ class Command(CustomBaseCommand):
             self.print(f"Updating {org}")
             for field in import_org:
                 setattr(org, field[0], field[1])
+
+            # Update geopolitical entity if it has changed
+            if org.legal != geopolitical_entity:
+                org.legal = geopolitical_entity
 
         org.add_data_source_id(provider_id)
         org.save()
@@ -216,10 +225,13 @@ class Command(CustomBaseCommand):
 
         mappings = OrganizationMapping.table()
 
+        # Federal geopolitical entitiy to connect legal with organization
+        geopolitical_entity = GeopoliticalEntity.objects.filter(abbr="CH").first()
+
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 log_metrics["organizations.total"] += 1
-                provider_id, state = self.import_organization(item, mappings)
+                provider_id, state = self.import_organization(item, mappings, geopolitical_entity)
                 if provider_id:
                     processed.add(provider_id)
                 match state:

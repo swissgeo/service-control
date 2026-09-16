@@ -30,6 +30,7 @@ from harvest.utils import (
     AGGREGATE_PROVIDER_ORGANIZATION,
     CANTONAL_PROVIDER_ORGANIZATIONS,
 )
+from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
@@ -346,6 +347,10 @@ class Command(CustomBaseCommand):
 
         processed = set()
 
+        # Geopolitical entities to connect legal with organization
+        entity_objects = GeopoliticalEntity.objects.all()
+        geopolitical_entities = {entity.abbr: entity for entity in entity_objects}
+
         # Aggregate provider
         provider_id = self.provider_id()
         created, updated = self.import_organization(
@@ -357,10 +362,9 @@ class Command(CustomBaseCommand):
 
         # Cantonal provider
         for provider_id, attributes in CANTONAL_PROVIDER_ORGANIZATIONS.items():
+            geopolitical_entity = geopolitical_entities.get(provider_id)
             created, updated = self.import_organization(
-                provider_id,
-                attributes,
-                mappings,
+                provider_id, attributes, mappings, geopolitical_entity
             )
             metrics["organizations.created"] += created
             metrics["organizations.updated"] += updated
@@ -396,7 +400,11 @@ class Command(CustomBaseCommand):
         self.print_success(f"Organization import completed. Metrics: {metrics}")
 
     def import_organization(
-        self, provider_id: str, attributes: dict, mappings: PrefixLookupTable
+        self,
+        provider_id: str,
+        attributes: dict,
+        mappings: PrefixLookupTable,
+        geopolitical_entity: GeopoliticalEntity | None = None,
     ) -> tuple[int, int]:
         """Create an organization with the given values if not yet existing, or update if necessary.
 
@@ -430,6 +438,7 @@ class Command(CustomBaseCommand):
                     organization_id=organization_id,
                     data_source=Organization.DataSource.GEODIENSTE,
                     data_source_ids=[provider_id],
+                    legal=geopolitical_entity,
                     **attributes,
                 )
                 org.save()
@@ -439,6 +448,11 @@ class Command(CustomBaseCommand):
                 if value != getattr(org, key):
                     updated = True
                     setattr(org, key, value)
+
+            # Update geopolitical entity if it has changed
+            if org.legal != geopolitical_entity:
+                updated = True
+                org.legal = geopolitical_entity
 
             if updated:
                 org.save()

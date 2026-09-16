@@ -24,6 +24,7 @@ from harvest.models import (
     DatasetToUnitMapping,
     OrganizationMapping,
 )
+from legal.models import GeopoliticalEntity
 from organization.models import Contact as ContactModel
 from organization.models import Organization, Unit
 from thesaurus.models import Concept, Thesaurus
@@ -81,6 +82,17 @@ def test_command_creates_organizations(client, dynamodb, db):
         acronym_rm="UFAM",
     )
 
+    legal = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="federal",
+        name_de="Bund",
+        name_fr="Confédération",
+        name_it="Confederazione",
+        name_rm="Confederaziun",
+        abbr="CH",
+    )
+
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
 
     out = StringIO()
@@ -104,6 +116,7 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert org_out.acronym_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
+    assert org_out.legal == legal
 
 
 @patch("organization.models.Client")
@@ -138,6 +151,17 @@ def test_command_updates_organizations(client, dynamodb, db):
         acronym_rm="UFAM",
     )
 
+    legal = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="federal",
+        name_de="Bund",
+        name_fr="Confédération",
+        name_it="Confederazione",
+        name_rm="Confederaziun",
+        abbr="CH",
+    )
+
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
 
     out = StringIO()
@@ -161,6 +185,7 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.acronym_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
+    assert org_out.legal == legal
 
 
 @patch("organization.models.Client")

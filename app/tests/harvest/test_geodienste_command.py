@@ -18,6 +18,7 @@ from harvest.models import (
     DatasetToUnitMapping,
     OrganizationMapping,
 )
+from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
 from thesaurus.models import Thesaurus
 
@@ -89,6 +90,7 @@ def test_command_creates_aggregate_organization(mock, client, db):
     assert org.acronym_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
+    assert org.legal is None
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -141,6 +143,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
     assert org.acronym_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
+    assert org.legal is None
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -228,6 +231,17 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_cantonal_organization(mock, client, db):
+    legal = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="cantonal",
+        name_de="Luzern",
+        name_fr="Lucerne",
+        name_it="Lucerna",
+        name_rm="Lucerna",
+        abbr="LU",
+    )
+
     mock.side_effect = api_response(
         {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
     )
@@ -254,6 +268,7 @@ def test_command_creates_cantonal_organization(mock, client, db):
     assert org.acronym_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["LU"]
+    assert org.legal == legal
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -282,6 +297,17 @@ def test_command_updates_cantonal_organization(mock, client, db):
     )
     org.save()
 
+    legal = GeopoliticalEntity.objects.create(
+        geopolitical_entity_id="1",
+        parent=None,
+        type="cantonal",
+        name_de="Luzern",
+        name_fr="Lucerne",
+        name_it="Lucerna",
+        name_rm="Lucerna",
+        abbr="LU",
+    )
+
     mock.side_effect = api_response(
         {"services": [{"base_topic": "av", "canton": "LU", "broker": None}]}
     )
@@ -306,6 +332,7 @@ def test_command_updates_cantonal_organization(mock, client, db):
     assert org.acronym_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["LU"]
+    assert org.legal == legal
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -340,6 +367,7 @@ def test_command_creates_broker_organization(mock, client, db):
     assert org.acronym_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["BFE"]
+    assert org.legal is None
 
 
 @patch("organization.models.Client")
@@ -386,6 +414,7 @@ def test_command_updates_broker_organization(mock, client, db):
     assert org.acronym_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["BFE"]
+    assert org.legal is None
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
