@@ -14,7 +14,6 @@ The command has two output modes:
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from urllib.parse import urlsplit
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -23,7 +22,6 @@ import pytest
 
 from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import (
-    OAS_BASE_URL,
     _is_generation_of,
     _rewrite_dist_links,
 )
@@ -176,54 +174,15 @@ def _mock_client_with_generations(existing: dict[str, list[str]]) -> MagicMock:
     return client
 
 
-# Stand-in base URLs for the `_rewrite_dist_links` unit tests below, so they don't depend on the
-# environment the command happens to build its documents with.
-EXAMPLE_OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
-
-
 def test_rewrite_dist_links_keeps_external_link_as_is():
     """A link with an unhandled rel and a non-OAR/OAS href falls through and is kept verbatim."""
     links = [
         {"href": "https://not-rewritten.org", "rel": "license", "title": "License"},  # kept as-is
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, "ch.bafu.moose")
 
     assert result == [{"href": "https://not-rewritten.org", "rel": "license", "title": "License"}]
-
-
-def test_rewrite_dist_links_drops_internal_oas_link_without_mapping():
-    """An OAS-internal link with no defined mapping is dropped."""
-    links = [
-        {"href": f"{EXAMPLE_OAS_BASE_URL}/some/other", "rel": "unmapped"},
-        {"href": "https://not-rewritten.org", "rel": "license"},
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
-
-
-def test_rewrite_dist_links_makes_oas_style_link_relative():
-    """An OAS style link loses its host and its per-language query/hreflang."""
-    links = [
-        {
-            "href": f"{EXAMPLE_OAS_BASE_URL}/styles/ch.bafu.moose:wms:style?language=de",
-            "rel": "styledBy",
-            "hreflang": "de",
-            "title": "Style Hints",
-        }
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [
-        {
-            "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
-            "rel": "styledBy",
-            "title": "Style Hints",
-        }
-    ]
 
 
 def test_rewrite_dist_links_keeps_externally_hosted_style_link_absolute():
@@ -236,7 +195,7 @@ def test_rewrite_dist_links_keeps_externally_hosted_style_link_absolute():
         }
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, "ch.bafu.moose")
 
     assert result == links
 
@@ -258,7 +217,7 @@ def test_rewrite_dist_links_rewrites_featureinfo_to_the_distributions_index():
         }
     ]
 
-    result = _rewrite_dist_links(links, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
+    result = _rewrite_dist_links(links, "ch.bafu.moose")
 
     assert result == [
         {
@@ -461,7 +420,7 @@ def test_dump_distribution_document(db, tmp_path):
                 "rel": "featureinfo",
             },
             {
-                "href": f"{urlsplit(OAS_BASE_URL).path}/styles/ch.bafu.moose:wms:style",
+                "href": "/styles/ch.bafu.moose:wms:style",
                 "rel": "styledBy",
                 "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                 "type": "application/json",

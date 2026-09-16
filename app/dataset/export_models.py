@@ -292,11 +292,7 @@ class OARDistribution(OARRecord):
 
     @classmethod
     def from_distribution(  # noqa: C901
-        cls,
-        dist: Distribution,
-        lang: str,
-        collection_id: str,
-        oas_base_url: str,
+        cls, dist: Distribution, lang: str, collection_id: str
     ) -> OARDistribution:
         record = OARDistribution(
             id=dist.distribution_id,
@@ -378,8 +374,6 @@ class OARDistribution(OARRecord):
                     distribution_id=dist.distribution_id,
                     rel="styledBy",
                     title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
-                    hreflang=lang,
-                    base_url=oas_base_url,
                 )
             )
 
@@ -666,13 +660,8 @@ class OASLink(BaseLink):
     """Link object for endpoints within the OAS service.
 
     This is a base class for links that point to endpoints within the OAS service itself.
-    - base_url (string): The base URL of the OAR service
-      (e.g. "http://services.dev.sgdi.tech/api/oas/staticv2")
 
     """
-
-    # These are "private" fields that should not be included in a model_dump
-    base_url: str = Field(exclude=True)
 
 
 class OASStyleLink(OASLink):
@@ -687,7 +676,7 @@ class OASStyleLink(OASLink):
         This method is called after the model is initialized and will set the href value
         based on the hreflang, basepath and distribution_id.
         """
-        self.href = f"{self.base_url}/styles/{self.distribution_id}:style"
+        self.href = f"/styles/{self.distribution_id}:style"
         if self.hreflang:
             self.href += f"?language={self.hreflang}"
         return self
