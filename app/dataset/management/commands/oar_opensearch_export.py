@@ -451,9 +451,8 @@ class Command(CustomBaseCommand):
             "type": base["type"],
             "links": links,
             "properties": {
-                # Constant record kind; the concrete service protocol is in 'protocol'.
-                "type": "DataService",
-                "protocol": base["properties"].get("type"),
+                "type": base["properties"]["type"],
+                "protocol": base["properties"]["protocol"],
                 "title": {
                     lang: features[lang]["properties"].get("title") or "" for lang in LANG_CODES
                 },

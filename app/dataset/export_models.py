@@ -470,7 +470,8 @@ class OARDataservice(OARRecord):
 
         # Set common properties
         record.properties["title"] = getattr(ds, "title", None)
-        record.properties["type"] = ds.service_type
+        record.properties["type"] = "DataService"
+        record.properties["protocol"] = ds.service_type
 
         # Add links
         if ds.documentation_url_de:
