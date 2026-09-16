@@ -221,7 +221,7 @@ class Command(CustomBaseCommand):
             response.raise_for_status()
             return response.json()
         except Exception as e:  # noqa: BLE001
-            self.print_error(f"Failed to retreive {url}: {e}")
+            self.print_error(f"Failed to retrieve {url}: {e}")
             return None
 
     def service_key(self, service: dict) -> str:
@@ -353,8 +353,13 @@ class Command(CustomBaseCommand):
 
         # Aggregate provider
         provider_id = self.provider_id()
+        geopolitical_entity_ch = entity_objects.filter(abbr="CH").first()
+        if geopolitical_entity_ch is None:
+            self.print_warning(
+                "Federal geopolitical entity is None! Import geopolitical entities first"
+            )
         created, updated = self.import_organization(
-            provider_id, AGGREGATE_PROVIDER_ORGANIZATION, mappings
+            provider_id, AGGREGATE_PROVIDER_ORGANIZATION, mappings, geopolitical_entity_ch
         )
         metrics["organizations.created"] += created
         metrics["organizations.updated"] += updated
@@ -438,7 +443,7 @@ class Command(CustomBaseCommand):
                     organization_id=organization_id,
                     data_source=Organization.DataSource.GEODIENSTE,
                     data_source_ids=[provider_id],
-                    legal=geopolitical_entity,
+                    geopolitical_entity=geopolitical_entity,
                     **attributes,
                 )
                 org.save()
@@ -450,9 +455,9 @@ class Command(CustomBaseCommand):
                     setattr(org, key, value)
 
             # Update geopolitical entity if it has changed
-            if org.legal != geopolitical_entity:
+            if org.geopolitical_entity != geopolitical_entity:
                 updated = True
-                org.legal = geopolitical_entity
+                org.geopolitical_entity = geopolitical_entity
 
             if updated:
                 org.save()
@@ -1055,7 +1060,7 @@ class Command(CustomBaseCommand):
     def create_concepts(
         self, concept_strings: str, thesaurus: Thesaurus, lookup: ThesaurusLookup
     ) -> tuple[list[Concept], int]:
-        """Lookup the given list of comma-seprated concepts and create the concepts in the DB if
+        """Lookup the given list of comma-separated concepts and create the concepts in the DB if
         not yet existing.
 
         Returns the concepts and the number of created concepts.
@@ -1420,7 +1425,7 @@ class Command(CustomBaseCommand):
                     result[f"description_{lang}"] = get_tag(layer, "Abstract")
 
         except Exception as e:  # noqa: BLE001
-            self.print_error(f"Failed to retreive {url}: {e}")
+            self.print_error(f"Failed to retrieve {url}: {e}")
             return {}
 
         return result

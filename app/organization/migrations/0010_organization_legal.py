@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="organization",
-            name="legal",
+            name="geopolitical_entity",
             field=models.ForeignKey(
                 null=True,
                 blank=True,
-                on_delete=django.db.models.deletion.CASCADE,
+                on_delete=django.db.models.deletion.SET_NULL,
                 to="legal.geopoliticalentity",
             ),
         ),

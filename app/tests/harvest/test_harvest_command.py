@@ -82,7 +82,7 @@ def test_command_creates_organizations(client, dynamodb, db):
         acronym_rm="UFAM",
     )
 
-    legal = GeopoliticalEntity.objects.create(
+    geopolitical_entity = GeopoliticalEntity.objects.create(
         geopolitical_entity_id="1",
         parent=None,
         type="federal",
@@ -116,7 +116,50 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert org_out.acronym_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
-    assert org_out.legal == legal
+    assert org_out.geopolitical_entity == geopolitical_entity
+
+
+@patch("organization.models.Client")
+def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
+    org_in = OrganizationImport(
+        provider_id="ch.bafu",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        name_it="Ufficio federale dell'ambiente",
+        name_rm="Uffizi federal per l'ambient",
+        acronym_de="BAFU",
+        acronym_fr="OFEV",
+        acronym_en="FOEN",
+        acronym_it="UFAM",
+        acronym_rm="UFAM",
+    )
+
+    dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
+
+    out = StringIO()
+    call_command("import_harvest_tables", organizations=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Organization with provider_id ch.bafu does not exist yet, creating a new one" in out
+    assert "Federal geopolitical entity is None! Import geopolitical entities first" in out
+
+    org_out = Organization.objects.first()
+    assert org_out
+    assert org_out.organization_id == "ch.bafu"
+    assert org_out.name_de == "Bundesamt für Umwelt"
+    assert org_out.name_fr == "Office fédéral de l'environnement"
+    assert org_out.name_en == "Federal Office for the Environment"
+    assert org_out.name_it == "Ufficio federale dell'ambiente"
+    assert org_out.name_rm == "Uffizi federal per l'ambient"
+    assert org_out.acronym_de == "BAFU"
+    assert org_out.acronym_fr == "OFEV"
+    assert org_out.acronym_en == "FOEN"
+    assert org_out.acronym_it == "UFAM"
+    assert org_out.acronym_rm == "UFAM"
+    assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
+    assert org_out.data_source_ids == ["ch.bafu"]
+    assert org_out.geopolitical_entity is None
 
 
 @patch("organization.models.Client")
@@ -151,7 +194,7 @@ def test_command_updates_organizations(client, dynamodb, db):
         acronym_rm="UFAM",
     )
 
-    legal = GeopoliticalEntity.objects.create(
+    geopolitical_entity = GeopoliticalEntity.objects.create(
         geopolitical_entity_id="1",
         parent=None,
         type="federal",
@@ -185,7 +228,7 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.acronym_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
-    assert org_out.legal == legal
+    assert org_out.geopolitical_entity == geopolitical_entity
 
 
 @patch("organization.models.Client")

@@ -59,11 +59,11 @@ class Organization(DataSourceIdModelMixin, models.Model):
         help_text=_(_context, "List of original external IDs"),
     )
 
-    legal = models.ForeignKey(
+    geopolitical_entity = models.ForeignKey(
         GeopoliticalEntity,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
     )
 
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
