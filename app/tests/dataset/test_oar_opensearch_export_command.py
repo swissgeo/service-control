@@ -364,7 +364,7 @@ def test_dump_distribution_document(db, tmp_path):
                 "rel": "featureinfo",
             },
             {
-                "href": "/styles/ch.bafu.moose:wms:style",
+                "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                 "rel": "styledBy",
                 "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                 "type": "application/json",

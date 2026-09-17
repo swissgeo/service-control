@@ -675,11 +675,9 @@ class OASStyleLink(OASLink):
         """Generate the href value for the style link.
 
         This method is called after the model is initialized and will set the href value
-        based on the hreflang, basepath and distribution_id.
+        based on the styles path prefix and the distribution_id.
         """
-        self.href = f"/styles/{self.distribution_id}:style"
-        if self.hreflang:
-            self.href += f"?language={self.hreflang}"
+        self.href = f"{settings.OAS_PATH_PREFIX}/{self.distribution_id}:style"
         return self
 
 
