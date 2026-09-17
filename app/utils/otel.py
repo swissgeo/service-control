@@ -1,7 +1,7 @@
 import logging
 
 from opentelemetry import metrics, trace
-from opentelemetry._logs import set_logger_provider
+from opentelemetry._logs import get_logger_provider, set_logger_provider
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -111,10 +111,12 @@ def get_otel_handler() -> logging.Handler:
             "Cannot use OTEL handler in logging configuration when OTEL_SDK_DISABLED is true"
         )
 
-    log_provider = LoggerProvider(resource=_resource)
-    set_logger_provider(log_provider)
-    log_exporters = _get_log_exporters()
-    _setup_log_processors(log_provider, log_exporters)
+    log_provider = get_logger_provider()
+    if not isinstance(log_provider, LoggerProvider):  # still the default no-op proxy
+        log_provider = LoggerProvider(resource=_resource)
+        set_logger_provider(log_provider)
+        log_exporters = _get_log_exporters()
+        _setup_log_processors(log_provider, log_exporters)
 
     return LoggingHandler(logger_provider=log_provider)
 
