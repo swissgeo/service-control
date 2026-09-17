@@ -105,36 +105,26 @@ class Link(BaseLink):
     href: Annotated[str, AfterValidator(is_url)]
 
 
-class OARLink(BaseLink):
-    """Link object for endpoints within the OAR service
-
-    This is a base class for links that point to endpoints within the OAR service itself.
-
-    """
-
-
-class OARCollectionLink(OARLink):
+class OARCollectionLink(BaseLink):
     collectionId: str = Field(exclude=True)  # noqa: N815
 
     @model_validator(mode="after")
-    def generate_href_value(self) -> OARLink:
+    def generate_href_value(self) -> BaseLink:
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
         based on the origin, basepath, collectionId and recordId.
         """
         self.href = f"/collections/{self.collectionId}"
-        if self.hreflang:
-            self.href += f"?language={self.hreflang}"
         return self
 
 
-class OARCollectionItemsLink(OARLink):
+class OARCollectionItemsLink(BaseLink):
     collectionId: str = Field(exclude=True)  # noqa: N815
     query: dict = Field(default_factory=dict, exclude=True)
 
     @model_validator(mode="after")
-    def generate_href_value(self) -> OARLink:
+    def generate_href_value(self) -> BaseLink:
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
@@ -142,11 +132,8 @@ class OARCollectionItemsLink(OARLink):
         """
         self.href = f"/collections/{self.collectionId}/items"
 
-        params = self.query
-        if self.hreflang:
-            params["language"] = self.hreflang
-        if params:
-            self.href += f"?{urlencode(params)}"
+        if self.query:
+            self.href += f"?{urlencode(self.query)}"
 
         return self
 
@@ -156,15 +143,13 @@ class OARRecordLink(OARCollectionLink):
     recordId: str = Field(exclude=True)  # noqa: N815
 
     @model_validator(mode="after")
-    def generate_href_value(self) -> OARLink:
+    def generate_href_value(self) -> BaseLink:
         """Generate the href value for the record link.
 
         This method is called after the model is initialized and will set the href value
         based on the origin, basepath, collectionId and recordId.
         """
         self.href = f"/collections/{self.collectionId}/items/{self.recordId}"
-        if self.hreflang:
-            self.href += f"?language={self.hreflang}"
         return self
 
 
@@ -523,10 +508,7 @@ class OAFeatureCollection(BaseModel):
     def add_links(self) -> OAFeatureCollection:
         self.links.append(
             OARCollectionItemsLink(
-                collectionId=self.collection_id,
-                rel="self",
-                title="Link to this resource",
-                hreflang=self.lang,
+                collectionId=self.collection_id, rel="self", title="Link to this resource"
             )
         )
         for lang, value in LANGS.items():
@@ -536,7 +518,6 @@ class OAFeatureCollection(BaseModel):
                         collectionId=self.collection_id,
                         rel="alternate",
                         title=f"Link to this resource ({value.alternate})",
-                        hreflang=lang,
                     )
                 )
         self.links.append(
@@ -544,7 +525,6 @@ class OAFeatureCollection(BaseModel):
                 collectionId=self.collection_id,
                 rel="collection",
                 title="Link to the collection these items belong to",
-                hreflang=self.lang,
             )
         )
         return self
@@ -614,19 +594,11 @@ class OARCollection(BaseModel):
     def add_links(self) -> OARCollection:
         self.links.append(
             OARCollectionItemsLink(
-                collectionId=self.id,
-                rel="items",
-                title="Link to the items of this collection",
-                hreflang=self.lang,
+                collectionId=self.id, rel="items", title="Link to the items of this collection"
             )
         )
         self.links.append(
-            OARCollectionLink(
-                collectionId=self.id,
-                rel="self",
-                title="Link to this resource",
-                hreflang=self.lang,
-            )
+            OARCollectionLink(collectionId=self.id, rel="self", title="Link to this resource")
         )
         for lang, value in LANGS.items():
             if lang != self.lang:
@@ -635,7 +607,6 @@ class OARCollection(BaseModel):
                         collectionId=self.id,
                         rel="alternate",
                         title=f"Link to this resource ({value.alternate})",
-                        hreflang=lang,
                     )
                 )
         return self
@@ -657,15 +628,7 @@ class Contact(BaseModel):
     # postal_code: str | None
 
 
-class OASLink(BaseLink):
-    """Link object for endpoints within the OAS service.
-
-    This is a base class for links that point to endpoints within the OAS service itself.
-
-    """
-
-
-class OASStyleLink(OASLink):
+class OASStyleLink(BaseLink):
     """Link to a Maplibre style file."""
 
     distribution_id: str = Field(exclude=True)
