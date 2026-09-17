@@ -21,9 +21,9 @@ from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 
 from dataservice.models import Dataservice
-from dataset.export_models import LANGS, OARDataservice, OARDataset, OARDistribution
 from dataset.models import Dataset, DatasetToDataset
-from dataset.opensearch_helper import add_connection_arguments, build_client
+from export.export_models import LANGS, OARDataservice, OARDataset, OARDistribution
+from export.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
