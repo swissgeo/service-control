@@ -3,6 +3,8 @@ from urllib.parse import urlencode
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
+from django.conf import settings
+
 from dataservice.models import (
     Dataservice,
     GeoadminFeaturesDataservice,
@@ -204,13 +206,7 @@ class OARDataset(OARRecord):
     }
 
     @classmethod
-    def from_dataset(
-        cls,
-        ds: Dataset,
-        lang: str,
-        collection_id: str,
-        distribution_collection_id: str,
-    ) -> OARDataset:
+    def from_dataset(cls, ds: Dataset, lang: str) -> OARDataset:
 
         contacts = [
             Contact(
@@ -234,11 +230,14 @@ class OARDataset(OARRecord):
             "type": "Dataset",
         }
         dataset = OARDataset(
-            id=ds.dataset_id, properties=properties, collection_id=collection_id, lang=lang
+            id=ds.dataset_id,
+            properties=properties,
+            collection_id=settings.OAR_DATASETS_COLLECTION_ID,
+            lang=lang,
         )
         dataset.links.append(
             OARCollectionItemsLink(
-                collectionId=distribution_collection_id,
+                collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                 rel="distributions",
                 title="Distributions",
                 typ=None,
@@ -292,17 +291,11 @@ class OARDistribution(OARRecord):
 
     @classmethod
     def from_distribution(  # noqa: C901
-        cls,
-        dist: Distribution,
-        lang: str,
-        collection_id: str,
-        datasets_collection_id: str,
-        dataservices_collection_id: str,
-        distributions_collection_id: str,
+        cls, dist: Distribution, lang: str
     ) -> OARDistribution:
         record = OARDistribution(
             id=dist.distribution_id,
-            collection_id=collection_id,
+            collection_id=f"{dist.dataset.dataset_id}.distributions",
             lang=lang,
         )
 
@@ -313,7 +306,7 @@ class OARDistribution(OARRecord):
 
         record.links.append(
             OARRecordLink(
-                collectionId=datasets_collection_id,
+                collectionId=settings.OAR_DATASETS_COLLECTION_ID,
                 recordId=dist.dataset.dataset_id,
                 rel="dataset",
                 title="Dataset Record",
@@ -354,7 +347,7 @@ class OARDistribution(OARRecord):
             # in the child classes of the distribution base class
             record.links.append(
                 OARRecordLink(
-                    collectionId=dataservices_collection_id,
+                    collectionId=settings.OAR_SERVICES_COLLECTION_ID,
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
                     typ=None,
@@ -366,7 +359,7 @@ class OARDistribution(OARRecord):
         if info_dist:
             record.links.append(
                 OARRecordLink(
-                    collectionId=distributions_collection_id,
+                    collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                     recordId=info_dist.distribution_id,
                     rel="featureinfo",
                     typ=None,
@@ -426,10 +419,12 @@ class OARDataservice(OARRecord):
     properties: dict = {}
 
     @classmethod
-    def from_dataservice(cls, ds: Dataservice, lang: str, collection_id: str) -> OARDataservice:
+    def from_dataservice(cls, ds: Dataservice, lang: str) -> OARDataservice:
 
         # Instantiate record with common properties
-        record = OARDataservice(id=ds.dataservice_id, lang=lang, collection_id=collection_id)
+        record = OARDataservice(
+            id=ds.dataservice_id, lang=lang, collection_id=settings.OAR_SERVICES_COLLECTION_ID
+        )
 
         # Set common properties
         record.properties["title"] = getattr(ds, "title", None)

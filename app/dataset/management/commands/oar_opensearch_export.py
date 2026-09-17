@@ -17,6 +17,7 @@ from typing import Any
 
 from opensearchpy import helpers
 
+from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 
 from dataservice.models import Dataservice
@@ -26,12 +27,9 @@ from dataset.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
-SERVICES_INDEX = "geoadmin-services"
-# The datasets index is historically called `swissgeo-catalog` -- this matches the
-# generated fixtures, the `swissgeo-catalog` links referenced by the other documents and
-# the older tmp scripts. Its mapping file, however, is named `...swissgeo-datasets.json`.
-DATASETS_INDEX = "swissgeo-catalog"
-DISTRIBUTIONS_INDEX = "swissgeo-distributions"
+SERVICES_INDEX = settings.OAR_SERVICES_COLLECTION_ID
+DATASETS_INDEX = settings.OAR_DATASETS_COLLECTION_ID
+DISTRIBUTIONS_INDEX = settings.OAR_DISTRIBUTIONS_COLLECTION_ID
 
 # Index name -> mapping file.
 _INDEXES_DIR = Path(__file__).parent / "opensearch-indexes"
@@ -47,11 +45,6 @@ TYPE_TO_INDEX = {
     "datasets": DATASETS_INDEX,
     "distributions": DISTRIBUTIONS_INDEX,
 }
-
-# OAR collection ids used when building records with the export models.
-SERVICES_COLLECTION_ID = "geoadmin.services"  # FIXME: why is this with a dot?
-CATALOG_COLLECTION_ID = "swissgeo.catalog"  # FIXME: why is this with a dot?
-DISTRIBUTIONS_COLLECTION_ID = "swissgeo-distributions"
 
 OGC_SCHEMA = (
     "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml"
@@ -361,8 +354,7 @@ class Command(CustomBaseCommand):
     def build_service_doc(self, service: Dataservice) -> dict:
         """Build a `geoadmin-services` document from a Dataservice."""
         features = {
-            lang: _dump(OARDataservice.from_dataservice(service, lang, SERVICES_COLLECTION_ID))
-            for lang in LANG_CODES
+            lang: _dump(OARDataservice.from_dataservice(service, lang)) for lang in LANG_CODES
         }
         base = features["de"]
         return {
@@ -381,14 +373,7 @@ class Command(CustomBaseCommand):
 
     def build_dataset_doc(self, dataset: Dataset) -> dict:
         """Build a `swissgeo-catalog` document from a Dataset."""
-        features = {
-            lang: _dump(
-                OARDataset.from_dataset(
-                    dataset, lang, CATALOG_COLLECTION_ID, DISTRIBUTIONS_COLLECTION_ID
-                )
-            )
-            for lang in LANG_CODES
-        }
+        features = {lang: _dump(OARDataset.from_dataset(dataset, lang)) for lang in LANG_CODES}
         base = features["de"]
 
         properties = _clean_props(
@@ -419,20 +404,10 @@ class Command(CustomBaseCommand):
 
         Field `properties.dataset` indicates the dataset each distribution is part of.
         """
-        collection_id = f"{dataset.dataset_id}.distributions"
         documents = []
         for distribution in dataset.distribution_set.all():  # ty:ignore[unresolved-attribute]
             per_lang = {
-                lang: _dump(
-                    OARDistribution.from_distribution(
-                        distribution,
-                        lang,
-                        collection_id,
-                        DATASETS_INDEX,  # FIXME: shouldn't this be CATALOG_COLLECTION_ID
-                        SERVICES_INDEX,  # FIXME: shouldn't this be SERVICES_COLLECTION_ID
-                        DISTRIBUTIONS_COLLECTION_ID,
-                    )
-                )
+                lang: _dump(OARDistribution.from_distribution(distribution, lang))
                 for lang in LANG_CODES
             }
             document = per_lang["de"]
