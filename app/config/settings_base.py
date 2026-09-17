@@ -277,3 +277,13 @@ DJANGO_ADMIN_LOGOUT_REDIRECT_URL = env.str("DJANGO_ADMIN_LOGOUT_REDIRECT_URL", d
 
 # geodienste.ch STAC Dataservice ID, created during import_geodienste management command
 STAC_DATASERVICE_ID_GEODIENSTE = "stac-geodienste"
+
+# OAR collection names
+OAR_SERVICES_COLLECTION_ID = env.str("OAR_SERVICES_COLLECTION_ID", "geoadmin-services")
+OAR_DATASETS_COLLECTION_ID = env.str("OAR_DATASETS_COLLECTION_ID", "swissgeo-catalog")
+OAR_DISTRIBUTIONS_COLLECTION_ID = env.str(
+    "OAR_DISTRIBUTIONS_COLLECTION_ID", "swissgeo-distributions"
+)
+
+# OAS path prefix
+OAS_PATH_PREFIX = env.str("OAS_PATH_PREFIX", "/api/oas/v0/styles")
