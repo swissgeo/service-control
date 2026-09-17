@@ -210,7 +210,7 @@ def test_dump_service_document(db, tmp_path):
                 "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
                 "rel": "service-doc",
                 "title": "Service Documentation (DE)",
-                "type": "application/json",
+                "type": "text/html",
             },
             {
                 "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",

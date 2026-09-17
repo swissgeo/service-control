@@ -89,20 +89,22 @@ class BaseLink(BaseModel):
     href: Annotated[str, AfterValidator(is_url)] | None = None
     rel: str
     title: str | None = None
-    typ: str | None = Field(default="application/json", serialization_alias="type")
+    typ: str | None = Field(default=None, serialization_alias="type")
     hreflang: str | None = None
 
 
 class Link(BaseLink):
     """Generic Link object for OAR records
 
-    Unlike in the base class, the href property is required in this class, as it represents a fully
-    defined link to an external resource. This class can be used for links that point to
-    resources outside of the OAR service.:
+    Unlike in the base class, the href and type properties are required in this class, as it
+    represents a fully defined link to an external resource. This class can be used for links that
+    point to resources outside of the OAR service.:
     - href (string, required): The URL of the linked resource.
+    - type (string, required): The media type of the linked resource.
     """
 
     href: Annotated[str, AfterValidator(is_url)]
+    typ: str = Field(serialization_alias="type")
 
 
 class OARCollectionLink(BaseLink):
@@ -225,7 +227,6 @@ class OARDataset(OARRecord):
                 collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                 rel="distributions",
                 title="Distributions",
-                typ=None,
                 query={"dataset": ds.dataset_id},
             )
         )
@@ -295,7 +296,6 @@ class OARDistribution(OARRecord):
                 recordId=dist.dataset.dataset_id,
                 rel="dataset",
                 title="Dataset Record",
-                typ=None,
             )
         )
         record.properties["protocol"] = dist.protocol
@@ -335,7 +335,6 @@ class OARDistribution(OARRecord):
                     collectionId=settings.OAR_SERVICES_COLLECTION_ID,
                     recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
-                    typ=None,
                 )
             )
             record.properties["externalIds"] = [dist.external_record_id(lang)]
@@ -347,7 +346,6 @@ class OARDistribution(OARRecord):
                     collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                     recordId=info_dist.distribution_id,
                     rel="featureinfo",
-                    typ=None,
                 )
             )
 
@@ -358,6 +356,7 @@ class OARDistribution(OARRecord):
                     distribution_id=dist.distribution_id,
                     rel="styledBy",
                     title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    typ="application/json",
                 )
             )
 
@@ -423,6 +422,7 @@ class OARDataservice(OARRecord):
                     href=ds.documentation_url_de,
                     rel="service-doc",
                     title="Service Documentation (DE)",
+                    typ="text/html",
                 )
             )
         if ds.openapi_spec_url:
