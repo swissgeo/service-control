@@ -21,11 +21,11 @@ from django.core.management.base import CommandError
 import pytest
 
 from dataservice.models import WMSDataservice
-from dataset.management.commands.oar_opensearch_export import _is_generation_of
 from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
+from export.management.commands.oar_opensearch_export import _is_generation_of
 
-MODULE = "dataset.management.commands.oar_opensearch_export"
+MODULE = "export.management.commands.oar_opensearch_export"
 
 
 def _make_dataservice() -> WMSDataservice:
