@@ -10,6 +10,7 @@ from ninja.errors import ValidationError
 
 from cognito.utils.client import Client, OrganizationGroup, UnitGroup
 from config.authorization import VPRole
+from legal.models import GeopoliticalEntity
 from user.models import MachineUser
 from utils.fields import CustomSlugField
 from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
@@ -56,6 +57,13 @@ class Organization(DataSourceIdModelMixin, models.Model):
         blank=True,
         verbose_name=_(_context, "Original IDs"),
         help_text=_(_context, "List of original external IDs"),
+    )
+
+    geopolitical_entity = models.ForeignKey(
+        GeopoliticalEntity,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
     )
 
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)

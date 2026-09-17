@@ -19,9 +19,7 @@ from distribution.models import (
 )
 
 
-def featureinfo_distribution(
-    dataset: Dataset, dist: Distribution | None = None
-) -> Distribution | None:
+def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distribution | None:
     """Return the distribution that serves the feature info of `dataset`, if any.
 
     Prefer a GeoadminFeatures distribution of the dataset; fall back to the dataset's WMS
@@ -34,11 +32,6 @@ def featureinfo_distribution(
     ).first()
     if geoadmin_features:
         return geoadmin_features
-    if dist is None:
-        # Dataset-level lookup: any WMS distribution of the dataset serves the feature info.
-        return dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
-            ExternalWMSDistribution
-        ).first()
     if isinstance(dist, ExternalWMSDistribution):
         return dist
     if isinstance(dist, ExternalWMTSDistribution):
