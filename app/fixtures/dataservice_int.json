@@ -89,7 +89,7 @@
     "model": "dataservice.geoadminfeaturesdataservice",
     "fields": {
       "dataservice_ptr": ["api3features-geoadminch"],
-      "landing_page_url": "sys-api3.int.bgdi.ch/rest/services/ech/MapServer"
+      "landing_page_url": "https://sys-api3.int.bgdi.ch/rest/services/ech/MapServer"
     }
   }
 ]

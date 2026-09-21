@@ -14,10 +14,10 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
 
 from opensearchpy import helpers
 
+from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 
 from dataservice.models import Dataservice
@@ -27,12 +27,9 @@ from dataset.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
-SERVICES_INDEX = "geoadmin-services"
-# The datasets index is historically called `swissgeo-catalog` -- this matches the
-# generated fixtures, the `swissgeo-catalog` links referenced by the other documents and
-# the older tmp scripts. Its mapping file, however, is named `...swissgeo-datasets.json`.
-DATASETS_INDEX = "swissgeo-catalog"
-DISTRIBUTIONS_INDEX = "swissgeo-distributions"
+SERVICES_INDEX = settings.OAR_SERVICES_COLLECTION_ID
+DATASETS_INDEX = settings.OAR_DATASETS_COLLECTION_ID
+DISTRIBUTIONS_INDEX = settings.OAR_DISTRIBUTIONS_COLLECTION_ID
 
 # Index name -> mapping file.
 _INDEXES_DIR = Path(__file__).parent / "opensearch-indexes"
@@ -49,16 +46,6 @@ TYPE_TO_INDEX = {
     "distributions": DISTRIBUTIONS_INDEX,
 }
 
-# OAR collection ids used when building records with the export models.
-SERVICES_COLLECTION_ID = "geoadmin.services"
-CATALOG_COLLECTION_ID = "swissgeo.catalog"
-
-# OAR/OAS base URLs embedded in the record links while the OpenSearch documents are built, then
-# stripped or rewritten to relative paths.
-# The final documents never expose these, so which environment they come from doesn't affect the
-# output -- 'prod' is hardcoded rather than exposed as an option.
-OAR_BASE_URL = "https://services.swissgeo.ch/api/oar/staticv2"
-OAS_BASE_URL = "https://services.swissgeo.ch/api/oas/v0"
 OGC_SCHEMA = (
     "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml"
 )
@@ -117,72 +104,6 @@ def _clean_props(properties: dict, skip: frozenset[str] = frozenset()) -> dict:
 def _record_id_from_href(href: str) -> str:
     """Extract the record id from an OAR item href like `.../items/<record_id>?language=de`."""
     return href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
-
-
-def _rewrite_dist_links(
-    links: list[dict], oar_base_url: str, oas_base_url: str, dataset_id: str
-) -> list[dict]:
-    """Rewrite a distribution feature's links into the OpenSearch form.
-
-    The `dataset`, `dataservice` and `featureinfo` links are rewritten to relative
-    `/collections/.../items/...` paths, the `styledBy` link to the OAS style file is kept
-    (with the per-language query/hreflang stripped, as styles are language-neutral, and
-    reduced to a host-relative path), the intra-service `self`/`collection`/`alternate`
-    links and any other OAR/OAS internal link without a defined mapping are dropped, and
-    genuinely external links are kept as-is.
-    """
-    rewritten: list[dict] = []
-    for link in links:
-        rel = link.get("rel", "")
-        href = link.get("href", "")
-        if rel in ("self", "collection", "alternate"):
-            continue
-        if rel == "dataset":
-            rewritten.append(
-                {
-                    "href": f"/collections/{DATASETS_INDEX}/items/{dataset_id}",
-                    "rel": "dataset",
-                    "title": "Dataset Record",
-                }
-            )
-        elif rel == "dataservice":
-            rewritten.append(
-                {
-                    "href": f"/collections/{SERVICES_INDEX}/items/{_record_id_from_href(href)}",
-                    "rel": "dataservice",
-                }
-            )
-        elif rel == "featureinfo":
-            # Points at another distribution record (or at this one). In OAR that record lives in
-            # the dataset's own `<dataset_id>.distributions` collection, in OpenSearch all
-            # distributions share a single index, so only the distribution id carries over.
-            rewritten.append(
-                {
-                    "href": (
-                        f"/collections/{DISTRIBUTIONS_INDEX}/items/{_record_id_from_href(href)}"
-                    ),
-                    "rel": "featureinfo",
-                }
-            )
-        elif rel == "styledBy":
-            # Keep the style link, but drop the language-specific query/hreflang so it stays
-            # language-neutral in the (multilingual) document.
-            clean = {k: v for k, v in link.items() if k != "hreflang"}
-            style_href = href.split("?", 1)[0]
-            if style_href.startswith(f"{oas_base_url}/styles/"):
-                # Internal OAS style link: keep only the path, so the document doesn't pin a
-                # specific environment's host. Style files hosted elsewhere (e.g. the vector
-                # styles of a GeoJSON distribution) stay absolute.
-                style_href = urlsplit(style_href).path
-            clean["href"] = style_href
-            rewritten.append(clean)
-        elif href.startswith((oar_base_url, oas_base_url)):
-            # Internal OAR/OAS link without a defined relative mapping -- drop it to keep the
-            # document aligned with the OpenSearch format.
-            continue
-        else:
-            rewritten.append(link)
-    return rewritten
 
 
 class Command(CustomBaseCommand):
@@ -417,43 +338,32 @@ class Command(CustomBaseCommand):
         if document_type == "services":
             for service in Dataservice.objects.all():
                 self.print(f" - {service.dataservice_id}")
-                documents.append(self.build_service_doc(service, OAR_BASE_URL))
+                documents.append(self.build_service_doc(service))
         elif document_type == "datasets":
             for dataset in Dataset.objects.exclude(
                 dataset_relations_as_subject__role=DatasetToDataset.Role.PART
             ).all():
                 self.print(f" - {dataset.dataset_id}")
-                documents.append(self.build_dataset_doc(dataset, OAR_BASE_URL))
+                documents.append(self.build_dataset_doc(dataset))
         elif document_type == "distributions":
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
-                documents.extend(self.build_distribution_docs(dataset, OAR_BASE_URL, OAS_BASE_URL))
+                documents.extend(self.build_distribution_docs(dataset))
         return documents
 
-    def build_service_doc(self, service: Dataservice, oar_base_url: str) -> dict:
+    def build_service_doc(self, service: Dataservice) -> dict:
         """Build a `geoadmin-services` document from a Dataservice."""
         features = {
-            lang: _dump(
-                OARDataservice.from_dataservice(service, lang, SERVICES_COLLECTION_ID, oar_base_url)
-            )
-            for lang in LANG_CODES
+            lang: _dump(OARDataservice.from_dataservice(service, lang)) for lang in LANG_CODES
         }
         base = features["de"]
-        # Keep the external links only; drop the intra-service 'self'/'collection' links and the
-        # per-language 'alternate' self links.
-        links = [
-            link
-            for link in base["links"]
-            if link.get("rel") not in ("self", "collection", "alternate")
-        ]
         return {
             "id": base["id"],
             "type": base["type"],
-            "links": links,
+            "links": base["links"],
             "properties": {
-                # Constant record kind; the concrete service protocol is in 'protocol'.
-                "type": "DataService",
-                "protocol": base["properties"].get("type"),
+                "type": base["properties"]["type"],
+                "protocol": base["properties"]["protocol"],
                 "title": {
                     lang: features[lang]["properties"].get("title") or "" for lang in LANG_CODES
                 },
@@ -461,26 +371,10 @@ class Command(CustomBaseCommand):
             "linkTemplates": base.get("linkTemplates", []),
         }
 
-    def build_dataset_doc(self, dataset: Dataset, oar_base_url: str) -> dict:
+    def build_dataset_doc(self, dataset: Dataset) -> dict:
         """Build a `swissgeo-catalog` document from a Dataset."""
-        features = {
-            lang: _dump(OARDataset.from_dataset(dataset, lang, CATALOG_COLLECTION_ID, oar_base_url))
-            for lang in LANG_CODES
-        }
+        features = {lang: _dump(OARDataset.from_dataset(dataset, lang)) for lang in LANG_CODES}
         base = features["de"]
-
-        # Keep external links only (drop OAR self/alternate/collection/items links), then add
-        # the link to the distributions collection in the OpenSearch (relative) form.
-        links = [
-            link for link in base["links"] if not link.get("href", "").startswith(oar_base_url)
-        ]
-        links.append(
-            {
-                "href": f"/collections/{DISTRIBUTIONS_INDEX}/items?dataset={base['id']}",
-                "rel": "distributions",
-                "title": "Distributions",
-            }
-        )
 
         properties = _clean_props(
             base["properties"], skip=frozenset({"title", "description", "language"})
@@ -501,32 +395,23 @@ class Command(CustomBaseCommand):
             "id": base["id"],
             "type": base["type"],
             "geometry": base.get("geometry"),
-            "links": links,
+            "links": base["links"],
             "properties": properties,
         }
 
-    def build_distribution_docs(
-        self, dataset: Dataset, oar_base_url: str, oas_base_url: str
-    ) -> list[dict]:
+    def build_distribution_docs(self, dataset: Dataset) -> list[dict]:
         """Build the `swissgeo-distributions` Feature documents of a Dataset.
 
         Field `properties.dataset` indicates the dataset each distribution is part of.
         """
-        collection_id = f"{dataset.dataset_id}.distributions"
         documents = []
         for distribution in dataset.distribution_set.all():  # ty:ignore[unresolved-attribute]
             per_lang = {
-                lang: _dump(
-                    OARDistribution.from_distribution(
-                        distribution, lang, collection_id, oar_base_url, oas_base_url
-                    )
-                )
+                lang: _dump(OARDistribution.from_distribution(distribution, lang))
                 for lang in LANG_CODES
             }
             document = per_lang["de"]
-            document["links"] = _rewrite_dist_links(
-                document.get("links", []), oar_base_url, oas_base_url, dataset.dataset_id
-            )
+            document["links"] = document.get("links", [])
             document["properties"]["dataset"] = dataset.dataset_id
             # Turn the translated fields into {lang: value} objects.
             document["properties"]["title"] = {

@@ -14,7 +14,6 @@ The command has two output modes:
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from urllib.parse import urlsplit
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -22,11 +21,7 @@ from django.core.management.base import CommandError
 import pytest
 
 from dataservice.models import WMSDataservice
-from dataset.management.commands.oar_opensearch_export import (
-    OAS_BASE_URL,
-    _is_generation_of,
-    _rewrite_dist_links,
-)
+from dataset.management.commands.oar_opensearch_export import _is_generation_of
 from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
 
@@ -176,119 +171,6 @@ def _mock_client_with_generations(existing: dict[str, list[str]]) -> MagicMock:
     return client
 
 
-# Stand-in base URLs for the `_rewrite_dist_links` unit tests below, so they don't depend on the
-# environment the command happens to build its documents with.
-EXAMPLE_OAR_BASE_URL = "https://services.example.ch/api/oar/staticv2"
-EXAMPLE_OAS_BASE_URL = "https://services.example.ch/api/oas/v0"
-
-
-def test_rewrite_dist_links_keeps_external_link_as_is():
-    """A link with an unhandled rel and a non-OAR/OAS href falls through and is kept verbatim."""
-    links = [
-        {"href": f"{EXAMPLE_OAR_BASE_URL}/collections/x/items/y", "rel": "self"},  # dropped
-        {"href": "https://not-rewritten.org", "rel": "license", "title": "License"},  # kept as-is
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [{"href": "https://not-rewritten.org", "rel": "license", "title": "License"}]
-
-
-@pytest.mark.parametrize("rel", ["self", "collection", "alternate"])
-def test_rewrite_dist_links_drops_intra_service_links(rel):
-    """`self`/`collection`/`alternate` are dropped on their rel alone, whatever the href is.
-
-    The href here is deliberately external, so an intra-service link that got rewritten to some
-    other host is still dropped rather than falling through to the 'keep external links' branch.
-    """
-    links = [
-        {"href": "https://elsewhere.example.org/collections/x/items/y", "rel": rel},
-        {"href": "https://not-rewritten.org", "rel": "license"},
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
-
-
-def test_rewrite_dist_links_drops_internal_oar_link_without_mapping():
-    """An OAR/OAS-internal link with no defined mapping is dropped."""
-    links = [
-        {"href": f"{EXAMPLE_OAR_BASE_URL}/some/thing", "rel": "unmapped"},
-        {"href": f"{EXAMPLE_OAS_BASE_URL}/some/other", "rel": "unmapped"},
-        {"href": "https://not-rewritten.org", "rel": "license"},
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [{"href": "https://not-rewritten.org", "rel": "license"}]
-
-
-def test_rewrite_dist_links_makes_oas_style_link_relative():
-    """An OAS style link loses its host and its per-language query/hreflang."""
-    links = [
-        {
-            "href": f"{EXAMPLE_OAS_BASE_URL}/styles/ch.bafu.moose:wms:style?language=de",
-            "rel": "styledBy",
-            "hreflang": "de",
-            "title": "Style Hints",
-        }
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [
-        {
-            "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
-            "rel": "styledBy",
-            "title": "Style Hints",
-        }
-    ]
-
-
-def test_rewrite_dist_links_keeps_externally_hosted_style_link_absolute():
-    """A style file hosted outside OAS (e.g. a GeoJSON vector style) keeps its full URL."""
-    links = [
-        {
-            "href": "https://api3.geo.admin.ch/static/vectorStyles/ch.bafu.moose.json",
-            "rel": "styledBy",
-            "title": "Link to style file for the GeoJSON layer",
-        }
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == links
-
-
-def test_rewrite_dist_links_rewrites_featureinfo_to_the_distributions_index():
-    """`featureinfo` keeps only the distribution id -- all distributions share one index.
-
-    The OAR href names the dataset's own `<dataset_id>.distributions` collection, which has no
-    OpenSearch counterpart, and the target distribution may belong to another dataset than the
-    one the link is rewritten for.
-    """
-    links = [
-        {
-            "href": (
-                f"{EXAMPLE_OAR_BASE_URL}/collections/ch.bafu.moose.distributions"
-                "/items/ch.bafu.moose:features?language=de"
-            ),
-            "rel": "featureinfo",
-            "hreflang": "de",
-        }
-    ]
-
-    result = _rewrite_dist_links(links, EXAMPLE_OAR_BASE_URL, EXAMPLE_OAS_BASE_URL, "ch.bafu.moose")
-
-    assert result == [
-        {
-            "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:features",
-            "rel": "featureinfo",
-        }
-    ]
-
-
 def test_dump_writes_one_file_per_document(db, tmp_path):
     dataservice = _make_dataservice()
     dataset = _make_dataset()
@@ -328,7 +210,7 @@ def test_dump_service_document(db, tmp_path):
                 "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
                 "rel": "service-doc",
                 "title": "Service Documentation (DE)",
-                "type": "application/json",
+                "type": "text/html",
             },
             {
                 "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
@@ -371,15 +253,15 @@ def test_dump_dataset_document(db, tmp_path):
         },
         "links": [
             {
+                "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                "rel": "distributions",
+                "title": "Distributions",
+            },
+            {
                 "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
                 "rel": "alternate",
                 "title": "GeoCat Metadata",
                 "type": "text/html",
-            },
-            {
-                "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
-                "rel": "distributions",
-                "title": "Distributions",
             },
         ],
         "properties": {
@@ -482,7 +364,7 @@ def test_dump_distribution_document(db, tmp_path):
                 "rel": "featureinfo",
             },
             {
-                "href": f"{urlsplit(OAS_BASE_URL).path}/styles/ch.bafu.moose:wms:style",
+                "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                 "rel": "styledBy",
                 "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
                 "type": "application/json",
