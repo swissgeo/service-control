@@ -1,8 +1,11 @@
 from http import HTTPStatus
 
-from rdflib import Graph, Literal
-from rdflib.namespace import RDF, SKOS
+from rdflib import Graph, Literal, URIRef
+from rdflib.namespace import DCTERMS, RDF, SKOS
 from requests import get
+
+from thesaurus.models import ROOT_CONCEPT_ID, Thesaurus
+from utils.language import LanguageCode
 
 TIMEOUT = 30
 
@@ -76,3 +79,43 @@ class ThesaurusLookup:
 
     def __str__(self) -> str:
         return f"ThesaurusLookup {self.url}"
+
+
+def thesaurus_to_skos_jsonld(thesaurus: Thesaurus) -> str:
+    """Build a SKOS JSON-LD graph for a single Thesaurus and its Concepts."""
+
+    graph = Graph()
+    graph.bind("skos", SKOS)
+    graph.bind("dcterms", DCTERMS)
+
+    scheme_uri = URIRef(f"https://swissgeo.ch/thesaurus/{thesaurus.thesaurus_id}")
+    graph.add((scheme_uri, RDF.type, SKOS.ConceptScheme))
+    graph.add((scheme_uri, DCTERMS.identifier, Literal(thesaurus.thesaurus_id)))
+
+    concepts = thesaurus.concept_set.select_related("parent").exclude(concept_id=ROOT_CONCEPT_ID)  # ty: ignore[unresolved-attribute]
+
+    for concept in concepts:
+        uri = URIRef(
+            f"https://swissgeo.ch/thesaurus/{thesaurus.thesaurus_id}/concept/{concept.concept_id}"
+        )
+        graph.add((uri, RDF.type, SKOS.Concept))
+        graph.add((uri, DCTERMS.identifier, Literal(concept.concept_id)))
+        graph.add((uri, SKOS.inScheme, scheme_uri))
+
+        for lang in LanguageCode:
+            value = getattr(concept, f"label_{lang}", None)
+            if value:
+                graph.add((uri, SKOS.prefLabel, Literal(value, lang=lang)))
+
+        is_top = concept.parent is None or concept.parent.concept_id == ROOT_CONCEPT_ID
+        if is_top:
+            graph.add((scheme_uri, SKOS.hasTopConcept, uri))
+            graph.add((uri, SKOS.topConceptOf, scheme_uri))
+        else:
+            parent_uri = URIRef(
+                f"https://swissgeo.ch/thesaurus/{thesaurus.thesaurus_id}/concept/{concept.parent.concept_id}"
+            )
+            graph.add((uri, SKOS.broader, parent_uri))
+            graph.add((parent_uri, SKOS.narrower, uri))
+
+    return graph.serialize(format="json-ld", indent=2)
