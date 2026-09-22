@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from rdflib import Graph, Literal, URIRef
+from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, SKOS
 from requests import get
 
@@ -8,6 +8,7 @@ from thesaurus.models import ROOT_CONCEPT_ID, Thesaurus
 from utils.language import LanguageCode
 
 TIMEOUT = 30
+SCHEMA = Namespace("https://schema.org/")
 
 
 class ThesaurusLookup:
@@ -87,6 +88,7 @@ def thesaurus_to_skos_jsonld(thesaurus: Thesaurus) -> str:
     graph = Graph()
     graph.bind("skos", SKOS)
     graph.bind("dcterms", DCTERMS)
+    graph.bind("schema", SCHEMA)
 
     scheme_uri = URIRef(f"https://swissgeo.ch/thesaurus/{thesaurus.thesaurus_id}")
     graph.add((scheme_uri, RDF.type, SKOS.ConceptScheme))
@@ -101,6 +103,9 @@ def thesaurus_to_skos_jsonld(thesaurus: Thesaurus) -> str:
         graph.add((uri, RDF.type, SKOS.Concept))
         graph.add((uri, DCTERMS.identifier, Literal(concept.concept_id)))
         graph.add((uri, SKOS.inScheme, scheme_uri))
+
+        if concept.order:
+            graph.add((uri, SCHEMA.position, Literal(concept.order)))
 
         for lang in LanguageCode:
             value = getattr(concept, f"label_{lang}", None)
@@ -118,4 +123,4 @@ def thesaurus_to_skos_jsonld(thesaurus: Thesaurus) -> str:
             graph.add((uri, SKOS.broader, parent_uri))
             graph.add((parent_uri, SKOS.narrower, uri))
 
-    return graph.serialize(format="json-ld", indent=2)
+    return graph.serialize(format="json-ld")

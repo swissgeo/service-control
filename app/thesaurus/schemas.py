@@ -1,8 +1,18 @@
+from django.db.models import QuerySet
 from ninja import Schema
 
 from schemas import ResolverContext, TranslationsSchema, build_translations
-from thesaurus.models import Concept
+from thesaurus.models import ROOT_CONCEPT_ID, Concept, Thesaurus
 from utils.language import get_language
+
+
+class ThesaurusSchema(Schema):
+    thesaurus_id: str
+    concepts: list[ConceptSchema]
+
+    @staticmethod
+    def resolve_concepts(obj: Thesaurus) -> QuerySet[Concept]:
+        return Concept.objects.filter(thesaurus=obj, parent__concept_id=ROOT_CONCEPT_ID)
 
 
 class ConceptSchema(Schema):
@@ -20,13 +30,3 @@ class ConceptSchema(Schema):
     @staticmethod
     def resolve_label_translations(obj: Concept) -> dict[str, str]:
         return build_translations(obj, "label")
-
-    @staticmethod
-    def resolve_children(obj: Concept, context: ResolverContext) -> list[Concept]:
-        request = context["request"]
-        lang = get_language(request.GET.get("lang"), request.headers)
-        children = obj.children  # ty: ignore[unresolved-attribute]
-        if isinstance(children, list):
-            # ninja seems to sometimes return a DjangoGetter, which already resolve the children
-            return sorted(children, key=lambda child: getattr(child, f"label_{lang}"))
-        return children.order_by(f"label_{lang}")
