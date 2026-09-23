@@ -7,7 +7,7 @@ from django.core.management.base import CommandError
 
 import pytest
 
-from dataset.management.commands.oar_opensearch_export import (
+from oar_export.management.commands.oar_opensearch_export import (
     Command,
     _generation_index,
     _is_generation_of,

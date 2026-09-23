@@ -20,8 +20,8 @@ from typing import Any
 
 from django.core.management.base import CommandError, CommandParser
 
-from dataset.management.commands.oar_opensearch_export import TYPE_TO_INDEX
-from dataset.opensearch_helper import add_connection_arguments, build_client
+from oar_export.management.commands.oar_opensearch_export import TYPE_TO_INDEX
+from oar_export.opensearch_helper import add_connection_arguments, build_client
 from utils.command import CustomBaseCommand
 
 # The aliases the export command manages, used to scope the default `list` output.
