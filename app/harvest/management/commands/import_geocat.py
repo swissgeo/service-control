@@ -8,12 +8,11 @@ from requests import get
 from django.core.management.base import CommandParser
 
 from dataset.models import Dataset
-from thesaurus.models import Concept, Thesaurus
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from utils.command import CustomBaseCommand
 
 GEOCAT_URL = "https://www.geocat.ch/geonetwork/srv/api/records/{}/formatters/xml?approved=true"
 NS = {"che": "http://geocat.ch/che", "mri": "http://standards.iso.org/iso/19115/-3/mri/1.0"}
-THESAURUS_ID = "ech0166"
 
 
 class Command(CustomBaseCommand):
@@ -49,7 +48,7 @@ class Command(CustomBaseCommand):
             self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
         # Check if required fixtures are loaded
-        if options["ech0166"] and not Thesaurus.objects.filter(thesaurus_id=THESAURUS_ID):
+        if options["ech0166"] and not Thesaurus.objects.filter(thesaurus_id=ECH0166_THESAURUS_ID):
             self.print_error(
                 "No eCH-0166 thesaurus not found, try to load the fixture first "
                 "(./manage.py loaddata fixtures/ech0166.json)"
@@ -106,7 +105,7 @@ class Command(CustomBaseCommand):
         self.print(f"Getting eCH-0166 categories for dataset {dataset}")
 
         # Collect existing eCH-0166 concepts of the dataset
-        existing = dataset.concepts.filter(thesaurus__thesaurus_id=THESAURUS_ID).all()
+        existing = dataset.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID).all()
         existing_ids = {concept.concept_id for concept in existing}
 
         # Collect concepts from geocat
@@ -121,7 +120,7 @@ class Command(CustomBaseCommand):
         for concept_id in concept_ids - existing_ids:
             updated = True
             concept = Concept.objects.filter(
-                thesaurus__thesaurus_id=THESAURUS_ID, concept_id=concept_id
+                thesaurus__thesaurus_id=ECH0166_THESAURUS_ID, concept_id=concept_id
             ).first()
             if not concept:
                 self.print_warning(f"Unknown concept {concept_id}")

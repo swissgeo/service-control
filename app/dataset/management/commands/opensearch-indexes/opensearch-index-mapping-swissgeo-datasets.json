@@ -115,6 +115,7 @@
             }
           },
           "keywords": {"type": "keyword"},
+          "concepts": {"type": "keyword"},
           "languages": {"type": "object", "enabled": false},
           "contacts": {"type": "object", "enabled": false},
           "preferredDistributionId": {"type": "keyword", "index": false}

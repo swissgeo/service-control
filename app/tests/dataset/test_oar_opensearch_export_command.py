@@ -24,6 +24,7 @@ from dataservice.models import WMSDataservice
 from dataset.management.commands.oar_opensearch_export import _is_generation_of
 from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 MODULE = "dataset.management.commands.oar_opensearch_export"
 
@@ -41,6 +42,11 @@ def _make_dataservice() -> WMSDataservice:
 
 
 def _make_dataset() -> Dataset:
+    thesaurus = Thesaurus(thesaurus_id=ECH0166_THESAURUS_ID)
+    thesaurus.save()
+    concept = Concept(thesaurus=thesaurus, concept_id="location")
+    concept.save()
+
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
         title_short_de="Rote Liste Moose",
@@ -61,6 +67,7 @@ def _make_dataset() -> Dataset:
         geocat_id="07b046a7-1b21-4cd0-b605-a113f2e5e94d",
     )
     dataset.save()
+    dataset.concepts.set([concept])
     return dataset
 
 
@@ -295,6 +302,7 @@ def test_dump_dataset_document(db, tmp_path):
                 "rm": "",
                 "en": "EN 2",
             },
+            "concepts": ["location"],
         },
     }
 

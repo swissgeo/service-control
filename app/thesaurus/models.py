@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 ROOT_CONCEPT_ID = "root"
+ECH0166_THESAURUS_ID = "ech0166"
 
 
 class ThesaurusManager(models.Manager):

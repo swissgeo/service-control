@@ -20,6 +20,7 @@ from distribution.models import (
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
+from thesaurus.models import ECH0166_THESAURUS_ID
 
 
 def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distribution | None:
@@ -210,9 +211,13 @@ class OARDataset(OARRecord):
             "additionalSearchText": ", ".join(getattr(ds, f"additional_search_text_{lang}", [])),
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
-            "preferredDistributionId": ds.preferred_distribution.distribution_id
-            if ds.preferred_distribution
-            else None,  # TODO: needs further clarification
+            "preferredDistributionId": (  # TODO: needs further clarification
+                ds.preferred_distribution.distribution_id if ds.preferred_distribution else None
+            ),
+            "concepts": [
+                concept.concept_id
+                for concept in ds.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID)
+            ],
             "title": getattr(ds, f"title_short_{lang}", None),
             "type": "Dataset",
         }
