@@ -19,17 +19,26 @@ from opensearchpy import helpers
 
 from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
+from django.db.models import Q
 
 from dataservice.models import Dataservice
 from dataset.models import Dataset, DatasetToDataset
-from oar_export.export_models import LANGS, OARDataservice, OARDataset, OARDistribution
+from oar_export.export_models import (
+    LANGS,
+    OARDataservice,
+    OARDataset,
+    OARDistribution,
+    OAROrganization,
+)
 from oar_export.opensearch_helper import add_connection_arguments, build_client
+from organization.models import Organization
 from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
 SERVICES_INDEX = settings.OAR_SERVICES_COLLECTION_ID
 DATASETS_INDEX = settings.OAR_DATASETS_COLLECTION_ID
 DISTRIBUTIONS_INDEX = settings.OAR_DISTRIBUTIONS_COLLECTION_ID
+ORGANIZATIONS_INDEX = settings.OAR_ORGANIZATIONS_COLLECTION_ID
 
 # Index name -> mapping file.
 _INDEXES_DIR = Path(__file__).parent / "opensearch-indexes"
@@ -37,6 +46,7 @@ INDEX_MAPPING_FILES = {
     SERVICES_INDEX: _INDEXES_DIR / "opensearch-index-mapping-geoadmin-services.json",
     DATASETS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-datasets.json",
     DISTRIBUTIONS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-distributions.json",
+    ORGANIZATIONS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-organizations.json",
 }
 
 # Selectable record types -> target index.
@@ -44,6 +54,7 @@ TYPE_TO_INDEX = {
     "services": SERVICES_INDEX,
     "datasets": DATASETS_INDEX,
     "distributions": DISTRIBUTIONS_INDEX,
+    "organizations": ORGANIZATIONS_INDEX,
 }
 
 OGC_SCHEMA = (
@@ -99,11 +110,6 @@ def _clean_props(properties: dict, skip: frozenset[str] = frozenset()) -> dict:
     inside a plain `dict` field, so we strip them explicitly here.
     """
     return {k: v for k, v in properties.items() if v is not None and k not in skip}
-
-
-def _record_id_from_href(href: str) -> str:
-    """Extract the record id from an OAR item href like `.../items/<record_id>?language=de`."""
-    return href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
 
 
 class Command(CustomBaseCommand):
@@ -349,6 +355,15 @@ class Command(CustomBaseCommand):
             for dataset in Dataset.objects.all():
                 self.print(f" - {dataset.dataset_id}")
                 documents.extend(self.build_distribution_docs(dataset))
+        elif document_type == "organizations":
+            # exclude organizations imported from geodienste except the aggregate organization
+            for organization in Organization.objects.filter(
+                ~Q(data_source=Organization.DataSource.GEODIENSTE) | Q(organization_id="ch.kgk")
+            ).all():
+                self.print(f" - {organization.organization_id}")
+                documents.append(self.build_organization_doc(organization))
+        else:
+            raise NotImplementedError(f"Document type {document_type} not supported")
         return documents
 
     def build_service_doc(self, service: Dataservice) -> dict:
@@ -425,3 +440,26 @@ class Command(CustomBaseCommand):
             documents.append(document)
 
         return documents
+
+    def build_organization_doc(self, organization: Organization) -> dict:
+        """Build a `geoadmin-organizations` document from an Organization."""
+        features = {
+            lang: _dump(OAROrganization.from_organization(organization, lang))
+            for lang in LANG_CODES
+        }
+        base = features["de"]
+        return {
+            "id": base["id"],
+            "type": base["type"],
+            "links": base["links"],
+            "properties": {
+                "type": base["properties"]["type"],
+                "name": {
+                    lang: features[lang]["properties"].get("name") or "" for lang in LANG_CODES
+                },
+                "acronym": {
+                    lang: features[lang]["properties"].get("acronym") or "" for lang in LANG_CODES
+                },
+            },
+            "linkTemplates": base["linkTemplates"],
+        }
