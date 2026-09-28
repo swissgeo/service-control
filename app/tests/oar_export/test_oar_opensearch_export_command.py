@@ -24,6 +24,7 @@ from dataservice.models import WMSDataservice
 from dataset.models import Dataset, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
 from oar_export.management.commands.oar_opensearch_export import _is_generation_of
+from organization.models import Organization
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 MODULE = "oar_export.management.commands.oar_opensearch_export"
@@ -133,6 +134,43 @@ def _make_distribution(
     )
     distribution.save()
     return distribution
+
+
+def _make_organization() -> Organization:
+    organization = Organization(
+        organization_id="ch.bafu",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        name_it="Ufficio federale dell'ambiente",
+        name_rm="Uffizi federal per l'ambient",
+        acronym_de="BAFU",
+        acronym_fr="OFEV",
+        acronym_en="FOEN",
+        acronym_it="UFAM",
+        acronym_rm="UFAM",
+    )
+    organization.save()
+    return organization
+
+
+def _make_aggregate_organization() -> Organization:
+    organization = Organization(
+        organization_id="ch.kgk",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+        data_source=Organization.DataSource.GEODIENSTE,
+    )
+    organization.save()
+    return organization
 
 
 def _read_dump(dump_dir: Path, index: str, doc_id: str) -> dict:
@@ -403,26 +441,80 @@ def test_dump_distribution_document(db, tmp_path):
     }
 
 
+@patch("organization.models.Client")
+def test_dump_organization_document(cogntio, db, tmp_path):
+    _make_organization()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert _read_dump(tmp_path, "swissgeo-organizations", "ch.bafu") == {
+        "id": "ch.bafu",
+        "linkTemplates": [],
+        "links": [],
+        "properties": {
+            "acronym": {"de": "BAFU", "en": "FOEN", "fr": "OFEV", "it": "UFAM", "rm": "UFAM"},
+            "name": {
+                "de": "Bundesamt für Umwelt",
+                "en": "Federal Office for the Environment",
+                "fr": "Office fédéral de l'environnement",
+                "it": "Ufficio federale dell'ambiente",
+                "rm": "Uffizi federal per l'ambient",
+            },
+            "type": "Organization",
+        },
+        "type": "Feature",
+    }
+
+
+@patch("organization.models.Client")
+def test_dump_organization_skips_geodienste_organizations(cognito, db, tmp_path):
+    """An organization imported from geodienste should not be exported."""
+    organization = _make_organization()
+    organization.data_source = Organization.DataSource.GEODIENSTE
+    organization.save()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert not (tmp_path / "swissgeo-organizations" / "ch.bafu.json").exists()
+
+
+@patch("organization.models.Client")
+def test_dump_organization_includes_geodienste_aggregate_organizations(cognito, db, tmp_path):
+    """The aggregate organization imported from"""
+    _make_aggregate_organization()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert (tmp_path / "swissgeo-organizations" / "ch.kgk.json").exists()
+
+
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
 @patch(f"{MODULE}.Command.get_client")
-def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db):
+@patch("organization.models.Client")
+def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client, bulk, db):
     dataservice = _make_dataservice()
     dataset = _make_dataset()
     _make_distribution(dataset, dataservice)
+    _make_organization()
     client = _mock_client()
     get_client.return_value = client
 
     call_command("oar_opensearch_export", verbosity=0)
 
-    # A fresh timestamped generation is created for each of the three aliases.
+    # A fresh timestamped generation is created for each of the four aliases.
     created = {call.kwargs["index"] for call in client.indices.create.call_args_list}
-    assert len(created) == 3
-    for alias in ("geoadmin-services", "swissgeo-catalog", "swissgeo-distributions"):
+    assert len(created) == 4
+    for alias in (
+        "geoadmin-services",
+        "swissgeo-catalog",
+        "swissgeo-distributions",
+        "swissgeo-organizations",
+    ):
         assert any(_is_generation_of(index, alias) for index in created), alias
 
     # helpers.bulk is called once per record type; the documents go into the generation index,
     # keyed by the alias each generation belongs to.
-    assert bulk.call_count == 3
+    assert bulk.call_count == 4
     indexed: dict[str, list[dict]] = {}
     for call in bulk.call_args_list:
         actions = list(call.args[1])
@@ -430,7 +522,12 @@ def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db
         target = actions[0]["_index"]
         alias = next(
             a
-            for a in ("geoadmin-services", "swissgeo-catalog", "swissgeo-distributions")
+            for a in (
+                "geoadmin-services",
+                "swissgeo-catalog",
+                "swissgeo-distributions",
+                "swissgeo-organizations",
+            )
             if _is_generation_of(target, a)
         )
         indexed[alias] = actions
@@ -443,17 +540,20 @@ def test_export_creates_generation_indices_and_bulk_indexes(get_client, bulk, db
     assert action["_source"]["id"] == "wmts-geoadminch"
     assert action["_source"]["properties"]["title"]["de"] == "WMTS geo.admin.ch"
 
-    # The dataset and distribution documents reach their respective generations.
+    # The dataset, distribution and organization documents reach their respective generations.
     assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["ch.bafu.moose"]
     # Distributions are indexed individually, keyed by distribution id.
     assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["ch.bafu.moose:wms"]
+    assert [a["_id"] for a in indexed["swissgeo-organizations"]] == ["ch.bafu"]
 
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
 @patch(f"{MODULE}.Command.get_client")
-def test_export_swaps_all_aliases_in_a_single_request(get_client, bulk, db):
+@patch("organization.models.Client")
+def test_export_swaps_all_aliases_in_a_single_request(cognito, get_client, bulk, db):
     _make_dataservice()
     _make_dataset()
+    _make_organization()
     client = _mock_client()
     get_client.return_value = client
 
@@ -464,14 +564,20 @@ def test_export_swaps_all_aliases_in_a_single_request(get_client, bulk, db):
     client.indices.update_aliases.assert_called_once()
     actions = client.indices.update_aliases.call_args.kwargs["body"]["actions"]
     added = {a["add"]["alias"]: a["add"]["index"] for a in actions if "add" in a}
-    assert sorted(added) == ["geoadmin-services", "swissgeo-catalog", "swissgeo-distributions"]
+    assert sorted(added) == [
+        "geoadmin-services",
+        "swissgeo-catalog",
+        "swissgeo-distributions",
+        "swissgeo-organizations",
+    ]
     for alias, index in added.items():
         assert _is_generation_of(index, alias)
 
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
 @patch(f"{MODULE}.Command.get_client")
-def test_export_detaches_previous_generation_and_prunes_the_oldest(get_client, bulk, db):
+@patch("organization.models.Client")
+def test_export_detaches_previous_generation_and_prunes_the_oldest(cognito, get_client, bulk, db):
     """On a cluster with a history, the swap detaches the previous generation and prunes old ones.
 
     Each alias already has four generations behind it. With `--keep-generations 2` the swap moves
@@ -480,9 +586,15 @@ def test_export_detaches_previous_generation_and_prunes_the_oldest(get_client, b
     """
     _make_dataservice()
     _make_dataset()
+    _make_organization()
     existing = {
         alias: [f"{alias}-2026072{n}120000" for n in range(1, 5)]
-        for alias in ("geoadmin-services", "swissgeo-catalog", "swissgeo-distributions")
+        for alias in (
+            "geoadmin-services",
+            "swissgeo-catalog",
+            "swissgeo-distributions",
+            "swissgeo-organizations",
+        )
     }
     client = _mock_client_with_generations(existing)
     get_client.return_value = client
@@ -498,6 +610,7 @@ def test_export_detaches_previous_generation_and_prunes_the_oldest(get_client, b
         "geoadmin-services": "geoadmin-services-20260724120000",
         "swissgeo-catalog": "swissgeo-catalog-20260724120000",
         "swissgeo-distributions": "swissgeo-distributions-20260724120000",
+        "swissgeo-organizations": "swissgeo-organizations-20260724120000",
     }
 
     # The two oldest generations of every alias are deleted; the two most recent survive for a
@@ -510,6 +623,8 @@ def test_export_detaches_previous_generation_and_prunes_the_oldest(get_client, b
         "swissgeo-catalog-20260722120000",
         "swissgeo-distributions-20260721120000",
         "swissgeo-distributions-20260722120000",
+        "swissgeo-organizations-20260721120000",
+        "swissgeo-organizations-20260722120000",
     ]
 
 

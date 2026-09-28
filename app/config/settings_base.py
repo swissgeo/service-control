@@ -285,6 +285,9 @@ OAR_DATASETS_COLLECTION_ID = env.str("OAR_DATASETS_COLLECTION_ID", "swissgeo-cat
 OAR_DISTRIBUTIONS_COLLECTION_ID = env.str(
     "OAR_DISTRIBUTIONS_COLLECTION_ID", "swissgeo-distributions"
 )
+OAR_ORGANIZATIONS_COLLECTION_ID = env.str(
+    "OAR_ORGANIZATIONS_COLLECTION_ID", "swissgeo-organizations"
+)
 
 # OAS path prefix
 OAS_PATH_PREFIX = env.str("OAS_PATH_PREFIX", "/api/oas/v0/styles")

@@ -20,6 +20,7 @@ from distribution.models import (
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
+from organization.models import Organization
 from thesaurus.models import ECH0166_THESAURUS_ID
 
 
@@ -498,6 +499,32 @@ class OARDataservice(OARRecord):
                     title="Root URL of the Geoadmin Features Dataservice",
                 )
             )
+
+        return record
+
+
+class OAROrganization(OARRecord):
+    """Organization record
+
+    An organization is a Record with type="Organization"
+    """
+
+    properties: dict = {}
+
+    @classmethod
+    def from_organization(cls, organization: Organization, lang: str) -> OAROrganization:
+
+        # Instantiate record with common properties
+        record = OAROrganization(
+            id=organization.organization_id,
+            lang=lang,
+            collection_id=settings.OAR_ORGANIZATIONS_COLLECTION_ID,
+        )
+
+        # Set common properties
+        record.properties["type"] = "Organization"
+        record.properties["name"] = getattr(organization, f"name_{lang}", None)
+        record.properties["acronym"] = getattr(organization, f"acronym_{lang}", None)
 
         return record
 
