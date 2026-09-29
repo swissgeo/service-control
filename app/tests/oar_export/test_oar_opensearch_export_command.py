@@ -341,6 +341,7 @@ def test_dump_dataset_document(db, tmp_path):
                 "en": "EN 2",
             },
             "concepts": ["location"],
+            "ownerIds": [],
         },
     }
 
@@ -392,6 +393,26 @@ def test_dump_dataset_contacts_reference_organizations(cognito, db, tmp_path):
             "role": "pointOfContact",
         },
     ]
+
+
+@patch("organization.models.Client")
+def test_dump_dataset_owner_ids(cognito, db, tmp_path):
+    """The organizations of the owner contacts are exposed as distinct `ownerIds`."""
+    dataset = _make_dataset()
+    organization = _make_organization()
+    other_organization = _make_aggregate_organization()
+    for contact, role in (
+        (Contact.objects.create(organization=other_organization), "pointOfContact"),
+        (Contact.objects.create(organization=organization, name_de="Person 1"), "owner"),
+        (Contact.objects.create(organization=organization, name_de="Person 2"), "owner"),
+        (Contact.objects.create(organization=other_organization), "owner"),
+    ):
+        DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    assert dataset_doc["properties"]["ownerIds"] == ["ch.bafu", "ch.kgk"]
 
 
 def test_dump_dataset_skips_part_datasets(db, tmp_path):

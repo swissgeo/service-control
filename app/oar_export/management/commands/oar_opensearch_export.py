@@ -22,7 +22,7 @@ from django.core.management.base import CommandError, CommandParser
 from django.db.models import Q
 
 from dataservice.models import Dataservice
-from dataset.models import Dataset, DatasetToDataset
+from dataset.models import Dataset, DatasetToContact, DatasetToDataset
 from oar_export.export_models import (
     LANGS,
     OARDataservice,
@@ -404,6 +404,14 @@ class Command(CustomBaseCommand):
             lang: features[lang]["properties"].get("additionalSearchText") or ""
             for lang in LANG_CODES
         }
+        # Flattened for filtering, as contacts are not indexed
+        properties["ownerIds"] = list(
+            dict.fromkeys(
+                contact["id"]
+                for contact in properties.get("contacts", [])
+                if contact["role"] == DatasetToContact.Role.OWNER
+            )
+        )
 
         return {
             "$schema": OGC_SCHEMA,
