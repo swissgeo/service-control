@@ -21,10 +21,10 @@ from django.core.management.base import CommandError
 import pytest
 
 from dataservice.models import WMSDataservice
-from dataset.models import Dataset, DatasetToDataset
+from dataset.models import Dataset, DatasetToContact, DatasetToDataset
 from distribution.models import ExternalWMSDistribution
 from oar_export.management.commands.oar_opensearch_export import _is_generation_of
-from organization.models import Organization
+from organization.models import Contact, Organization
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 MODULE = "oar_export.management.commands.oar_opensearch_export"
@@ -353,6 +353,45 @@ def test_dump_dataset_document_without_featureinfo_distribution_has_no_such_link
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == []
+
+
+@patch("organization.models.Client")
+def test_dump_dataset_contacts_reference_organizations(cognito, db, tmp_path):
+    """Dataset contacts carry the ID of their organization and are distinct."""
+    dataset = _make_dataset()
+    organization = _make_organization()
+    owner = Contact.objects.create(organization=organization, address_country="LI")
+    point_of_contact = Contact.objects.create(organization=organization, name_de="Person 1")
+    other_point_of_contact = Contact.objects.create(organization=organization, name_de="Person 2")
+    DatasetToContact.objects.create(
+        dataset=dataset, contact=owner, role=DatasetToContact.Role.OWNER
+    )
+    DatasetToContact.objects.create(
+        dataset=dataset, contact=point_of_contact, role=DatasetToContact.Role.POINT_OF_CONTACT
+    )
+    DatasetToContact.objects.create(
+        dataset=dataset,
+        contact=other_point_of_contact,
+        role=DatasetToContact.Role.POINT_OF_CONTACT,
+    )
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    assert dataset_doc["properties"]["contacts"] == [
+        {
+            "id": "ch.bafu",
+            "organization": "Bundesamt für Umwelt",
+            "country": "LI",
+            "role": "owner",
+        },
+        {
+            "id": "ch.bafu",
+            "organization": "Bundesamt für Umwelt",
+            "country": "CH",
+            "role": "pointOfContact",
+        },
+    ]
 
 
 def test_dump_dataset_skips_part_datasets(db, tmp_path):

@@ -197,14 +197,22 @@ class OARDataset(OARRecord):
     @classmethod
     def from_dataset(cls, ds: Dataset, lang: str) -> OARDataset:
 
-        contacts = [
-            Contact(
-                organization=contact.get(f"org_name_{lang}") or contact.get("org_name"),
-                country=contact.get("contact_country") or "CH",
-                role=contact.get("role"),
+        # Several contact persons of the same organization can share a role, which results in
+        # identical entries, as only organization level fields are exported.
+        contacts = list(
+            dict.fromkeys(
+                Contact(
+                    id=dataset_contact.contact.organization.organization_id,
+                    organization=getattr(dataset_contact.contact.organization, f"name_{lang}", None)
+                    or dataset_contact.contact.organization.name_de,
+                    country=dataset_contact.contact.address_country or "CH",
+                    role=dataset_contact.role,
+                )
+                for dataset_contact in ds.dataset_contacts.select_related(  # ty:ignore[unresolved-attribute]
+                    "contact__organization"
+                ).order_by("pk")
             )
-            for contact in ds.legacy_contacts
-        ]
+        )
 
         properties = {
             "contacts": contacts,
@@ -530,6 +538,9 @@ class OAROrganization(OARRecord):
 
 
 class Contact(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: str
     organization: str
     country: str
     role: str
