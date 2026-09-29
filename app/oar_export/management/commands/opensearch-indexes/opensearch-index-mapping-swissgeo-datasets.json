@@ -118,6 +118,7 @@
           "concepts": {"type": "keyword"},
           "languages": {"type": "object", "enabled": false},
           "contacts": {"type": "object", "enabled": false},
+          "ownerIds": {"type": "keyword"},
           "preferredDistributionId": {"type": "keyword", "index": false}
         }
       }
