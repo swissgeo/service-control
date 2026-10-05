@@ -2824,10 +2824,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         distribution_availability.description_fr == "Disponibilité des données au niveau cantonal."
     )
     assert distribution_availability.description_it == "Disponibilità dei dati a livello cantonale."
-    assert distribution_availability.wms_layer_name_de == "availability_cantons"
-    assert distribution_availability.wms_layer_name_fr == "availability_cantons"
-    assert distribution_availability.wms_layer_name_it == "availability_cantons"
-    assert distribution_availability.wms_layer_name_en == "availability_cantons"
+    assert distribution_availability.wms_layer_name_de == "availability"
+    assert distribution_availability.wms_layer_name_fr == "availability"
+    assert distribution_availability.wms_layer_name_it == "availability"
+    assert distribution_availability.wms_layer_name_en == "availability"
     assert distribution_availability.wms_layer_name_rm is None
     assert distribution_availability.meta_information is True
     assert distribution_availability.dataservice == dataservice_availability
