@@ -725,7 +725,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "geodienste@kgk-cgc.ch"
+    assert contact.email == "support@geodienste.kgk-cgc.ch"
     assert contact.phone == "+41 31 300 09 20"
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
@@ -743,7 +743,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
         "Postfach\n"
         "CH-3001 Bern\n"
         "Tel. +41 31 300 09 20\n"
-        "geodienste@kgk-cgc.ch\n"
+        "support@geodienste.kgk-cgc.ch\n"
     )
 
     out = StringIO()
@@ -809,7 +809,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "geodienste@kgk-cgc.ch"
+    assert contact.email == "support@geodienste.kgk-cgc.ch"
     assert contact.phone == "+41 31 300 09 20"
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
@@ -827,7 +827,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
         "Postfach\n"
         "CH-3001 Bern\n"
         "Tel. +41 31 300 09 20\n"
-        "geodienste@kgk-cgc.ch\n"
+        "support@geodienste.kgk-cgc.ch\n"
     )
 
     out = StringIO()
@@ -894,7 +894,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "geodienste@kgk-cgc.ch"
+    assert contact.email == "support@geodienste.kgk-cgc.ch"
     assert contact.phone == "+41 31 300 09 20"
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
@@ -912,7 +912,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
         "Postfach\n"
         "CH-3001 Bern\n"
         "Tel. +41 31 300 09 20\n"
-        "geodienste@kgk-cgc.ch\n"
+        "support@geodienste.kgk-cgc.ch\n"
     )
 
     # ---------
@@ -1182,7 +1182,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     contact = Contact(
         organization=org,
-        email="geodienste@kgk-cgc.ch",
+        email="support@geodienste.kgk-cgc.ch",
         phone="+41 31 300 09 20",
         address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
         address_postal_code="3001",
@@ -1293,7 +1293,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     )
     assert aggregate.legacy_contacts == [
         {
-            "role": "custodian",
+            "role": "pointOfContact",
             "org_name": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
             "org_name_de": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
             "org_name_en": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
@@ -1310,7 +1310,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
             "contact_city": "Bern",
             "contact_postal_code": "3001",
             "contact_country": "CH",
-            "contact_electronic_mail_addresses": ["geodienste@kgk-cgc.ch"],
+            "contact_electronic_mail_addresses": ["support@geodienste.kgk-cgc.ch"],
             "contact_delivery_point": "Haus der Kantone, Speichergasse 6, Postfach",
             "online_resources": [
                 {
@@ -2217,7 +2217,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Creating dataset contact ch.kgk (kgk) as custodian in ch.kgk.av" in out
+    assert "Creating dataset contact ch.kgk (kgk) as pointOfContact in ch.kgk.av" in out
     assert (
         "Creating dataset contact ch.geodienste-lu (LU.av) as owner in ch.geodienste-lu.av" in out
     )
@@ -2226,7 +2226,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     )
 
     dataset_contact = contact_aggregate.dataset_contacts.get()
-    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
     assert dataset_contact.dataset.dataset_id == "ch.kgk.av"
 
     dataset_contact = contact_part_org.dataset_contacts.get()
@@ -2255,8 +2255,8 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete dataset contact ch.kgk (kgk) as custodian in ch.kgk.av" in out
-    assert "Creating dataset contact ch.kgk (kgk_new) as custodian in ch.kgk.av" in out
+    assert "Removing obsolete dataset contact ch.kgk (kgk) as pointOfContact in ch.kgk.av" in out
+    assert "Creating dataset contact ch.kgk (kgk_new) as pointOfContact in ch.kgk.av" in out
     assert (
         "Dataset contact ch.geodienste-lu (LU.av) as owner in ch.geodienste-lu.av already exists"
         in out
@@ -2269,7 +2269,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     assert contact_aggregate.dataset_contacts.first() is None
 
     dataset_contact = contact_aggregate_new.dataset_contacts.get()
-    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
     assert dataset_contact.dataset.dataset_id == "ch.kgk.av"
 
     dataset_contact = contact_part_org.dataset_contacts.get()
@@ -2332,7 +2332,7 @@ def test_command_uses_contact_mappings(mock, client, db):
 
     DatasetToContactMapping(
         dataset_id_prefix="ch.kgk.av",
-        role=DatasetToContact.Role.CUSTODIAN,
+        role=DatasetToContact.Role.POINT_OF_CONTACT,
         organization_id="ch.kgk",
         contact_name_en="KGK",
     ).save()
@@ -2403,7 +2403,10 @@ def test_command_uses_contact_mappings(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Contact mapping found for dataset_id ch.kgk.av and role custodian: ch.kgk (KGK)" in out
+    assert (
+        "Contact mapping found for dataset_id ch.kgk.av and role pointOfContact: ch.kgk (KGK)"
+        in out
+    )
     assert (
         "Contact mapping found for dataset_id ch.geodienste-lu.av and role owner: "
         "ch.geodienste-lu (LU.av)" in out
@@ -2412,7 +2415,7 @@ def test_command_uses_contact_mappings(mock, client, db):
         "Contact mapping found for dataset_id ch.geodienste-lu.av and role custodian: "
         "ch.geodienste-lu (LU)" in out
     )
-    assert "Creating dataset contact ch.kgk (KGK) as custodian in ch.kgk.av" in out
+    assert "Creating dataset contact ch.kgk (KGK) as pointOfContact in ch.kgk.av" in out
     assert (
         "Creating dataset contact ch.geodienste-lu (LU.av) as owner in ch.geodienste-lu.av" in out
     )
@@ -2421,7 +2424,7 @@ def test_command_uses_contact_mappings(mock, client, db):
     )
 
     dataset_contact = contact_aggregate.dataset_contacts.get()
-    assert dataset_contact.role == DatasetToContact.Role.CUSTODIAN
+    assert dataset_contact.role == DatasetToContact.Role.POINT_OF_CONTACT
     assert dataset_contact.dataset.dataset_id == "ch.kgk.av"
 
     dataset_contact = contact_part_org.dataset_contacts.get()
