@@ -667,7 +667,7 @@ class Command(CustomBaseCommand):
                         "url_rm": contact.url_rm,
                     }
                 ],
-                "role": "custodian",
+                "role": DatasetToContact.Role.POINT_OF_CONTACT,
             }
             for contact in Contact.objects.filter(
                 organization__organization_id=self.organization_id(self.provider_id())
@@ -688,6 +688,7 @@ class Command(CustomBaseCommand):
                 "additional_search_text_fr": keyword_split(services["fr"][key]["keywords"]),
                 "additional_search_text_it": keyword_split(services["it"][key]["keywords"]),
             }
+
             # Dataset: Aggregate
             base_topic = service["base_topic"]
             aggregate_dataset_id = self.dataset_id(service, aggregate=True)
@@ -725,12 +726,20 @@ class Command(CustomBaseCommand):
                 metrics["dataset_units.created"] += created
                 metrics["dataset_units.removed"] += removed
 
-                # Contact: Custodian of Aggregate
+                # Contact: Custodian of Aggregate -> not used anymore
+                for dataset_contact in DatasetToContact.objects.filter(
+                    dataset=aggregate, role=DatasetToContact.Role.CUSTODIAN
+                ).all():
+                    self.print(f"Removing obsolete dataset contact {dataset_contact}")
+                    dataset_contact.delete()
+                    metrics["dataset_units.removed"] += 1
+
+                # Contact: Point of Contact of Aggregate
                 created, removed = self.import_dataset_contact(
                     aggregate,
                     provider_id,
-                    DatasetToContact.Role.CUSTODIAN,
-                    contact_mappings.get(DatasetToContact.Role.CUSTODIAN),
+                    DatasetToContact.Role.POINT_OF_CONTACT,
+                    contact_mappings.get(DatasetToContact.Role.POINT_OF_CONTACT),
                 )
                 metrics["dataset_contacts.created"] += created
                 metrics["dataset_contacts.removed"] += removed
