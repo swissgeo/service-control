@@ -32,3 +32,7 @@ urlpatterns = [
     path(settings.ADMIN_PATH_PREFIX + "admin/jsi18n/", JavaScriptCatalog.as_view()),
     path(settings.ADMIN_PATH_PREFIX + "admin/", admin.site.urls),
 ]
+if settings.DEBUG:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+
+    urlpatterns += debug_toolbar_urls()

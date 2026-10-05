@@ -11,9 +11,8 @@ if env.bool("DEBUG", None):
 
 if DEBUG:
     INSTALLED_APPS += ["django_extensions", "debug_toolbar"]
-
-if DEBUG:
     MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware", *MIDDLEWARE]
+    INTERNAL_IPS = ["127.0.0.1", "localhost"]
 
 # Allow to select as many items in the admin UI as needed, e.g. when batch-deleting nested objects
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
