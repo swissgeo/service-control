@@ -49,6 +49,10 @@ dev = [
     "types-gevent~=26.4",
     "types-gunicorn~=26.0",
     "types-requests~=2.32",
+    "pandas>=3.0.6",
+    "jupyterlab>=4.6.4",
+    "sqlalchemy>=2.0.54",
+    "seaborn>=0.13.2",
 ]
 
 [tool.uv]
@@ -72,6 +76,7 @@ target-version = "py314"
 [tool.ruff.lint]
 exclude = [
     "app/*/migrations/**",  # Exclude django generated migrations files from linting
+    "notebooks/**"
 ]
 select = ["ALL"]
 ignore = [
@@ -157,7 +162,7 @@ django-ninja = ["django", "ninja"]
 root = ["app"]
 
 [tool.ty.src]
-exclude = ["app/tests", "app/stubs", "**/__pycache__"]
+exclude = ["app/tests", "app/stubs", "**/__pycache__", "notebooks/**"]
 
 #===============================================================================
 # Pytest configuration
