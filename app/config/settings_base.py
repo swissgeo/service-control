@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "dataservice",
     "distribution",
     "legal",
+    "oar_export",
 ]
 
 MIDDLEWARE = [
@@ -283,6 +284,9 @@ OAR_SERVICES_COLLECTION_ID = env.str("OAR_SERVICES_COLLECTION_ID", "geoadmin-ser
 OAR_DATASETS_COLLECTION_ID = env.str("OAR_DATASETS_COLLECTION_ID", "swissgeo-catalog")
 OAR_DISTRIBUTIONS_COLLECTION_ID = env.str(
     "OAR_DISTRIBUTIONS_COLLECTION_ID", "swissgeo-distributions"
+)
+OAR_ORGANIZATIONS_COLLECTION_ID = env.str(
+    "OAR_ORGANIZATIONS_COLLECTION_ID", "swissgeo-organizations"
 )
 
 # OAS path prefix

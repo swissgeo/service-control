@@ -124,12 +124,12 @@ ci-check-format: format ## Check the format (CI)
 
 .PHONY: serve
 serve: start-local-services start-local-db ## Serve the application locally
-	$(PYTHON) $(DJANGO_MANAGER) runserver
+	$(PYTHON) $(DJANGO_MANAGER) runserver 8080
 
 
 .PHONY: serve-debug
 serve-debug: start-local-services start-local-db ## Serve the application locally for debugging
-	$(PYTHON) $(DJANGO_MANAGER_DEBUG) runserver
+	$(PYTHON) $(DJANGO_MANAGER_DEBUG) runserver 8080
 
 
 .PHONY: gunicornserve

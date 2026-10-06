@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.core.management import call_command
 
 from dataset.models import Dataset
-from thesaurus.models import Concept
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept
 
 RESPONSE = b"""<?xml version="1.0" encoding="UTF-8"?>
 <che:CHE_MD_Metadata
@@ -76,10 +76,10 @@ def test_command_updates_dataset_ech_concepts(mock, db):
     assert "Adding ech0166: Water and Waste Systems to ch.kgk.av" in out
 
     assert {(c.thesaurus.thesaurus_id, c.concept_id) for c in dataset.concepts.all()} == {
-        ("ech0166", "environment"),
-        ("ech0166", "environment_EnvironmentalProtection"),
-        ("ech0166", "utilitiesCommunication"),
-        ("ech0166", "utilitiesCommunication_Utilities"),
+        (ECH0166_THESAURUS_ID, "environment"),
+        (ECH0166_THESAURUS_ID, "environment_EnvironmentalProtection"),
+        (ECH0166_THESAURUS_ID, "utilitiesCommunication"),
+        (ECH0166_THESAURUS_ID, "utilitiesCommunication_Utilities"),
     }
 
     # ------

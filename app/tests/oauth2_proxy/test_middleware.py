@@ -8,7 +8,7 @@ from user.models import CustomUser
 
 
 @patch("user.models.Client")
-def test_oauth_middleware_creates_user(cognito_client, settings, db, client):
+def test_oauth_middleware_creates_user(cognito_client, settings, db, client, fake_key):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
 
     headers = {
@@ -17,7 +17,7 @@ def test_oauth_middleware_creates_user(cognito_client, settings, db, client):
         "HTTP_X_AUTH_REQUEST_EMAIL": "hans.maulwurf@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "admin",
         "HTTP_X_AUTH_REQUEST_ACCESS_TOKEN": encode(
-            {"first_name": "Hans", "last_name": "Maulwurf"}, key="fake", algorithm="HS256"
+            {"first_name": "Hans", "last_name": "Maulwurf"}, key=fake_key, algorithm="HS256"
         ),
     }
     client.get("/", **headers)
@@ -32,7 +32,7 @@ def test_oauth_middleware_creates_user(cognito_client, settings, db, client):
 
 
 @patch("user.models.Client")
-def test_oauth_middleware_updates_user(cognito_client, settings, db, client):
+def test_oauth_middleware_updates_user(cognito_client, settings, db, client, fake_key):
     settings.OAUTH2_PROXY_DJANGO_ADMIN_GROUPS = ["admin"]
 
     CustomUser.objects.create(
@@ -51,7 +51,7 @@ def test_oauth_middleware_updates_user(cognito_client, settings, db, client):
         "HTTP_X_AUTH_REQUEST_EMAIL": "joseph.quimby@example.com",
         "HTTP_X_AUTH_REQUEST_GROUPS": "staff",
         "HTTP_X_AUTH_REQUEST_ACCESS_TOKEN": encode(
-            {"first_name": "Joseph", "last_name": "Quimby"}, key="fake", algorithm="HS256"
+            {"first_name": "Joseph", "last_name": "Quimby"}, key=fake_key, algorithm="HS256"
         ),
     }
     client.get("/", **headers)

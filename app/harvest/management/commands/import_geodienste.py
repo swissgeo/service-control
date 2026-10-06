@@ -145,7 +145,7 @@ class Command(CustomBaseCommand):
         if options["concepts"]:
             self.import_concepts(services, options["gemet_thesaurus"], options["geocat_thesaurus"])
         if options["distributions"]:
-            self.import_distributions(configs, clean)
+            self.import_distributions(services, configs, clean)
 
     # ##########################################################################
     def get_services(self, endpoint: str, directory: str, timeout: int) -> tuple[dict, dict]:
@@ -264,10 +264,13 @@ class Command(CustomBaseCommand):
 
         return f"ch.{provider_id.lower()}"
 
-    def dataset_id(self, service: dict, aggregate: bool) -> str:
+    def dataset_id(
+        self, service: dict, aggregate: bool = False, provider_id: str | None = None
+    ) -> str:
         """Returns the dataset ID for the given service entry. Returns the dataset ID for the
-        aggregate dataset of the given service entry if aggregate=True. This follows the naming
-        scheme used for the service-control entities elsewhere.
+        aggregate dataset of the given service entry if aggregate=True. Optionally uses the given
+        provider_id (and ignores aggregate flag). This follows the naming scheme used for the
+        service-control entities elsewhere.
 
         The dataset ID is:
         - for cantons: "ch.geodienste-lu.av", "ch.geodienste-be.av", etc.
@@ -275,7 +278,8 @@ class Command(CustomBaseCommand):
         - for aggregate organization: "ch.kgk.av", etc.
 
         """
-        provider_id = self.provider_id(None if aggregate else service)
+        if provider_id is None:
+            provider_id = self.provider_id(None if aggregate else service)
         organization_id = self.organization_id(provider_id)
         return "{}.{}".format(organization_id, service["base_topic"].lower())
 
@@ -602,10 +606,15 @@ class Command(CustomBaseCommand):
     def import_datasets(self, services: dict, clean: bool) -> None:  # noqa: PLR0915
         """Imports datasets.
 
-        For each basic topic,
+        For each broker base topic
+        - there is one dataset
+        - the default unit of the broker organization is added as maintainer.
+        - the aggregate contact is added as custodian.
+
+        For each non-broker basic topic,
         - there is an aggregate dataset and one dataset for each provider
         - both datasets are connected via a dataset to dataset relationship (part)
-        - for both datasets, the default unit of the aggregation/cantonal/broker organization is
+        - for both datasets, the default unit of the aggregation/cantonal organization is
           added as maintainer.
         - for the aggregate dataset, the aggregate contact is added as custodian. For the part
           dataset, there is optionally a custodian and a owner contact.
@@ -667,7 +676,7 @@ class Command(CustomBaseCommand):
                         "url_rm": contact.url_rm,
                     }
                 ],
-                "role": "custodian",
+                "role": DatasetToContact.Role.POINT_OF_CONTACT,
             }
             for contact in Contact.objects.filter(
                 organization__organization_id=self.organization_id(self.provider_id())
@@ -688,13 +697,64 @@ class Command(CustomBaseCommand):
                 "additional_search_text_fr": keyword_split(services["fr"][key]["keywords"]),
                 "additional_search_text_it": keyword_split(services["it"][key]["keywords"]),
             }
-            # Dataset: Aggregate
+
+            # Dataset: Broker
+            provider_id = self.provider_id(service)
+            aggregate_provider_id = self.provider_id()
             base_topic = service["base_topic"]
+            if service["broker"]:
+                data_source_id = f"{provider_id}.{base_topic}"
+                processed.add(data_source_id)
+                extra: dict = {**common, "legacy_contacts": legacy_aggregate_contacts}
+                broker, created, updated = self.import_dataset(
+                    self.dataset_id(service, aggregate=False),
+                    data_source_id,
+                    dataset_mappings,
+                    geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
+                    **extra,
+                )
+                metrics["datasets.created"] += created
+                metrics["datasets.updated"] += updated
+
+                # Unit: Owner of broker dataset
+                created, removed = self.import_dataset_unit(
+                    broker,
+                    provider_id,
+                    DatasetToUnit.Role.OWNER,
+                    unit_mappings,
+                    organization_mappings,
+                )
+                metrics["dataset_units.created"] += created
+                metrics["dataset_units.removed"] += removed
+
+                # Unit: Maintainer of Broker -> aggregate organization
+                created, removed = self.import_dataset_unit(
+                    broker,
+                    aggregate_provider_id,
+                    DatasetToUnit.Role.MAINTAINER,
+                    unit_mappings,
+                    organization_mappings,
+                )
+                metrics["dataset_units.created"] += created
+                metrics["dataset_units.removed"] += removed
+
+                # Contact: Point of Contact of Broker -> aggregate organization
+                created, removed = self.import_dataset_contact(
+                    broker,
+                    aggregate_provider_id,
+                    DatasetToContact.Role.POINT_OF_CONTACT,
+                    contact_mappings.get(DatasetToContact.Role.POINT_OF_CONTACT),
+                )
+                metrics["dataset_contacts.created"] += created
+                metrics["dataset_contacts.removed"] += removed
+
+                continue
+
+            # Dataset: Aggregate
             aggregate_dataset_id = self.dataset_id(service, aggregate=True)
             aggregate = aggregated.get(aggregate_dataset_id)
             if not aggregate:
-                provider_id = self.provider_id()
-                data_source_id = f"{provider_id}.{base_topic}"
+                data_source_id = f"{aggregate_provider_id}.{base_topic}"
                 processed.add(data_source_id)
                 extra: dict = {
                     **common,
@@ -717,7 +777,7 @@ class Command(CustomBaseCommand):
                 # Unit: Maintainer of Aggregate
                 created, removed = self.import_dataset_unit(
                     aggregate,
-                    provider_id,
+                    aggregate_provider_id,
                     DatasetToUnit.Role.MAINTAINER,
                     unit_mappings,
                     organization_mappings,
@@ -725,18 +785,25 @@ class Command(CustomBaseCommand):
                 metrics["dataset_units.created"] += created
                 metrics["dataset_units.removed"] += removed
 
-                # Contact: Custodian of Aggregate
+                # Contact: Custodian of Aggregate -> not used anymore
+                for dataset_contact in DatasetToContact.objects.filter(
+                    dataset=aggregate, role=DatasetToContact.Role.CUSTODIAN
+                ).all():
+                    self.print(f"Removing obsolete dataset contact {dataset_contact}")
+                    dataset_contact.delete()
+                    metrics["dataset_units.removed"] += 1
+
+                # Contact: Point of Contact of Aggregate
                 created, removed = self.import_dataset_contact(
                     aggregate,
-                    provider_id,
-                    DatasetToContact.Role.CUSTODIAN,
-                    contact_mappings.get(DatasetToContact.Role.CUSTODIAN),
+                    aggregate_provider_id,
+                    DatasetToContact.Role.POINT_OF_CONTACT,
+                    contact_mappings.get(DatasetToContact.Role.POINT_OF_CONTACT),
                 )
                 metrics["dataset_contacts.created"] += created
                 metrics["dataset_contacts.removed"] += removed
 
             # Dataset: Part
-            provider_id = self.provider_id(service)
             data_source_id = f"{provider_id}.{base_topic}"
             processed.add(data_source_id)
             part, created, updated = self.import_dataset(
@@ -1104,10 +1171,10 @@ class Command(CustomBaseCommand):
         return concepts, created
 
     # ##########################################################################
-    def import_distributions(self, configs: dict, clean: bool) -> None:
-        """Import the distributions and dataservices used by the aggregate datasets.
+    def import_distributions(self, services: dict, configs: dict, clean: bool) -> None:
+        """Import the distributions and dataservices used by the aggregate/broker datasets.
 
-        Ensures that per aggregate dataset (base topic):
+        Ensures that per aggregate/broker dataset (base topic):
         - one default and one availability WMS data service is created (or updated)
         - one default and one availability external WMS distribution for the data is created
           (or updated)
@@ -1129,12 +1196,19 @@ class Command(CustomBaseCommand):
             "distributions.obsoleted": 0,
         }
 
+        provider_ids = {
+            service["base_topic"]: self.provider_id(service if service["broker"] else None)
+            for service in services["de"].values()
+        }
+
         processed = set()
         for base_topic in configs["de"]:
             processed.add(base_topic)
 
             # Dataset
-            dataset_id = self.dataset_id({"base_topic": base_topic}, aggregate=True)
+            dataset_id = self.dataset_id(
+                {"base_topic": base_topic}, provider_id=provider_ids[base_topic]
+            )
             dataset, _ = mappings.match(dataset_id)
             if dataset:
                 self.print(f"Dataset mapping found for dataset_id {dataset_id}: {dataset}")
@@ -1268,10 +1342,10 @@ class Command(CustomBaseCommand):
             description_en="Availability of data at cantonal level.",
             description_fr="Disponibilité des données au niveau cantonal.",
             description_it="Disponibilità dei dati a livello cantonale.",
-            wms_layer_name_de="availability_cantons",
-            wms_layer_name_fr="availability_cantons",
-            wms_layer_name_it="availability_cantons",
-            wms_layer_name_en="availability_cantons",
+            wms_layer_name_de="availability",
+            wms_layer_name_fr="availability",
+            wms_layer_name_it="availability",
+            wms_layer_name_en="availability",
             wms_layer_name_rm=None,
             meta_information=True,
         )

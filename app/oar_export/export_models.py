@@ -20,6 +20,8 @@ from distribution.models import (
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
+from organization.models import Organization
+from thesaurus.models import ECH0166_THESAURUS_ID
 
 
 def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distribution | None:
@@ -210,9 +212,13 @@ class OARDataset(OARRecord):
             "additionalSearchText": ", ".join(getattr(ds, f"additional_search_text_{lang}", [])),
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
-            "preferredDistributionId": ds.preferred_distribution.distribution_id
-            if ds.preferred_distribution
-            else None,  # TODO: needs further clarification
+            "preferredDistributionId": (  # TODO: needs further clarification
+                ds.preferred_distribution.distribution_id if ds.preferred_distribution else None
+            ),
+            "concepts": [
+                concept.concept_id
+                for concept in ds.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID)
+            ],
             "title": getattr(ds, f"title_short_{lang}", None),
             "type": "Dataset",
         }
@@ -497,122 +503,30 @@ class OARDataservice(OARRecord):
         return record
 
 
-class OAFeatureCollection(BaseModel):
-    typ: str = Field(default="FeatureCollection", serialization_alias="type")
-    features: list[OARDistribution | OARDataset | OARDataservice] = Field(default_factory=list)
-    links: list[BaseLink] = Field(default_factory=list)
-    collection_id: str = Field(exclude=True)
-    lang: str = Field(default="de", exclude=True)
+class OAROrganization(OARRecord):
+    """Organization record
 
-    @model_validator(mode="after")
-    def add_links(self) -> OAFeatureCollection:
-        self.links.append(
-            OARCollectionItemsLink(
-                collectionId=self.collection_id, rel="self", title="Link to this resource"
-            )
-        )
-        for lang, value in LANGS.items():
-            if lang != self.lang:
-                self.links.append(
-                    OARCollectionItemsLink(
-                        collectionId=self.collection_id,
-                        rel="alternate",
-                        title=f"Link to this resource ({value.alternate})",
-                    )
-                )
-        self.links.append(
-            OARCollectionLink(
-                collectionId=self.collection_id,
-                rel="collection",
-                title="Link to the collection these items belong to",
-            )
-        )
-        return self
-
-    def get_key(self) -> str:
-        return f"/collections/{self.collection_id}/items.{self.lang}"
-
-
-class OARCollection(BaseModel):
-    """Record Collection
-
-    The record collection entity has a slightly different structure
-    than a record itself.
-    Spec: https://developer.ogc.org/api/records/index.html#tag/Collection/operation/describeCollection
-
-    Note the following:
-    /collections/{collectionId} will return a Collection with roughly the following structure:
-    {
-      "id": "string",
-      "title": "string",
-      "type": "Collection",
-      "itemType": "record",
-      "recordsArrayName": "records",
-      "records": [
-        { ... Record ... }
-      ]
-    }
-
-    /collections/{collectionId}/items will return a FeatureCollection with roughly
-    the following structure:
-    {
-      "type": "FeatureCollection",
-      "features": [
-        { ... Record ... }
-      ]
-    }
-
-    Unfortunately, the record array attribute names differ between the two endpoints.
-    For now we'll implement only the /collections/{collectionId} structure and use the
-    inline 'records' array. The /items endpoint will be implemented later once we have
-    service-control in place to serve those endpoints. We'll then remove the inline
-    'records' array from the Collection and instead add a link with rel="items" to
-    point to the /items endpoint.
-
+    An organization is a Record with type="Organization"
     """
 
-    id: str
-    title: str
-    type: str = "Collection"
-    itemType: str = "record"  # noqa: N815
-    lang: str = Field(default="de", exclude=True)
-    # We don't encode records inline anymore but use the /items endpoint instead,
-    # and include a link to the /items endpoint in the collection links.
-    # recordsArrayName: str = "records"
-    # records: list[Any] = Field(default_factory=list)
-    links: list[BaseLink] = Field(default_factory=list)
-    # We don't want the features field to be serialized in the collection record
-    # and therefore set `exclude=True`.
-    feature_collection: OAFeatureCollection = Field(
-        default_factory=lambda data: OAFeatureCollection(
-            collection_id=data["id"], lang=data["lang"]
-        ),
-        exclude=True,
-    )
+    properties: dict = {}
 
-    @model_validator(mode="after")
-    def add_links(self) -> OARCollection:
-        self.links.append(
-            OARCollectionItemsLink(
-                collectionId=self.id, rel="items", title="Link to the items of this collection"
-            )
-        )
-        self.links.append(
-            OARCollectionLink(collectionId=self.id, rel="self", title="Link to this resource")
-        )
-        for lang, value in LANGS.items():
-            if lang != self.lang:
-                self.links.append(
-                    OARCollectionLink(
-                        collectionId=self.id,
-                        rel="alternate",
-                        title=f"Link to this resource ({value.alternate})",
-                    )
-                )
-        return self
+    @classmethod
+    def from_organization(cls, organization: Organization, lang: str) -> OAROrganization:
 
-    def get_key(self) -> str:
-        return f"/collections/{self.id}.{self.lang}"
+        # Instantiate record with common properties
+        record = OAROrganization(
+            id=organization.organization_id,
+            lang=lang,
+            collection_id=settings.OAR_ORGANIZATIONS_COLLECTION_ID,
+        )
+
+        # Set common properties
+        record.properties["type"] = "Organization"
+        record.properties["name"] = getattr(organization, f"name_{lang}", None)
+        record.properties["acronym"] = getattr(organization, f"acronym_{lang}", None)
+
+        return record
 
 
 class Contact(BaseModel):

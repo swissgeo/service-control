@@ -87,9 +87,15 @@ def fixture_machine_user(organization, user, django_machine_user_factory):
     )
 
 
+@pytest.fixture(name="fake_key")
+def fake_key():
+    # 32 characters to avoid InsecureKeyLengthWarnings
+    return "mJAkW3aY3W7XPeBOh7rU4glOQwuxBxMA"
+
+
 @pytest.fixture(name="user_headers")
 @patch("user.models.Client")
-def fixture_user_headers(cognito_client, organization, user_without_org):
+def fixture_user_headers(cognito_client, organization, user_without_org, fake_key):
 
     HumanUser.objects.create(
         sub="organization_admin",
@@ -118,7 +124,7 @@ def fixture_user_headers(cognito_client, organization, user_without_org):
             "X-Auth-Request-Email": "superuser@example.org",
             "X-Auth-Request-Preferred-Username": "prefix-superuser",
             "X-Auth-Request-Access-Token": encode(
-                {"first_name": "superuser", "last_name": "superuser"}, "key"
+                {"first_name": "superuser", "last_name": "superuser"}, key=fake_key
             ),
         },
         "user": {
@@ -127,7 +133,7 @@ def fixture_user_headers(cognito_client, organization, user_without_org):
             "X-Auth-Request-Email": "organization_user@example.org",
             "X-Auth-Request-Preferred-Username": "prefix-organization_user",
             "X-Auth-Request-Access-Token": encode(
-                {"first_name": "Organization", "last_name": "User"}, "key"
+                {"first_name": "Organization", "last_name": "User"}, key=fake_key
             ),
         },
         "organization_admin": {
@@ -136,7 +142,7 @@ def fixture_user_headers(cognito_client, organization, user_without_org):
             "X-Auth-Request-Email": "organization_admin@example.org",
             "X-Auth-Request-Preferred-Username": "prefix-organization_admin",
             "X-Auth-Request-Access-Token": encode(
-                {"first_name": "Organization", "last_name": "Admin"}, "key"
+                {"first_name": "Organization", "last_name": "Admin"}, key=fake_key
             ),
         },
         "user_without_org": {
@@ -149,7 +155,7 @@ def fixture_user_headers(cognito_client, organization, user_without_org):
                     "first_name": user_without_org.first_name,
                     "last_name": user_without_org.last_name,
                 },
-                "key",
+                key=fake_key,
             ),
         },
     }

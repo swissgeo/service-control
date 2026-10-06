@@ -1,12 +1,14 @@
 import logging
 
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
 
 ROOT_CONCEPT_ID = "root"
+ECH0166_THESAURUS_ID = "ech0166"
 
 
 class ThesaurusManager(models.Manager):
@@ -49,6 +51,9 @@ class ConceptManager(models.Manager):
     def get_by_natural_key(self, thesaurus_id: str, concept_id: str) -> Concept:
         return self.get(thesaurus__thesaurus_id=thesaurus_id, concept_id=concept_id)
 
+    def get_queryset(self) -> QuerySet[Concept]:
+        return super().get_queryset().select_related("thesaurus")
+
 
 class Concept(models.Model):
     """Concept model."""
@@ -75,6 +80,8 @@ class Concept(models.Model):
     label_it = models.CharField(_(_context, "Label (Italian)"), null=True, blank=True)
     label_rm = models.CharField(_(_context, "Label (Romansh)"), null=True, blank=True)
 
+    order = models.CharField(_(_context, "Order"), max_length=200, null=True, blank=True)
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_(_context, "Created at"),
@@ -89,7 +96,7 @@ class Concept(models.Model):
     objects = ConceptManager()
 
     class Meta:
-        ordering = ("thesaurus__thesaurus_id", "label_en")
+        ordering = ("thesaurus__thesaurus_id", "order")
         constraints = (
             models.UniqueConstraint(
                 fields=("thesaurus", "concept_id"),

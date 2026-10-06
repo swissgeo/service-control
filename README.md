@@ -99,8 +99,11 @@ individually using the `SKIP` environment variable (`SKIP=lint git commit ...`).
 ### Using the Admin UI
 
 `service-control` authenticates using an OAuth2 proxy which simply sets some headers. To locally use
-the admin UI during development, make sure to pass these headers, for example with a browser plugin
-such as https://mybrowseraddon.com/modify-header-value.html:
+the admin UI during development, you can use the local nginx proxy, which runs at http://localhost:8000
+and automatically adds these headers.
+
+Alternatively, you can use a browser plugin such as https://mybrowseraddon.com/modify-header-value.html.
+What you need are the following headers:
 
 - `X-Auth-Request-User`: any user name or ID
 - `X-Auth-Request-Preferred-Username`: any user name
