@@ -95,5 +95,12 @@ services:
       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+
+  nginx:
+    image: nginx:latest
+    network_mode: host
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/templates/default.conf.template:ro
+
 volumes:
   opensearch-data:
