@@ -44,6 +44,14 @@ class UnitAdmin(admin.ModelAdmin):
     list_display = ("unit_id", "name_en", "get_organization_name", "number_of_datasets")
     list_filter = ("organization",)
     readonly_fields = ("created", "updated", "dataset_list")
+    search_fields = (
+        "unit_id",
+        "name_en",
+        "name_de",
+        "organization__organization_id",
+        "organization__name_en",
+        "organization__name_de",
+    )
 
     def get_readonly_fields(
         self,
@@ -99,6 +107,13 @@ class ContactAdmin(admin.ModelAdmin):
     list_display = ("organization", "name_en", "number_of_datasets")
     list_filter = ("organization",)
     readonly_fields = ("created", "updated", "dataset_list")
+    search_fields = (
+        "name_en",
+        "name_de",
+        "organization__organization_id",
+        "organization__name_en",
+        "organization__name_de",
+    )
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Contact]:
         qs = super().get_queryset(request)

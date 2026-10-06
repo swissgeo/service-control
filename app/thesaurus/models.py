@@ -1,6 +1,7 @@
 import logging
 
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,9 @@ class Thesaurus(models.Model):
 class ConceptManager(models.Manager):
     def get_by_natural_key(self, thesaurus_id: str, concept_id: str) -> Concept:
         return self.get(thesaurus__thesaurus_id=thesaurus_id, concept_id=concept_id)
+
+    def get_queryset(self) -> QuerySet[Concept]:
+        return super().get_queryset().select_related("thesaurus")
 
 
 class Concept(models.Model):

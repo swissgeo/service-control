@@ -12,16 +12,19 @@ class DatasetToDatasetInline(admin.TabularInline):
     model = DatasetToDataset
     fk_name = "object"
     extra = 0
+    autocomplete_fields = ("subject",)
 
 
 class DatasetToUnitInline(admin.TabularInline):
     model = DatasetToUnit
     extra = 0
+    autocomplete_fields = ("unit",)
 
 
 class DatasetToContactInline(admin.TabularInline):
     model = DatasetToContact
     extra = 0
+    autocomplete_fields = ("contact",)
 
 
 @admin.register(Dataset)

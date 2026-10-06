@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import QuerySet
 from django.db.models.base import ModelBase
 from django.utils.translation import pgettext_lazy as _
 from ninja.errors import ValidationError
@@ -164,6 +165,11 @@ class Organization(DataSourceIdModelMixin, models.Model):
         return result
 
 
+class UnitManager(models.Manager):
+    def get_queryset(self) -> QuerySet[Unit]:
+        return super().get_queryset().select_related("organization")
+
+
 class Unit(models.Model):
     _context = "Organization Unit model"
 
@@ -196,6 +202,8 @@ class Unit(models.Model):
         null=True,
         blank=True,
     )
+
+    objects = UnitManager()
 
     class Meta:
         constraints: ClassVar = [
@@ -265,7 +273,8 @@ class Unit(models.Model):
 
 
 class ContactManager(DataSourceIdManagerMixin, models.Manager):
-    pass
+    def get_queryset(self) -> QuerySet[Contact]:
+        return super().get_queryset().select_related("organization")
 
 
 class Contact(DataSourceIdModelMixin, models.Model):

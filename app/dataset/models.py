@@ -187,6 +187,11 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         return self.related_datasets(DatasetToDataset.Role.PART).exists()
 
 
+class DatasetToDatasetManager(models.Manager):
+    def get_queryset(self) -> QuerySet[DatasetToDataset]:
+        return super().get_queryset().select_related("subject", "object")
+
+
 class DatasetToDataset(models.Model):
     """Each dataset can be associated with another dataset in different roles.
 
@@ -207,12 +212,19 @@ class DatasetToDataset(models.Model):
     )
     role = models.CharField(max_length=100, choices=Role.choices)
 
+    objects = DatasetToDatasetManager()
+
     class Meta:
         indexes = (models.Index(fields=["subject", "object"]),)
         verbose_name = _("DatasetToDataset Model", "Dataset Relation")
 
     def __str__(self) -> str:
         return f"{self.subject} is a {self.role} of {self.object}"
+
+
+class DatasetToUnitManager(models.Manager):
+    def get_queryset(self) -> QuerySet[DatasetToUnit]:
+        return super().get_queryset().select_related("dataset", "unit")
 
 
 class DatasetToUnit(models.Model):
@@ -229,12 +241,19 @@ class DatasetToUnit(models.Model):
     )
     role = models.CharField(max_length=100, choices=Role.choices)
 
+    objects = DatasetToUnitManager()
+
     class Meta:
         indexes = (models.Index(fields=["dataset", "unit"]),)
         verbose_name = _("DatasetToUnit Model", "Dataset Unit")
 
     def __str__(self) -> str:
         return f"{self.unit} as {self.role} in {self.dataset}"
+
+
+class DatasetToContactManager(models.Manager):
+    def get_queryset(self) -> QuerySet[DatasetToContact]:
+        return super().get_queryset().select_related("dataset", "contact")
 
 
 class DatasetToContact(models.Model):
@@ -275,6 +294,8 @@ class DatasetToContact(models.Model):
         "organization.Contact", on_delete=models.CASCADE, related_name="dataset_contacts"
     )
     role = models.CharField(max_length=100, choices=Role.choices)
+
+    objects = DatasetToContactManager()
 
     class Meta:
         indexes = (models.Index(fields=["dataset", "contact"]),)
