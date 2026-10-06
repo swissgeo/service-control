@@ -1353,6 +1353,176 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert "Dataset with dataset_id ch.geodienste-lu.av already exists" in out
 
 
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_broker_dataset(mock, client, db):
+    org = Organization(
+        organization_id="ch.kgk",
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+        name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+        acronym_de="KGK",
+        acronym_fr="CGC",
+        acronym_en="KGK",
+        acronym_it="CGC",
+        acronym_rm="CGC",
+    )
+    org.save()
+
+    contact = Contact(
+        organization=org,
+        email="support@geodienste.kgk-cgc.ch",
+        phone="+41 31 300 09 20",
+        address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
+        address_postal_code="3001",
+        address_city="Bern",
+        address_country="CH",
+        url_de="https://kgk-cgc.ch/",
+        url_fr="https://kgk-cgc.ch/fr",
+        url_it="https://kgk-cgc.ch/it",
+    )
+    contact.save()
+
+    Organization(
+        organization_id="ch.bfe",
+        name_de="BFE",
+        name_fr="BFE",
+        name_en="BFE",
+        acronym_de="BFE",
+        acronym_fr="BFE",
+        acronym_en="BFE",
+    ).save()
+
+    meta_data = {
+        "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
+    }
+    mock.side_effect = api_response(
+        {
+            "de": {
+                "services": [
+                    {
+                        "canton": "Broker",
+                        "broker": "BFE",
+                        "base_topic": "thermische_netze",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "keywords": "Keyword 1 DE, Keyword 2 DE",
+                    }
+                ]
+            },
+            "fr": {
+                "services": [
+                    {
+                        "canton": "Broker",
+                        "broker": "BFE",
+                        "base_topic": "thermische_netze",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "keywords": "",
+                    }
+                ]
+            },
+            "it": {
+                "services": [
+                    {
+                        "canton": "Broker",
+                        "broker": "BFE",
+                        "base_topic": "thermische_netze",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "keywords": None,
+                    }
+                ]
+            },
+        }
+    )
+
+    # ------
+    # Create
+    # ------
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset with dataset_id ch.bfe.thermische_netze does not exist yet" in out
+    assert "Creating dataset unit ch.bfe (default) as owner in ch.bfe.thermische_netze" in out
+    assert "Creating dataset unit ch.kgk (default) as maintainer in ch.bfe.thermische_netze" in out
+
+    assert Dataset.objects.count() == 1
+
+    dataset = Dataset.objects.get(dataset_id="ch.bfe.thermische_netze")
+    assert dataset.data_source == Dataset.DataSource.GEODIENSTE
+    assert dataset.data_source_ids == ["BFE.thermische_netze"]
+    assert dataset.description_de == "Abstract DE"
+    assert dataset.description_en == "Abstract DE"
+    assert dataset.description_fr == "Abstract FR"
+    assert dataset.description_it == "Abstract IT"
+    assert dataset.description_rm is None
+    assert dataset.geocat_id == "d929eef4-791d-4728-9d56-226b6952cf1f"
+    assert dataset.title_short_de == "Title DE"
+    assert dataset.title_short_en == "Title DE"
+    assert dataset.title_short_fr == "Title FR"
+    assert dataset.title_short_it == "Title IT"
+    assert dataset.title_short_rm is None
+    assert dataset.additional_search_text_de == ["Keyword 1 DE", "Keyword 2 DE"]
+    assert dataset.additional_search_text_en == []
+    assert dataset.additional_search_text_fr == []
+    assert dataset.additional_search_text_it == []
+    assert dataset.additional_search_text_rm == []
+    assert dataset.legacy_part_info_url_de is None
+    assert dataset.legacy_part_info_url_fr is None
+    assert dataset.legacy_part_info_url_it is None
+    assert dataset.legacy_contacts == [
+        {
+            "role": "pointOfContact",
+            "org_name": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+            "org_name_de": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+            "org_name_en": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+            "org_name_fr": "Conférence des services cantonaux de la Géoinformation et du Cadastre",
+            "org_name_it": "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+            "org_name_rm": "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+            "org_acronym": "KGK",
+            "org_acronym_de": "KGK",
+            "org_acronym_fr": "CGC",
+            "org_acronym_en": "KGK",
+            "org_acronym_it": "CGC",
+            "org_acronym_rm": "CGC",
+            "contact_voice": "+41 31 300 09 20",
+            "contact_city": "Bern",
+            "contact_postal_code": "3001",
+            "contact_country": "CH",
+            "contact_electronic_mail_addresses": ["support@geodienste.kgk-cgc.ch"],
+            "contact_delivery_point": "Haus der Kantone, Speichergasse 6, Postfach",
+            "online_resources": [
+                {
+                    "url": "https://kgk-cgc.ch/",
+                    "url_de": "https://kgk-cgc.ch/",
+                    "url_fr": "https://kgk-cgc.ch/fr",
+                    "url_en": None,
+                    "url_it": "https://kgk-cgc.ch/it",
+                    "url_rm": None,
+                }
+            ],
+        }
+    ]
+
+    # ------
+    # Re-Run
+    # ------
+    out = StringIO()
+    call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Dataset with dataset_id ch.bfe.thermische_netze already exists" in out
+    assert "Dataset unit ch.bfe (default) as owner in ch.bfe.thermische_netze already" in out
+    assert "Dataset unit ch.kgk (default) as maintainer in ch.bfe.thermische_netze already" in out
+
+
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_updates_datasets(mock, db):
     aggregate = Dataset(
@@ -2928,6 +3098,190 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert (
         "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
     )
+
+
+@patch("organization.models.Client")
+@patch("harvest.management.commands.import_geodienste.get", name="get")
+def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR0915
+    dataset = Dataset(
+        dataset_id="ch.bfe.thermische_netze",
+        description_de="Abstract DE",
+        description_en="Abstract EN",
+        description_fr="Abstract FR",
+        title_short_de="Title DE",
+        title_short_en="Title EN",
+        title_short_fr="Title FR",
+    )
+    dataset.save()
+
+    # ------
+    # Create
+    # ------
+    mock.side_effect = api_response(
+        services={
+            "services": [
+                {
+                    "base_topic": "thermische_netze",
+                    "canton": "Broker",
+                    "broker": "BFE",
+                }
+            ]
+        },
+        config={
+            "de": {
+                "thermische_netze": {
+                    "default": {
+                        "layers": [{"name": "daten", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/thermische_netze_0/deu",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "fr": {
+                "thermische_netze": {
+                    "default": {
+                        "layers": [{"name": "donnees", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/thermische_netze_0/fra",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "it": {
+                "thermische_netze": {
+                    "default": {
+                        "layers": [{"name": "dati", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/thermische_netze_0/ita",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+            "en": {
+                "thermische_netze": {
+                    "default": {
+                        "layers": [{"name": "data", "opacity": 0.9}],
+                        "wms": "https://geodienste.ch/db/thermische_netze_0/eng",
+                    },
+                    "languages": ["deu", "fra", "ita", "eng"],
+                    "derivates": {},
+                }
+            },
+        },
+    )
+
+    out = StringIO()
+    call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "dataservice_id wms-geodienste-thermische_netze does not exist yet" in out
+    assert "dataservice_id wms-geodienste-thermische_netze-availability does not exist yet" in out
+    assert "Dataservice stac-geodienste not found, created" in out
+    assert "distribution_id ch.bfe.thermische_netze:wms does not exist yet" in out
+    assert "distribution_id ch.bfe.thermische_netze-availability:wms does not exist yet" in out
+    assert "distribution_id ch.bfe.thermische_netze:stac does not exist yet" in out
+    assert (
+        "ch.bfe.thermische_netze:wms as preferred distribution for dataset ch.bfe.thermische_netze"
+        in out
+    )
+
+    dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-thermische_netze")
+    assert dataservice_data.data_source == "geodienste"
+    assert dataservice_data.default_language == "de"
+    assert dataservice_data.languages == ["de", "fr", "it", "en"]
+    assert dataservice_data.title == "WMS geodienste.ch thermische_netze"
+    assert (
+        dataservice_data.capabilities_url
+        == "https://geodienste.ch/db/thermische_netze_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
+    )
+
+    dataservice_availability = Dataservice.objects.get(
+        dataservice_id="wms-geodienste-thermische_netze-availability"
+    )
+    assert dataservice_availability.data_source == "geodienste"
+    assert dataservice_availability.default_language == "de"
+    assert dataservice_availability.languages == ["de", "fr", "it", "en"]
+    assert dataservice_availability.title == "WMS geodienste.ch thermische_netze (availability)"
+    assert (
+        dataservice_availability.capabilities_url
+        == "https://geodienste.ch/db/availability/thermische_netze/portrayal/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
+    )
+
+    distribution_data = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.bfe.thermische_netze:wms"
+    )
+    assert distribution_data.data_source == "geodienste"
+    assert distribution_data.title_de == "Title DE"
+    assert distribution_data.title_en == "Title EN"
+    assert distribution_data.title_fr == "Title FR"
+    assert distribution_data.description_de == "Abstract DE"
+    assert distribution_data.description_en == "Abstract EN"
+    assert distribution_data.description_fr == "Abstract FR"
+    assert distribution_data.wms_layer_name_de == "daten"
+    assert distribution_data.wms_layer_name_fr == "donnees"
+    assert distribution_data.wms_layer_name_it == "dati"
+    assert distribution_data.wms_layer_name_en == "data"
+    assert distribution_data.wms_layer_name_rm is None
+    assert distribution_data.opacity == Decimal("0.90")
+    assert distribution_data.meta_information is False
+    assert distribution_data.dataservice == dataservice_data
+    assert distribution_data.dataset == dataset
+
+    distribution_availability = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.bfe.thermische_netze-availability:wms"
+    )
+    assert distribution_availability.data_source == "geodienste"
+    assert distribution_availability.title_de == "Verfügbarkeit"
+    assert distribution_availability.title_en == "Availability"
+    assert distribution_availability.title_fr == "Disponibilité"
+    assert distribution_availability.title_it == "Disponibilità"
+    assert distribution_availability.description_de == "Kantonalen Verfügbarkeit der Daten."
+    assert distribution_availability.description_en == "Availability of data at cantonal level."
+    assert (
+        distribution_availability.description_fr == "Disponibilité des données au niveau cantonal."
+    )
+    assert distribution_availability.description_it == "Disponibilità dei dati a livello cantonale."
+    assert distribution_availability.wms_layer_name_de == "availability"
+    assert distribution_availability.wms_layer_name_fr == "availability"
+    assert distribution_availability.wms_layer_name_it == "availability"
+    assert distribution_availability.wms_layer_name_en == "availability"
+    assert distribution_availability.wms_layer_name_rm is None
+    assert distribution_availability.meta_information is True
+    assert distribution_availability.dataservice == dataservice_availability
+    assert distribution_availability.dataset == dataset
+
+    dataservice_stac = Dataservice.objects.get(
+        dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
+    )
+    assert dataservice_stac.title == "STAC API Geodienste"
+    assert (
+        dataservice_stac.documentation_url_en
+        == "https://geodienste.ch/api-docs/index.html?urls.primaryName=geodienste.ch%20STAC%20API"
+    )
+    assert dataservice_stac.landing_page_url == "https://geodienste.ch/stac"
+
+    distribution_stac = ExternalStacDistribution.objects.get(
+        distribution_id="ch.bfe.thermische_netze:stac"
+    )
+    assert distribution_stac.data_source == "geodienste"
+    assert distribution_stac.title_de == "STAC Download Collection"
+    assert distribution_stac.title_en == "STAC Download Collection"
+    assert distribution_stac.title_fr == "STAC Download Collection"
+    assert distribution_stac.title_it == "STAC Download Collection"
+    assert distribution_stac.title_rm == "STAC Download Collection"
+    assert distribution_stac.description_de is None
+    assert distribution_stac.description_en is None
+    assert distribution_stac.description_fr is None
+    assert distribution_stac.description_it is None
+    assert distribution_stac.description_rm is None
+    assert distribution_stac.stac_collection_id == "thermische_netze"
+    assert distribution_stac.meta_information is False
+    assert distribution_stac.dataservice.dataservice_id == "stac-geodienste"
+    assert distribution_stac.dataset == dataset
+
+    dataset.refresh_from_db()
+    assert dataset.preferred_distribution == distribution_data
 
 
 @patch("organization.models.Client")
