@@ -50,68 +50,102 @@
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
-      "properties": {
+      "de": {
+        "dynamic": false,
         "properties": {
-          "type": {"type": "keyword", "index": false},
-          "dataset": {"type": "keyword"},
-          "protocol": {"type": "keyword"},
-          "externalIds": {"type": "keyword", "index": false},
-          "title": {
+          "properties": {
             "properties": {
-              "de": {
+              "type": {"type": "keyword", "index": false},
+              "dataset": {"type": "keyword"},
+              "protocol": {"type": "keyword"},
+              "externalIds": {"type": "keyword", "index": false},
+              "title": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "fr": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "it": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "rm": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "en": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              }
-            }
-          },
-          "description": {
-            "properties": {
-              "de": {
+              "description": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search"
-              },
-              "fr": {"type": "search_as_you_type"},
-              "it": {"type": "search_as_you_type"},
-              "rm": {"type": "search_as_you_type"},
-              "en": {"type": "search_as_you_type"}
+              }
             }
           }
         }
       },
-      "de": {"type": "object", "enabled": false},
-      "fr": {"type": "object", "enabled": false},
-      "it": {"type": "object", "enabled": false},
-      "en": {"type": "object", "enabled": false},
-      "rm": {"type": "object", "enabled": false}
+      "fr": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "dataset": {"type": "keyword"},
+              "protocol": {"type": "keyword"},
+              "externalIds": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"}
+            }
+          }
+        }
+      },
+      "it": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "dataset": {"type": "keyword"},
+              "protocol": {"type": "keyword"},
+              "externalIds": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"}
+            }
+          }
+        }
+      },
+      "rm": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "dataset": {"type": "keyword"},
+              "protocol": {"type": "keyword"},
+              "externalIds": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"}
+            }
+          }
+        }
+      },
+      "en": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "dataset": {"type": "keyword"},
+              "protocol": {"type": "keyword"},
+              "externalIds": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"}
+            }
+          }
+        }
+      }
     }
   }
 }
