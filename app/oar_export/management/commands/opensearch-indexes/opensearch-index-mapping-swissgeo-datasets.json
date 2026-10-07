@@ -48,11 +48,8 @@
   },
   "mappings": {
     "properties": {
-      "$schema": {"type": "keyword"},
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
-      "geometry": {"type": "object", "enabled": false},
-      "links": {"type": "object", "enabled": false},
       "properties": {
         "properties": {
           "type": {"type": "keyword", "index": false},
@@ -114,13 +111,15 @@
               "en": {"type": "search_as_you_type"}
             }
           },
-          "keywords": {"type": "keyword"},
           "concepts": {"type": "keyword"},
-          "languages": {"type": "object", "enabled": false},
-          "contacts": {"type": "object", "enabled": false},
           "preferredDistributionId": {"type": "keyword", "index": false}
         }
-      }
+      },
+      "de": {"type": "object", "enabled": false},
+      "fr": {"type": "object", "enabled": false},
+      "it": {"type": "object", "enabled": false},
+      "en": {"type": "object", "enabled": false},
+      "rm": {"type": "object", "enabled": false}
     }
   }
 }
