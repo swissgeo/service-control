@@ -50,8 +50,6 @@
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
-      "links": {"type": "object", "enabled": false},
-      "linkTemplates": {"type": "object", "enabled": false},
       "properties": {
         "properties": {
           "title": {
@@ -93,7 +91,12 @@
           "type": {"type": "keyword", "index": false},
           "protocol": {"type": "keyword", "index": false}
         }
-      }
+      },
+      "de": {"type": "object", "enabled": false},
+      "fr": {"type": "object", "enabled": false},
+      "it": {"type": "object", "enabled": false},
+      "en": {"type": "object", "enabled": false},
+      "rm": {"type": "object", "enabled": false}
     }
   }
 }
