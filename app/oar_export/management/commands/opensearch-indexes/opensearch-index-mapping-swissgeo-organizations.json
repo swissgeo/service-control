@@ -50,86 +50,98 @@
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
-      "properties": {
+      "de": {
+        "dynamic": false,
         "properties": {
-          "name": {
+          "properties": {
             "properties": {
-              "de": {
+              "type": {"type": "keyword", "index": false},
+              "name": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "fr": {
+              "acronym": {
                 "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "it": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "rm": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "en": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }
             }
-          },
-          "acronym": {
-            "properties": {
-              "de": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "fr": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "it": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "rm": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "en": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              }
-            }
-          },
-          "type": {"type": "keyword", "index": false}
+          }
         }
       },
-      "de": {"type": "object", "enabled": false},
-      "fr": {"type": "object", "enabled": false},
-      "it": {"type": "object", "enabled": false},
-      "en": {"type": "object", "enabled": false},
-      "rm": {"type": "object", "enabled": false}
+      "fr": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "name": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "acronym": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      },
+      "it": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "name": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "acronym": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      },
+      "rm": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "name": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "acronym": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      },
+      "en": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "name": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "acronym": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

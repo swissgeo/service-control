@@ -362,11 +362,6 @@ class Command(CustomBaseCommand):
 
         document["id"] = document["de"]["id"]
         document["type"] = document["de"]["type"]
-        document["properties"] = {
-            "type": document["de"]["properties"]["type"],
-            "protocol": document["de"]["properties"]["protocol"],
-            "title": {lang: document[lang]["properties"]["title"] for lang in LANG_CODES},
-        }
 
         return document
 
@@ -376,18 +371,6 @@ class Command(CustomBaseCommand):
 
         document["id"] = document["de"]["id"]
         document["type"] = document["de"]["type"]
-        document["properties"] = {
-            "type": document["de"]["properties"]["type"],
-            "title": {lang: document[lang]["properties"]["title"] for lang in LANG_CODES},
-            "description": {
-                lang: document[lang]["properties"]["description"] for lang in LANG_CODES
-            },
-            "additionalSearchText": {
-                lang: document[lang]["properties"]["additionalSearchText"] for lang in LANG_CODES
-            },
-            "concepts": document["de"]["properties"]["concepts"],
-            "preferredDistributionId": document["de"]["properties"]["preferredDistributionId"],
-        }
 
         return document
 
@@ -400,19 +383,6 @@ class Command(CustomBaseCommand):
 
         document["id"] = document["de"]["id"]
         document["type"] = document["de"]["type"]
-        document["properties"] = {
-            "type": document["de"]["properties"]["type"],
-            "dataset": document["de"]["properties"]["dataset"],
-            "protocol": document["de"]["properties"]["protocol"],
-            "title": {lang: document[lang]["properties"]["title"] for lang in LANG_CODES},
-            "description": {
-                lang: document[lang]["properties"]["description"]
-                for lang in LANG_CODES
-                if "description" in document[lang]["properties"]
-            },
-        }
-        if "externalIds" in document["de"]["properties"]:
-            document["properties"]["externalIds"] = document["de"]["properties"]["externalIds"]
         return document
 
     def build_organization_doc(self, organization: Organization) -> dict:
@@ -424,9 +394,4 @@ class Command(CustomBaseCommand):
 
         document["id"] = document["de"]["id"]
         document["type"] = document["de"]["type"]
-        document["properties"] = {
-            "type": document["de"]["properties"]["type"],
-            "name": {lang: document[lang]["properties"]["name"] for lang in LANG_CODES},
-            "acronym": {lang: document[lang]["properties"]["acronym"] for lang in LANG_CODES},
-        }
         return document

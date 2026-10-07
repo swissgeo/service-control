@@ -367,17 +367,6 @@ def test_dump_service_document(db, tmp_path):
         },
         "id": "wmts-geoadminch",
         "type": "Feature",
-        "properties": {
-            "type": "DataService",
-            "protocol": "ogc:wms",
-            "title": {
-                "de": "WMTS geo.admin.ch",
-                "fr": "WMTS geo.admin.ch",
-                "it": "WMTS geo.admin.ch",
-                "rm": "WMTS geo.admin.ch",
-                "en": "WMTS geo.admin.ch",
-            },
-        },
     }
 
 
@@ -604,32 +593,6 @@ def test_dump_dataset_document(db, tmp_path):
         },
         "id": "ch.bafu.moose",
         "type": "Feature",
-        "properties": {
-            "type": "Dataset",
-            "title": {
-                "de": "Rote Liste Moose",
-                "fr": "Liste rouge mousses",
-                "it": "Lista rossa biofite",
-                "rm": "idk",
-                "en": "Red list bryophytes",
-            },
-            "description": {
-                "de": "Beschreibung",
-                "fr": "Description",
-                "it": "Descrizione",
-                "rm": "Descripziun",
-                "en": "Description",
-            },
-            "additionalSearchText": {
-                "de": "DE 1, DE 2",
-                "fr": "FR 1, FR 2",
-                "it": "",
-                "rm": "",
-                "en": "EN 2",
-            },
-            "concepts": ["location"],
-            "preferredDistributionId": None,
-        },
     }
 
 
@@ -844,26 +807,6 @@ def test_dump_distribution_document(db, tmp_path):
         },
         "id": "ch.bafu.moose:wms",
         "type": "Feature",
-        "properties": {
-            "type": "Distribution",
-            "dataset": "ch.bafu.moose",
-            "protocol": "ogc:wms",
-            "title": {
-                "de": "WMS Layer (DE)",
-                "fr": "WMS Layer (FR)",
-                "it": "WMS Layer (IT)",
-                "rm": "WMS Layer (RM)",
-                "en": "WMS Layer (EN)",
-            },
-            "description": {
-                "de": "Description (DE)",
-                "fr": "Description (FR)",
-                "it": "Description (IT)",
-                "rm": "Description (RM)",
-                "en": "Description (EN)",
-            },
-            "externalIds": ["ch.bafu.moose"],
-        },
     }
 
 
@@ -931,17 +874,6 @@ def test_dump_organization_document(cogntio, db, tmp_path):
         },
         "id": "ch.bafu",
         "type": "Feature",
-        "properties": {
-            "type": "Organization",
-            "name": {
-                "de": "Bundesamt für Umwelt",
-                "fr": "Office fédéral de l'environnement",
-                "it": "Ufficio federale dell'ambiente",
-                "rm": "Uffizi federal per l'ambient",
-                "en": "Federal Office for the Environment",
-            },
-            "acronym": {"de": "BAFU", "fr": "OFEV", "it": "UFAM", "rm": "UFAM", "en": "FOEN"},
-        },
     }
 
 
