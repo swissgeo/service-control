@@ -33,7 +33,8 @@ class DataserviceAdmin(PolymorphicParentModelAdmin):
 
     list_display = ("dataservice_id", "title")
     readonly_fields = ("created_at", "updated_at", "dataservice_id")
-    list_filter = (PolymorphicChildModelFilter,)  # This is optional.
+    list_filter = (PolymorphicChildModelFilter, "data_source")
+    search_fields = ("dataservice_id", "title")
 
 
 @admin.register(WMSDataservice)

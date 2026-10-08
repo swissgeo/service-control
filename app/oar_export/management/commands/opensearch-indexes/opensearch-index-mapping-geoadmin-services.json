@@ -50,48 +50,81 @@
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
-      "links": {"type": "object", "enabled": false},
-      "linkTemplates": {"type": "object", "enabled": false},
-      "properties": {
+      "de": {
+        "dynamic": false,
         "properties": {
-          "title": {
+          "properties": {
             "properties": {
-              "de": {
+              "type": {"type": "keyword", "index": false},
+              "protocol": {"type": "keyword", "index": false},
+              "title": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "fr": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "it": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "rm": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "en": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }
             }
-          },
-          "type": {"type": "keyword", "index": false},
-          "protocol": {"type": "keyword", "index": false}
+          }
+        }
+      },
+      "fr": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "protocol": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      },
+      "it": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "protocol": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      },
+      "rm": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "protocol": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
+        }
+      },
+      "en": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "protocol": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              }
+            }
+          }
         }
       }
     }

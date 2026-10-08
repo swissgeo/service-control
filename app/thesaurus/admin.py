@@ -9,6 +9,7 @@ class ThesaurusAdmin(admin.ModelAdmin):
 
     list_display = ("thesaurus_id",)
     readonly_fields = ("created_at", "updated_at")
+    search_fields = ("thesaurus_id",)
 
 
 @admin.register(Concept)

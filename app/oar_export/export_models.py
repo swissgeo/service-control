@@ -1,6 +1,7 @@
 from typing import Annotated, Literal
 from urllib.parse import urlencode
 
+from iso639 import Lang as IsoLang
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 from django.conf import settings
@@ -59,14 +60,6 @@ LANGS = {
     "it": Lang(code="it", name="Italiano", dir="ltr", alternate="Italian"),
     "rm": Lang(code="rm", name="Rumantsch", dir="ltr", alternate="Romansh"),
     "en": Lang(code="en", name="English", dir="ltr", alternate="English"),
-}
-
-LANGS_ISO_639_2_B = {
-    "de": "ger",
-    "fr": "fra",
-    "it": "ita",
-    "rm": "roh",
-    "en": "eng",
 }
 
 
@@ -239,7 +232,7 @@ class OARDataset(OARRecord):
 
         dataset.links.append(
             Link(
-                href=f"https://www.geocat.ch/geonetwork/srv/{LANGS_ISO_639_2_B[lang]}/catalog.search#/metadata/{ds.geocat_id}",
+                href=f"https://www.geocat.ch/geonetwork/srv/{IsoLang(lang).pt2b}/catalog.search#/metadata/{ds.geocat_id}",
                 rel="alternate",
                 title="GeoCat Metadata",
                 typ="text/html",
@@ -306,6 +299,7 @@ class OARDistribution(OARRecord):
         )
         record.properties["protocol"] = dist.protocol
         record.properties["metaInformation"] = dist.meta_information
+        record.properties["dataset"] = dist.dataset.dataset_id
 
         # GeoJSON Distributions behave slightly different as they are not linked to a dataservice
         # but directly to a file

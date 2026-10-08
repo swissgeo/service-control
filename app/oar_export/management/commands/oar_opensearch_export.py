@@ -23,6 +23,7 @@ from django.db.models import Q
 
 from dataservice.models import Dataservice
 from dataset.models import Dataset, DatasetToDataset
+from distribution.models import Distribution
 from oar_export.export_models import (
     LANGS,
     OARDataservice,
@@ -56,10 +57,6 @@ TYPE_TO_INDEX = {
     "distributions": DISTRIBUTIONS_INDEX,
     "organizations": ORGANIZATIONS_INDEX,
 }
-
-OGC_SCHEMA = (
-    "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml"
-)
 
 # Language codes in the canonical order (de, fr, it, en).
 LANG_CODES = list(LANGS.keys())
@@ -101,15 +98,6 @@ def _create_action_addindex(index: str, alias: str) -> dict:
 def _dump(model: Any) -> dict:
     """Serialize an OAR export model to a plain dict (aliases applied, None fields dropped)."""
     return model.model_dump(exclude_none=True, by_alias=True)
-
-
-def _clean_props(properties: dict, skip: frozenset[str] = frozenset()) -> dict:
-    """Return a copy of a properties dict without `None` values and skipped keys.
-
-    `model_dump(exclude_none=True)` drops None model *fields* but leaves None entries
-    inside a plain `dict` field, so we strip them explicitly here.
-    """
-    return {k: v for k, v in properties.items() if v is not None and k not in skip}
 
 
 class Command(CustomBaseCommand):
@@ -352,9 +340,9 @@ class Command(CustomBaseCommand):
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_dataset_doc(dataset))
         elif document_type == "distributions":
-            for dataset in Dataset.objects.all():
-                self.print(f" - {dataset.dataset_id}")
-                documents.extend(self.build_distribution_docs(dataset))
+            for distribution in Distribution.objects.select_related("dataset").all():
+                self.print(f" - {distribution.distribution_id}")
+                documents.append(self.build_distribution_doc(distribution))
         elif document_type == "organizations":
             # exclude organizations imported from geodienste except the aggregate organization
             for organization in Organization.objects.filter(
@@ -368,98 +356,42 @@ class Command(CustomBaseCommand):
 
     def build_service_doc(self, service: Dataservice) -> dict:
         """Build a `geoadmin-services` document from a Dataservice."""
-        features = {
+        document = {
             lang: _dump(OARDataservice.from_dataservice(service, lang)) for lang in LANG_CODES
         }
-        base = features["de"]
-        return {
-            "id": base["id"],
-            "type": base["type"],
-            "links": base["links"],
-            "properties": {
-                "type": base["properties"]["type"],
-                "protocol": base["properties"]["protocol"],
-                "title": {
-                    lang: features[lang]["properties"].get("title") or "" for lang in LANG_CODES
-                },
-            },
-            "linkTemplates": base.get("linkTemplates", []),
-        }
+
+        document["id"] = document["de"]["id"]
+        document["type"] = document["de"]["type"]
+
+        return document
 
     def build_dataset_doc(self, dataset: Dataset) -> dict:
         """Build a `swissgeo-catalog` document from a Dataset."""
-        features = {lang: _dump(OARDataset.from_dataset(dataset, lang)) for lang in LANG_CODES}
-        base = features["de"]
+        document = {lang: _dump(OARDataset.from_dataset(dataset, lang)) for lang in LANG_CODES}
 
-        properties = _clean_props(
-            base["properties"], skip=frozenset({"title", "description", "language"})
-        )
-        properties["title"] = {
-            lang: features[lang]["properties"].get("title") or "" for lang in LANG_CODES
-        }
-        properties["description"] = {
-            lang: features[lang]["properties"].get("description") or "" for lang in LANG_CODES
-        }
-        properties["additionalSearchText"] = {
-            lang: features[lang]["properties"].get("additionalSearchText") or ""
+        document["id"] = document["de"]["id"]
+        document["type"] = document["de"]["type"]
+
+        return document
+
+    def build_distribution_doc(self, distribution: Distribution) -> dict:
+        """Build a `swissgeo-distributions` document from a Distribution."""
+        document = {
+            lang: _dump(OARDistribution.from_distribution(distribution, lang))
             for lang in LANG_CODES
         }
 
-        return {
-            "$schema": OGC_SCHEMA,
-            "id": base["id"],
-            "type": base["type"],
-            "geometry": base.get("geometry"),
-            "links": base["links"],
-            "properties": properties,
-        }
-
-    def build_distribution_docs(self, dataset: Dataset) -> list[dict]:
-        """Build the `swissgeo-distributions` Feature documents of a Dataset.
-
-        Field `properties.dataset` indicates the dataset each distribution is part of.
-        """
-        documents = []
-        for distribution in dataset.distribution_set.all():  # ty:ignore[unresolved-attribute]
-            per_lang = {
-                lang: _dump(OARDistribution.from_distribution(distribution, lang))
-                for lang in LANG_CODES
-            }
-            document = per_lang["de"]
-            document["links"] = document.get("links", [])
-            document["properties"]["dataset"] = dataset.dataset_id
-            # Turn the translated fields into {lang: value} objects.
-            document["properties"]["title"] = {
-                lang: per_lang[lang]["properties"].get("title") or "" for lang in LANG_CODES
-            }
-            descriptions = {
-                lang: per_lang[lang]["properties"].get("description") or "" for lang in LANG_CODES
-            }
-            if any(descriptions.values()):
-                document["properties"]["description"] = descriptions
-            documents.append(document)
-
-        return documents
+        document["id"] = document["de"]["id"]
+        document["type"] = document["de"]["type"]
+        return document
 
     def build_organization_doc(self, organization: Organization) -> dict:
-        """Build a `geoadmin-organizations` document from an Organization."""
-        features = {
+        """Build a `swissgeo-organizations` document from an Organization."""
+        document = {
             lang: _dump(OAROrganization.from_organization(organization, lang))
             for lang in LANG_CODES
         }
-        base = features["de"]
-        return {
-            "id": base["id"],
-            "type": base["type"],
-            "links": base["links"],
-            "properties": {
-                "type": base["properties"]["type"],
-                "name": {
-                    lang: features[lang]["properties"].get("name") or "" for lang in LANG_CODES
-                },
-                "acronym": {
-                    lang: features[lang]["properties"].get("acronym") or "" for lang in LANG_CODES
-                },
-            },
-            "linkTemplates": base["linkTemplates"],
-        }
+
+        document["id"] = document["de"]["id"]
+        document["type"] = document["de"]["type"]
+        return document

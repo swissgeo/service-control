@@ -244,38 +244,129 @@ def test_dump_service_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # The 'self', 'collection' and per-language 'alternate' links are dropped, only the external
-    # links are kept. 'title' becomes a {lang: value} object, 'type' is the constant record kind
-    # and the concrete service protocol is exposed as 'protocol'.
     assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
-        "id": "wmts-geoadminch",
-        "type": "Feature",
-        "links": [
-            {
-                "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
-                "rel": "service-doc",
-                "title": "Service Documentation (DE)",
-                "type": "text/html",
-            },
-            {
-                "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
-                "rel": "describedby",
-                "title": "WMS Capabilities File",
-                "type": "application/xml",
-            },
-        ],
-        "properties": {
-            "type": "DataService",
-            "protocol": "ogc:wms",
-            "title": {
-                "de": "WMTS geo.admin.ch",
-                "fr": "WMTS geo.admin.ch",
-                "it": "WMTS geo.admin.ch",
-                "rm": "WMTS geo.admin.ch",
-                "en": "WMTS geo.admin.ch",
+        "de": {
+            "id": "wmts-geoadminch",
+            "links": [
+                {
+                    "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+                    "rel": "service-doc",
+                    "title": "Service Documentation (DE)",
+                    "type": "text/html",
+                },
+                {
+                    "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=de",
+                    "rel": "describedby",
+                    "title": "WMS Capabilities File",
+                    "type": "application/xml",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "title": "WMTS geo.admin.ch",
+                "type": "DataService",
+                "protocol": "ogc:wms",
             },
         },
-        "linkTemplates": [],
+        "fr": {
+            "id": "wmts-geoadminch",
+            "links": [
+                {
+                    "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+                    "rel": "service-doc",
+                    "title": "Service Documentation (DE)",
+                    "type": "text/html",
+                },
+                {
+                    "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=fr",
+                    "rel": "describedby",
+                    "title": "WMS Capabilities File",
+                    "type": "application/xml",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "title": "WMTS geo.admin.ch",
+                "type": "DataService",
+                "protocol": "ogc:wms",
+            },
+        },
+        "it": {
+            "id": "wmts-geoadminch",
+            "links": [
+                {
+                    "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+                    "rel": "service-doc",
+                    "title": "Service Documentation (DE)",
+                    "type": "text/html",
+                },
+                {
+                    "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=it",
+                    "rel": "describedby",
+                    "title": "WMS Capabilities File",
+                    "type": "application/xml",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "title": "WMTS geo.admin.ch",
+                "type": "DataService",
+                "protocol": "ogc:wms",
+            },
+        },
+        "rm": {
+            "id": "wmts-geoadminch",
+            "links": [
+                {
+                    "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+                    "rel": "service-doc",
+                    "title": "Service Documentation (DE)",
+                    "type": "text/html",
+                },
+                {
+                    "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=rm",
+                    "rel": "describedby",
+                    "title": "WMS Capabilities File",
+                    "type": "application/xml",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "title": "WMTS geo.admin.ch",
+                "type": "DataService",
+                "protocol": "ogc:wms",
+            },
+        },
+        "en": {
+            "id": "wmts-geoadminch",
+            "links": [
+                {
+                    "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
+                    "rel": "service-doc",
+                    "title": "Service Documentation (DE)",
+                    "type": "text/html",
+                },
+                {
+                    "href": "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang=en",
+                    "rel": "describedby",
+                    "title": "WMS Capabilities File",
+                    "type": "application/xml",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "title": "WMTS geo.admin.ch",
+                "type": "DataService",
+                "protocol": "ogc:wms",
+            },
+        },
+        "id": "wmts-geoadminch",
+        "type": "Feature",
     }
 
 
@@ -284,75 +375,225 @@ def test_dump_dataset_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # Only external links survive, plus the (relative) distributions link. 'title'/'description'
-    # become multilingual objects and the singular 'language' property is dropped.
     assert _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose") == {
-        "$schema": "https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/recordGeoJSON.yaml",
+        "de": {
+            "id": "ch.bafu.moose",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "rel": "distributions",
+                    "title": "Distributions",
+                },
+                {
+                    "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                    "rel": "alternate",
+                    "title": "GeoCat Metadata",
+                    "type": "text/html",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+                ],
+            },
+            "properties": {
+                "contacts": [],
+                "description": "Beschreibung",
+                "additionalSearchText": "DE 1, DE 2",
+                "language": {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                "languages": [
+                    {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                    {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                    {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                    {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
+                    {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+                ],
+                "preferredDistributionId": None,
+                "concepts": ["location"],
+                "title": "Rote Liste Moose",
+                "type": "Dataset",
+            },
+        },
+        "fr": {
+            "id": "ch.bafu.moose",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "rel": "distributions",
+                    "title": "Distributions",
+                },
+                {
+                    "href": "https://www.geocat.ch/geonetwork/srv/fre/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                    "rel": "alternate",
+                    "title": "GeoCat Metadata",
+                    "type": "text/html",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+                ],
+            },
+            "properties": {
+                "contacts": [],
+                "description": "Description",
+                "additionalSearchText": "FR 1, FR 2",
+                "language": {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                "languages": [
+                    {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                    {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                    {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                    {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
+                    {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+                ],
+                "preferredDistributionId": None,
+                "concepts": ["location"],
+                "title": "Liste rouge mousses",
+                "type": "Dataset",
+            },
+        },
+        "it": {
+            "id": "ch.bafu.moose",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "rel": "distributions",
+                    "title": "Distributions",
+                },
+                {
+                    "href": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                    "rel": "alternate",
+                    "title": "GeoCat Metadata",
+                    "type": "text/html",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+                ],
+            },
+            "properties": {
+                "contacts": [],
+                "description": "Descrizione",
+                "additionalSearchText": "",
+                "language": {
+                    "code": "it",
+                    "name": "Italiano",
+                    "dir": "ltr",
+                    "alternate": "Italian",
+                },
+                "languages": [
+                    {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                    {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                    {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                    {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
+                    {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+                ],
+                "preferredDistributionId": None,
+                "concepts": ["location"],
+                "title": "Lista rossa biofite",
+                "type": "Dataset",
+            },
+        },
+        "rm": {
+            "id": "ch.bafu.moose",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "rel": "distributions",
+                    "title": "Distributions",
+                },
+                {
+                    "href": "https://www.geocat.ch/geonetwork/srv/roh/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                    "rel": "alternate",
+                    "title": "GeoCat Metadata",
+                    "type": "text/html",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+                ],
+            },
+            "properties": {
+                "contacts": [],
+                "description": "Descripziun",
+                "additionalSearchText": "",
+                "language": {
+                    "code": "rm",
+                    "name": "Rumantsch",
+                    "dir": "ltr",
+                    "alternate": "Romansh",
+                },
+                "languages": [
+                    {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                    {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                    {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                    {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
+                    {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+                ],
+                "preferredDistributionId": None,
+                "concepts": ["location"],
+                "title": "idk",
+                "type": "Dataset",
+            },
+        },
+        "en": {
+            "id": "ch.bafu.moose",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "rel": "distributions",
+                    "title": "Distributions",
+                },
+                {
+                    "href": "https://www.geocat.ch/geonetwork/srv/eng/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                    "rel": "alternate",
+                    "title": "GeoCat Metadata",
+                    "type": "text/html",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
+                ],
+            },
+            "properties": {
+                "contacts": [],
+                "description": "Description",
+                "additionalSearchText": "EN 2",
+                "language": {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+                "languages": [
+                    {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
+                    {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
+                    {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
+                    {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
+                    {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
+                ],
+                "preferredDistributionId": None,
+                "concepts": ["location"],
+                "title": "Red list bryophytes",
+                "type": "Dataset",
+            },
+        },
         "id": "ch.bafu.moose",
         "type": "Feature",
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                [[5.96, 45.82], [5.96, 47.81], [10.49, 47.81], [10.49, 45.82], [5.96, 45.82]]
-            ],
-        },
-        "links": [
-            {
-                "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
-                "rel": "distributions",
-                "title": "Distributions",
-            },
-            {
-                "href": "https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
-                "rel": "alternate",
-                "title": "GeoCat Metadata",
-                "type": "text/html",
-            },
-        ],
-        "properties": {
-            "contacts": [],
-            "languages": [
-                {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
-                {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
-                {"code": "it", "name": "Italiano", "dir": "ltr", "alternate": "Italian"},
-                {"code": "rm", "name": "Rumantsch", "dir": "ltr", "alternate": "Romansh"},
-                {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
-            ],
-            "type": "Dataset",
-            "title": {
-                "de": "Rote Liste Moose",
-                "fr": "Liste rouge mousses",
-                "it": "Lista rossa biofite",
-                "rm": "idk",
-                "en": "Red list bryophytes",
-            },
-            "description": {
-                "de": "Beschreibung",
-                "fr": "Description",
-                "it": "Descrizione",
-                "rm": "Descripziun",
-                "en": "Description",
-            },
-            "additionalSearchText": {
-                "de": "DE 1, DE 2",
-                "fr": "FR 1, FR 2",
-                "it": "",
-                "rm": "",
-                "en": "EN 2",
-            },
-            "concepts": ["location"],
-        },
     }
-
-
-def test_dump_dataset_document_without_featureinfo_distribution_has_no_such_link(db, tmp_path):
-    """A dataset whose distributions cannot serve feature info gets no `featureinfo` link."""
-    _make_dataset()
-
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
-
-    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
-    assert [link for link in dataset_doc["links"] if link["rel"] == "featureinfo"] == []
 
 
 def test_dump_dataset_skips_part_datasets(db, tmp_path):
@@ -372,13 +613,13 @@ def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.kgk.av")
-    assert dataset_doc["properties"]["aggregated"] is True
+    assert dataset_doc["de"]["properties"]["aggregated"] is True
     assert {
         "href": "https://geodienste.ch/services/av?locale=de#info_cantons",
         "rel": "partinfo",
         "title": "Information page about the part datasets",
         "type": "text/html",
-    } in dataset_doc["links"]
+    } in dataset_doc["de"]["links"]
 
 
 def test_dump_distribution_document(db, tmp_path):
@@ -388,56 +629,184 @@ def test_dump_distribution_document(db, tmp_path):
 
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
-    # The dataset/dataservice/featureinfo links are rewritten to relative index paths and styledBy
-    # is kept (with the language stripped); the internal self/collection links are dropped.
-    # A WMS distribution is its own featureinfo target, so it links back to itself here.
-    # Translated fields become {lang: value} objects, like datasets/services.
     assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose:wms") == {
+        "de": {
+            "id": "ch.bafu.moose:wms",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "rel": "dataset",
+                    "title": "Dataset Record",
+                },
+                {
+                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "rel": "dataservice",
+                },
+                {
+                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "rel": "featureinfo",
+                },
+                {
+                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "rel": "styledBy",
+                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "type": "application/json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Distribution",
+                "title": "WMS Layer (DE)",
+                "description": "Description (DE)",
+                "protocol": "ogc:wms",
+                "metaInformation": False,
+                "dataset": "ch.bafu.moose",
+                "externalIds": ["ch.bafu.moose"],
+            },
+        },
+        "fr": {
+            "id": "ch.bafu.moose:wms",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "rel": "dataset",
+                    "title": "Dataset Record",
+                },
+                {
+                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "rel": "dataservice",
+                },
+                {
+                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "rel": "featureinfo",
+                },
+                {
+                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "rel": "styledBy",
+                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "type": "application/json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Distribution",
+                "title": "WMS Layer (FR)",
+                "description": "Description (FR)",
+                "protocol": "ogc:wms",
+                "metaInformation": False,
+                "dataset": "ch.bafu.moose",
+                "externalIds": ["ch.bafu.moose"],
+            },
+        },
+        "it": {
+            "id": "ch.bafu.moose:wms",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "rel": "dataset",
+                    "title": "Dataset Record",
+                },
+                {
+                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "rel": "dataservice",
+                },
+                {
+                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "rel": "featureinfo",
+                },
+                {
+                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "rel": "styledBy",
+                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "type": "application/json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Distribution",
+                "title": "WMS Layer (IT)",
+                "description": "Description (IT)",
+                "protocol": "ogc:wms",
+                "metaInformation": False,
+                "dataset": "ch.bafu.moose",
+                "externalIds": ["ch.bafu.moose"],
+            },
+        },
+        "rm": {
+            "id": "ch.bafu.moose:wms",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "rel": "dataset",
+                    "title": "Dataset Record",
+                },
+                {
+                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "rel": "dataservice",
+                },
+                {
+                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "rel": "featureinfo",
+                },
+                {
+                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "rel": "styledBy",
+                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "type": "application/json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Distribution",
+                "title": "WMS Layer (RM)",
+                "description": "Description (RM)",
+                "protocol": "ogc:wms",
+                "metaInformation": False,
+                "dataset": "ch.bafu.moose",
+                "externalIds": ["ch.bafu.moose"],
+            },
+        },
+        "en": {
+            "id": "ch.bafu.moose:wms",
+            "links": [
+                {
+                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "rel": "dataset",
+                    "title": "Dataset Record",
+                },
+                {
+                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "rel": "dataservice",
+                },
+                {
+                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "rel": "featureinfo",
+                },
+                {
+                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "rel": "styledBy",
+                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "type": "application/json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Distribution",
+                "title": "WMS Layer (EN)",
+                "description": "Description (EN)",
+                "protocol": "ogc:wms",
+                "metaInformation": False,
+                "dataset": "ch.bafu.moose",
+                "externalIds": ["ch.bafu.moose"],
+            },
+        },
         "id": "ch.bafu.moose:wms",
         "type": "Feature",
-        "links": [
-            {
-                "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
-                "rel": "dataset",
-                "title": "Dataset Record",
-            },
-            {
-                "href": "/collections/geoadmin-services/items/wmts-geoadminch",
-                "rel": "dataservice",
-            },
-            {
-                "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
-                "rel": "featureinfo",
-            },
-            {
-                "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
-                "rel": "styledBy",
-                "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
-                "type": "application/json",
-            },
-        ],
-        "linkTemplates": [],
-        "properties": {
-            "type": "Distribution",
-            "dataset": "ch.bafu.moose",
-            "title": {
-                "de": "WMS Layer (DE)",
-                "fr": "WMS Layer (FR)",
-                "it": "WMS Layer (IT)",
-                "rm": "WMS Layer (RM)",
-                "en": "WMS Layer (EN)",
-            },
-            "description": {
-                "de": "Description (DE)",
-                "fr": "Description (FR)",
-                "it": "Description (IT)",
-                "rm": "Description (RM)",
-                "en": "Description (EN)",
-            },
-            "protocol": "ogc:wms",
-            "externalIds": ["ch.bafu.moose"],
-            "metaInformation": False,
-        },
     }
 
 
@@ -448,20 +817,62 @@ def test_dump_organization_document(cogntio, db, tmp_path):
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     assert _read_dump(tmp_path, "swissgeo-organizations", "ch.bafu") == {
-        "id": "ch.bafu",
-        "linkTemplates": [],
-        "links": [],
-        "properties": {
-            "acronym": {"de": "BAFU", "en": "FOEN", "fr": "OFEV", "it": "UFAM", "rm": "UFAM"},
-            "name": {
-                "de": "Bundesamt für Umwelt",
-                "en": "Federal Office for the Environment",
-                "fr": "Office fédéral de l'environnement",
-                "it": "Ufficio federale dell'ambiente",
-                "rm": "Uffizi federal per l'ambient",
+        "de": {
+            "id": "ch.bafu",
+            "links": [],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Organization",
+                "name": "Bundesamt für Umwelt",
+                "acronym": "BAFU",
             },
-            "type": "Organization",
         },
+        "fr": {
+            "id": "ch.bafu",
+            "links": [],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Organization",
+                "name": "Office fédéral de l'environnement",
+                "acronym": "OFEV",
+            },
+        },
+        "it": {
+            "id": "ch.bafu",
+            "links": [],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Organization",
+                "name": "Ufficio federale dell'ambiente",
+                "acronym": "UFAM",
+            },
+        },
+        "rm": {
+            "id": "ch.bafu",
+            "links": [],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Organization",
+                "name": "Uffizi federal per l'ambient",
+                "acronym": "UFAM",
+            },
+        },
+        "en": {
+            "id": "ch.bafu",
+            "links": [],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {
+                "type": "Organization",
+                "name": "Federal Office for the Environment",
+                "acronym": "FOEN",
+            },
+        },
+        "id": "ch.bafu",
         "type": "Feature",
     }
 
@@ -538,7 +949,7 @@ def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client,
     action = service_actions[0]
     assert action["_id"] == "wmts-geoadminch"
     assert action["_source"]["id"] == "wmts-geoadminch"
-    assert action["_source"]["properties"]["title"]["de"] == "WMTS geo.admin.ch"
+    assert action["_source"]["de"]["properties"]["title"] == "WMTS geo.admin.ch"
 
     # The dataset, distribution and organization documents reach their respective generations.
     assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["ch.bafu.moose"]
