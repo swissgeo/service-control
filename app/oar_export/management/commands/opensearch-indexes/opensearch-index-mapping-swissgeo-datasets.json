@@ -69,7 +69,19 @@
               },
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {"type": "keyword"},
-              "preferredDistributionId": {"type": "keyword", "index": false}
+              "preferredDistributionId": {"type": "keyword", "index": false},
+              "ownerId": {"type": "keyword"},
+              "owner": {
+                "properties": {
+                  "id": {"type": "keyword", "copy_to": "de.properties.ownerId"},
+                  "name": {
+                    "type": "search_as_you_type",
+                    "analyzer": "german_decompound",
+                    "search_analyzer": "german_search"
+                  },
+                  "acronym": {"type": "search_as_you_type"}
+                }
+              }
             }
           }
         }
@@ -87,7 +99,15 @@
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {"type": "keyword"},
-              "preferredDistributionId": {"type": "keyword", "index": false}
+              "preferredDistributionId": {"type": "keyword", "index": false},
+              "ownerId": {"type": "keyword"},
+              "owner": {
+                "properties": {
+                  "id": {"type": "keyword", "copy_to": "fr.properties.ownerId"},
+                  "name": {"type": "search_as_you_type"},
+                  "acronym": {"type": "search_as_you_type"}
+                }
+              }
             }
           }
         }
@@ -105,7 +125,15 @@
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {"type": "keyword"},
-              "preferredDistributionId": {"type": "keyword", "index": false}
+              "preferredDistributionId": {"type": "keyword", "index": false},
+              "ownerId": {"type": "keyword"},
+              "owner": {
+                "properties": {
+                  "id": {"type": "keyword", "copy_to": "it.properties.ownerId"},
+                  "name": {"type": "search_as_you_type"},
+                  "acronym": {"type": "search_as_you_type"}
+                }
+              }
             }
           }
         }
@@ -123,7 +151,15 @@
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {"type": "keyword"},
-              "preferredDistributionId": {"type": "keyword", "index": false}
+              "preferredDistributionId": {"type": "keyword", "index": false},
+              "ownerId": {"type": "keyword"},
+              "owner": {
+                "properties": {
+                  "id": {"type": "keyword", "copy_to": "rm.properties.ownerId"},
+                  "name": {"type": "search_as_you_type"},
+                  "acronym": {"type": "search_as_you_type"}
+                }
+              }
             }
           }
         }
@@ -141,7 +177,15 @@
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {"type": "keyword"},
-              "preferredDistributionId": {"type": "keyword", "index": false}
+              "preferredDistributionId": {"type": "keyword", "index": false},
+              "ownerId": {"type": "keyword"},
+              "owner": {
+                "properties": {
+                  "id": {"type": "keyword", "copy_to": "en.properties.ownerId"},
+                  "name": {"type": "search_as_you_type"},
+                  "acronym": {"type": "search_as_you_type"}
+                }
+              }
             }
           }
         }

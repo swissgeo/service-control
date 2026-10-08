@@ -21,7 +21,7 @@ from django.core.management.base import CommandError
 import pytest
 
 from dataservice.models import WMSDataservice
-from dataset.models import Dataset, DatasetToDataset
+from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
 from distribution.models import ExternalWMSDistribution
 from oar_export.management.commands.oar_opensearch_export import _is_generation_of
 from organization.models import Organization
@@ -620,6 +620,39 @@ def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
         "title": "Information page about the part datasets",
         "type": "text/html",
     } in dataset_doc["de"]["links"]
+
+
+def test_dump_dataset_contains_localized_owner(unit, tmp_path):
+    dataset = _make_dataset()
+    DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER).save()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    assert dataset_doc["de"]["properties"]["owner"] == {
+        "id": "ch.bafu",
+        "name": "Bundesamt für Umwelt",
+        "acronym": "BAFU",
+    }
+    assert dataset_doc["fr"]["properties"]["owner"] == {
+        "id": "ch.bafu",
+        "name": "Office fédéral de l'environnement",
+        "acronym": "OFEV",
+    }
+    assert dataset_doc["en"]["properties"]["owner"] == {
+        "id": "ch.bafu",
+        "name": "Federal Office for the Environment",
+        "acronym": "FOEN",
+    }
+
+
+def test_dump_dataset_without_owner_has_no_owner(db, tmp_path):
+    _make_dataset()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    assert "owner" not in dataset_doc["de"]["properties"]
 
 
 def test_dump_distribution_document(db, tmp_path):
