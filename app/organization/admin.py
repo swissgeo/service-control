@@ -16,6 +16,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display = ("organization_id", "acronym_en", "name_en", "data_source")
     list_filter = ("data_source",)
     readonly_fields = ("created", "updated")
+    search_fields = ("organization_id", "acronym_en", "name_en", "acronym_de", "name_de")
 
     def get_readonly_fields(
         self,

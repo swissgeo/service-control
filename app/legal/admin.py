@@ -27,8 +27,8 @@ class GeopoliticalEntityAdmin(admin.ModelAdmin):
     """Admin View for Geopolicitcal Entity"""
 
     list_display = ("geopolitical_entity_id", "type", "name_de")
-
     list_filter = (
         "type",
         FederalCantonalFilter,
     )
+    search_fields = ("geopolitical_entity_id", "name_de")
