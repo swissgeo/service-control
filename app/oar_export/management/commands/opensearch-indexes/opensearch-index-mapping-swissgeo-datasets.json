@@ -1,5 +1,12 @@
 {
   "settings": {
+    "index.query.default_field": [
+      "*.properties.title^3",
+      "*.properties.description",
+      "*.properties.additionalSearchText",
+      "*.properties.owner.name^2",
+      "*.properties.owner.acronym^20"
+    ],
     "analysis": {
       "filter": {
         "german_decompound": {
