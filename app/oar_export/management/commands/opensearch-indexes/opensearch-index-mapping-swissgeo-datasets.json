@@ -48,77 +48,102 @@
   },
   "mappings": {
     "properties": {
-      "$schema": {"type": "keyword"},
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
-      "geometry": {"type": "object", "enabled": false},
-      "links": {"type": "object", "enabled": false},
-      "properties": {
+      "de": {
+        "dynamic": false,
         "properties": {
-          "type": {"type": "keyword", "index": false},
-          "title": {
+          "properties": {
             "properties": {
-              "de": {
+              "type": {"type": "keyword", "index": false},
+              "title": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "fr": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "it": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "rm": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              },
-              "en": {
-                "type": "search_as_you_type",
-                "fields": {
-                  "sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}
-                }
-              }
-            }
-          },
-          "description": {
-            "properties": {
-              "de": {
+              "description": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search"
               },
-              "fr": {"type": "search_as_you_type"},
-              "it": {"type": "search_as_you_type"},
-              "rm": {"type": "search_as_you_type"},
-              "en": {"type": "search_as_you_type"}
+              "additionalSearchText": {"type": "search_as_you_type"},
+              "concepts": {"type": "keyword"},
+              "preferredDistributionId": {"type": "keyword", "index": false}
             }
-          },
-          "additionalSearchText": {
+          }
+        }
+      },
+      "fr": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
             "properties": {
-              "de": {"type": "search_as_you_type"},
-              "fr": {"type": "search_as_you_type"},
-              "it": {"type": "search_as_you_type"},
-              "rm": {"type": "search_as_you_type"},
-              "en": {"type": "search_as_you_type"}
+              "type": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"},
+              "additionalSearchText": {"type": "search_as_you_type"},
+              "concepts": {"type": "keyword"},
+              "preferredDistributionId": {"type": "keyword", "index": false}
             }
-          },
-          "keywords": {"type": "keyword"},
-          "concepts": {"type": "keyword"},
-          "languages": {"type": "object", "enabled": false},
-          "contacts": {"type": "object", "enabled": false},
-          "preferredDistributionId": {"type": "keyword", "index": false}
+          }
+        }
+      },
+      "it": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"},
+              "additionalSearchText": {"type": "search_as_you_type"},
+              "concepts": {"type": "keyword"},
+              "preferredDistributionId": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      },
+      "rm": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"},
+              "additionalSearchText": {"type": "search_as_you_type"},
+              "concepts": {"type": "keyword"},
+              "preferredDistributionId": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      },
+      "en": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false},
+              "title": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
+              "description": {"type": "search_as_you_type"},
+              "additionalSearchText": {"type": "search_as_you_type"},
+              "concepts": {"type": "keyword"},
+              "preferredDistributionId": {"type": "keyword", "index": false}
+            }
+          }
         }
       }
     }
