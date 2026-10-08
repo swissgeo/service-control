@@ -1,8 +1,15 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 from urllib.parse import urlencode
 
 from iso639 import Lang as IsoLang
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    model_validator,
+)
 
 from django.conf import settings
 
@@ -74,7 +81,7 @@ class BaseLink(BaseModel):
 
     The OAR specification defines a Link object with the following properties:
     - href (string): The URL of the linked resource. This is optional in the base class.
-    - rel (string, required): The relationship type of the link.
+    - rel (string, optional): The relationship type of the link.
     - title (string, optional): A human-readable title for the link.
     - type (string, optional): The media type of the linked resource.
     - hreflang (string, optional): The language of the linked resource.
@@ -82,7 +89,7 @@ class BaseLink(BaseModel):
     """
 
     href: Annotated[str, AfterValidator(is_url)] | None = None
-    rel: str
+    rel: str | None = None
     title: str | None = None
     typ: str | None = Field(default=None, serialization_alias="type")
     hreflang: str | None = None
@@ -191,12 +198,9 @@ class OARDataset(OARRecord):
     def from_dataset(cls, ds: Dataset, lang: str) -> OARDataset:
 
         contacts = [
-            Contact(
-                organization=contact.get(f"org_name_{lang}") or contact.get("org_name"),
-                country=contact.get("contact_country") or "CH",
-                role=contact.get("role"),
-            )
-            for contact in ds.legacy_contacts
+            contact
+            for legacy_contact in ds.legacy_contacts
+            if (contact := Contact.from_legacy(legacy_contact, lang))
         ]
 
         properties = {
@@ -523,17 +527,104 @@ class OAROrganization(OARRecord):
         return record
 
 
+class ContactEntry(BaseModel):
+    """A phone number or email address of a contact.
+
+    Follows the `phones`/`emails` items of the OGC API Records contact schema.
+    """
+
+    value: str
+    roles: list[str] | None = None
+
+
+class ContactAddress(BaseModel):
+    """A physical address of a contact (an `addresses` item of the OGC contact schema)."""
+
+    delivery_point: list[str] | None = Field(default=None, serialization_alias="deliveryPoint")
+    city: str | None = None
+    administrative_area: str | None = Field(default=None, serialization_alias="administrativeArea")
+    postal_code: str | None = Field(default=None, serialization_alias="postalCode")
+    country: str | None = None
+
+
 class Contact(BaseModel):
-    organization: str
-    country: str
-    role: str
-    # name: str | None
-    # position: str | None
-    # email: str | None
-    # phone: str | None
-    # address: str | None
-    # city: str | None
-    # postal_code: str | None
+    """A contact of a dataset, following the OGC API Records contact schema.
+
+    See https://schemas.opengis.net/ogcapi/records/part1/1.0/openapi/schemas/contact.yaml
+    """
+
+    organization: str | None = None
+    position: str | None = None
+    phones: list[ContactEntry] = Field(default_factory=list)
+    emails: list[ContactEntry] = Field(default_factory=list)
+    addresses: list[ContactAddress] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list)
+    roles: list[str] | None = None
+
+    @classmethod
+    def from_legacy(cls, legacy_contact: dict, lang: str) -> Self | None:
+        """Build a Contact from a `Dataset.legacy_contacts` entry.
+
+        Returns None when the entry has no organization name, as the OGC contact
+        schema requires at least one of `name` or `organization` and the legacy
+        data never contains a person name.
+        """
+        organization = legacy_contact.get(f"org_name_{lang}") or legacy_contact.get("org_name")
+        if not organization:
+            return None
+
+        phones = []
+        if voice := legacy_contact.get("contact_voice"):
+            phones.append(ContactEntry(value=voice, roles=["work"]))
+        if facsimile := legacy_contact.get("contact_facsimile"):
+            phones.append(ContactEntry(value=facsimile, roles=["fax"]))
+        if sms := legacy_contact.get("contact_sms"):
+            phones.append(ContactEntry(value=sms, roles=["sms"]))
+
+        emails = [
+            ContactEntry(value=email)
+            for email in legacy_contact.get("contact_electronic_mail_addresses") or []
+        ]
+
+        address = ContactAddress(
+            delivery_point=(
+                [legacy_contact["contact_delivery_point"]]
+                if legacy_contact.get("contact_delivery_point")
+                else None
+            ),
+            city=legacy_contact.get("contact_city"),
+            administrative_area=legacy_contact.get("contact_administrative_area"),
+            postal_code=legacy_contact.get("contact_postal_code"),
+            country=legacy_contact.get("contact_country") or "CH",
+        )
+
+        links = []
+        for resource in legacy_contact.get("online_resources") or []:
+            url = resource.get(f"url_{lang}") or resource.get("url")
+            if not url:
+                continue
+            try:
+                links.append(
+                    Link(
+                        href=url,
+                        typ="text/html",
+                        hreflang=lang,
+                        title=resource.get(f"name_{lang}"),
+                    )
+                )
+            except ValidationError:
+                # Skip online resources with an invalid URL (e.g. missing scheme).
+                continue
+
+        return cls(
+            organization=organization,
+            position=legacy_contact.get(f"position_name_{lang}"),
+            phones=phones,
+            emails=emails,
+            addresses=[address],
+            links=links,
+            roles=[legacy_contact["role"]] if legacy_contact.get("role") else None,
+        )
 
 
 class OASStyleLink(BaseLink):
