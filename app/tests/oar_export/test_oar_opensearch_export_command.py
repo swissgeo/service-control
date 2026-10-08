@@ -426,7 +426,7 @@ def test_dump_dataset_document(db, tmp_path):
                     "title": "Distributions",
                 },
                 {
-                    "href": "https://www.geocat.ch/geonetwork/srv/fra/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+                    "href": "https://www.geocat.ch/geonetwork/srv/fre/catalog.search#/metadata/07b046a7-1b21-4cd0-b605-a113f2e5e94d",
                     "rel": "alternate",
                     "title": "GeoCat Metadata",
                     "type": "text/html",
