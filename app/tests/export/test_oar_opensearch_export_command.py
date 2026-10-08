@@ -66,6 +66,44 @@ def _make_dataset() -> Dataset:
         additional_search_text_it=[],
         additional_search_text_rm=[],
         geocat_id="07b046a7-1b21-4cd0-b605-a113f2e5e94d",
+        legacy_contacts=[
+            {
+                "role": "owner",
+                "org_name": "Bundesamt für Umwelt",
+                "org_name_de": "Bundesamt für Umwelt",
+                "contact_country": "CH",
+                "contact_electronic_mail_addresses": [],
+                "online_resources": [],
+            },
+            {
+                "role": "pointOfContact",
+                "org_name": "Bundesamt für Landestopografie swisstopo",
+                "org_name_de": "Bundesamt für Landestopografie swisstopo",
+                "org_name_fr": "Office fédéral de topographie swisstopo",
+                "position_name_de": "Geodatenabgabe",
+                "contact_voice": "+41 58 469 01 11",
+                "contact_facsimile": None,
+                "contact_sms": None,
+                "contact_city": "Wabern",
+                "contact_administrative_area": None,
+                "contact_postal_code": "3084",
+                "contact_delivery_point": "Seftigenstrasse 264",
+                "contact_country": "CH",
+                "contact_electronic_mail_addresses": ["geodata@swisstopo.ch"],
+                "online_resources": [
+                    {
+                        "url": "http://www.swisstopo.ch",
+                        "url_de": "http://www.swisstopo.ch",
+                        "url_fr": "http://www.swisstopo.ch/fr",
+                        "url_en": None,
+                        "url_it": None,
+                        "url_rm": None,
+                        "name_de": None,
+                        "protocol": "WWW:LINK",
+                    }
+                ],
+            },
+        ],
     )
     dataset.save()
     dataset.concepts.set([concept])
@@ -400,7 +438,38 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
             },
             "properties": {
-                "contacts": [],
+                "contacts": [
+                    {
+                        "organization": "Bundesamt für Umwelt",
+                        "phones": [],
+                        "emails": [],
+                        "addresses": [{"country": "CH"}],
+                        "links": [],
+                        "roles": ["owner"],
+                    },
+                    {
+                        "organization": "Bundesamt für Landestopografie swisstopo",
+                        "position": "Geodatenabgabe",
+                        "phones": [{"value": "+41 58 469 01 11", "roles": ["work"]}],
+                        "emails": [{"value": "geodata@swisstopo.ch"}],
+                        "addresses": [
+                            {
+                                "deliveryPoint": ["Seftigenstrasse 264"],
+                                "city": "Wabern",
+                                "postalCode": "3084",
+                                "country": "CH",
+                            }
+                        ],
+                        "links": [
+                            {
+                                "href": "http://www.swisstopo.ch",
+                                "type": "text/html",
+                                "hreflang": "de",
+                            }
+                        ],
+                        "roles": ["pointOfContact"],
+                    },
+                ],
                 "description": "Beschreibung",
                 "additionalSearchText": "DE 1, DE 2",
                 "language": {"code": "de", "name": "Deutsch", "dir": "ltr", "alternate": "German"},
@@ -441,7 +510,37 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
             },
             "properties": {
-                "contacts": [],
+                "contacts": [
+                    {
+                        "organization": "Bundesamt für Umwelt",
+                        "phones": [],
+                        "emails": [],
+                        "addresses": [{"country": "CH"}],
+                        "links": [],
+                        "roles": ["owner"],
+                    },
+                    {
+                        "organization": "Office fédéral de topographie swisstopo",
+                        "phones": [{"value": "+41 58 469 01 11", "roles": ["work"]}],
+                        "emails": [{"value": "geodata@swisstopo.ch"}],
+                        "addresses": [
+                            {
+                                "deliveryPoint": ["Seftigenstrasse 264"],
+                                "city": "Wabern",
+                                "postalCode": "3084",
+                                "country": "CH",
+                            }
+                        ],
+                        "links": [
+                            {
+                                "href": "http://www.swisstopo.ch/fr",
+                                "type": "text/html",
+                                "hreflang": "fr",
+                            }
+                        ],
+                        "roles": ["pointOfContact"],
+                    },
+                ],
                 "description": "Description",
                 "additionalSearchText": "FR 1, FR 2",
                 "language": {"code": "fr", "name": "Français", "dir": "ltr", "alternate": "French"},
@@ -482,7 +581,37 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
             },
             "properties": {
-                "contacts": [],
+                "contacts": [
+                    {
+                        "organization": "Bundesamt für Umwelt",
+                        "phones": [],
+                        "emails": [],
+                        "addresses": [{"country": "CH"}],
+                        "links": [],
+                        "roles": ["owner"],
+                    },
+                    {
+                        "organization": "Bundesamt für Landestopografie swisstopo",
+                        "phones": [{"value": "+41 58 469 01 11", "roles": ["work"]}],
+                        "emails": [{"value": "geodata@swisstopo.ch"}],
+                        "addresses": [
+                            {
+                                "deliveryPoint": ["Seftigenstrasse 264"],
+                                "city": "Wabern",
+                                "postalCode": "3084",
+                                "country": "CH",
+                            }
+                        ],
+                        "links": [
+                            {
+                                "href": "http://www.swisstopo.ch",
+                                "type": "text/html",
+                                "hreflang": "it",
+                            }
+                        ],
+                        "roles": ["pointOfContact"],
+                    },
+                ],
                 "description": "Descrizione",
                 "additionalSearchText": "",
                 "language": {
@@ -528,7 +657,37 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
             },
             "properties": {
-                "contacts": [],
+                "contacts": [
+                    {
+                        "organization": "Bundesamt für Umwelt",
+                        "phones": [],
+                        "emails": [],
+                        "addresses": [{"country": "CH"}],
+                        "links": [],
+                        "roles": ["owner"],
+                    },
+                    {
+                        "organization": "Bundesamt für Landestopografie swisstopo",
+                        "phones": [{"value": "+41 58 469 01 11", "roles": ["work"]}],
+                        "emails": [{"value": "geodata@swisstopo.ch"}],
+                        "addresses": [
+                            {
+                                "deliveryPoint": ["Seftigenstrasse 264"],
+                                "city": "Wabern",
+                                "postalCode": "3084",
+                                "country": "CH",
+                            }
+                        ],
+                        "links": [
+                            {
+                                "href": "http://www.swisstopo.ch",
+                                "type": "text/html",
+                                "hreflang": "rm",
+                            }
+                        ],
+                        "roles": ["pointOfContact"],
+                    },
+                ],
                 "description": "Descripziun",
                 "additionalSearchText": "",
                 "language": {
@@ -574,7 +733,37 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
             },
             "properties": {
-                "contacts": [],
+                "contacts": [
+                    {
+                        "organization": "Bundesamt für Umwelt",
+                        "phones": [],
+                        "emails": [],
+                        "addresses": [{"country": "CH"}],
+                        "links": [],
+                        "roles": ["owner"],
+                    },
+                    {
+                        "organization": "Bundesamt für Landestopografie swisstopo",
+                        "phones": [{"value": "+41 58 469 01 11", "roles": ["work"]}],
+                        "emails": [{"value": "geodata@swisstopo.ch"}],
+                        "addresses": [
+                            {
+                                "deliveryPoint": ["Seftigenstrasse 264"],
+                                "city": "Wabern",
+                                "postalCode": "3084",
+                                "country": "CH",
+                            }
+                        ],
+                        "links": [
+                            {
+                                "href": "http://www.swisstopo.ch",
+                                "type": "text/html",
+                                "hreflang": "en",
+                            }
+                        ],
+                        "roles": ["pointOfContact"],
+                    },
+                ],
                 "description": "Description",
                 "additionalSearchText": "EN 2",
                 "language": {"code": "en", "name": "English", "dir": "ltr", "alternate": "English"},
