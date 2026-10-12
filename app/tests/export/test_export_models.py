@@ -1,5 +1,5 @@
 from dataset.models import Dataset, DatasetToContact
-from oar_export.export_models import Contact, OARDataset
+from oar_export.export_models import Contact, Link, OARDataset
 
 
 def _legacy_contact(**overrides) -> dict:
@@ -90,8 +90,8 @@ def test_from_legacy_falls_back_to_unlocalized_fields():
     assert contact.organization == "Federal Office of Topography swisstopo"
     assert contact.position is None
     # url_en is None, so the unlocalized url is used.
-    assert [(link.href, link.hreflang) for link in contact.links] == [
-        ("http://www.swisstopo.ch", "en")
+    assert contact.links == [
+        Link(href="http://www.swisstopo.ch", typ="text/html", hreflang=None),
     ]
 
 

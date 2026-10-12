@@ -613,15 +613,18 @@ class Contact(BaseModel):
 
         links = []
         for resource in legacy_contact.get("online_resources") or []:
-            url = resource.get(f"url_{lang}") or resource.get("url")
-            if not url:
+            if url := resource.get(f"url_{lang}"):
+                hreflang = lang
+            elif url := resource.get("url"):
+                hreflang = None
+            else:
                 continue
             try:
                 links.append(
                     Link(
                         href=url,
                         typ="text/html",
-                        hreflang=lang,
+                        hreflang=hreflang,
                         title=resource.get(f"name_{lang}"),
                     )
                 )
