@@ -13,7 +13,7 @@ from dataservice.models import (
     WMSDataservice,
     WMTSDataservice,
 )
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToUnit
 from distribution.models import (
     Distribution,
     ExternalGeoadminFeaturesDistribution,
@@ -238,6 +238,19 @@ class OARDataset(OARRecord):
                 typ="text/html",
             )
         )
+
+        owner = (
+            DatasetToUnit.objects.filter(dataset=ds, role=DatasetToUnit.Role.OWNER)
+            .select_related("unit__organization")
+            .first()
+        )
+        if owner:
+            organization = owner.unit.organization
+            dataset.properties["owner"] = Owner(
+                id=organization.organization_id,
+                name=getattr(organization, f"name_{lang}", None) or organization.name_de,
+                acronym=getattr(organization, f"acronym_{lang}", None) or organization.acronym_de,
+            )
 
         if ds.is_aggregate:
             dataset.properties["aggregated"] = True
@@ -534,6 +547,14 @@ class Contact(BaseModel):
     # address: str | None
     # city: str | None
     # postal_code: str | None
+
+
+class Owner(BaseModel):
+    """The organization owning a dataset, localized to the record language."""
+
+    id: str
+    name: str
+    acronym: str
 
 
 class OASStyleLink(BaseLink):
