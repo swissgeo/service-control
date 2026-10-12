@@ -36,6 +36,7 @@ def _legacy_contact(**overrides) -> dict:
                 "url_rm": None,
                 "name_de": None,
                 "name_fr": None,
+                "name_en": "English link text",
                 "protocol": "WWW:LINK",
             },
             {
@@ -91,7 +92,7 @@ def test_from_legacy_falls_back_to_unlocalized_fields():
     assert contact.position is None
     # url_en is None, so the unlocalized url is used.
     assert contact.links == [
-        Link(href="http://www.swisstopo.ch", typ="text/html", hreflang=None),
+        Link(href="http://www.swisstopo.ch", typ="text/html", hreflang=None, title=None),
     ]
 
 

@@ -615,8 +615,10 @@ class Contact(BaseModel):
         for resource in legacy_contact.get("online_resources") or []:
             if url := resource.get(f"url_{lang}"):
                 hreflang = lang
+                title = resource.get(f"name_{lang}")
             elif url := resource.get("url"):
                 hreflang = None
+                title = None
             else:
                 continue
             try:
@@ -625,7 +627,7 @@ class Contact(BaseModel):
                         href=url,
                         typ="text/html",
                         hreflang=hreflang,
-                        title=resource.get(f"name_{lang}"),
+                        title=title,
                     )
                 )
             except ValidationError:
