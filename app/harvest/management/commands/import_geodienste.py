@@ -664,7 +664,7 @@ class Command(CustomBaseCommand):
                 "contact_city": contact.address_city,
                 "contact_postal_code": contact.address_postal_code,
                 "contact_country": contact.address_country,
-                "contact_electronic_mail_addresses": [contact.email],
+                "contact_electronic_mail_addresses": [contact.email] if contact.email else [],
                 "contact_delivery_point": contact.address_delivery_point,
                 "online_resources": [
                     {
