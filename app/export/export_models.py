@@ -109,6 +109,16 @@ class Link(BaseLink):
     typ: str = Field(serialization_alias="type")
 
 
+class UnvalidatedLink(Link):
+    """Generic Link object for OAR records where the href URL is *not* validated
+
+    Unlike in the base class, the URL is not checked here. So, e.g., "invalid-url.ch" is rejected by
+    `Link` but it's accepted for `UnvalidatedLink`.
+    """
+
+    href: str
+
+
 class OARCollectionLink(BaseLink):
     collectionId: str = Field(exclude=True)  # noqa: N815
 
@@ -623,7 +633,7 @@ class Contact(BaseModel):
                 continue
             try:
                 links.append(
-                    Link(
+                    UnvalidatedLink(
                         href=url,
                         typ="text/html",
                         hreflang=hreflang,

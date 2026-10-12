@@ -1,5 +1,5 @@
 from dataset.models import Dataset, DatasetToContact
-from oar_export.export_models import Contact, Link, OARDataset
+from oar_export.export_models import Contact, OARDataset, UnvalidatedLink
 
 
 def _legacy_contact(**overrides) -> dict:
@@ -33,21 +33,10 @@ def _legacy_contact(**overrides) -> dict:
                 "url_fr": "http://www.swisstopo.ch/fr",
                 "url_en": None,
                 "url_it": None,
-                "url_rm": None,
+                "url_rm": "invalid-url.ch",
                 "name_de": None,
                 "name_fr": None,
                 "name_en": "English link text",
-                "protocol": "WWW:LINK",
-            },
-            {
-                "url": "invalid-url.ch",
-                "url_de": "invalid-url.ch",
-                "url_fr": "invalid-url.ch",
-                "url_en": None,
-                "url_it": None,
-                "url_rm": None,
-                "name_de": None,
-                "name_fr": None,
                 "protocol": "WWW:LINK",
             },
         ],
@@ -92,7 +81,7 @@ def test_from_legacy_falls_back_to_unlocalized_fields():
     assert contact.position is None
     # url_en is None, so the unlocalized url is used.
     assert contact.links == [
-        Link(href="http://www.swisstopo.ch", typ="text/html", hreflang=None, title=None),
+        UnvalidatedLink(href="http://www.swisstopo.ch", typ="text/html", hreflang=None, title=None),
     ]
 
 
@@ -100,6 +89,14 @@ def test_from_legacy_sets_country_as_is_even_when_none():
     contact = Contact.from_legacy(_legacy_contact(contact_country=None), lang="de")
 
     assert contact.addresses[0].country is None
+
+
+def test_from_legacy_sets_reports_url_even_if_invalid_format():
+    contact = Contact.from_legacy(_legacy_contact(), lang="rm")
+
+    assert contact.links == [
+        UnvalidatedLink(href="invalid-url.ch", typ="text/html", hreflang="rm", title=None),
+    ]
 
 
 def test_from_legacy_returns_none_without_organization():
