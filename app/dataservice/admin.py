@@ -21,15 +21,14 @@ from .models import (
 class DataserviceAdmin(PolymorphicParentModelAdmin):
     """Admin View for Dataservice"""
 
-    base_model = Dataservice  # Optional, explicitly set here.
-    child_models = (
+    child_models = [  # noqa: RUF012
         WMSDataservice,
         WMTSDataservice,
         WFSDataservice,
         OGCAPIFeaturesDataservice,
         OGCAPIStacDataservice,
         GeoadminFeaturesDataservice,
-    )
+    ]
 
     list_display = ("dataservice_id", "title")
     readonly_fields = ("created_at", "updated_at", "dataservice_id")
