@@ -608,7 +608,7 @@ class Contact(BaseModel):
             city=legacy_contact.get("contact_city"),
             administrative_area=legacy_contact.get("contact_administrative_area"),
             postal_code=legacy_contact.get("contact_postal_code"),
-            country=legacy_contact.get("contact_country") or "CH",
+            country=legacy_contact.get("contact_country"),
         )
 
         links = []

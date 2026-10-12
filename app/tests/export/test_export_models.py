@@ -95,10 +95,10 @@ def test_from_legacy_falls_back_to_unlocalized_fields():
     ]
 
 
-def test_from_legacy_defaults_country_to_ch():
+def test_from_legacy_sets_country_as_is_even_when_none():
     contact = Contact.from_legacy(_legacy_contact(contact_country=None), lang="de")
 
-    assert contact.addresses[0].country == "CH"
+    assert contact.addresses[0].country is None
 
 
 def test_from_legacy_returns_none_without_organization():
