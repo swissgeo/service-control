@@ -88,7 +88,7 @@ def test_raises_exception_when_creating_db_object_with_mandatory_field_null(orga
 
 def test_form_valid_for_blank_optional_field(organization):
     class OrganizationUnitForm(ModelForm):
-        class Meta:
+        class Meta:  # ty: ignore[invalid-attribute-override]
             model = Unit
             fields = "__all__"  # noqa: DJ007
 
@@ -106,7 +106,7 @@ def test_form_valid_for_blank_optional_field(organization):
 
 def test_form_invalid_for_blank_mandatory_field(organization):
     class OrganizationUnitForm(ModelForm):
-        class Meta:
+        class Meta:  # ty: ignore[invalid-attribute-override]
             model = Unit
             fields = "__all__"  # noqa: DJ007
 

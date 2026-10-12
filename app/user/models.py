@@ -155,7 +155,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # password is set in inherited AbstractBaseUser, but not used as authentication is done
     # externally.
-    password = None
+    password = None  # ty: ignore[invalid-assignment]
     # NOTE:
     #  - `groups` and `user_permissions` are set in inherited PermissionsMixin.
     #    For API calls the permissions and groups are handled by Verified Permissions and both
@@ -224,7 +224,7 @@ class HumanUserManager(models.Manager):
 class MachineUser(CustomUser):
     objects = MachineUserManager()
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         proxy = True
         verbose_name = "Machine User"
         verbose_name_plural = "Machine Users"
@@ -346,7 +346,7 @@ class HumanUser(CustomUser):
             update_fields=update_fields,
         )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         proxy = True
         verbose_name = "Human User"
         verbose_name_plural = "Human Users"

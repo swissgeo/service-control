@@ -21,13 +21,13 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
     """Admin View for Distribution"""
 
     base_model = Distribution  # Optional, explicitly set here.
-    child_models = (
+    child_models = [  # noqa: RUF012
         ExternalWMSDistribution,
         ExternalWMTSDistribution,
         ExternalStacDistribution,
         ExternalGeoJSONDistribution,
         ExternalGeoadminFeaturesDistribution,
-    )
+    ]
 
     list_filter = (
         PolymorphicChildModelFilter,
