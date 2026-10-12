@@ -99,6 +99,15 @@ def test_from_legacy_sets_reports_url_even_if_invalid_format():
     ]
 
 
+def test_from_legacy_link_skipped_if_no_url():
+    legacy_contact = _legacy_contact(lang="de")
+    legacy_contact["online_resources"][0]["url"] = None
+    legacy_contact["online_resources"][0]["url_de"] = None
+    contact = Contact.from_legacy(legacy_contact, lang="de")
+
+    assert not contact.links
+
+
 def test_from_legacy_returns_none_without_organization():
     """The OGC contact schema requires at least one of `name` or `organization`."""
     legacy_contact = _legacy_contact()
