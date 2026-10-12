@@ -33,7 +33,7 @@ from harvest.models import (
 )
 from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
-from thesaurus.models import Concept, Thesaurus
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from utils.command import CustomBaseCommand
 
 if TYPE_CHECKING:
@@ -843,7 +843,11 @@ class Command(CustomBaseCommand):
                     log_metrics["concepts.concepts_created"] += 1
                 concepts.add(concept)
 
-            dataset.concepts.set(concepts)
+            # Replace dataset concepts, but keep the eCH-0166 concepts (harvested somewhere else)
+            concepts_ech = set(
+                dataset.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID).all()
+            )
+            dataset.concepts.set(concepts | concepts_ech)
             log_metrics["concepts.datasets_updated"] += 1
         self.print_success(f"Concept import completed. Metrics: {log_metrics}")
 
