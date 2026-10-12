@@ -32,7 +32,7 @@ from harvest.utils import (
 )
 from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
-from thesaurus.models import Concept, Thesaurus
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 
@@ -1097,12 +1097,18 @@ class Command(CustomBaseCommand):
             )
             metrics["concepts.created"] += created
 
-            # Replace dataset concepts
+            # Replace dataset concepts, but keep the eCH-0166 concepts (harvested somewhere else)
             concepts = gemet_concepts + geocat_concepts
             if aggregate and update_aggregate:
-                aggregate.concepts.set(concepts)
+                concepts_ech = list(
+                    aggregate.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID).all()
+                )
+                aggregate.concepts.set(concepts + concepts_ech)
             if part and update_part:
-                part.concepts.set(concepts)
+                concepts_ech = list(
+                    part.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID).all()
+                )
+                part.concepts.set(concepts + concepts_ech)
 
         self.print_success(f"Concept import completed. Metrics: {metrics}")
 

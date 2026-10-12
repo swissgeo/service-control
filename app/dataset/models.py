@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
 
+from thesaurus.models import Concept
 from utils.fields import CustomSlugField
 from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 
@@ -112,7 +113,7 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         related_name="preferred_for_datasets",
     )
 
-    concepts = models.ManyToManyField("thesaurus.Concept", related_name="datasets", blank=True)
+    concepts = models.ManyToManyField(Concept, related_name="datasets", blank=True)
 
     units = models.ManyToManyField(
         "organization.Unit", through="DatasetToUnit", related_name="datasets"

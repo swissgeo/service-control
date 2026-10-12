@@ -27,7 +27,7 @@ from harvest.models import (
 from legal.models import GeopoliticalEntity
 from organization.models import Contact as ContactModel
 from organization.models import Organization, Unit
-from thesaurus.models import Concept, Thesaurus
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 
 @pytest.fixture(name="dynamodb")
@@ -1473,6 +1473,15 @@ def test_command_uses_distribution_mapping(dynamodb, db):
 # Concepts
 # --------------------------------------------------------------------------------------------------
 def test_command_creates_and_updates_concepts(dynamodb, db):
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/ech0166.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    concept = Concept.objects.filter(
+        thesaurus__thesaurus_id=ECH0166_THESAURUS_ID, concept_id="imageryBaseMapsEarthCover_Imagery"
+    ).first()
+
     ds = Dataset(
         dataset_id="ch.bafu.moose",
         title_short_de="x",
@@ -1489,6 +1498,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
         data_source=Dataset.DataSource.BOD_DATASET,
     )
     ds.save()
+    ds.concepts.add(concept)
 
     kw_1 = Keyword(
         type="theme",
@@ -1535,7 +1545,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
     call_command("import_harvest_tables", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    thesaurus = Thesaurus.objects.first()
+    thesaurus = Thesaurus.objects.exclude(thesaurus_id=ECH0166_THESAURUS_ID).first()
     assert thesaurus
     assert thesaurus.thesaurus_id == "geonetwork.thesaurus.external.theme.gemet"
     assert {concept.concept_id for concept in thesaurus.concept_set.all()} == {
@@ -1555,6 +1565,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 
     ds.refresh_from_db()
     assert {concept.concept_id for concept in ds.concepts.all()} == {
+        "imageryBaseMapsEarthCover_Imagery",
         "http://www.eionet.europa.eu/gemet/concept/25",
         "http://www.eionet.europa.eu/gemet/concept/245",
     }
@@ -1572,6 +1583,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 
     ds.refresh_from_db()
     assert {concept.concept_id for concept in ds.concepts.all()} == {
+        "imageryBaseMapsEarthCover_Imagery",
         "http://www.eionet.europa.eu/gemet/concept/245",
         "http://www.eionet.europa.eu/gemet/concept/253",
     }

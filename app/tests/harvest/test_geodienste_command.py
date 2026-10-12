@@ -20,7 +20,7 @@ from harvest.models import (
 )
 from legal.models import GeopoliticalEntity
 from organization.models import Contact, Organization, Unit
-from thesaurus.models import Thesaurus
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 
 def api_response(services, config=None, capabilities=None):
@@ -2612,7 +2612,16 @@ def test_command_uses_contact_mappings(mock, client, db):
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 @patch("thesaurus.utils.get", name="rdf")
-def test_command_creates_concepts(rdf, mock, client, db):
+def test_command_creates_concepts(rdf, mock, client, db):  # noqa: PLR0915
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/ech0166.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    concept = Concept.objects.filter(
+        thesaurus__thesaurus_id=ECH0166_THESAURUS_ID, concept_id="imageryBaseMapsEarthCover_Imagery"
+    ).first()
+
     aggregate_dataset = Dataset(
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
@@ -2623,6 +2632,7 @@ def test_command_creates_concepts(rdf, mock, client, db):
         title_short_fr="Title FR",
     )
     aggregate_dataset.save()
+    aggregate_dataset.concepts.add(concept)
 
     part_dataset = Dataset(
         dataset_id="ch.geodienste-lu.av",
@@ -2634,6 +2644,7 @@ def test_command_creates_concepts(rdf, mock, client, db):
         title_short_fr="Title FR",
     )
     part_dataset.save()
+    part_dataset.concepts.add(concept)
 
     mock.side_effect = api_response(
         {
@@ -2706,9 +2717,9 @@ def test_command_creates_concepts(rdf, mock, client, db):
     assert "Adding concept http://geocat.ch/concept#1" in out
     assert "Concept baz de not found in thesaurus ThesaurusLookup" in out
 
-    assert {k.label_fr for k in aggregate_dataset.concepts.all()} == {"bar fr", "foo fr"}
-    assert {k.label_fr for k in part_dataset.concepts.all()} == {"bar fr", "foo fr"}
-    assert Thesaurus.objects.count() == 2
+    assert {k.label_fr for k in aggregate_dataset.concepts.all()} == {"Images", "bar fr", "foo fr"}
+    assert {k.label_fr for k in part_dataset.concepts.all()} == {"Images", "bar fr", "foo fr"}
+    assert Thesaurus.objects.count() == 3
 
     gemet = Thesaurus.objects.get(thesaurus_id="geonetwork.thesaurus.external.theme.gemet")
     concept = gemet.concept_set.first()
@@ -2737,7 +2748,7 @@ def test_command_creates_concepts(rdf, mock, client, db):
     call_command("import_geodienste", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert {k.label_fr for k in aggregate_dataset.concepts.all()} == {"bar fr", "foo fr"}
+    assert {k.label_fr for k in aggregate_dataset.concepts.all()} == {"Images", "bar fr", "foo fr"}
     assert {k.label_fr for k in part_dataset.concepts.all()} == {"bar fr", "foo fr"}
 
 
