@@ -136,7 +136,7 @@ class Command(CustomBaseCommand):
     ) -> tuple[str | None, str]:
         """Import a single organization from a dynamoDB item.
 
-        Returns the provider_id and the state of the import (created, updated, failed)
+        Returns the provider_id and the state of the import (created, updated, unchanged, failed)
         """
         try:
             import_org = OrganizationImport.from_dynamodb_item(item)
@@ -148,6 +148,7 @@ class Command(CustomBaseCommand):
         provider_id = import_org.provider_id
         Organization.objects.remove_data_source_id(provider_id)
 
+        state = "unchanged"
         update = True
         org, mapping = mappings.match(provider_id)
         if org:
@@ -166,6 +167,7 @@ class Command(CustomBaseCommand):
                     " yet, creating a new one."
                 )
                 update = False
+                state = "created"
                 org = Organization(
                     data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
                     geopolitical_entity=geopolitical_entity,
@@ -174,16 +176,19 @@ class Command(CustomBaseCommand):
 
         if update:
             self.print(f"Updating {org}")
-            for field in import_org:
-                setattr(org, field[0], field[1])
+            for name, value in import_org:
+                if hasattr(org, name) and getattr(org, name) != value:
+                    state = "updated"
+                    setattr(org, name, value)
 
             # Update geopolitical entity if it has changed
             if org.geopolitical_entity != geopolitical_entity:
+                state = "updated"
                 org.geopolitical_entity = geopolitical_entity
 
         org.add_data_source_id(provider_id)
         org.save()
-        return provider_id, "updated" if update else "created"
+        return provider_id, state
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -376,20 +381,28 @@ class Command(CustomBaseCommand):
                     else:
                         self.print(f"Dataset with dataset_id {dataset_id} already exists")
 
+                # Update
                 if update:
                     self.print(f"Updating {ds}")
-                    log_metrics["datasets.updated"] += 1
-                    ds.title_short_de = import_ds.title_de
-                    ds.title_short_fr = import_ds.title_fr
-                    ds.title_short_en = import_ds.title_en
-                    ds.title_short_it = import_ds.title_it
-                    ds.title_short_rm = import_ds.title_rm
-                    ds.description_de = import_ds.description_de
-                    ds.description_fr = import_ds.description_fr
-                    ds.description_en = import_ds.description_en
-                    ds.description_it = import_ds.description_it
-                    ds.description_rm = import_ds.description_rm
-                    ds.geocat_id = import_ds.geocat_id
+                    updated = False
+                    for target, source in (
+                        ("title_short_de", "title_de"),
+                        ("title_short_fr", "title_fr"),
+                        ("title_short_en", "title_en"),
+                        ("title_short_it", "title_it"),
+                        ("title_short_rm", "title_rm"),
+                        ("description_de", "description_de"),
+                        ("description_fr", "description_fr"),
+                        ("description_en", "description_en"),
+                        ("description_it", "description_it"),
+                        ("description_rm", "description_rm"),
+                        ("geocat_id", "geocat_id"),
+                    ):
+                        if getattr(ds, target) != (new := getattr(import_ds, source)):
+                            setattr(ds, target, new)
+                            updated = True
+                    if updated:
+                        log_metrics["datasets.updated"] += 1
 
                 ds.add_data_source_id(dataset_id)
                 ds.save()
@@ -560,23 +573,28 @@ class Command(CustomBaseCommand):
                 # If the layertype is WMTS we create a WMTS and WMS distribution,
                 # if it's WMS only a WMS distribution
                 if ljs.layertype == "wmts":
-                    dist, created = self.import_wmts_distribution(ljs, dataset, wmts_dataservice)
+                    dist, created, updated = self.import_wmts_distribution(
+                        ljs, dataset, wmts_dataservice
+                    )
                     processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.wmts"] += 1
-                    else:
+                    if updated:
                         log_metrics["distributions.updated.wmts"] += 1
                     # Set the preferred distribution to WMTS for WMTS layers
                     dataset.preferred_distribution = dist
                     dataset.save()
 
                 if ljs.layertype in ["wms", "wmts"]:
-                    dist, created = self.import_wms_distribution(ljs, dataset, wms_dataservice)
+                    dist, created, updated = self.import_wms_distribution(
+                        ljs, dataset, wms_dataservice
+                    )
                     processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.wms"] += 1
-                    else:
+                    if updated:
                         log_metrics["distributions.updated.wms"] += 1
+
                     # If the preferred distribution is not set yet, we set it to the WMS
                     # distribution
                     if not dataset.preferred_distribution:
@@ -584,12 +602,13 @@ class Command(CustomBaseCommand):
                         dataset.save()
 
                 if ljs.layertype == "geojson":
-                    dist, created = self.import_geojson_distribution(ljs, dataset)
+                    dist, created, updated = self.import_geojson_distribution(ljs, dataset)
                     processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.geojson"] += 1
-                    else:
+                    if updated:
                         log_metrics["distributions.updated.geojson"] += 1
+
                     # If the preferred distribution is not set yet,
                     # we set it to the GeoJSON distribution. Currently,
                     # layers of type geojson only have a GeoJSON distribution.
@@ -599,13 +618,13 @@ class Command(CustomBaseCommand):
 
                 if ljs.tooltip or ljs.searchable:
                     # We also create a Geoadmin Features distribution for layers with tooltip=true
-                    dist, created = self.import_api3features_distribution(
+                    dist, created, updated = self.import_api3features_distribution(
                         ljs, dataset, geoadminfeature_dataservice
                     )
                     processed[dataset.dataset_id].add(dist.distribution_id)
                     if created:
                         log_metrics["distributions.created.api3feature"] += 1
-                    else:
+                    if updated:
                         log_metrics["distributions.updated.api3feature"] += 1
 
         for dataset_id, distribution_ids in processed.items():
@@ -628,7 +647,7 @@ class Command(CustomBaseCommand):
 
     def import_wmts_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wmts_dataservice: WMTSDataservice
-    ) -> tuple[Distribution, bool]:
+    ) -> tuple[Distribution, bool, bool]:
 
         wmts_distribution_id = ljs.layer_id + ":wmts"
         self.print(f"Importing WMTS Distribution {wmts_distribution_id}")
@@ -638,28 +657,40 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             wmts_layer_name_de=ljs.layer_id,
         )
-        dist.dataservice = wmts_dataservice
-        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = dataset.title_short_de
-        dist.title_fr = dataset.title_short_fr
-        dist.title_it = dataset.title_short_it
-        dist.title_en = dataset.title_short_en
-        dist.title_rm = dataset.title_short_rm
-        dist.description_de = dataset.description_de
-        dist.description_fr = dataset.description_fr
-        dist.description_it = dataset.description_it
-        dist.description_en = dataset.description_en
-        dist.description_rm = dataset.description_rm
+
+        values = {
+            "dataservice": wmts_dataservice,
+            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+            "title_de": dataset.title_short_de,
+            "title_fr": dataset.title_short_fr,
+            "title_it": dataset.title_short_it,
+            "title_en": dataset.title_short_en,
+            "title_rm": dataset.title_short_rm,
+            "description_de": dataset.description_de,
+            "description_fr": dataset.description_fr,
+            "description_it": dataset.description_it,
+            "description_en": dataset.description_en,
+            "description_rm": dataset.description_rm,
+        }
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
-            dist.opacity = ljs.opacity
-        dist.save()
-        return dist, created
+            values["opacity"] = ljs.opacity
+
+        updated = False
+        for attribute, value in values.items():
+            if getattr(dist, attribute) != value:
+                updated = True
+                setattr(dist, attribute, value)
+
+        if updated:
+            dist.save()
+
+        return dist, created, updated
 
     def import_wms_distribution(
         self, ljs: LayersJSImport, dataset: Dataset, wms_dataservice: WMSDataservice
-    ) -> tuple[Distribution, bool]:
+    ) -> tuple[Distribution, bool, bool]:
 
         wms_distribution_id = ljs.layer_id + ":wms"
         self.print(f"Importing WMS Distribution {wms_distribution_id}")
@@ -669,31 +700,43 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             wms_layer_name_de=ljs.layer_id,
         )
-        dist.dataservice = wms_dataservice
-        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = dataset.title_short_de
-        dist.title_fr = dataset.title_short_fr
-        dist.title_it = dataset.title_short_it
-        dist.title_en = dataset.title_short_en
-        dist.title_rm = dataset.title_short_rm
-        dist.description_de = dataset.description_de
-        dist.description_fr = dataset.description_fr
-        dist.description_it = dataset.description_it
-        dist.description_en = dataset.description_en
-        dist.description_rm = dataset.description_rm
+
+        values = {
+            "dataservice": wms_dataservice,
+            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+            "title_de": dataset.title_short_de,
+            "title_fr": dataset.title_short_fr,
+            "title_it": dataset.title_short_it,
+            "title_en": dataset.title_short_en,
+            "title_rm": dataset.title_short_rm,
+            "description_de": dataset.description_de,
+            "description_fr": dataset.description_fr,
+            "description_it": dataset.description_it,
+            "description_en": dataset.description_en,
+            "description_rm": dataset.description_rm,
+        }
 
         # opacity must be between 0 (excluded) and 1 (included)
         if ljs.opacity and ljs.opacity <= 1 and ljs.opacity > 0:
-            dist.opacity = ljs.opacity
+            values["opacity"] = ljs.opacity
 
         if ljs.wms_gutter:
-            dist.gutter = ljs.wms_gutter
-        dist.save()
-        return dist, created
+            values["gutter"] = ljs.wms_gutter
+
+        updated = False
+        for attribute, value in values.items():
+            if getattr(dist, attribute) != value:
+                updated = True
+                setattr(dist, attribute, value)
+
+        if updated:
+            dist.save()
+
+        return dist, created, updated
 
     def import_geojson_distribution(
         self, ljs: LayersJSImport, dataset: Dataset
-    ) -> tuple[Distribution, bool]:
+    ) -> tuple[Distribution, bool, bool]:
 
         geojson_distribution_id = ljs.layer_id + ":geojson"
         self.print(f"Importing GeoJSON Distribution {geojson_distribution_id}")
@@ -703,36 +746,48 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             defaults={"geojson_url_de": ljs.geojson_url_de},
         )
-        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = dataset.title_short_de
-        dist.title_fr = dataset.title_short_fr
-        dist.title_it = dataset.title_short_it
-        dist.title_en = dataset.title_short_en
-        dist.title_rm = dataset.title_short_rm
-        dist.description_de = dataset.description_de
-        dist.description_fr = dataset.description_fr
-        dist.description_it = dataset.description_it
-        dist.description_en = dataset.description_en
-        dist.description_rm = dataset.description_rm
-        dist.geojson_url_de = ljs.geojson_url_de
-        dist.geojson_url_fr = ljs.geojson_url_fr
-        dist.geojson_url_it = ljs.geojson_url_it
-        dist.geojson_url_en = ljs.geojson_url_en
-        dist.geojson_url_rm = ljs.geojson_url_rm
-        # The geojson style URL is not stored in the layers_js table,
-        # but we can construct it from the layer_id
-        # (see https://github.com/geoadmin/mf-chsdi3/blob/master/chsdi/models/bod.py#L142)
-        # Note: we always reference prod env here
-        dist.style_url = "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json"
-        dist.save()
-        return dist, created
+
+        values = {
+            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+            "title_de": dataset.title_short_de,
+            "title_fr": dataset.title_short_fr,
+            "title_it": dataset.title_short_it,
+            "title_en": dataset.title_short_en,
+            "title_rm": dataset.title_short_rm,
+            "description_de": dataset.description_de,
+            "description_fr": dataset.description_fr,
+            "description_it": dataset.description_it,
+            "description_en": dataset.description_en,
+            "description_rm": dataset.description_rm,
+            "geojson_url_de": ljs.geojson_url_de,
+            "geojson_url_fr": ljs.geojson_url_fr,
+            "geojson_url_it": ljs.geojson_url_it,
+            "geojson_url_en": ljs.geojson_url_en,
+            "geojson_url_rm": ljs.geojson_url_rm,
+            # The geojson style URL is not stored in the layers_js table,
+            # but we can construct it from the layer_id
+            # (see https://github.com/geoadmin/mf-chsdi3/blob/master/chsdi/models/bod.py#L142)
+            # Note: we always reference prod env here
+            "style_url": "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json",
+        }
+
+        updated = False
+        for attribute, value in values.items():
+            if getattr(dist, attribute) != value:
+                updated = True
+                setattr(dist, attribute, value)
+
+        if updated:
+            dist.save()
+
+        return dist, created, updated
 
     def import_api3features_distribution(
         self,
         ljs: LayersJSImport,
         dataset: Dataset,
         geoadminfeature_dataservice: GeoadminFeaturesDataservice,
-    ) -> tuple[Distribution, bool]:
+    ) -> tuple[Distribution, bool, bool]:
 
         geoadminfeature_distribution_id = ljs.layer_id + ":api3features"
         self.print(f"Importing Geoadmin Features Distribution {geoadminfeature_distribution_id}")
@@ -742,24 +797,36 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             layer_id=ljs.layer_id,
         )
-        dist.dataservice = geoadminfeature_dataservice
-        dist.data_source = Distribution.DataSource.BOD_LAYERS_JS
-        dist.title_de = "Geoadmin Features"
-        dist.title_fr = "Geoadmin Features"
-        dist.title_it = "Geoadmin Features"
-        dist.title_en = "Geoadmin Features"
-        dist.title_rm = "Geoadmin Features"
-        dist.meta_information = True
-        # Note: This information is not reliable in the layers_js table. There are
-        # layers with searchable=true that return 404 for search requests on ../SearchServer
-        # with `type=features`, which indicates that they are not actually queryable.
-        dist.queryable = ljs.searchable
-        # Note: This distribution is only created if tooltip=true in layers_js
-        # so this automatically means the layer is 'renderable' (i.e. has a html tooltip),
-        # but we set it explicitly here for clarity.
-        dist.renderable = ljs.tooltip
-        dist.save()
-        return dist, created
+
+        values = {
+            "dataservice": geoadminfeature_dataservice,
+            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+            "title_de": "Geoadmin Features",
+            "title_fr": "Geoadmin Features",
+            "title_it": "Geoadmin Features",
+            "title_en": "Geoadmin Features",
+            "title_rm": "Geoadmin Features",
+            "meta_information": True,
+            # Note: This information is not reliable in the layers_js table. There are
+            # layers with searchable=true that return 404 for search requests on ../SearchServer
+            # with `type=features`, which indicates that they are not actually queryable.
+            "queryable": ljs.searchable,
+            # Note: This distribution is only created if tooltip=true in layers_js
+            # so this automatically means the layer is 'renderable' (i.e. has a html tooltip),
+            # but we set it explicitly here for clarity.
+            "renderable": ljs.tooltip,
+        }
+
+        updated = False
+        for attribute, value in values.items():
+            if getattr(dist, attribute) != value:
+                updated = True
+                setattr(dist, attribute, value)
+
+        if updated:
+            dist.save()
+
+        return dist, created, updated
 
     # ##########################################################################
     def import_concepts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
@@ -844,11 +911,13 @@ class Command(CustomBaseCommand):
                 concepts.add(concept)
 
             # Replace dataset concepts, but keep the eCH-0166 concepts (harvested somewhere else)
-            concepts_ech = set(
+            concepts = concepts | set(
                 dataset.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID).all()
             )
-            dataset.concepts.set(concepts | concepts_ech)
-            log_metrics["concepts.datasets_updated"] += 1
+            if set(dataset.concepts.all()) != concepts:
+                dataset.concepts.set(concepts)
+                log_metrics["concepts.datasets_updated"] += 1
+
         self.print_success(f"Concept import completed. Metrics: {log_metrics}")
 
     # ##########################################################################
@@ -884,6 +953,7 @@ class Command(CustomBaseCommand):
         log_metrics = {
             "contacts.datasets_processed": 0,
             "contacts.contacts_created": 0,
+            "contacts.contacts_conflicted": 0,
             "contacts.datasets_updated": 0,
         }
 
@@ -989,6 +1059,7 @@ class Command(CustomBaseCommand):
                         self.print_warning(
                             f"{dataset}: Existing contact {contact} for {role} differs"
                         )
+                        log_metrics["contacts.contacts_conflicted"] += 1
                 else:
                     self.print(f"Creating contact for organization {organization}")
                     log_metrics["contacts.contacts_created"] += 1
@@ -1016,6 +1087,7 @@ class Command(CustomBaseCommand):
 
                 DatasetToContact.objects.create(dataset=dataset, contact=contact, role=role)
                 log_metrics["contacts.datasets_updated"] += 1
+
         self.print_success(f"Contact import completed. Metrics: {log_metrics}")
 
     def find_organization(
