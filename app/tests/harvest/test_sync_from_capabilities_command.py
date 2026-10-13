@@ -29,7 +29,7 @@ def fixture_stac():
 
     """
 
-    with patch("dataservice.management.commands.sync_from_capabilities.Client") as client_cls:
+    with patch("harvest.management.commands.sync_from_capabilities.Client") as client_cls:
         collections = MagicMock(name="collections")
         client = MagicMock(name="client")
         client.collection_search.return_value.collections = collections

@@ -3,11 +3,11 @@ from unittest.mock import patch
 
 from django.core.management import call_command
 
-from legal.management.commands.import_legal import Command
+from harvest.management.commands.import_legal import Command
 from legal.models import GeopoliticalEntity
 
 
-@patch("legal.management.commands.import_legal.get", name="mocks")
+@patch("harvest.management.commands.import_legal.get", name="mocks")
 def test_new_entities(mock, client, db):
     mock.return_value.json.return_value = [
         {
@@ -55,7 +55,7 @@ def test_new_entities(mock, client, db):
     )
 
 
-@patch("legal.management.commands.import_legal.get", name="mock")
+@patch("harvest.management.commands.import_legal.get", name="mock")
 def test_update_entities(mock, client, db):
     mock.return_value.json.return_value = [
         {
@@ -119,7 +119,7 @@ def test_update_entities(mock, client, db):
     )
 
 
-@patch("legal.management.commands.import_legal.get", name="mock")
+@patch("harvest.management.commands.import_legal.get", name="mock")
 def test_entities_parent_not_existing(mock, client, db):
     mock.return_value.json.return_value = [
         {
@@ -174,7 +174,7 @@ def test_entities_parent_not_existing(mock, client, db):
     )
 
 
-@patch("legal.management.commands.import_legal.get", name="mock")
+@patch("harvest.management.commands.import_legal.get", name="mock")
 def test_entities_parent_is_removed(mock, client, db):
     mock.return_value.json.return_value = [
         {

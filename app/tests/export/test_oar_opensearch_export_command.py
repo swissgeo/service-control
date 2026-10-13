@@ -23,11 +23,11 @@ import pytest
 from dataservice.models import WMSDataservice
 from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
 from distribution.models import ExternalWMSDistribution
-from oar_export.management.commands.oar_opensearch_export import _is_generation_of
+from export.management.commands.oar_opensearch_export import _is_generation_of
 from organization.models import Organization
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
-MODULE = "oar_export.management.commands.oar_opensearch_export"
+MODULE = "export.management.commands.oar_opensearch_export"
 
 
 def _make_dataservice() -> WMSDataservice:

@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     "dataservice",
     "distribution",
     "legal",
-    "oar_export",
+    "export",
 ]
 
 MIDDLEWARE = [
