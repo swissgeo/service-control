@@ -340,14 +340,17 @@ class OARDistribution(OARRecord):
                         typ="application/geo+json",
                     )
                 )
-                record.links.append(
-                    Link(
-                        href=dist.style_url,
-                        rel="styledBy",
-                        title="Link to style file for the GeoJSON layer",
-                        typ="application/json",
+                # Add a link to an associated style if there
+                # exists one.
+                if dist.style_url:
+                    record.links.append(
+                        Link(
+                            href=dist.style_url,
+                            rel="styledBy",
+                            title="Link to style file for the GeoJSON layer",
+                            typ="application/json",
+                        )
                     )
-                )
         elif hasattr(dist, "dataservice") and dist.dataservice:
             # TODO: We should probably only export distributions that actually have an
             # associated dataservice, as otherwise the distribution record would be
@@ -673,7 +676,7 @@ class OASStyleLink(BaseLink):
         return self
 
 
-class RasterPaint(BaseModel):
+class PaintConfig(BaseModel):
     """A Maplibre paint definition.
 
     See https://maplibre.org/maplibre-style-spec/layers/#paint.
@@ -681,56 +684,46 @@ class RasterPaint(BaseModel):
     Note that raster-gutter is actually not part of the specs.
     """
 
-    raster_opacity: float | None = Field(default=None, serialization_alias="raster-opacity")
-    raster_gutter: int | None = Field(default=None, serialization_alias="raster-gutter")
+    raster_opacity: float | None = Field(
+        default=1.0, ge=0.0, le=1.0, serialization_alias="raster-opacity"
+    )
+    raster_gutter: int | None = Field(
+        default=None, ge=0, le=1000, serialization_alias="raster-gutter"
+    )
+
+    # We forbid to add extra fields since we want to have control over the fields
+    model_config = ConfigDict(extra="forbid")
 
 
-class RasterLayer(BaseModel):
-    """A Maplibre raster layer definition.
+class MaplibreStyle(BaseModel):
+    """A Maplibre style definition
+
+    A Maplibre style definition is basically a JSON object with specific
+    root level and nested properties. We currently use only the `layers` root
+    property.
+
+    See https://maplibre.org/maplibre-style-spec/layers/.
+    """
+
+    layers: list[MaplibreLayer] = []
+
+
+class MaplibreLayer(BaseModel):
+    """A generic Maplibre layer definition.
 
     See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
     """
 
     id: str
-    paint: RasterPaint
     source: str
-    type: Literal["raster"] = "raster"
+    type: str | None = None
+    paint: PaintConfig = PaintConfig()
 
 
-class RasterStyle(BaseModel):
-    """A Maplibre style file for a single raster layer.
+class MaplibreRasterLayer(MaplibreLayer):
+    """A Maplibre raster layer definition.
 
-    See https://maplibre.org/maplibre-style-spec/layers/.
+    See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
     """
 
-    id: str
-    layers: list[RasterLayer] = Field(default_factory=list)
-    lang: str = Field(default="de", exclude=True)
-
-    @classmethod
-    def from_distribution(
-        cls,
-        dist: Distribution,
-        lang: str,
-    ) -> RasterStyle | None:
-        if not isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
-            return None
-
-        id_ = f"{dist.distribution_id}:style"
-        return RasterStyle(
-            id=id_,
-            layers=[
-                RasterLayer(
-                    id=id_,
-                    paint=RasterPaint(
-                        raster_opacity=dist.opacity,
-                        raster_gutter=getattr(dist, "gutter", None),
-                    ),
-                    source=dist.dataservice.dataservice_id,
-                )
-            ],
-            lang=lang,
-        )
-
-    def get_key(self) -> str:
-        return f"/styles/{self.id}.{self.lang}"
+    type: Literal["raster"]

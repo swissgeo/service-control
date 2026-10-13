@@ -16,7 +16,7 @@ from distribution.models import (
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
-from export.models import MaplibreRasterLayer, MaplibreStyle, PaintConfig
+from export.export_models import MaplibreRasterLayer, MaplibreStyle, PaintConfig
 from utils.command import CustomBaseCommand
 
 env = environ.Env()
