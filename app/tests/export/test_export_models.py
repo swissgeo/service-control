@@ -1,5 +1,5 @@
 from dataset.models import Dataset, DatasetToContact
-from oar_export.export_models import Contact, OARDataset, UnvalidatedLink
+from export.export_models import Contact, OARDataset, UnvalidatedLink
 
 
 def _legacy_contact(**overrides) -> dict:
