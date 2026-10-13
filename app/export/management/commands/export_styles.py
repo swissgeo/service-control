@@ -1,11 +1,13 @@
 import json
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 import boto3
 import environ
 from botocore.client import Config
 
+from django.apps import apps
 from django.core.management.base import CommandParser
 
 from distribution.models import (
@@ -212,7 +214,8 @@ class Command(CustomBaseCommand):
                 f"Uploading style for {distribution.distribution_id} to {key}"
             )
             if not options["dry_run"]:
-                with open(f"./distribution/styles/{style_file_name}") as f:
+                style_dir = Path(apps.get_app_config("distribution").path) / "styles"
+                with open(style_dir / style_file_name) as f:
                     style_obj = json.load(f)
                     self.do_upload(style_obj, key)
 
