@@ -606,7 +606,6 @@ def test_dump_dataset_document(db, tmp_path):
                             {
                                 "href": "http://www.swisstopo.ch",
                                 "type": "text/html",
-                                "hreflang": "it",
                             }
                         ],
                         "roles": ["pointOfContact"],
@@ -682,7 +681,6 @@ def test_dump_dataset_document(db, tmp_path):
                             {
                                 "href": "http://www.swisstopo.ch",
                                 "type": "text/html",
-                                "hreflang": "rm",
                             }
                         ],
                         "roles": ["pointOfContact"],
@@ -758,7 +756,6 @@ def test_dump_dataset_document(db, tmp_path):
                             {
                                 "href": "http://www.swisstopo.ch",
                                 "type": "text/html",
-                                "hreflang": "en",
                             }
                         ],
                         "roles": ["pointOfContact"],
