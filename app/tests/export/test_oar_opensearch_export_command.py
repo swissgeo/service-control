@@ -30,6 +30,12 @@ from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 MODULE = "export.management.commands.oar_opensearch_export"
 
 
+def _make_thesaurus() -> Thesaurus:
+    thesaurus = Thesaurus(thesaurus_id=ECH0166_THESAURUS_ID)
+    thesaurus.save()
+    return thesaurus
+
+
 def _make_dataservice() -> WMSDataservice:
     dataservice = WMSDataservice(
         dataservice_id="wmts-geoadminch",
@@ -43,8 +49,7 @@ def _make_dataservice() -> WMSDataservice:
 
 
 def _make_dataset() -> Dataset:
-    thesaurus = Thesaurus(thesaurus_id=ECH0166_THESAURUS_ID)
-    thesaurus.save()
+    thesaurus = _make_thesaurus()
     concept = Concept(thesaurus=thesaurus, concept_id="location")
     concept.save()
 
@@ -1118,6 +1123,127 @@ def test_dump_organization_includes_geodienste_aggregate_organizations(cognito, 
     assert (tmp_path / "swissgeo-organizations" / "ch.kgk.json").exists()
 
 
+def test_dump_thesaurus_document(db, tmp_path):
+    _make_thesaurus()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert _read_dump(tmp_path, "swissgeo-thesauri", "ech0166") == {
+        "de": {
+            "id": "ech0166",
+            "links": [
+                {
+                    "href": "/api/thesauri/ech0166.de.json",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (custom JSON format)",
+                    "type": "application/json",
+                },
+                {
+                    "href": "/api/thesauri/ech0166.de.jsonld",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (SKOS JSON-LD)",
+                    "type": "application/ld+json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {"type": "Thesaurus"},
+        },
+        "fr": {
+            "id": "ech0166",
+            "links": [
+                {
+                    "href": "/api/thesauri/ech0166.fr.json",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (custom JSON format)",
+                    "type": "application/json",
+                },
+                {
+                    "href": "/api/thesauri/ech0166.fr.jsonld",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (SKOS JSON-LD)",
+                    "type": "application/ld+json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {"type": "Thesaurus"},
+        },
+        "it": {
+            "id": "ech0166",
+            "links": [
+                {
+                    "href": "/api/thesauri/ech0166.it.json",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (custom JSON format)",
+                    "type": "application/json",
+                },
+                {
+                    "href": "/api/thesauri/ech0166.it.jsonld",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (SKOS JSON-LD)",
+                    "type": "application/ld+json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {"type": "Thesaurus"},
+        },
+        "rm": {
+            "id": "ech0166",
+            "links": [
+                {
+                    "href": "/api/thesauri/ech0166.rm.json",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (custom JSON format)",
+                    "type": "application/json",
+                },
+                {
+                    "href": "/api/thesauri/ech0166.rm.jsonld",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (SKOS JSON-LD)",
+                    "type": "application/ld+json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {"type": "Thesaurus"},
+        },
+        "en": {
+            "id": "ech0166",
+            "links": [
+                {
+                    "href": "/api/thesauri/ech0166.en.json",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (custom JSON format)",
+                    "type": "application/json",
+                },
+                {
+                    "href": "/api/thesauri/ech0166.en.jsonld",
+                    "rel": "enclosure",
+                    "title": "Thesaurus (SKOS JSON-LD)",
+                    "type": "application/ld+json",
+                },
+            ],
+            "linkTemplates": [],
+            "type": "Feature",
+            "properties": {"type": "Thesaurus"},
+        },
+        "id": "ech0166",
+        "type": "Feature",
+    }
+
+
+def test_dump_thesaurus_skips_non_ech(db, tmp_path):
+    thesaurus = _make_thesaurus()
+    thesaurus.thesaurus_id = "foo"
+    thesaurus.save()
+
+    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+
+    assert not (tmp_path / "swissgeo-thesauri" / "foo").exists()
+
+
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
 @patch(f"{MODULE}.Command.get_client")
 @patch("organization.models.Client")
@@ -1133,18 +1259,19 @@ def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client,
 
     # A fresh timestamped generation is created for each of the four aliases.
     created = {call.kwargs["index"] for call in client.indices.create.call_args_list}
-    assert len(created) == 4
+    assert len(created) == 5
     for alias in (
         "geoadmin-services",
         "swissgeo-catalog",
         "swissgeo-distributions",
         "swissgeo-organizations",
+        "swissgeo-thesauri",
     ):
         assert any(_is_generation_of(index, alias) for index in created), alias
 
     # helpers.bulk is called once per record type; the documents go into the generation index,
     # keyed by the alias each generation belongs to.
-    assert bulk.call_count == 4
+    assert bulk.call_count == 5
     indexed: dict[str, list[dict]] = {}
     for call in bulk.call_args_list:
         actions = list(call.args[1])
@@ -1157,6 +1284,7 @@ def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client,
                 "swissgeo-catalog",
                 "swissgeo-distributions",
                 "swissgeo-organizations",
+                "swissgeo-thesauri",
             )
             if _is_generation_of(target, a)
         )
@@ -1174,7 +1302,7 @@ def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client,
     assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["ch.bafu.moose"]
     # Distributions are indexed individually, keyed by distribution id.
     assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["ch.bafu.moose:wms"]
-    assert [a["_id"] for a in indexed["swissgeo-organizations"]] == ["ch.bafu"]
+    assert [a["_id"] for a in indexed["swissgeo-thesauri"]] == ["ech0166"]
 
 
 @patch(f"{MODULE}.helpers.bulk", return_value=(0, []))
@@ -1199,6 +1327,7 @@ def test_export_swaps_all_aliases_in_a_single_request(cognito, get_client, bulk,
         "swissgeo-catalog",
         "swissgeo-distributions",
         "swissgeo-organizations",
+        "swissgeo-thesauri",
     ]
     for alias, index in added.items():
         assert _is_generation_of(index, alias)
@@ -1224,6 +1353,7 @@ def test_export_detaches_previous_generation_and_prunes_the_oldest(cognito, get_
             "swissgeo-catalog",
             "swissgeo-distributions",
             "swissgeo-organizations",
+            "swissgeo-thesauri",
         )
     }
     client = _mock_client_with_generations(existing)
@@ -1241,6 +1371,7 @@ def test_export_detaches_previous_generation_and_prunes_the_oldest(cognito, get_
         "swissgeo-catalog": "swissgeo-catalog-20260724120000",
         "swissgeo-distributions": "swissgeo-distributions-20260724120000",
         "swissgeo-organizations": "swissgeo-organizations-20260724120000",
+        "swissgeo-thesauri": "swissgeo-thesauri-20260724120000",
     }
 
     # The two oldest generations of every alias are deleted; the two most recent survive for a
@@ -1255,6 +1386,8 @@ def test_export_detaches_previous_generation_and_prunes_the_oldest(cognito, get_
         "swissgeo-distributions-20260722120000",
         "swissgeo-organizations-20260721120000",
         "swissgeo-organizations-20260722120000",
+        "swissgeo-thesauri-20260721120000",
+        "swissgeo-thesauri-20260722120000",
     ]
 
 

@@ -28,7 +28,7 @@ from distribution.models import (
     ExternalWMTSDistribution,
 )
 from organization.models import Organization
-from thesaurus.models import ECH0166_THESAURUS_ID
+from thesaurus.models import ECH0166_THESAURUS_ID, Thesaurus
 
 
 def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distribution | None:
@@ -730,3 +730,63 @@ class MaplibreRasterLayer(MaplibreLayer):
     """
 
     type: Literal["raster"]
+
+
+class ThesaurusLink(BaseLink):
+    """Link to a thesaurus file."""
+
+    thesaurus_id: str = Field(exclude=True)
+    lang: str
+    fmt: str = Field(default="json")
+
+    @model_validator(mode="after")
+    def generate_href_value(self) -> ThesaurusLink:
+        """Generate the href value for the thesaurus link.
+
+        This method is called after the model is initialized and will set the href value
+        based on the thesauri path prefix and the thesaurus_id.
+        """
+        self.href = f"{settings.THESAURI_PATH_PREFIX}/{self.thesaurus_id}.{self.lang}.{self.fmt}"
+        return self
+
+
+class OARThesaurus(OARRecord):
+    """Thesaurus record
+
+    A thesaurus is a Record with type="Thesaurus"
+    """
+
+    properties: dict = {}
+
+    @classmethod
+    def from_thesaurus(cls, thesaurus: Thesaurus, lang: str) -> OARThesaurus:
+
+        # Instantiate record with common properties
+        record = OARThesaurus(
+            id=thesaurus.thesaurus_id,
+            lang=lang,
+            collection_id=settings.OAR_THESAURI_COLLECTION_ID,
+        )
+
+        record.properties["type"] = "Thesaurus"
+        record.links.extend(
+            [
+                ThesaurusLink(
+                    thesaurus_id=thesaurus.thesaurus_id,
+                    rel="enclosure",
+                    title="Thesaurus (custom JSON format)",
+                    typ="application/json",
+                    lang=lang,
+                ),
+                ThesaurusLink(
+                    thesaurus_id=thesaurus.thesaurus_id,
+                    rel="enclosure",
+                    title="Thesaurus (SKOS JSON-LD)",
+                    fmt="jsonld",
+                    typ="application/ld+json",
+                    lang=lang,
+                ),
+            ]
+        )
+
+        return record
