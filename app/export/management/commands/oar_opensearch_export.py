@@ -30,9 +30,11 @@ from export.export_models import (
     OARDataset,
     OARDistribution,
     OAROrganization,
+    OARThesaurus,
 )
 from export.opensearch_helper import add_connection_arguments, build_client
 from organization.models import Organization
+from thesaurus.models import ECH0166_THESAURUS_ID, Thesaurus
 from utils.command import CustomBaseCommand
 
 # OpenSearch index names.
@@ -40,6 +42,7 @@ SERVICES_INDEX = settings.OAR_SERVICES_COLLECTION_ID
 DATASETS_INDEX = settings.OAR_DATASETS_COLLECTION_ID
 DISTRIBUTIONS_INDEX = settings.OAR_DISTRIBUTIONS_COLLECTION_ID
 ORGANIZATIONS_INDEX = settings.OAR_ORGANIZATIONS_COLLECTION_ID
+THESAURI_INDEX = settings.OAR_THESAURI_COLLECTION_ID
 
 # Index name -> mapping file.
 _INDEXES_DIR = Path(__file__).parent / "opensearch-indexes"
@@ -48,6 +51,7 @@ INDEX_MAPPING_FILES = {
     DATASETS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-datasets.json",
     DISTRIBUTIONS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-distributions.json",
     ORGANIZATIONS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-organizations.json",
+    THESAURI_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-thesauri.json",
 }
 
 # Selectable record types -> target index.
@@ -56,6 +60,7 @@ TYPE_TO_INDEX = {
     "datasets": DATASETS_INDEX,
     "distributions": DISTRIBUTIONS_INDEX,
     "organizations": ORGANIZATIONS_INDEX,
+    "thesauri": THESAURI_INDEX,
 }
 
 # Language codes in the canonical order (de, fr, it, en).
@@ -327,7 +332,7 @@ class Command(CustomBaseCommand):
 
         self.print_success(f"Wrote {len(documents)} documents to {target_dir}")
 
-    def build_documents(self, document_type: str) -> list[dict]:
+    def build_documents(self, document_type: str) -> list[dict]:  # noqa: C901
         documents: list[dict] = []
         if document_type == "services":
             for service in Dataservice.objects.all():
@@ -350,6 +355,11 @@ class Command(CustomBaseCommand):
             ).all():
                 self.print(f" - {organization.organization_id}")
                 documents.append(self.build_organization_doc(organization))
+        elif document_type == "thesauri":
+            # only export the eCH-0166 thesaurus at the moment
+            for thesaurus in Thesaurus.objects.filter(thesaurus_id=ECH0166_THESAURUS_ID).all():
+                self.print(f" - {thesaurus.thesaurus_id}")
+                documents.append(self.build_thesaurus_doc(thesaurus))
         else:
             raise NotImplementedError(f"Document type {document_type} not supported")
         return documents
@@ -390,6 +400,16 @@ class Command(CustomBaseCommand):
         document = {
             lang: _dump(OAROrganization.from_organization(organization, lang))
             for lang in LANG_CODES
+        }
+
+        document["id"] = document["de"]["id"]
+        document["type"] = document["de"]["type"]
+        return document
+
+    def build_thesaurus_doc(self, thesaurus: Thesaurus) -> dict:
+        """Build a `swissgeo-thesauri` document from a Thesaurus."""
+        document = {
+            lang: _dump(OARThesaurus.from_thesaurus(thesaurus, lang)) for lang in LANG_CODES
         }
 
         document["id"] = document["de"]["id"]
