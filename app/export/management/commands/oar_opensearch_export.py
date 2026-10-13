@@ -24,14 +24,14 @@ from django.db.models import Q
 from dataservice.models import Dataservice
 from dataset.models import Dataset, DatasetToDataset
 from distribution.models import Distribution
-from oar_export.export_models import (
+from export.export_models import (
     LANGS,
     OARDataservice,
     OARDataset,
     OARDistribution,
     OAROrganization,
 )
-from oar_export.opensearch_helper import add_connection_arguments, build_client
+from export.opensearch_helper import add_connection_arguments, build_client
 from organization.models import Organization
 from utils.command import CustomBaseCommand
 
