@@ -3,8 +3,8 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-import boto3
 import environ
+from boto3 import Session
 from botocore.client import Config
 
 from django.apps import apps
@@ -82,9 +82,9 @@ class Command(CustomBaseCommand):
         """Main entry point of command."""
         profile = options.get("profile")
         if profile and profile != "default":
-            self.session = boto3.Session(profile_name=profile)  # pylint: disable=attribute-defined-outside-init
+            self.session = Session(profile_name=profile)  # pylint: disable=attribute-defined-outside-init
         else:
-            self.session = boto3.Session()  # pylint: disable=attribute-defined-outside-init
+            self.session = Session()  # pylint: disable=attribute-defined-outside-init
 
         # S3 client configuration
         client_access_kwargs = {
@@ -101,7 +101,7 @@ class Command(CustomBaseCommand):
 
         # Show parsed arguments (useful for debugging)
         if options.get("verbosity", 0) >= 2:  # noqa: PLR2004
-            self.print(f"Debug: parsed args = {json.dumps(options)}")
+            self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
         if options["command"] == "clean":
             self.do_clean(*args, **options)
