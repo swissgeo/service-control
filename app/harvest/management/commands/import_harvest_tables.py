@@ -1,9 +1,12 @@
 import json
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import environ
 from boto3 import Session
 
+from django.apps import apps
+from django.conf import settings
 from django.core.management.base import CommandParser
 from django.db.models import Q
 
@@ -764,12 +767,22 @@ class Command(CustomBaseCommand):
             "geojson_url_it": ljs.geojson_url_it,
             "geojson_url_en": ljs.geojson_url_en,
             "geojson_url_rm": ljs.geojson_url_rm,
-            # The geojson style URL is not stored in the layers_js table,
-            # but we can construct it from the layer_id
-            # (see https://github.com/geoadmin/mf-chsdi3/blob/master/chsdi/models/bod.py#L142)
-            # Note: we always reference prod env here
-            "style_url": "https://api3.geo.admin.ch/static/vectorStyles/" + ljs.layer_id + ".json",
+            "style_url": None,
         }
+
+        # For now we have maplibre style files for each geojson layer locally.
+        # We use the layer_id to match the style file name during distribution import.
+        # The style files are uploaded to the correct location on s3 during export.
+        style_dir = Path(apps.get_app_config("distribution").path) / "styles"
+        style_exists = False
+        for style_file in style_dir.iterdir():
+            if str(style_file.name).startswith(ljs.layer_id):
+                values["style_url"] = f"{settings.OAS_PATH_PREFIX}/{style_file.name}"
+                style_exists = True
+                self.print(f"Found style {style_file.name} for layer_id {ljs.layer_id}")
+                break
+        if not style_exists:
+            self.print_warning(f"No style found for layer_id {ljs.layer_id}")
 
         updated = False
         for attribute, value in values.items():

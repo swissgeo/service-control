@@ -1089,10 +1089,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_wms.save()
 
     ds_geojson = Dataset(
-        dataset_id="ch.swisstopo.treasurehunt",
+        dataset_id="ch.bfe.shared-mobility",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.swisstopo.treasurehunt"],
+        data_source_ids=["ch.bfe.shared-mobility"],
         **attributes,
     )
     ds_geojson.save()
@@ -1113,7 +1113,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         searchable=True,
     )
     layer_geojson = LayersJSImport(
-        layer_id="ch.swisstopo.treasurehunt",
+        layer_id="ch.bfe.shared-mobility",
         layertype="geojson",
         geojson_url_de="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json",
         geojson_url_fr="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json",
@@ -1144,7 +1144,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert "Importing Geoadmin Features Distribution ch.bafu.moose:api3features" in out
     assert "Importing WMS Distribution ch.bazl.luftfahrthindernis:wms" in out
     assert "Importing Geoadmin Features Distribution ch.bazl.luftfahrthindernis:api3features" in out
-    assert "Importing GeoJSON Distribution ch.swisstopo.treasurehunt:geojson" in out
+    assert "Importing GeoJSON Distribution ch.bfe.shared-mobility:geojson" in out
 
     assert Distribution.objects.count() == 6
 
@@ -1244,7 +1244,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert ds_geojson.preferred_distribution.protocol == "geojson"
 
     dist_6 = ds_geojson.distribution_set.filter(
-        distribution_id="ch.swisstopo.treasurehunt:geojson"
+        distribution_id="ch.bfe.shared-mobility:geojson"
     ).first()
     assert dist_6
     assert dist_6.data_source == Distribution.DataSource.BOD_LAYERS_JS
@@ -1264,10 +1264,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"
     assert dist_6.geojson_url_en == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_en.json"
     assert dist_6.geojson_url_rm == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json"
-    assert (
-        dist_6.style_url
-        == "https://api3.geo.admin.ch/static/vectorStyles/ch.swisstopo.treasurehunt.json"
-    )
+    assert dist_6.style_url == "/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json"
 
     # =========================
     # Update
