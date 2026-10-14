@@ -782,7 +782,7 @@ class Command(CustomBaseCommand):
                 self.print(f"Found style {style_file.name} for layer_id {ljs.layer_id}")
                 break
         if not style_exists:
-            self.print_error(f"No style found for layer_id {ljs.layer_id}")
+            self.print_warning(f"No style found for layer_id {ljs.layer_id}")
 
         updated = False
         for attribute, value in values.items():
