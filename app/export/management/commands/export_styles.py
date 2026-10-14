@@ -53,7 +53,7 @@ class Command(CustomBaseCommand):
         parser.add_argument(
             "--target-env",
             type=str,
-            choices=["dev", "int", "prod"],
+            choices=["dev", "int", "prod", "local"],
             default="dev",
             help="Specify the target environment",
         )
@@ -91,6 +91,9 @@ class Command(CustomBaseCommand):
             "region_name": "eu-central-1",
             "config": Config(signature_version="s3v4"),
         }
+        if options["target_env"] == "local":
+            client_access_kwargs["region_name"] = env.str("AWS_DEFAULT_REGION")
+            client_access_kwargs["endpoint_url"] = "http://localhost:5000"
         self.s3_client = self.session.client("s3", **client_access_kwargs)  # ty: ignore[no-matching-overload]
 
         # derive bucket name from target environment

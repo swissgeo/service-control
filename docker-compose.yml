@@ -14,6 +14,44 @@ services:
     ports:
       - "${DB_PORT}:5432"
 
+  moto-server:
+    image: motoserver/moto
+    container_name: moto-server
+    ports:
+      - "${MOTO_PORT:-5000}:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - source: ${PWD}/.volumes/minio
+        target: /data
+        type: bind
+        bind:
+          create_host_path: true
+
+  init-s3:
+    image: amazon/aws-cli
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until aws s3api list-buckets --endpoint-url http://moto-server:5000 >/dev/null 2>&1; do
+          echo "Waiting for moto-server..."; sleep 2
+        done
+        aws s3api create-bucket \
+          --bucket oa-styles-static-local-swissgeo \
+          --endpoint-url http://moto-server:5000 \
+          --create-bucket-configuration LocationConstraint=${AWS_REGION} || true
+        aws s3api put-bucket-policy \
+          --bucket oa-styles-static-local-swissgeo \
+          --endpoint-url http://moto-server:5000 \
+          --policy '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::${OA_STYLES_LOCAL_BUCKET}/*"}]}'
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+
   opensearch:
     image: opensearchproject/opensearch:3
     environment:
