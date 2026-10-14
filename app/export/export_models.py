@@ -7,7 +7,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    ValidationError,
     model_validator,
 )
 
@@ -631,19 +630,14 @@ class Contact(BaseModel):
                 title = None
             else:
                 continue
-            try:
-                links.append(
-                    UnvalidatedLink(
-                        href=url,
-                        typ="text/html",
-                        hreflang=hreflang,
-                        title=title,
-                    )
+            links.append(
+                UnvalidatedLink(
+                    href=url,
+                    typ="text/html",
+                    hreflang=hreflang,
+                    title=title,
                 )
-            except ValidationError:
-                # Skip online resources with an invalid URL (e.g. missing scheme).
-                continue
-
+            )
         return cls(
             organization=organization,
             position=legacy_contact.get(f"position_name_{lang}"),
