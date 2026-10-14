@@ -1264,10 +1264,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"
     assert dist_6.geojson_url_en == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_en.json"
     assert dist_6.geojson_url_rm == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json"
-    assert (
-        dist_6.style_url
-        == "https://services.swissgeo.ch/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json"
-    )
+    assert dist_6.style_url == "/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json"
 
     # =========================
     # Update

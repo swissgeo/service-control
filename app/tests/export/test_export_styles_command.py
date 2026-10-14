@@ -140,7 +140,7 @@ def test_command_exports_geojson_styles(session, db):
     ExternalGeoJSONDistribution(
         distribution_id="ch.bafu.moose:geojson",
         dataset=dataset,
-        style_url="https://services.swissgeo.ch/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json",
+        style_url="/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json",
     ).save()
 
     out = StringIO()

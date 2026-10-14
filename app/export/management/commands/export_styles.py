@@ -8,6 +8,7 @@ from boto3 import Session
 from botocore.client import Config
 
 from django.apps import apps
+from django.conf import settings
 from django.core.management.base import CommandParser
 
 from distribution.models import (
@@ -21,9 +22,8 @@ from utils.command import CustomBaseCommand
 
 env = environ.Env()
 
-OAS_PREFIX = "api/oas/v0"
-ENV_HOSTNAME_POSTFIX = "dev.sgdi.tech"
-OAS_BASE_URL = f"https://services.{ENV_HOSTNAME_POSTFIX}/{OAS_PREFIX}"
+# The prefix of the S3 key, e.g. api/oas/v0/styles
+KEY_PREFIX = settings.OAS_PATH_PREFIX.strip("/")
 
 
 class Command(CustomBaseCommand):
@@ -211,7 +211,7 @@ class Command(CustomBaseCommand):
             if not distribution.style_url:
                 continue
             style_file_name = distribution.style_url.rsplit("/", 1)[-1]
-            key = f"{OAS_PREFIX}/styles/{style_file_name}"
+            key = f"{KEY_PREFIX}/{style_file_name}"
             self.print(
                 f" - {'[DRY RUN]: ' if options['dry_run'] else ''}"
                 f"Uploading style for {distribution.distribution_id} to {key}"
@@ -231,7 +231,7 @@ class Command(CustomBaseCommand):
         # Key format: api/oas/v0/{distribution_id}/{distribution_id}.style.json
         # FIX: We should use distribution identifiers without colons in the URL
         # once this has been changed, we can remove the replace() call
-        return f"{OAS_PREFIX}/styles/{distribution.distribution_id}.style.json".replace(":", ".")
+        return f"{KEY_PREFIX}/{distribution.distribution_id}.style.json".replace(":", ".")
 
     # ##########################################################################
     def do_upload(self, snippet: dict[str, Any], key: str) -> None:

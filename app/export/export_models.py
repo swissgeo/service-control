@@ -113,6 +113,8 @@ class UnvalidatedLink(Link):
 
     Unlike in the base class, the URL is not checked here. So, e.g., "invalid-url.ch" is rejected by
     `Link` but it's accepted for `UnvalidatedLink`.
+
+
     """
 
     href: str
@@ -340,11 +342,12 @@ class OARDistribution(OARRecord):
                         typ="application/geo+json",
                     )
                 )
-                # Add a link to an associated style if there
-                # exists one.
+                # Add a link to an associated style if there exists one. Note that this uses
+                # an unvalidated link as these links are relative and rewritten by the
+                # service-oa-records.
                 if dist.style_url:
                     record.links.append(
-                        Link(
+                        UnvalidatedLink(
                             href=dist.style_url,
                             rel="styledBy",
                             title="Link to style file for the GeoJSON layer",
