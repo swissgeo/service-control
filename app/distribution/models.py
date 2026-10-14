@@ -89,9 +89,9 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
         help_text=_(_context, "Date and time when the distribution was last updated"),
     )
 
-    objects = DistributionManager()
+    objects: ClassVar[DistributionManager] = DistributionManager()
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("Distribution", "Distributions")
         verbose_name_plural = _("Distribution", "Distributions")
 
@@ -118,7 +118,7 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
 class ExternalDistribution(Distribution):
     """Distribution model for external distributions."""
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         abstract = True
         verbose_name = _(_context, "External Distributions")
         verbose_name_plural = _(_context, "External Distributions")
@@ -158,7 +158,7 @@ class ExternalWMSDistribution(ExternalDistribution):
         help_text=_(_context, "Desired Gutter of the WMS layer when using tiled in web app."),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
                 fields=["dataservice", "wms_layer_name_de"],
@@ -207,7 +207,7 @@ class ExternalWMTSDistribution(ExternalDistribution):
         help_text=_(_context, "Desired Opacity of the WMTS layer when displayed in web app."),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
                 fields=["dataservice", "wmts_layer_name_de"],
@@ -234,7 +234,7 @@ class ExternalStacDistribution(ExternalDistribution):
     )
     stac_collection_id = models.CharField(_(_context, "STAC Collection ID"), max_length=255)
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
                 fields=["dataservice", "stac_collection_id"],
@@ -286,7 +286,7 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
         help_text=_(_context, "Optional URL to a style file for the GeoJSON layer."),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _(_context, "External GeoJSON Distributions")
         verbose_name_plural = _(_context, "External GeoJSON Distributions")
 
@@ -328,7 +328,7 @@ class ExternalGeoadminFeaturesDistribution(ExternalDistribution):
         help_text=_(_context, "Whether the layer is renderable (i.e. has a html tooltip)"),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
                 fields=["dataservice", "layer_id"],

@@ -73,7 +73,7 @@ def test_object_created_in_db_with_optional_fields_null(organization):
 
 def test_form_valid_for_blank_optional_field(organization):
     class ContactForm(ModelForm):
-        class Meta:
+        class Meta:  # ty: ignore[invalid-attribute-override]
             model = Contact
             fields = "__all__"  # noqa: DJ007
 

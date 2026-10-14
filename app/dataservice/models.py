@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING, ClassVar
 
 from iso639 import Lang
 from polymorphic.managers import PolymorphicManager
@@ -15,6 +16,12 @@ from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 logger = logging.getLogger(__name__)
 
 _context = "Dataservice Module"
+
+
+if TYPE_CHECKING:
+    MixinBase = models.Model
+else:
+    MixinBase = object
 
 
 class DataserviceManager(DataSourceIdManagerMixin, PolymorphicManager):
@@ -88,9 +95,9 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         help_text=_(_context, "Date and time when the dataservice was last updated"),
     )
 
-    objects = DataserviceManager()
+    objects: ClassVar[DataserviceManager] = DataserviceManager()
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("Dataservice Model", "Dataservice")
         verbose_name_plural = _("Dataservice Model", "Dataservices")
 
@@ -113,10 +120,10 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         )
 
 
-class LocalizedCapabilitiesUrlMixin:
-    capabilities_url: str
-    languages: list[str]
-    default_language: str | None
+class LocalizedCapabilitiesUrlMixin(MixinBase):
+    capabilities_url: models.URLField
+    languages: ArrayField
+    default_language: models.CharField
 
     def localized_capabilities_url(self, requested: str) -> str:
         """Returns the capabilities URL for the requested language.
@@ -166,7 +173,7 @@ class WMSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
         ),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("WMS Dataservice", "WMS Dataservices")
         verbose_name_plural = _("WMS Dataservice", "WMS Dataservices")
 
@@ -214,7 +221,7 @@ class WMTSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
         ),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("WMTS Dataservice", "WMTS Dataservices")
         verbose_name_plural = _("WMTS Dataservice", "WMTS Dataservices")
 
@@ -224,7 +231,7 @@ class WMTSDataservice(LocalizedCapabilitiesUrlMixin, Dataservice):
 
 
 class WFSDataservice(Dataservice):
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("WFS Dataservice", "WFS Dataservices")
         verbose_name_plural = _("WFS Dataservice", "WFS Dataservices")
 
@@ -234,7 +241,7 @@ class WFSDataservice(Dataservice):
 
 
 class OGCAPIFeaturesDataservice(Dataservice):
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("OGC API Features Dataservice", "OGC API Features Dataservices")
         verbose_name_plural = _("OGC API Features Dataservice", "OGC API Features Dataservices")
 
@@ -250,7 +257,7 @@ class OGCAPIStacDataservice(Dataservice):
         help_text=_(_context, "URL to the landing page of the OGC API STAC Dataservice"),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("OGC API STAC Dataservice", "OGC API STAC Dataservices")
         verbose_name_plural = _("OGC API STAC Dataservice", "OGC API STAC Dataservices")
 
@@ -271,7 +278,7 @@ class GeoadminFeaturesDataservice(Dataservice):
         ),
     )
 
-    class Meta:
+    class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("Geoadmin Features Dataservice", "Geoadmin Features Dataservices")
         verbose_name_plural = _("Geoadmin Features Dataservice", "Geoadmin Features Dataservices")
 

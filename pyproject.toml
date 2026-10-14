@@ -91,6 +91,7 @@ ignore = [
     "TRY003", # Ignore long messages in exceptions
     "G004",   # Ignore rule for logging calls using f-strings
     "CPY001", # Ignore missing copyright notice at top of file
+    "ICN001", # Ignore unconventional-import-aliases
 
     # Pydantic schemas uses type annotations at runtime to generate the openapi
     # and do the validation. Putting the type annotation in a TYPE_CHECKING

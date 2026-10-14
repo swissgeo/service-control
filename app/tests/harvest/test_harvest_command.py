@@ -27,7 +27,7 @@ from harvest.models import (
 from legal.models import GeopoliticalEntity
 from organization.models import Contact as ContactModel
 from organization.models import Organization, Unit
-from thesaurus.models import Concept, Thesaurus
+from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 
 @pytest.fixture(name="dynamodb")
@@ -1089,10 +1089,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_wms.save()
 
     ds_geojson = Dataset(
-        dataset_id="ch.swisstopo.treasurehunt",
+        dataset_id="ch.bfe.shared-mobility",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.swisstopo.treasurehunt"],
+        data_source_ids=["ch.bfe.shared-mobility"],
         **attributes,
     )
     ds_geojson.save()
@@ -1113,7 +1113,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         searchable=True,
     )
     layer_geojson = LayersJSImport(
-        layer_id="ch.swisstopo.treasurehunt",
+        layer_id="ch.bfe.shared-mobility",
         layertype="geojson",
         geojson_url_de="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_de.json",
         geojson_url_fr="https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_fr.json",
@@ -1144,7 +1144,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert "Importing Geoadmin Features Distribution ch.bafu.moose:api3features" in out
     assert "Importing WMS Distribution ch.bazl.luftfahrthindernis:wms" in out
     assert "Importing Geoadmin Features Distribution ch.bazl.luftfahrthindernis:api3features" in out
-    assert "Importing GeoJSON Distribution ch.swisstopo.treasurehunt:geojson" in out
+    assert "Importing GeoJSON Distribution ch.bfe.shared-mobility:geojson" in out
 
     assert Distribution.objects.count() == 6
 
@@ -1244,7 +1244,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert ds_geojson.preferred_distribution.protocol == "geojson"
 
     dist_6 = ds_geojson.distribution_set.filter(
-        distribution_id="ch.swisstopo.treasurehunt:geojson"
+        distribution_id="ch.bfe.shared-mobility:geojson"
     ).first()
     assert dist_6
     assert dist_6.data_source == Distribution.DataSource.BOD_LAYERS_JS
@@ -1264,10 +1264,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.geojson_url_it == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_it.json"
     assert dist_6.geojson_url_en == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_en.json"
     assert dist_6.geojson_url_rm == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json"
-    assert (
-        dist_6.style_url
-        == "https://api3.geo.admin.ch/static/vectorStyles/ch.swisstopo.treasurehunt.json"
-    )
+    assert dist_6.style_url == "/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json"
 
     # =========================
     # Update
@@ -1473,6 +1470,15 @@ def test_command_uses_distribution_mapping(dynamodb, db):
 # Concepts
 # --------------------------------------------------------------------------------------------------
 def test_command_creates_and_updates_concepts(dynamodb, db):
+    out = StringIO()
+    call_command("loaddata", "app/fixtures/ech0166.json", stdout=out)
+    out = out.getvalue()
+    assert "Installed" in out
+
+    concept = Concept.objects.filter(
+        thesaurus__thesaurus_id=ECH0166_THESAURUS_ID, concept_id="imageryBaseMapsEarthCover_Imagery"
+    ).first()
+
     ds = Dataset(
         dataset_id="ch.bafu.moose",
         title_short_de="x",
@@ -1489,6 +1495,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
         data_source=Dataset.DataSource.BOD_DATASET,
     )
     ds.save()
+    ds.concepts.add(concept)
 
     kw_1 = Keyword(
         type="theme",
@@ -1535,7 +1542,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
     call_command("import_harvest_tables", concepts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    thesaurus = Thesaurus.objects.first()
+    thesaurus = Thesaurus.objects.exclude(thesaurus_id=ECH0166_THESAURUS_ID).first()
     assert thesaurus
     assert thesaurus.thesaurus_id == "geonetwork.thesaurus.external.theme.gemet"
     assert {concept.concept_id for concept in thesaurus.concept_set.all()} == {
@@ -1555,6 +1562,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 
     ds.refresh_from_db()
     assert {concept.concept_id for concept in ds.concepts.all()} == {
+        "imageryBaseMapsEarthCover_Imagery",
         "http://www.eionet.europa.eu/gemet/concept/25",
         "http://www.eionet.europa.eu/gemet/concept/245",
     }
@@ -1572,6 +1580,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 
     ds.refresh_from_db()
     assert {concept.concept_id for concept in ds.concepts.all()} == {
+        "imageryBaseMapsEarthCover_Imagery",
         "http://www.eionet.europa.eu/gemet/concept/245",
         "http://www.eionet.europa.eu/gemet/concept/253",
     }
