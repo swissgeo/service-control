@@ -25,6 +25,10 @@ def extract_put_object(session):
     return result
 
 
+def extract_delete_objects(session):
+    return [call.kwargs for call in session.mock_calls if "delete_objects" in str(call)]
+
+
 @patch("export.management.commands.export_styles.Session")
 def test_command_exports_wms_styles(session, db):
     dataset = Dataset(
@@ -189,3 +193,49 @@ def test_command_exports_styles_dry(session, db):
 
     result = extract_put_object(session)
     assert result == []
+
+
+@patch("export.management.commands.export_styles.Session")
+def test_command_cleans_styles(session, db):
+    dataset = Dataset(
+        dataset_id="ch.bafu.moose",
+        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_short_fr="Liste rouge mousses",
+        title_short_en="Red list bryophytes",
+        description_de="missing",
+        description_fr="missing",
+        description_en="missing",
+    )
+    dataset.save()
+
+    ExternalWMSDistribution(
+        distribution_id="ch.bafu.moose:wms",
+        dataset=dataset,
+        opacity=0.5,
+        gutter=1,
+    ).save()
+
+    s3 = session.return_value.client.return_value
+    s3.list_objects_v2.side_effect = [
+        {"Contents": [{"Key": "a"}], "NextContinuationToken": "tok"},
+        {"Contents": [{"Key": "b"}]},
+    ]
+
+    out = StringIO()
+    call_command(
+        "export_styles",
+        # "--target-env", "local",
+        "--verbosity",
+        "2",
+        "clean",
+        stdout=out,
+    )
+    out = out.getvalue()
+
+    assert "Deleted total of 2 objects" in out
+
+    result = extract_delete_objects(session)
+    assert result == [
+        {"Bucket": "oa-styles-static-dev-swissgeo", "Delete": {"Objects": [{"Key": "a"}]}},
+        {"Bucket": "oa-styles-static-dev-swissgeo", "Delete": {"Objects": [{"Key": "b"}]}},
+    ]
