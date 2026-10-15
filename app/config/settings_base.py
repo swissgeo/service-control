@@ -294,4 +294,4 @@ OAR_THESAURI_COLLECTION_ID = env.str("OAR_THESAURI_COLLECTION_ID", "swissgeo-the
 OAS_PATH_PREFIX = env.str("OAS_PATH_PREFIX", "/api/oas/v0/styles")
 
 # Thesauri path prefix
-THESAURI_PATH_PREFIX = env.str("OAS_PATH_PREFIX", "/api/thesauri")
+THESAURI_PATH_PREFIX = env.str("THESAURI_PATH_PREFIX", "/api/thesauri")
