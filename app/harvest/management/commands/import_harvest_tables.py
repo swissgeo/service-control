@@ -934,7 +934,7 @@ class Command(CustomBaseCommand):
         self.print_success(f"Concept import completed. Metrics: {log_metrics}")
 
     # ##########################################################################
-    def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0912, PLR0915
+    def import_contacts(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901
         """Imports contacts from the harvest table.
 
         Processes all datasets that:
@@ -999,14 +999,7 @@ class Command(CustomBaseCommand):
             DatasetToContact.objects.filter(dataset=dataset).delete()
             for item_contact in item_contacts.contacts:
                 role = item_contact.role
-
-                email = None
-                if item_contact.contact_electronic_mail_addresses:
-                    email = item_contact.contact_electronic_mail_addresses[0]
-                    if len(item_contact.contact_electronic_mail_addresses) > 1:
-                        self.print_warning(
-                            f"{dataset}: {role} contains multiple emails, using first entry"
-                        )
+                emails = item_contact.contact_electronic_mail_addresses
 
                 online_resource = None
                 if item_contact.online_resources:
@@ -1054,7 +1047,7 @@ class Command(CustomBaseCommand):
                             contact.name_en != item_contact.position_name_en,
                             contact.name_it != item_contact.position_name_it,
                             contact.name_rm != item_contact.position_name_rm,
-                            contact.email != email,
+                            contact.emails != emails,
                             contact.phone != item_contact.contact_voice,
                             contact.address_administrative_area
                             != item_contact.contact_administrative_area,
@@ -1084,7 +1077,7 @@ class Command(CustomBaseCommand):
                         name_en=item_contact.position_name_en,
                         name_it=item_contact.position_name_it,
                         name_rm=item_contact.position_name_rm,
-                        email=email,
+                        emails=emails,
                         phone=item_contact.contact_voice,
                         address_administrative_area=item_contact.contact_administrative_area,
                         address_delivery_point=item_contact.contact_delivery_point,

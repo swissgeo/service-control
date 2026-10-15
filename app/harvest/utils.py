@@ -17,7 +17,7 @@ AGGREGATE_PROVIDER_CONTACT = {
     "name_en": "",
     "name_it": "Direzione operativa KGK-CGC",
     "name_rm": "",
-    "email": "support@geodienste.kgk-cgc.ch",
+    "emails": ["support@geodienste.kgk-cgc.ch"],
     "phone": "+41 31 300 09 20",
     "address_delivery_point": "Haus der Kantone, Speichergasse 6, Postfach",
     "address_postal_code": "3001",
