@@ -29,7 +29,7 @@ def _legacy_contact(**overrides) -> dict:
         "contact_postal_code": "3084",
         "contact_delivery_point": "Seftigenstrasse 264",
         "contact_country": "CH",
-        "contact_electronic_mail_addresses": ["geodata@swisstopo.ch"],
+        "contact_electronic_mail_addresses": ["geodata@swisstopo.ch", "another@test.ch"],
         "online_resources": [
             {
                 "url": "http://www.swisstopo.ch",
@@ -64,7 +64,7 @@ def test_from_legacy_maps_all_fields():
             {"value": "+41 58 469 04 59", "roles": ["fax"]},
             {"value": "+41 79 123 45 67", "roles": ["sms"]},
         ],
-        "emails": [{"value": "geodata@swisstopo.ch"}],
+        "emails": [{"value": "geodata@swisstopo.ch"}, {"value": "another@test.ch"}],
         "addresses": [
             {
                 "deliveryPoint": ["Seftigenstrasse 264"],

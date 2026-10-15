@@ -725,7 +725,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "support@geodienste.kgk-cgc.ch"
+    assert contact.emails == ["support@geodienste.kgk-cgc.ch"]
     assert contact.phone == "+41 31 300 09 20"
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
@@ -809,7 +809,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "support@geodienste.kgk-cgc.ch"
+    assert contact.emails == ["support@geodienste.kgk-cgc.ch"]
     assert contact.phone == "+41 31 300 09 20"
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
@@ -894,7 +894,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "support@geodienste.kgk-cgc.ch"
+    assert contact.emails == ["support@geodienste.kgk-cgc.ch"]
     assert contact.phone == "+41 31 300 09 20"
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
@@ -1182,7 +1182,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     contact = Contact(
         organization=org,
-        email="support@geodienste.kgk-cgc.ch",
+        emails=["support@geodienste.kgk-cgc.ch"],
         phone="+41 31 300 09 20",
         address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
         address_postal_code="3001",
@@ -1375,7 +1375,7 @@ def test_command_creates_broker_dataset(mock, client, db):
 
     contact = Contact(
         organization=org,
-        email="support@geodienste.kgk-cgc.ch",
+        emails=["support@geodienste.kgk-cgc.ch"],
         phone="+41 31 300 09 20",
         address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
         address_postal_code="3001",
