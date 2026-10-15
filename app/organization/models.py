@@ -321,7 +321,13 @@ class Contact(DataSourceIdModelMixin, models.Model):
     name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
     name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
 
-    email = models.EmailField(_(_context, "Email"), null=True, blank=True)
+    emails = ArrayField(
+        models.EmailField(),
+        default=list,
+        null=True,
+        blank=True,
+        verbose_name=_(_context, "Emails"),
+    )
     phone = models.CharField(_(_context, "Phone"), null=True, blank=True)
 
     address_administrative_area = models.CharField(
