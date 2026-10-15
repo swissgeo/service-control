@@ -1,0 +1,58 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "type": {"type": "keyword", "index": false},
+      "de": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      },
+      "fr": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      },
+      "it": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      },
+      "rm": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      },
+      "en": {
+        "dynamic": false,
+        "properties": {
+          "properties": {
+            "properties": {
+              "type": {"type": "keyword", "index": false}
+            }
+          }
+        }
+      }
+    }
+  }
+}
