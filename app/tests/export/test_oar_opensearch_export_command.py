@@ -1139,7 +1139,7 @@ def test_dump_thesaurus_document(db, tmp_path):
                     "type": "application/json",
                 },
                 {
-                    "href": "/api/thesauri/ech0166.de.jsonld",
+                    "href": "/api/thesauri/ech0166.json",
                     "rel": "enclosure",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
@@ -1159,7 +1159,7 @@ def test_dump_thesaurus_document(db, tmp_path):
                     "type": "application/json",
                 },
                 {
-                    "href": "/api/thesauri/ech0166.fr.jsonld",
+                    "href": "/api/thesauri/ech0166.json",
                     "rel": "enclosure",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
@@ -1179,7 +1179,7 @@ def test_dump_thesaurus_document(db, tmp_path):
                     "type": "application/json",
                 },
                 {
-                    "href": "/api/thesauri/ech0166.it.jsonld",
+                    "href": "/api/thesauri/ech0166.json",
                     "rel": "enclosure",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
@@ -1199,7 +1199,7 @@ def test_dump_thesaurus_document(db, tmp_path):
                     "type": "application/json",
                 },
                 {
-                    "href": "/api/thesauri/ech0166.rm.jsonld",
+                    "href": "/api/thesauri/ech0166.json",
                     "rel": "enclosure",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
@@ -1219,7 +1219,7 @@ def test_dump_thesaurus_document(db, tmp_path):
                     "type": "application/json",
                 },
                 {
-                    "href": "/api/thesauri/ech0166.en.jsonld",
+                    "href": "/api/thesauri/ech0166.json",
                     "rel": "enclosure",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
