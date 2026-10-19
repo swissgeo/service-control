@@ -95,7 +95,7 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         help_text=_(_context, "Date and time when the dataservice was last updated"),
     )
 
-    objects: ClassVar[DataserviceManager] = DataserviceManager()
+    objects: ClassVar[DataserviceManager] = DataserviceManager()  # ty: ignore[invalid-mutable-override]
 
     class Meta:  # ty: ignore[invalid-attribute-override]
         verbose_name = _("Dataservice Model", "Dataservice")

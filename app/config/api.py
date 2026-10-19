@@ -7,7 +7,6 @@ from ninja.errors import ValidationError as NinjaValidationError
 
 from config.version import APP_VERSION
 from organization.api import router as organization_router
-from thesaurus.api import router as thesaurus_router
 from user.api import router as user_router
 from utils.exceptions import ConflictError, contains_error_code, extract_error_messages
 
@@ -56,7 +55,6 @@ automated systems to authenticate and interact with the API on behalf of an orga
 
 api.add_router("", organization_router)
 api.add_router("", user_router)
-api.add_router("", thesaurus_router)
 
 
 @api.exception_handler(DjangoValidationError)

@@ -28,7 +28,9 @@ from distribution.models import (
     ExternalWMTSDistribution,
 )
 from organization.models import Organization
-from thesaurus.models import ECH0166_THESAURUS_ID
+from thesaurus.models import ECH0166_THESAURUS_ID, ROOT_CONCEPT_ID
+from thesaurus.models import Concept as ConceptModel
+from thesaurus.models import Thesaurus as ThesaurusModel
 
 
 def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distribution | None:
@@ -104,8 +106,8 @@ class Link(BaseLink):
     - type (string, required): The media type of the linked resource.
     """
 
-    href: Annotated[str, AfterValidator(is_url)]
-    typ: str = Field(serialization_alias="type")
+    href: Annotated[str, AfterValidator(is_url)]  # ty: ignore[invalid-mutable-override]
+    typ: str = Field(serialization_alias="type")  # ty: ignore[invalid-mutable-override]
 
 
 class UnvalidatedLink(Link):
@@ -586,7 +588,7 @@ class Contact(BaseModel):
     phones: list[ContactEntry] = Field(default_factory=list)
     emails: list[ContactEntry] = Field(default_factory=list)
     addresses: list[ContactAddress] = Field(default_factory=list)
-    links: list[Link] = Field(default_factory=list)
+    links: list[UnvalidatedLink] = Field(default_factory=list)
     roles: list[str] | None = None
 
     @classmethod
@@ -719,7 +721,7 @@ class MaplibreLayer(BaseModel):
 
     id: str
     source: str
-    type: str | None = None
+    typ: str = Field(serialization_alias="type")
     paint: PaintConfig = PaintConfig()
 
 
@@ -729,4 +731,77 @@ class MaplibreRasterLayer(MaplibreLayer):
     See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
     """
 
-    type: Literal["raster"]
+    typ: Literal["raster"] = Field(default="raster", serialization_alias="type")  # ty: ignore[invalid-mutable-override]
+
+
+class OARThesaurus(OARRecord):
+    """Thesaurus record
+
+    A thesaurus is a Record with type="Thesaurus".
+
+    The links to the actual thesauri are added as relative links and rewritten to absolute links
+    in service-oa-recrds (with the same host).
+    """
+
+    properties: dict = {}
+
+    @classmethod
+    def from_thesaurus(cls, thesaurus: ThesaurusModel, lang: str) -> OARThesaurus:
+
+        # Instantiate record with common properties
+        record = OARThesaurus(
+            id=thesaurus.thesaurus_id,
+            lang=lang,
+            collection_id=settings.OAR_THESAURI_COLLECTION_ID,
+        )
+
+        record.properties["type"] = "Thesaurus"
+        record.links.extend(
+            [
+                UnvalidatedLink(
+                    rel="about",
+                    title="Thesaurus (custom JSON format)",
+                    typ="application/json",
+                    href=f"{settings.THESAURI_PATH_PREFIX}/{thesaurus.thesaurus_id}.{lang}.json",
+                    hreflang=lang,
+                ),
+                UnvalidatedLink(
+                    rel="about",
+                    title="Thesaurus (SKOS JSON-LD)",
+                    typ="application/ld+json",
+                    href=f"{settings.THESAURI_PATH_PREFIX}/{thesaurus.thesaurus_id}.json",
+                ),
+            ]
+        )
+
+        return record
+
+
+class Concept(BaseModel):
+    concept_id: str
+    label: str
+    children: list[Concept]
+
+    @classmethod
+    def from_concept(cls, concept: ConceptModel, lang: str) -> Concept:
+        return cls(
+            concept_id=concept.concept_id,
+            label=getattr(concept, f"label_{lang}"),
+            children=[cls.from_concept(child, lang) for child in concept.children.all()],  # ty: ignore[unresolved-attribute]
+        )
+
+
+class Thesaurus(BaseModel):
+    thesaurus_id: str
+    concepts: list[Concept]
+
+    @classmethod
+    def from_thesaurus(cls, thesaurus: ThesaurusModel, lang: str) -> Thesaurus:
+        roots = ConceptModel.objects.filter(
+            thesaurus=thesaurus,
+            parent__concept_id=ROOT_CONCEPT_ID,
+        )
+        return cls(
+            thesaurus_id=thesaurus.thesaurus_id,
+            concepts=[Concept.from_concept(c, lang) for c in roots],
+        )

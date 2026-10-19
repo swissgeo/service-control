@@ -151,7 +151,7 @@ class Command(CustomBaseCommand):
                     MaplibreRasterLayer(
                         id=f"{distribution.distribution_id}",
                         source="wmts.geo.admin.ch",
-                        type="raster",
+                        typ="raster",
                         paint=PaintConfig(raster_opacity=distribution.opacity),
                     )
                 ]
@@ -185,7 +185,7 @@ class Command(CustomBaseCommand):
                     MaplibreRasterLayer(
                         id=f"{distribution.distribution_id}",
                         source="wms.geo.admin.ch",
-                        type="raster",
+                        typ="raster",
                         paint=paintconfig,
                     )
                 ]
