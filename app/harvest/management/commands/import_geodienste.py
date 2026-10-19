@@ -774,11 +774,29 @@ class Command(CustomBaseCommand):
                 metrics["datasets.created"] += created
                 metrics["datasets.updated"] += updated
 
-                # Unit: Maintainer of Aggregate
+                # Unit: Maintainer of Aggregate -> not used anymore
+                for dataset_unit in DatasetToUnit.objects.filter(
+                    dataset=aggregate, role=DatasetToUnit.Role.MAINTAINER
+                ).all():
+                    self.print(f"Removing obsolete dataset unit {dataset_unit}")
+                    dataset_unit.delete()
+                    metrics["dataset_units.removed"] += 1
+
                 created, removed = self.import_dataset_unit(
                     aggregate,
                     aggregate_provider_id,
-                    DatasetToUnit.Role.MAINTAINER,
+                    DatasetToUnit.Role.OWNER,
+                    unit_mappings,
+                    organization_mappings,
+                )
+                metrics["dataset_units.created"] += created
+                metrics["dataset_units.removed"] += removed
+
+                # Unit: Owner of Aggregate
+                created, removed = self.import_dataset_unit(
+                    aggregate,
+                    aggregate_provider_id,
+                    DatasetToUnit.Role.OWNER,
                     unit_mappings,
                     organization_mappings,
                 )
@@ -791,7 +809,7 @@ class Command(CustomBaseCommand):
                 ).all():
                     self.print(f"Removing obsolete dataset contact {dataset_contact}")
                     dataset_contact.delete()
-                    metrics["dataset_units.removed"] += 1
+                    metrics["dataset_contacts.removed"] += 1
 
                 # Contact: Point of Contact of Aggregate
                 created, removed = self.import_dataset_contact(

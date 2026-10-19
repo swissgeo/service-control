@@ -2015,14 +2015,14 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Creating dataset unit ch.kgk (default) as maintainer in ch.kgk.av" in out
+    assert "Creating dataset unit ch.kgk (default) as owner in ch.kgk.av" in out
     assert (
         "Creating dataset unit ch.geodienste-lu (default) as maintainer in ch.geodienste-lu.av"
         in out
     )
 
     dataset_unit = org_aggregate.unit_set.get().dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.role == DatasetToUnit.Role.OWNER
     assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
 
     dataset_unit = org_part.unit_set.get().dataset_units.get()
@@ -2036,7 +2036,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataset unit ch.kgk (default) as maintainer in ch.kgk.av already exists" in out
+    assert "Dataset unit ch.kgk (default) as owner in ch.kgk.av already exists" in out
     assert (
         "Dataset unit ch.geodienste-lu (default) as maintainer in ch.geodienste-lu.av already "
         "exists" in out
@@ -2150,11 +2150,11 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
 
     assert "Mapping found for provider_id KGK: ch.kgk-cgc" in out
     assert "Mapping found for provider_id LU: ch.rawi" in out
-    assert "Creating dataset unit ch.kgk-cgc (default) as maintainer in ch.kgk.av" in out
+    assert "Creating dataset unit ch.kgk-cgc (default) as owner in ch.kgk.av" in out
     assert "Creating dataset unit ch.rawi (default) as maintainer in ch.geodienste-lu.av" in out
 
     dataset_unit = org_aggregate.unit_set.get().dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.role == DatasetToUnit.Role.OWNER
     assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
 
     dataset_unit = org_part.unit_set.get().dataset_units.get()
@@ -2262,7 +2262,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
     assert "Unit mapping found for dataset_id ch.geodienste-lu.av: part" in out
 
     dataset_unit = unit_aggregate.dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.role == DatasetToUnit.Role.OWNER
     assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
 
     dataset_unit = unit_part.dataset_units.get()
