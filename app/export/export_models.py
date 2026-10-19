@@ -104,8 +104,8 @@ class Link(BaseLink):
     - type (string, required): The media type of the linked resource.
     """
 
-    href: Annotated[str, AfterValidator(is_url)]
-    typ: str = Field(serialization_alias="type")
+    href: Annotated[str, AfterValidator(is_url)]  # ty: ignore[invalid-mutable-override]
+    typ: str = Field(serialization_alias="type")  # ty: ignore[invalid-mutable-override]
 
 
 class UnvalidatedLink(Link):
@@ -586,7 +586,7 @@ class Contact(BaseModel):
     phones: list[ContactEntry] = Field(default_factory=list)
     emails: list[ContactEntry] = Field(default_factory=list)
     addresses: list[ContactAddress] = Field(default_factory=list)
-    links: list[Link] = Field(default_factory=list)
+    links: list[UnvalidatedLink] = Field(default_factory=list)
     roles: list[str] | None = None
 
     @classmethod
@@ -719,7 +719,7 @@ class MaplibreLayer(BaseModel):
 
     id: str
     source: str
-    type: str | None = None
+    typ: str = Field(serialization_alias="type")
     paint: PaintConfig = PaintConfig()
 
 
@@ -729,4 +729,4 @@ class MaplibreRasterLayer(MaplibreLayer):
     See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
     """
 
-    type: Literal["raster"]
+    typ: Literal["raster"] = Field(default="raster", serialization_alias="type")  # ty: ignore[invalid-mutable-override]
