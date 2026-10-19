@@ -759,13 +759,14 @@ class OARThesaurus(OARRecord):
         record.links.extend(
             [
                 UnvalidatedLink(
-                    rel="enclosure",
+                    rel="about",
                     title="Thesaurus (custom JSON format)",
                     typ="application/json",
                     href=f"{settings.THESAURI_PATH_PREFIX}/{thesaurus.thesaurus_id}.{lang}.json",
+                    hreflang=lang,
                 ),
                 UnvalidatedLink(
-                    rel="enclosure",
+                    rel="about",
                     title="Thesaurus (SKOS JSON-LD)",
                     typ="application/ld+json",
                     href=f"{settings.THESAURI_PATH_PREFIX}/{thesaurus.thesaurus_id}.json",

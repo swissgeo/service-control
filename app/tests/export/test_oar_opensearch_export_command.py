@@ -1134,13 +1134,14 @@ def test_dump_thesaurus_document(db, tmp_path):
             "links": [
                 {
                     "href": "/api/thesauri/ech0166.de.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (custom JSON format)",
                     "type": "application/json",
+                    "hreflang": "de",
                 },
                 {
                     "href": "/api/thesauri/ech0166.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
                 },
@@ -1154,13 +1155,14 @@ def test_dump_thesaurus_document(db, tmp_path):
             "links": [
                 {
                     "href": "/api/thesauri/ech0166.fr.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (custom JSON format)",
                     "type": "application/json",
+                    "hreflang": "fr",
                 },
                 {
                     "href": "/api/thesauri/ech0166.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
                 },
@@ -1174,13 +1176,14 @@ def test_dump_thesaurus_document(db, tmp_path):
             "links": [
                 {
                     "href": "/api/thesauri/ech0166.it.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (custom JSON format)",
                     "type": "application/json",
+                    "hreflang": "it",
                 },
                 {
                     "href": "/api/thesauri/ech0166.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
                 },
@@ -1194,13 +1197,14 @@ def test_dump_thesaurus_document(db, tmp_path):
             "links": [
                 {
                     "href": "/api/thesauri/ech0166.rm.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (custom JSON format)",
                     "type": "application/json",
+                    "hreflang": "rm",
                 },
                 {
                     "href": "/api/thesauri/ech0166.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
                 },
@@ -1214,13 +1218,14 @@ def test_dump_thesaurus_document(db, tmp_path):
             "links": [
                 {
                     "href": "/api/thesauri/ech0166.en.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (custom JSON format)",
                     "type": "application/json",
+                    "hreflang": "en",
                 },
                 {
                     "href": "/api/thesauri/ech0166.json",
-                    "rel": "enclosure",
+                    "rel": "about",
                     "title": "Thesaurus (SKOS JSON-LD)",
                     "type": "application/ld+json",
                 },
