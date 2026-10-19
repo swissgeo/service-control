@@ -46,7 +46,15 @@ services:
         aws s3api put-bucket-policy \
           --bucket oa-styles-static-local-swissgeo \
           --endpoint-url http://moto-server:5000 \
-          --policy '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::${OA_STYLES_LOCAL_BUCKET}/*"}]}'
+          --policy '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::oa-styles-static-local-swissgeo/*"}]}'
+        aws s3api create-bucket \
+          --bucket static-thesauri-local-swissgeo \
+          --endpoint-url http://moto-server:5000 \
+          --create-bucket-configuration LocationConstraint=${AWS_REGION} || true
+        aws s3api put-bucket-policy \
+          --bucket static-thesauri-local-swissgeo \
+          --endpoint-url http://moto-server:5000 \
+          --policy '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::static-thesauri-local-swissgeo/*"}]}'
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
