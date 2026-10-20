@@ -27,24 +27,19 @@ class DatasetToContactInline(admin.TabularInline):
     extra = 0
     autocomplete_fields = ("contact",)
 
+
 class PublishedNonPublished(admin.SimpleListFilter):
     title = "Published / Non published Status"
     parameter_name = "custom_type"
 
     def lookups(self, request: HttpRequest, model_admin: admin.ModelAdmin) -> list[tuple[str, str]]:  # noqa: ARG002
-        return [("published", "Published"),("non_published", "Non Published")]
+        return [("published", "Published"), ("non_published", "Non Published")]
 
-    def queryset(
-        self, request: HttpRequest, queryset: QuerySet[Dataset]
-    ) -> QuerySet[Dataset]:
+    def queryset(self, request: HttpRequest, queryset: QuerySet[Dataset]) -> QuerySet[Dataset]:
         if self.value() == "published":
-            return queryset.filter(
-                status__in=[Dataset.Status.PUBLISHED]
-            )
+            return queryset.filter(status__in=[Dataset.Status.PUBLISHED])
         if self.value() == "non_published":
-            return queryset.exclude(
-                status__in=[Dataset.Status.PUBLISHED]
-            )
+            return queryset.exclude(status__in=[Dataset.Status.PUBLISHED])
         return queryset
 
 
