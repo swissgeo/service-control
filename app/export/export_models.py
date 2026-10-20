@@ -123,7 +123,7 @@ class UnvalidatedLink(Link):
 
 
 class OARCollectionLink(BaseLink):
-    collectionId: str = Field(exclude=True)  # noqa: N815
+    collection_id: str = Field(serialization_alias="collectionId", exclude=True)
 
     @model_validator(mode="after")
     def generate_href_value(self) -> BaseLink:
@@ -132,12 +132,12 @@ class OARCollectionLink(BaseLink):
         This method is called after the model is initialized and will set the href value
         based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"/collections/{self.collectionId}"
+        self.href = f"/collections/{self.collection_id}"
         return self
 
 
 class OARCollectionItemsLink(BaseLink):
-    collectionId: str = Field(exclude=True)  # noqa: N815
+    collection_id: str = Field(serialization_alias="collectionId", exclude=True)
     query: dict = Field(default_factory=dict, exclude=True)
 
     @model_validator(mode="after")
@@ -147,7 +147,7 @@ class OARCollectionItemsLink(BaseLink):
         This method is called after the model is initialized and will set the href value
         based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"/collections/{self.collectionId}/items"
+        self.href = f"/collections/{self.collection_id}/items"
 
         if self.query:
             self.href += f"?{urlencode(self.query)}"
@@ -157,7 +157,7 @@ class OARCollectionItemsLink(BaseLink):
 
 class OARRecordLink(OARCollectionLink):
     model_config = ConfigDict(populate_by_name=True)
-    recordId: str = Field(exclude=True)  # noqa: N815
+    record_id: str = Field(serialization_alias="recordId", exclude=True)
 
     @model_validator(mode="after")
     def generate_href_value(self) -> BaseLink:
@@ -166,12 +166,12 @@ class OARRecordLink(OARCollectionLink):
         This method is called after the model is initialized and will set the href value
         based on the origin, basepath, collectionId and recordId.
         """
-        self.href = f"/collections/{self.collectionId}/items/{self.recordId}"
+        self.href = f"/collections/{self.collection_id}/items/{self.record_id}"
         return self
 
 
 class LinkTemplate(BaseModel):
-    uriTemplate: str  # noqa: N815
+    uri_template: str = Field(serialization_alias="uriTemplate")
     rel: str
     title: str | None = None
     typ: str | None = Field(default=None, serialization_alias="type")
@@ -181,7 +181,9 @@ class LinkTemplate(BaseModel):
 class OARRecord(BaseModel):
     id: str
     links: list[BaseLink] = Field(default_factory=list)
-    linkTemplates: list[LinkTemplate] = Field(default_factory=list)  # noqa: N815
+    link_templates: list[LinkTemplate] = Field(
+        serialization_alias="linkTemplates", default_factory=list
+    )
     type: Literal["Feature"] = "Feature"
     geometry: dict | None = None
     lang: str = Field(default="de", exclude=True)
@@ -240,7 +242,7 @@ class OARDataset(OARRecord):
         )
         dataset.links.append(
             OARCollectionItemsLink(
-                collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
+                collection_id=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                 rel="distributions",
                 title="Distributions",
                 query={"dataset": ds.dataset_id},
@@ -321,8 +323,8 @@ class OARDistribution(OARRecord):
 
         record.links.append(
             OARRecordLink(
-                collectionId=settings.OAR_DATASETS_COLLECTION_ID,
-                recordId=dist.dataset.dataset_id,
+                collection_id=settings.OAR_DATASETS_COLLECTION_ID,
+                record_id=dist.dataset.dataset_id,
                 rel="dataset",
                 title="Dataset Record",
             )
@@ -366,8 +368,8 @@ class OARDistribution(OARRecord):
             # in the child classes of the distribution base class
             record.links.append(
                 OARRecordLink(
-                    collectionId=settings.OAR_SERVICES_COLLECTION_ID,
-                    recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
+                    collection_id=settings.OAR_SERVICES_COLLECTION_ID,
+                    record_id=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
                 )
             )
@@ -377,8 +379,8 @@ class OARDistribution(OARRecord):
         if info_dist:
             record.links.append(
                 OARRecordLink(
-                    collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
-                    recordId=info_dist.distribution_id,
+                    collection_id=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
+                    record_id=info_dist.distribution_id,
                     rel="featureinfo",
                 )
             )
@@ -400,9 +402,9 @@ class OARDistribution(OARRecord):
                 # or human-readable representation of the data behind the distribution.
                 # htmlpopup_url = getattr(dist, f"htmlpopup_url_{lang}", None)
                 htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
-                record.linkTemplates.append(
+                record.link_templates.append(
                     LinkTemplate(
-                        uriTemplate=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={{lang}}",
+                        uri_template=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={{lang}}",
                         rel="preview",
                         typ="application/html",
                         title="HTML popup for a feature of this distribution",
@@ -473,9 +475,9 @@ class OARDataservice(OARRecord):
         if isinstance(ds, WMTSDataservice):
             url = ds.localized_capabilities_url(lang)
             if "{epsg}" in url:
-                record.linkTemplates.append(
+                record.link_templates.append(
                     LinkTemplate(
-                        uriTemplate=url,
+                        uri_template=url,
                         rel="describedby",
                         typ="application/xml",
                         title="WMTS Capabilities File",
