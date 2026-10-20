@@ -23,7 +23,7 @@ import pytest
 from dataservice.models import WMSDataservice
 from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
 from distribution.models import ExternalWMSDistribution
-from export.management.commands.oar_opensearch_export import _is_generation_of
+from export.management.commands.oar_opensearch_export import Command, _is_generation_of
 from organization.models import Organization
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
@@ -55,6 +55,7 @@ def _make_dataset() -> Dataset:
 
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
+        status=Dataset.Status.PUBLISHED,
         title_short_de="Rote Liste Moose",
         title_short_fr="Liste rouge mousses",
         title_short_en="Red list bryophytes",
@@ -1430,3 +1431,16 @@ def test_export_does_not_dump_to_disk(get_client, bulk, db, tmp_path):
 
     assert not any(tmp_path.iterdir())
     assert bulk.called
+
+
+def test_build_documents_dataset_with_depublished_dataset(db):
+    dataset_1 = Dataset(dataset_id="ch.bafu.moose", status=Dataset.Status.DEPUBLISHED)
+    dataset_2 = Dataset(dataset_id="ch.bafu.karibu", status=Dataset.Status.PUBLISHED)
+    dataset_1.save()
+    dataset_2.save()
+
+    cmd = Command()
+    cmd.options = {"verbosity": 0}
+    docs = cmd.build_documents("datasets")
+    assert len(docs) == 1
+    assert docs[0]["id"] == "ch.bafu.karibu"
