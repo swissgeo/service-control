@@ -339,10 +339,9 @@ class Command(CustomBaseCommand):
                 self.print(f" - {service.dataservice_id}")
                 documents.append(self.build_service_doc(service))
         elif document_type == "datasets":
-            for dataset in Dataset.objects.exclude(
-                Q(dataset_relations_as_subject__role=DatasetToDataset.Role.PART)
-                | ~Q(status=Dataset.Status.PUBLISHED)
-            ).all():
+            for dataset in Dataset.objects.filter(status=Dataset.Status.PUBLISHED).exclude(
+                dataset_relations_as_subject__role=DatasetToDataset.Role.PART
+            ):
                 self.print(f" - {dataset.dataset_id}")
                 documents.append(self.build_dataset_doc(dataset))
         elif document_type == "distributions":
