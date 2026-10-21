@@ -32,6 +32,12 @@
           "only_longest_match": true
         }
       },
+      "tokenizer": {
+        "list_tokenizer": {
+          "type": "simple_pattern_split",
+          "pattern": "|"
+        }
+      },
       "normalizer": {
         "sort_normalizer": {
           "//": "Sort-only. A raw keyword sorts by code point, which puts every uppercase title before every lowercase one and 'Zürich' after 'Zwingen'. 'lowercase' + 'asciifolding' gives the case- and umlaut-insensitive order German expects (ä sorts as a). Deliberately NOT 'german_normalization', which also folds ß->ss and strips a trailing -e: right for matching, wrong for display order.",
@@ -49,6 +55,11 @@
           "//": "Search-time. Deliberately does NOT decompound: splitting the query too makes 'wanderkarte' match 'Wanderwege' (shared 'wander' subword). Splitting only at index time keeps that false positive out.",
           "tokenizer": "standard",
           "filter": ["lowercase", "german_normalization"]
+        },
+        "list_search": {
+          "type": "custom",
+          "tokenizer": "list_tokenizer",
+          "filter": ["trim"]
         }
       }
     }
@@ -75,7 +86,11 @@
                 "search_analyzer": "german_search"
               },
               "additionalSearchText": {"type": "search_as_you_type"},
-              "concepts": {"type": "keyword"},
+              "concepts": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "search_analyzer": "list_search"
+              },
               "preferredDistributionId": {"type": "keyword", "index": false},
               "ownerId": {"type": "keyword"},
               "owner": {
@@ -105,7 +120,11 @@
               },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
-              "concepts": {"type": "keyword"},
+              "concepts": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "search_analyzer": "list_search"
+              },
               "preferredDistributionId": {"type": "keyword", "index": false},
               "ownerId": {"type": "keyword"},
               "owner": {
@@ -131,7 +150,11 @@
               },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
-              "concepts": {"type": "keyword"},
+              "concepts": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "search_analyzer": "list_search"
+              },
               "preferredDistributionId": {"type": "keyword", "index": false},
               "ownerId": {"type": "keyword"},
               "owner": {
@@ -157,7 +180,11 @@
               },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
-              "concepts": {"type": "keyword"},
+              "concepts": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "search_analyzer": "list_search"
+              },
               "preferredDistributionId": {"type": "keyword", "index": false},
               "ownerId": {"type": "keyword"},
               "owner": {
@@ -183,7 +210,11 @@
               },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
-              "concepts": {"type": "keyword"},
+              "concepts": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "search_analyzer": "list_search"
+              },
               "preferredDistributionId": {"type": "keyword", "index": false},
               "ownerId": {"type": "keyword"},
               "owner": {
