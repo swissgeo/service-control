@@ -1653,7 +1653,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
         contact_administrative_area="",
         contact_postal_code="3003",
         contact_country="CH",
-        contact_electronic_mail_addresses=["chemicals@bafu.admin.ch"],
+        contact_electronic_mail_addresses=["chemicals@bafu.admin.ch", "another@test.ch"],
         contact_delivery_point="",
         online_resources=[
             OnlineResource(
@@ -1738,7 +1738,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
             "contact_postal_code": "3003",
             "contact_delivery_point": "",
             "contact_administrative_area": "",
-            "contact_electronic_mail_addresses": ["chemicals@bafu.admin.ch"],
+            "contact_electronic_mail_addresses": ["chemicals@bafu.admin.ch", "another@test.ch"],
         }
     ]
 
@@ -1752,7 +1752,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     assert ds_contact.contact.name_en == "Air Pollution Control and Chemicals Division"
     assert ds_contact.contact.name_it == "Divisione Protezione dell'aria e prodotti chimici"
     assert ds_contact.contact.name_rm == "-Missing-"
-    assert ds_contact.contact.email == "chemicals@bafu.admin.ch"
+    assert ds_contact.contact.emails == ["chemicals@bafu.admin.ch", "another@test.ch"]
     assert ds_contact.contact.phone == "123"
     assert ds_contact.contact.address_administrative_area == ""
     assert ds_contact.contact.address_delivery_point == ""
@@ -1962,7 +1962,7 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
     assert ds_contact.contact.name_en == "contact"
     assert ds_contact.contact.name_it is None
     assert ds_contact.contact.name_rm is None
-    assert ds_contact.contact.email is None
+    assert ds_contact.contact.emails == []
     assert ds_contact.contact.phone is None
     assert ds_contact.contact.address_administrative_area is None
     assert ds_contact.contact.address_delivery_point is None
