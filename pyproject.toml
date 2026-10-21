@@ -23,6 +23,7 @@ dependencies = [
     "opentelemetry-instrumentation==0.60b1",
     "opentelemetry-sdk~=1.39",
     "psycopg[binary,pool]~=3.2",
+    "pydantic~=2.14",
     "pyjwt~=2.11",
     "pystac-client~=0.9",
     "pyyaml~=6.0",

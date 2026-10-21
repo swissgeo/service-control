@@ -1,5 +1,9 @@
+from pydantic import ValidationError
+
+import pytest
+
 from dataset.models import Dataset, DatasetToContact
-from export.export_models import Contact, OARDataset, UnvalidatedLink
+from export.export_models import Contact, OARDataset, RelativeLink, UnvalidatedLink
 
 
 def _legacy_contact(**overrides) -> dict:
@@ -154,3 +158,33 @@ def test_from_dataset_exports_all_roles(db):
     assert all(
         contact.organization == "Bundesamt für Landestopografie swisstopo" for contact in contacts
     )
+
+
+@pytest.mark.parametrize(
+    "href",
+    [
+        "/collections/abc/items",
+        "/collections/abc/items?limit=10&offset=5",
+        "relative/path",
+        "?query=only",
+        "#fragment",
+    ],
+)
+def test_internal_link_accepts_valid_hrefs(href):
+    assert RelativeLink(href=href).href == href
+
+
+@pytest.mark.parametrize(
+    "href",
+    [
+        "",
+        "   ",
+        "https://example.com/items",
+        "mailto:someone@example.com",
+        "//example.com/items",
+        "http://[invalid",
+    ],
+)
+def test_internal_link_rejects_invalid_hrefs(href):
+    with pytest.raises(ValidationError):
+        RelativeLink(href=href)

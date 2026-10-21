@@ -1279,6 +1279,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert aggregate.additional_search_text_fr == []
     assert aggregate.additional_search_text_it == []
     assert aggregate.additional_search_text_rm == []
+    assert aggregate.status == Dataset.Status.PUBLISHED
     assert (
         aggregate.legacy_part_info_url_de
         == "https://geodienste.ch/services/av?locale=de#info_cantons"
@@ -1339,6 +1340,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert part.title_short_fr == "Title FR"
     assert part.title_short_it == "Title IT"
     assert part.title_short_rm is None
+    assert part.status == Dataset.Status.PUBLISHED
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
 
@@ -1477,6 +1479,7 @@ def test_command_creates_broker_dataset(mock, client, db):
     assert dataset.legacy_part_info_url_de is None
     assert dataset.legacy_part_info_url_fr is None
     assert dataset.legacy_part_info_url_it is None
+    assert dataset.status == Dataset.Status.PUBLISHED
     assert dataset.legacy_contacts == [
         {
             "role": "pointOfContact",
@@ -1524,7 +1527,7 @@ def test_command_creates_broker_dataset(mock, client, db):
 
 
 @patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_updates_datasets(mock, db):
+def test_command_updates_datasets(mock, db):  # noqa: PLR0915
     aggregate = Dataset(
         dataset_id="ch.kgk.av",
         data_source=Dataset.DataSource.GEODIENSTE,
@@ -1540,6 +1543,7 @@ def test_command_updates_datasets(mock, db):
         title_short_fr="Title FR",
         title_short_it="Title IT",
         title_short_rm=None,
+        status=Dataset.Status.PUBLISHED,
     )
     aggregate.save()
 
@@ -1558,6 +1562,7 @@ def test_command_updates_datasets(mock, db):
         title_short_fr="Title FR",
         title_short_it="Title IT",
         title_short_rm=None,
+        status=Dataset.Status.READY,
     )
     part.save()
 
@@ -1638,6 +1643,7 @@ def test_command_updates_datasets(mock, db):
     assert aggregate.title_short_fr == "Title FR"
     assert aggregate.title_short_it == "Title IT"
     assert aggregate.title_short_rm is None
+    assert aggregate.status == Dataset.Status.PUBLISHED
 
     part.refresh_from_db()
     assert part.data_source == Dataset.DataSource.GEODIENSTE
@@ -1655,6 +1661,7 @@ def test_command_updates_datasets(mock, db):
     assert part.title_short_fr == "Title FR"
     assert part.title_short_it == "Title IT"
     assert part.title_short_rm is None
+    assert part.status == Dataset.Status.READY
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
 
@@ -2015,14 +2022,14 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Creating dataset unit ch.kgk (default) as maintainer in ch.kgk.av" in out
+    assert "Creating dataset unit ch.kgk (default) as owner in ch.kgk.av" in out
     assert (
         "Creating dataset unit ch.geodienste-lu (default) as maintainer in ch.geodienste-lu.av"
         in out
     )
 
     dataset_unit = org_aggregate.unit_set.get().dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.role == DatasetToUnit.Role.OWNER
     assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
 
     dataset_unit = org_part.unit_set.get().dataset_units.get()
@@ -2036,7 +2043,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataset unit ch.kgk (default) as maintainer in ch.kgk.av already exists" in out
+    assert "Dataset unit ch.kgk (default) as owner in ch.kgk.av already exists" in out
     assert (
         "Dataset unit ch.geodienste-lu (default) as maintainer in ch.geodienste-lu.av already "
         "exists" in out
@@ -2150,11 +2157,11 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
 
     assert "Mapping found for provider_id KGK: ch.kgk-cgc" in out
     assert "Mapping found for provider_id LU: ch.rawi" in out
-    assert "Creating dataset unit ch.kgk-cgc (default) as maintainer in ch.kgk.av" in out
+    assert "Creating dataset unit ch.kgk-cgc (default) as owner in ch.kgk.av" in out
     assert "Creating dataset unit ch.rawi (default) as maintainer in ch.geodienste-lu.av" in out
 
     dataset_unit = org_aggregate.unit_set.get().dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.role == DatasetToUnit.Role.OWNER
     assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
 
     dataset_unit = org_part.unit_set.get().dataset_units.get()
@@ -2262,7 +2269,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
     assert "Unit mapping found for dataset_id ch.geodienste-lu.av: part" in out
 
     dataset_unit = unit_aggregate.dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
+    assert dataset_unit.role == DatasetToUnit.Role.OWNER
     assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
 
     dataset_unit = unit_part.dataset_units.get()

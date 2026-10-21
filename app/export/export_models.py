@@ -1,13 +1,13 @@
 from typing import Annotated, Literal, Self
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 
 from iso639 import Lang as IsoLang
 from pydantic import (
     AfterValidator,
+    AnyHttpUrl,
     BaseModel,
     ConfigDict,
     Field,
-    model_validator,
 )
 
 from django.conf import settings
@@ -71,17 +71,11 @@ LANGS = {
 }
 
 
-def is_url(url: str) -> str:
-    if not url.startswith("http"):
-        raise ValueError(f"{url} is not a valid URL")
-    return url
-
-
-class BaseLink(BaseModel):
-    """Base Link object for OAR records
+class Link(BaseModel):
+    """Base Link object for OAR records.
 
     The OAR specification defines a Link object with the following properties:
-    - href (string): The URL of the linked resource. This is optional in the base class.
+    - href (string): The URL of the linked resource.
     - rel (string, optional): The relationship type of the link.
     - title (string, optional): A human-readable title for the link.
     - type (string, optional): The media type of the linked resource.
@@ -89,89 +83,82 @@ class BaseLink(BaseModel):
 
     """
 
-    href: Annotated[str, AfterValidator(is_url)] | None = None
+    href: Annotated[str, AfterValidator(lambda v: str(AnyHttpUrl(v)))]
     rel: str | None = None
     title: str | None = None
     typ: str | None = Field(default=None, serialization_alias="type")
     hreflang: str | None = None
 
 
-class Link(BaseLink):
-    """Generic Link object for OAR records
+def validate_relative_href(value: str) -> str:
+    if not value or not value.strip():
+        raise ValueError("link must not be empty")
 
-    Unlike in the base class, the href and type properties are required in this class, as it
-    represents a fully defined link to an external resource. This class can be used for links that
-    point to resources outside of the OAR service.:
-    - href (string, required): The URL of the linked resource.
-    - type (string, required): The media type of the linked resource.
+    try:
+        parts = urlsplit(value)
+    except Exception as e:
+        raise ValueError("invalid link") from e
+    if parts.scheme:
+        raise ValueError("relative link must not have a scheme")
+    if parts.netloc:
+        raise ValueError("relative link must not have a host")
+    return value
+
+
+class RelativeLink(Link):
+    """Relative links require a proper, relative link.
+
+    These links typically point to other records or styles and must be relative as they are
+    re-written by service-oa-records.
     """
 
-    href: Annotated[str, AfterValidator(is_url)]  # ty: ignore[invalid-mutable-override]
-    typ: str = Field(serialization_alias="type")  # ty: ignore[invalid-mutable-override]
+    href: Annotated[str, AfterValidator(validate_relative_href)]
 
 
 class UnvalidatedLink(Link):
-    """Generic Link object for OAR records where the href URL is *not* validated
-
-    Unlike in the base class, the URL is not checked here. So, e.g., "invalid-url.ch" is rejected by
-    `Link` but it's accepted for `UnvalidatedLink`.
-
-
+    """Links that are *not* validated and should be used for all links that are not produced
+    by ourselves (partly or wholly) because they rely, for example, on harvested data.
     """
 
     href: str
 
 
-class OARCollectionLink(BaseLink):
-    collectionId: str = Field(exclude=True)  # noqa: N815
-
-    @model_validator(mode="after")
-    def generate_href_value(self) -> BaseLink:
-        """Generate the href value for the record link.
-
-        This method is called after the model is initialized and will set the href value
-        based on the origin, basepath, collectionId and recordId.
-        """
-        self.href = f"/collections/{self.collectionId}"
-        return self
-
-
-class OARCollectionItemsLink(BaseLink):
-    collectionId: str = Field(exclude=True)  # noqa: N815
+class OARCollectionItemsLink(RelativeLink):
+    collection_id: str = Field(serialization_alias="collectionId", exclude=True)
     query: dict = Field(default_factory=dict, exclude=True)
 
-    @model_validator(mode="after")
-    def generate_href_value(self) -> BaseLink:
-        """Generate the href value for the record link.
-
-        This method is called after the model is initialized and will set the href value
-        based on the origin, basepath, collectionId and recordId.
-        """
-        self.href = f"/collections/{self.collectionId}/items"
-
-        if self.query:
-            self.href += f"?{urlencode(self.query)}"
-
-        return self
+    @classmethod
+    def from_record_id(cls, collection_id: str, query: dict, **kwargs) -> OARCollectionItemsLink:
+        href = f"/collections/{collection_id}/items"
+        if query:
+            href += f"?{urlencode(query)}"
+        return cls(collection_id=collection_id, query=query, href=href, **kwargs)
 
 
-class OARRecordLink(OARCollectionLink):
+class OARRecordLink(RelativeLink):
     model_config = ConfigDict(populate_by_name=True)
-    recordId: str = Field(exclude=True)  # noqa: N815
+    collection_id: str = Field(serialization_alias="collectionId", exclude=True)
+    record_id: str = Field(serialization_alias="recordId", exclude=True)
 
-    @model_validator(mode="after")
-    def generate_href_value(self) -> BaseLink:
-        """Generate the href value for the record link.
+    @classmethod
+    def from_record_id(cls, collection_id: str, record_id: str, **kwargs) -> OARRecordLink:
+        href = f"/collections/{collection_id}/items/{record_id}"
+        return cls(collection_id=collection_id, record_id=record_id, href=href, **kwargs)
 
-        This method is called after the model is initialized and will set the href value
-        based on the origin, basepath, collectionId and recordId.
-        """
-        self.href = f"/collections/{self.collectionId}/items/{self.recordId}"
-        return self
+
+class OASStyleLink(RelativeLink):
+    """Link to a Maplibre style file."""
+
+    distribution_id: str = Field(exclude=True)
+
+    @classmethod
+    def from_distribution_id(cls, distribution_id: str, **kwargs) -> OASStyleLink:
+        href = f"{settings.OAS_PATH_PREFIX}/{distribution_id}:style"
+        return cls(distribution_id=distribution_id, href=href, **kwargs)
 
 
 class LinkTemplate(BaseModel):
-    uriTemplate: str  # noqa: N815
+    uri_template: str = Field(serialization_alias="uriTemplate")
     rel: str
     title: str | None = None
     typ: str | None = Field(default=None, serialization_alias="type")
@@ -180,8 +167,10 @@ class LinkTemplate(BaseModel):
 
 class OARRecord(BaseModel):
     id: str
-    links: list[BaseLink] = Field(default_factory=list)
-    linkTemplates: list[LinkTemplate] = Field(default_factory=list)  # noqa: N815
+    links: list[Link] = Field(default_factory=list)
+    link_templates: list[LinkTemplate] = Field(
+        serialization_alias="linkTemplates", default_factory=list
+    )
     type: Literal["Feature"] = "Feature"
     geometry: dict | None = None
     lang: str = Field(default="de", exclude=True)
@@ -239,8 +228,8 @@ class OARDataset(OARRecord):
             lang=lang,
         )
         dataset.links.append(
-            OARCollectionItemsLink(
-                collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
+            OARCollectionItemsLink.from_record_id(
+                collection_id=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                 rel="distributions",
                 title="Distributions",
                 query={"dataset": ds.dataset_id},
@@ -248,7 +237,7 @@ class OARDataset(OARRecord):
         )
 
         dataset.links.append(
-            Link(
+            UnvalidatedLink(
                 href=f"https://www.geocat.ch/geonetwork/srv/{IsoLang(lang).pt2b}/catalog.search#/metadata/{ds.geocat_id}",
                 rel="alternate",
                 title="GeoCat Metadata",
@@ -277,7 +266,7 @@ class OARDataset(OARRecord):
             )
             if legacy_part_info_url:
                 dataset.links.append(
-                    Link(
+                    UnvalidatedLink(
                         href=legacy_part_info_url,
                         rel="partinfo",
                         title="Information page about the part datasets",
@@ -320,9 +309,9 @@ class OARDistribution(OARRecord):
             record.properties["description"] = description
 
         record.links.append(
-            OARRecordLink(
-                collectionId=settings.OAR_DATASETS_COLLECTION_ID,
-                recordId=dist.dataset.dataset_id,
+            OARRecordLink.from_record_id(
+                collection_id=settings.OAR_DATASETS_COLLECTION_ID,
+                record_id=dist.dataset.dataset_id,
                 rel="dataset",
                 title="Dataset Record",
             )
@@ -337,7 +326,7 @@ class OARDistribution(OARRecord):
             url = getattr(dist, f"geojson_url_{lang}", None)
             if url:
                 record.links.append(
-                    Link(
+                    UnvalidatedLink(
                         href=url,
                         rel="about",
                         title="Link to GeoJSON file",
@@ -365,9 +354,9 @@ class OARDistribution(OARRecord):
             # Note: The linter cannot resolve the dataservice attribute since it's defined
             # in the child classes of the distribution base class
             record.links.append(
-                OARRecordLink(
-                    collectionId=settings.OAR_SERVICES_COLLECTION_ID,
-                    recordId=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
+                OARRecordLink.from_record_id(
+                    collection_id=settings.OAR_SERVICES_COLLECTION_ID,
+                    record_id=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
                 )
             )
@@ -376,9 +365,9 @@ class OARDistribution(OARRecord):
         info_dist = featureinfo_distribution(dist.dataset, dist)
         if info_dist:
             record.links.append(
-                OARRecordLink(
-                    collectionId=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
-                    recordId=info_dist.distribution_id,
+                OARRecordLink.from_record_id(
+                    collection_id=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
+                    record_id=info_dist.distribution_id,
                     rel="featureinfo",
                 )
             )
@@ -386,7 +375,7 @@ class OARDistribution(OARRecord):
         # Add style relation
         if isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
             record.links.append(
-                OASStyleLink(
+                OASStyleLink.from_distribution_id(
                     distribution_id=dist.distribution_id,
                     rel="styledBy",
                     title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
@@ -400,9 +389,9 @@ class OARDistribution(OARRecord):
                 # or human-readable representation of the data behind the distribution.
                 # htmlpopup_url = getattr(dist, f"htmlpopup_url_{lang}", None)
                 htmlpopup_url_base = "https://api3.geo.admin.ch/rest/services/ech/MapServer/"
-                record.linkTemplates.append(
+                record.link_templates.append(
                     LinkTemplate(
-                        uriTemplate=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={{lang}}",
+                        uri_template=f"{htmlpopup_url_base}{dist.external_record_id(lang)}/{{featureId}}/htmlPopup?lang={{lang}}",
                         rel="preview",
                         typ="application/html",
                         title="HTML popup for a feature of this distribution",
@@ -452,7 +441,7 @@ class OARDataservice(OARRecord):
         # Add links
         if ds.documentation_url_de:
             record.links.append(
-                Link(
+                UnvalidatedLink(
                     href=ds.documentation_url_de,
                     rel="service-doc",
                     title="Service Documentation (DE)",
@@ -461,7 +450,7 @@ class OARDataservice(OARRecord):
             )
         if ds.openapi_spec_url:
             record.links.append(
-                Link(
+                UnvalidatedLink(
                     href=ds.openapi_spec_url,
                     rel="service-desc",
                     typ="application/json",
@@ -473,9 +462,9 @@ class OARDataservice(OARRecord):
         if isinstance(ds, WMTSDataservice):
             url = ds.localized_capabilities_url(lang)
             if "{epsg}" in url:
-                record.linkTemplates.append(
+                record.link_templates.append(
                     LinkTemplate(
-                        uriTemplate=url,
+                        uri_template=url,
                         rel="describedby",
                         typ="application/xml",
                         title="WMTS Capabilities File",
@@ -492,7 +481,7 @@ class OARDataservice(OARRecord):
                 )
             else:
                 record.links.append(
-                    Link(
+                    UnvalidatedLink(
                         href=url,
                         rel="describedby",
                         typ="application/xml",
@@ -502,7 +491,7 @@ class OARDataservice(OARRecord):
 
         elif isinstance(ds, WMSDataservice):
             record.links.append(
-                Link(
+                UnvalidatedLink(
                     href=ds.localized_capabilities_url(lang),
                     rel="describedby",
                     typ="application/xml",
@@ -511,7 +500,7 @@ class OARDataservice(OARRecord):
             )
         elif isinstance(ds, OGCAPIStacDataservice):
             record.links.append(
-                Link(
+                UnvalidatedLink(
                     href=ds.landing_page_url,
                     rel="describedby",
                     typ="application/json",
@@ -520,7 +509,7 @@ class OARDataservice(OARRecord):
             )
         elif isinstance(ds, GeoadminFeaturesDataservice):
             record.links.append(
-                Link(
+                UnvalidatedLink(
                     href=ds.landing_page_url,
                     rel="describes",
                     typ="application/json",
@@ -663,22 +652,6 @@ class Owner(BaseModel):
     id: str
     name: str
     acronym: str
-
-
-class OASStyleLink(BaseLink):
-    """Link to a Maplibre style file."""
-
-    distribution_id: str = Field(exclude=True)
-
-    @model_validator(mode="after")
-    def generate_href_value(self) -> OASStyleLink:
-        """Generate the href value for the style link.
-
-        This method is called after the model is initialized and will set the href value
-        based on the styles path prefix and the distribution_id.
-        """
-        self.href = f"{settings.OAS_PATH_PREFIX}/{self.distribution_id}:style"
-        return self
 
 
 class PaintConfig(BaseModel):
