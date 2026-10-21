@@ -526,6 +526,7 @@ def test_command_creates_dataset(dynamodb, db):
     assert ds_out.geocat_id == "abcd"
     assert ds_out.data_source == Dataset.DataSource.BOD_DATASET
     assert ds_out.data_source_ids == ["ch.bafu.moose"]
+    assert ds_out.status == Dataset.Status.PUBLISHED
 
 
 def test_command_updates_dataset(dynamodb, db):
@@ -544,6 +545,7 @@ def test_command_updates_dataset(dynamodb, db):
         geocat_id="x",
         data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=[],
+        status=Dataset.Status.DRAFT,
     ).save()
 
     ds_in = DatasetImport(
@@ -587,6 +589,7 @@ def test_command_updates_dataset(dynamodb, db):
     assert ds_out.geocat_id == "abcd"
     assert ds_out.data_source == Dataset.DataSource.BOD_DATASET
     assert ds_out.data_source_ids == ["ch.bafu.moose"]
+    assert ds_out.status == Dataset.Status.DRAFT
 
 
 def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):

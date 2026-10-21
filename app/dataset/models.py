@@ -42,6 +42,17 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         help_text=_(_context, "List of original external IDs"),
     )
 
+    # Status to e.g. hide datasets from OA-Records
+    class Status(models.TextChoices):
+        PUBLISHED = "published", _("Dataset Status", "Published")
+        DEPUBLISHED = "depublished", _("Dataset Status", "Depublished")
+        DRAFT = "draft", _("Dataset Status", "Draft")
+        READY = "ready", _("Dataset Status", "Ready")
+
+    status = models.CharField(
+        _(_context, "Status"), choices=Status.choices, default=Status.PUBLISHED, max_length=255
+    )
+
     # The title we currently harvest from BOD and store here is actually a short
     # version of the original title. In a later iteration, we'll add the original
     # title as well.
