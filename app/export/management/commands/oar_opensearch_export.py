@@ -114,6 +114,13 @@ class Command(CustomBaseCommand):
         # Base class arguments (mainly '--logger').
         super().add_arguments(parser)
 
+        parser.add_argument(
+            "--types",
+            nargs="+",
+            default=None,
+            help="Types to export",
+        )
+
         add_connection_arguments(parser)
 
         parser.add_argument(
@@ -149,6 +156,12 @@ class Command(CustomBaseCommand):
 
         self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
 
+        # Use all defined types if no --types has been given
+        types = options["types"] or TYPE_TO_INDEX.keys()
+        if invalid_types := set(types) - (supported := set(TYPE_TO_INDEX)):
+            self.print_error(f"Unsupported types: {invalid_types} not in {supported}")
+            return
+
         # --dump never talks to OpenSearch at all; otherwise every run creates the indices,
         # imports the documents and atomically swaps the aliases over to the new generation.
         client = self.get_client(options) if not dump else None
@@ -159,14 +172,16 @@ class Command(CustomBaseCommand):
         timestamp = datetime.now(UTC)
         targets = {
             index: (index if dump else _generation_index(index, timestamp))
-            for index in TYPE_TO_INDEX.values()
+            for document_type, index in TYPE_TO_INDEX.items()
+            if document_type in types
         }
 
         if not dump:
             self.create_indexes(client, targets)
 
         for document_type, index in TYPE_TO_INDEX.items():
-            self.import_documents(client, targets[index], document_type, options)
+            if document_type in types:
+                self.import_documents(client, targets[index], document_type, options)
 
         if not dump:
             self.swap_aliases(client, targets, options)

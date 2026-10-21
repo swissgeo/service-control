@@ -286,7 +286,7 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
 def test_dump_service_document(db, tmp_path):
     _make_dataservice()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["services"], dump=str(tmp_path), verbosity=0)
 
     assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
         "de": {
@@ -417,7 +417,7 @@ def test_dump_service_document(db, tmp_path):
 def test_dump_dataset_document(db, tmp_path):
     _make_dataset()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
     assert _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose") == {
         "de": {
@@ -792,7 +792,7 @@ def test_dump_dataset_skips_part_datasets(db, tmp_path):
     """A part dataset should not be exported."""
     _make_aggregate_part_datasets()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
     assert (tmp_path / "swissgeo-catalog" / "ch.kgk.av.json").exists()
     assert not (tmp_path / "swissgeo-catalog" / "ch.geodienste-lu.av.json").exists()
@@ -802,7 +802,7 @@ def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
     """An aggregate dataset contains some additional fields."""
     _make_aggregate_part_datasets()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.kgk.av")
     assert dataset_doc["de"]["properties"]["aggregated"] is True
@@ -818,7 +818,7 @@ def test_dump_dataset_contains_localized_owner(unit, tmp_path):
     dataset = _make_dataset()
     DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER).save()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert dataset_doc["de"]["properties"]["owner"] == {
@@ -841,7 +841,7 @@ def test_dump_dataset_contains_localized_owner(unit, tmp_path):
 def test_dump_dataset_without_owner_has_no_owner(db, tmp_path):
     _make_dataset()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert "owner" not in dataset_doc["de"]["properties"]
@@ -852,7 +852,7 @@ def test_dump_distribution_document(db, tmp_path):
     dataset = _make_dataset()
     _make_distribution(dataset, dataservice)
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["distributions"], dump=str(tmp_path), verbosity=0)
 
     assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose:wms") == {
         "de": {
@@ -1039,7 +1039,7 @@ def test_dump_distribution_document(db, tmp_path):
 def test_dump_organization_document(cogntio, db, tmp_path):
     _make_organization()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["organizations"], dump=str(tmp_path), verbosity=0)
 
     assert _read_dump(tmp_path, "swissgeo-organizations", "ch.bafu") == {
         "de": {
@@ -1109,7 +1109,7 @@ def test_dump_organization_skips_geodienste_organizations(cognito, db, tmp_path)
     organization.data_source = Organization.DataSource.GEODIENSTE
     organization.save()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["organizations"], dump=str(tmp_path), verbosity=0)
 
     assert not (tmp_path / "swissgeo-organizations" / "ch.bafu.json").exists()
 
@@ -1119,7 +1119,7 @@ def test_dump_organization_includes_geodienste_aggregate_organizations(cognito, 
     """The aggregate organization imported from"""
     _make_aggregate_organization()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["organizations"], dump=str(tmp_path), verbosity=0)
 
     assert (tmp_path / "swissgeo-organizations" / "ch.kgk.json").exists()
 
@@ -1127,7 +1127,7 @@ def test_dump_organization_includes_geodienste_aggregate_organizations(cognito, 
 def test_dump_thesaurus_document(db, tmp_path):
     _make_thesaurus()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["thesauri"], dump=str(tmp_path), verbosity=0)
 
     assert _read_dump(tmp_path, "swissgeo-thesauri", "ech0166") == {
         "de": {
@@ -1245,7 +1245,7 @@ def test_dump_thesaurus_skips_non_ech(db, tmp_path):
     thesaurus.thesaurus_id = "foo"
     thesaurus.save()
 
-    call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
+    call_command("oar_opensearch_export", types=["thesauri"], dump=str(tmp_path), verbosity=0)
 
     assert not (tmp_path / "swissgeo-thesauri" / "foo").exists()
 
