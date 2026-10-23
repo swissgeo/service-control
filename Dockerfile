@@ -10,10 +10,7 @@ ENV UID=1000
 ENV GID=1000
 ENV INSTALL_DIR=/opt/service-control
 
-RUN apt-get -qq update > /dev/null \
-    && apt-get -qq clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p ${INSTALL_DIR} \
+RUN mkdir -p ${INSTALL_DIR} \
     && groupadd -r ${GROUP} -g ${GID} \
     && useradd -r -s /bin/false -d ${INSTALL_DIR} -g ${GROUP} -u ${UID} ${USER} \
     && chown -R ${USER}:${GROUP} ${INSTALL_DIR}
@@ -21,7 +18,7 @@ RUN apt-get -qq update > /dev/null \
 ###########################################################
 # Builder container
 FROM base AS builder
-COPY --from=ghcr.io/astral-sh/uv:0.10.6 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
@@ -52,7 +49,7 @@ FROM builder AS debug
 LABEL target=debug
 ENV DEBUG=1
 
-RUN apt-get -qq update > /dev/null \
+RUN apt-get update > /dev/null \
     && apt-get -qq -y install \
     curl \
     net-tools \
