@@ -145,6 +145,7 @@ dockerlogin: ## Login to the AWS Docker Registry (ECR)
 .PHONY: dockerbuild
 dockerbuild: ## Create a docker image
 	docker build \
+		--pull \
 		--build-arg GIT_HASH="$(GIT_HASH)" \
 		--build-arg GIT_BRANCH="$(GIT_BRANCH)" \
 		--build-arg GIT_DIRTY="$(GIT_DIRTY)" \
