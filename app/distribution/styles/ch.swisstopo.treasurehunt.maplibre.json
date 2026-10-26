@@ -1,0 +1,38 @@
+{
+ "style": {
+  "version": 8,
+  "sources": {
+   "ch.swisstopo.treasurehunt": {
+    "type": "geojson",
+    "data": {
+     "type": "FeatureCollection",
+     "features": []
+    }
+   }
+  },
+  "layers": [
+   {
+    "id": "ch.swisstopo.treasurehunt-0-icon",
+    "type": "symbol",
+    "source": "ch.swisstopo.treasurehunt",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.swisstopo.treasurehunt/2020_icon.png",
+     "icon-allow-overlap": true
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "name"
+      ]
+     ],
+     ""
+    ],
+    "minzoom": 12
+   }
+  ]
+ },
+ "icons": []
+}

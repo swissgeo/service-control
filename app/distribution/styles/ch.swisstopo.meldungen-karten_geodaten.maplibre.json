@@ -1,0 +1,171 @@
+{
+ "style": {
+  "version": 8,
+  "sources": {
+   "ch.swisstopo.meldungen-karten_geodaten": {
+    "type": "geojson",
+    "data": {
+     "type": "FeatureCollection",
+     "features": []
+    }
+   }
+  },
+  "layers": [
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-0-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(255, 0, 0)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "1"
+    ]
+   },
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-1-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(255, 170, 0)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "2"
+    ]
+   },
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-2-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(85, 255, 0)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "3"
+    ]
+   },
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-3-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(156, 156, 156)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "4"
+    ]
+   },
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-4-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(197, 90, 17)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "5"
+    ]
+   },
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-5-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(112, 48, 160)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "6"
+    ]
+   },
+   {
+    "id": "ch.swisstopo.meldungen-karten_geodaten-6-circle",
+    "type": "circle",
+    "source": "ch.swisstopo.meldungen-karten_geodaten",
+    "paint": {
+     "circle-radius": 9,
+     "circle-color": "rgb(84, 130, 53)",
+     "circle-stroke-color": "rgb(255, 255, 255)",
+     "circle-stroke-width": 1
+    },
+    "filter": [
+     "==",
+     [
+      "to-string",
+      [
+       "get",
+       "status"
+      ]
+     ],
+     "7"
+    ]
+   }
+  ]
+ },
+ "icons": []
+}
