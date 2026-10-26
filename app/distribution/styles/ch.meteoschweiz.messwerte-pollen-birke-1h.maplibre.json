@@ -1,0 +1,1533 @@
+{
+ "style": {
+  "version": 8,
+  "sources": {
+   "ch.meteoschweiz.messwerte-pollen-birke-1h": {
+    "type": "geojson",
+    "data": {
+     "type": "FeatureCollection",
+     "features": []
+    }
+   }
+  },
+  "layers": [
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-0-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+     "icon-allow-overlap": true
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      -100000
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ]
+    ],
+    "maxzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-1-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+     "icon-allow-overlap": true,
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n - No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      -100000
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-2-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 6,
+     "circle-color": "rgba(255,255,255,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-3-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 7,
+     "circle-color": "rgba(255,255,255,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-3-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-4-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 8,
+     "circle-color": "rgba(255,255,255,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-4-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-5-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 6,
+     "circle-color": "rgba(255,255,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-6-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 7,
+     "circle-color": "rgba(255,255,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-6-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-7-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 8,
+     "circle-color": "rgba(255,255,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-7-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      1
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-8-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 6,
+     "circle-color": "rgba(255,165,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-9-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 7,
+     "circle-color": "rgba(255,165,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-9-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-10-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 8,
+     "circle-color": "rgba(255,165,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-10-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      25
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-11-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 6,
+     "circle-color": "rgba(255,0,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-12-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 7,
+     "circle-color": "rgba(255,0,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-12-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-13-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 8,
+     "circle-color": "rgba(255,0,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-13-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      160
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-14-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 6,
+     "circle-color": "rgba(118,0,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-15-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 7,
+     "circle-color": "rgba(118,0,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-15-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-16-circle",
+    "type": "circle",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "paint": {
+     "circle-radius": 8,
+     "circle-color": "rgba(118,0,0,0.9)",
+     "circle-stroke-color": "rgba(14,80,114,0.9)",
+     "circle-stroke-width": 2
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-16-label",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      660
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-17-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+     "icon-allow-overlap": true
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      100000
+     ]
+    ],
+    "maxzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-pollen-birke-1h-18-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-pollen-birke-1h",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+     "icon-allow-overlap": true,
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n - No/m³"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      50000
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      100000
+     ]
+    ],
+    "minzoom": 4
+   }
+  ]
+ },
+ "icons": []
+}
