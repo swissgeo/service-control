@@ -43,6 +43,19 @@ def test_organization_mapping(client, db):
     OrganizationMapping(provider_id_prefix="ch.d", organization_id="ch.a").save()
     OrganizationMapping(provider_id_prefix="ch.e", organization_id="ch.c").save()
 
+    assert OrganizationMapping.objects.get_by_natural_key(
+        provider_id_prefix="ch.a.b", organization_id="ch.b"
+    )
+    assert OrganizationMapping.objects.get_by_natural_key(
+        provider_id_prefix="ch.a.c", organization_id="ch.c"
+    )
+    assert OrganizationMapping.objects.get_by_natural_key(
+        provider_id_prefix="ch.d", organization_id="ch.a"
+    )
+    assert OrganizationMapping.objects.get_by_natural_key(
+        provider_id_prefix="ch.e", organization_id="ch.c"
+    )
+
     table = OrganizationMapping.table()
 
     assert table.match("ch.a.b")[0].organization_id == "ch.b"
@@ -67,6 +80,11 @@ def test_dataset_mapping(db):
     DatasetMapping(dataset_id_prefix="ch.a.c", dataset_id="ch.c").save()
     DatasetMapping(dataset_id_prefix="ch.d", dataset_id="ch.a").save()
     DatasetMapping(dataset_id_prefix="ch.e", dataset_id="ch.c").save()
+
+    assert DatasetMapping.objects.get_by_natural_key(dataset_id_prefix="ch.a.b", dataset_id="ch.b")
+    assert DatasetMapping.objects.get_by_natural_key(dataset_id_prefix="ch.a.c", dataset_id="ch.c")
+    assert DatasetMapping.objects.get_by_natural_key(dataset_id_prefix="ch.d", dataset_id="ch.a")
+    assert DatasetMapping.objects.get_by_natural_key(dataset_id_prefix="ch.e", dataset_id="ch.c")
 
     table = DatasetMapping.table()
 
@@ -108,6 +126,25 @@ def test_dataset_to_unit_mapping(client, db):
         unit_id="y",
         role=role,
     ).save()
+
+    assert DatasetToUnitMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.1", organization_id="ch.a", unit_id="default", role=role
+    )
+    assert DatasetToUnitMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.1.1",
+        organization_id="ch.a",
+        unit_id="x",
+        role=role,
+    )
+    assert DatasetToUnitMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.2", organization_id="ch.a", unit_id="z", role=role
+    )
+    assert DatasetToUnitMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.2.1",
+        organization_id="ch.b",
+        unit_id="y",
+        role=role,
+    )
 
     table = DatasetToUnitMapping.table()
 
@@ -159,6 +196,19 @@ def test_dataset_to_contact_mapping(client, db):
     DatasetToContactMapping(
         dataset_id_prefix="d.2", role="pointOfContact", organization_id="ch.b", contact_name_en="z"
     ).save()
+
+    assert DatasetToContactMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.1", role="owner", organization_id="ch.a", contact_name_en="x"
+    )
+    assert DatasetToContactMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.1.1",
+        role="pointOfContact",
+        organization_id="ch.b",
+        contact_name_en="y",
+    )
+    assert DatasetToContactMapping.objects.get_by_natural_key(
+        dataset_id_prefix="d.2", role="pointOfContact", organization_id="ch.b", contact_name_en="z"
+    )
 
     table = DatasetToContactMapping.table()
 
