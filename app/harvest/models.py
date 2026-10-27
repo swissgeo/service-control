@@ -24,6 +24,16 @@ class PrefixLookupTable[T, M]:
         return None, None
 
 
+class OrganizationMappingManager(models.Manager):
+    def get_by_natural_key(
+        self, provider_id_prefix: str, organization_id: str
+    ) -> OrganizationMapping:
+        return self.get(
+            provider_id_prefix=provider_id_prefix,
+            organization_id=organization_id,
+        )
+
+
 class OrganizationMapping(models.Model):
     """Mapping used to map providers/organization during import of harvested organizations."""
 
@@ -55,8 +65,21 @@ class OrganizationMapping(models.Model):
     )
     description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
+    objects = OrganizationMappingManager()
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["provider_id_prefix", "organization_id"],
+                name="unique_organizationmapping_prefix_org",
+            ),
+        )
+
     def __str__(self) -> str:
         return f"{self.provider_id_prefix} -> {self.organization_id}"
+
+    def natural_key(self) -> tuple[str, str]:
+        return (self.provider_id_prefix, self.organization_id)
 
     @classmethod
     def table(cls) -> PrefixLookupTable[Organization, OrganizationMapping]:
