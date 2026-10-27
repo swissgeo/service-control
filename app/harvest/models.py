@@ -288,6 +288,18 @@ class DatasetToUnitMapping(models.Model):
         )
 
 
+class DatasetToContactMappingManager(models.Manager):
+    def get_by_natural_key(
+        self, dataset_id_prefix: str, role: str, organization_id: str, contact_name_en: str
+    ) -> DatasetToContactMapping:
+        return self.get(
+            dataset_id_prefix=dataset_id_prefix,
+            role=role,
+            organization_id=organization_id,
+            contact_name_en=contact_name_en,
+        )
+
+
 class DatasetToContactMapping(models.Model):
     """Mapping used to map datasets by role to contacts during import of harvested contacts."""
 
@@ -328,11 +340,24 @@ class DatasetToContactMapping(models.Model):
     )
     description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
+    objects = DatasetToContactMappingManager()
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["dataset_id_prefix", "role", "organization_id", "contact_name_en"],
+                name="unique_datasettocontactmapping",
+            ),
+        )
+
     def __str__(self) -> str:
         return (
             f"{self.dataset_id_prefix}: {self.role} -> "
             f"{self.organization_id}: {self.contact_name_en}"
         )
+
+    def natural_key(self) -> tuple[str, str, str, str]:
+        return (self.dataset_id_prefix, self.role, self.organization_id, self.contact_name_en)
 
     @classmethod
     def table(cls) -> dict[str, PrefixLookupTable[Contact, DatasetToContactMapping]]:
