@@ -18,7 +18,8 @@ AGGREGATE_PROVIDER_CONTACT = {
     "name_it": "Direzione operativa KGK-CGC",
     "name_rm": "",
     "emails": ["support@geodienste.kgk-cgc.ch"],
-    "phone": "+41 31 300 09 20",
+    # No phone number for KGK, see GPS-1166/GPS-1199. Set to None to clear existing values.
+    "phone": None,
     "address_delivery_point": "Haus der Kantone, Speichergasse 6, Postfach",
     "address_postal_code": "3001",
     "address_city": "Bern",
@@ -34,7 +35,6 @@ AGGREGATE_PROVIDER_CONTACT = {
         "Speichergasse 6\n"
         "Postfach\n"
         "CH-3001 Bern\n"
-        "Tel. +41 31 300 09 20\n"
         "support@geodienste.kgk-cgc.ch\n"
     ),
 }
