@@ -211,6 +211,15 @@ class DatasetMapping(models.Model):
         )
 
 
+class DatasetToUnitMappingManager(models.Manager):
+    def get_by_natural_key(
+        self, dataset_id_prefix: str, organization_id: str, unit_id: str
+    ) -> DatasetToUnitMapping:
+        return self.get(
+            dataset_id_prefix=dataset_id_prefix, organization_id=organization_id, unit_id=unit_id
+        )
+
+
 class DatasetToUnitMapping(models.Model):
     """Mapping used to map datasets to organization units during import of harvested datasets."""
 
@@ -243,8 +252,21 @@ class DatasetToUnitMapping(models.Model):
     )
     description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
+    objects = DatasetToUnitMappingManager()
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["dataset_id_prefix", "organization_id", "unit_id"],
+                name="unique_datasettounitmapping",
+            ),
+        )
+
     def __str__(self) -> str:
         return f"{self.dataset_id_prefix} -> {self.organization_id}: {self.unit_id}"
+
+    def natural_key(self) -> tuple[str, str, str]:
+        return (self.dataset_id_prefix, self.organization_id, self.unit_id)
 
     @classmethod
     def table(cls) -> PrefixLookupTable[Unit, DatasetToUnitMapping]:
