@@ -4,14 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('harvest', '0010_datasettounitmapping_unique_datasettounitmapping'),
+        ("harvest", "0010_datasettounitmapping_unique_datasettounitmapping"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='datasettocontactmapping',
-            constraint=models.UniqueConstraint(fields=('dataset_id_prefix', 'role', 'organization_id', 'contact_name_en'), name='unique_datasettocontactmapping'),
+            model_name="datasettocontactmapping",
+            constraint=models.UniqueConstraint(
+                fields=("dataset_id_prefix", "role", "organization_id", "contact_name_en"),
+                name="unique_datasettocontactmapping",
+            ),
         ),
     ]

@@ -3,7 +3,7 @@ from typing import TypeVar
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
-from dataset.models import Dataset, DatasetToContact
+from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from organization.models import Contact, Organization, Unit
 
 T = TypeVar("T")
@@ -213,10 +213,13 @@ class DatasetMapping(models.Model):
 
 class DatasetToUnitMappingManager(models.Manager):
     def get_by_natural_key(
-        self, dataset_id_prefix: str, organization_id: str, unit_id: str
+        self, dataset_id_prefix: str, organization_id: str, unit_id: str, role: str
     ) -> DatasetToUnitMapping:
         return self.get(
-            dataset_id_prefix=dataset_id_prefix, organization_id=organization_id, unit_id=unit_id
+            dataset_id_prefix=dataset_id_prefix,
+            organization_id=organization_id,
+            unit_id=unit_id,
+            role=role,
         )
 
 
@@ -250,6 +253,15 @@ class DatasetToUnitMapping(models.Model):
         max_length=100,
         help_text=_(_context, "The ID of the organization unit in this database"),
     )
+    role = models.CharField(
+        max_length=100,
+        choices=DatasetToUnit.Role.choices,
+        default=DatasetToUnit.Role.OWNER,
+        help_text=_(
+            _context,
+            "Role used for matching during import of datasets from harvest",
+        ),
+    )
     description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
     objects = DatasetToUnitMappingManager()
@@ -257,35 +269,33 @@ class DatasetToUnitMapping(models.Model):
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                fields=["dataset_id_prefix", "organization_id", "unit_id"],
+                fields=["dataset_id_prefix", "organization_id", "unit_id", "role"],
                 name="unique_datasettounitmapping",
             ),
         )
 
     def __str__(self) -> str:
-        return f"{self.dataset_id_prefix} -> {self.organization_id}: {self.unit_id}"
+        return f"{self.dataset_id_prefix}-{self.role} -> {self.organization_id}: {self.unit_id}"
 
-    def natural_key(self) -> tuple[str, str, str]:
-        return (self.dataset_id_prefix, self.organization_id, self.unit_id)
+    def natural_key(self) -> tuple[str, str, str, str]:
+        return (self.dataset_id_prefix, self.organization_id, self.unit_id, self.role)
 
     @classmethod
-    def table(cls) -> PrefixLookupTable[Unit, DatasetToUnitMapping]:
-        """Constructs a lookup table of prefixes and units, sorted by most specific (i.e. longest)
-        prefixes first.
+    def table(cls) -> dict[str, PrefixLookupTable[Unit, DatasetToUnitMapping]]:
+        """Constructs a lookup table of prefixes and units by role, sorted by most specific
+        (i.e. longest) prefixes first.
 
         """
-        return PrefixLookupTable(
-            {
-                mapping.dataset_id_prefix: (unit, mapping)
-                for mapping in DatasetToUnitMapping.objects.all()
-                if (
-                    unit := Unit.objects.filter(
-                        unit_id=mapping.unit_id,
-                        organization__organization_id=mapping.organization_id,
-                    ).first()
-                )
-            }
-        )
+        mappings = {}
+        for mapping in DatasetToUnitMapping.objects.all():
+            if unit := Unit.objects.filter(
+                unit_id=mapping.unit_id,
+                organization__organization_id=mapping.organization_id,
+            ).first():
+                mappings.setdefault(mapping.role, {})
+                mappings[mapping.role][mapping.dataset_id_prefix] = (unit, mapping)
+
+        return {role: PrefixLookupTable(mapping) for role, mapping in mappings.items()}
 
 
 class DatasetToContactMappingManager(models.Manager):
@@ -361,7 +371,7 @@ class DatasetToContactMapping(models.Model):
 
     @classmethod
     def table(cls) -> dict[str, PrefixLookupTable[Contact, DatasetToContactMapping]]:
-        """Constructs a lookup table of prefixes and contacts, sorted by most specific
+        """Constructs a lookup table of prefixes and contacts by role, sorted by most specific
         (i.e. longest) prefixes first.
 
         """

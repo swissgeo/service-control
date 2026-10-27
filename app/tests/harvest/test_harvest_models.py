@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToUnit
 from harvest.models import (
     DatasetMapping,
     DatasetToContactMapping,
@@ -90,28 +90,42 @@ def test_dataset_to_unit_mapping(client, db):
     Unit(unit_id="x", organization=org_b, **names).save()
     Unit(unit_id="y", organization=org_b, **names).save()
 
-    DatasetToUnitMapping(dataset_id_prefix="d.1", organization_id="ch.a").save()
-    DatasetToUnitMapping(dataset_id_prefix="d.1.1", organization_id="ch.a", unit_id="x").save()
-    DatasetToUnitMapping(dataset_id_prefix="d.2", organization_id="ch.a", unit_id="z").save()
-    DatasetToUnitMapping(dataset_id_prefix="d.2.1", organization_id="ch.b", unit_id="y").save()
+    role = DatasetToUnit.Role.OWNER
+
+    DatasetToUnitMapping(dataset_id_prefix="d.1", organization_id="ch.a", role=role).save()
+    DatasetToUnitMapping(
+        dataset_id_prefix="d.1.1",
+        organization_id="ch.a",
+        unit_id="x",
+        role=role,
+    ).save()
+    DatasetToUnitMapping(
+        dataset_id_prefix="d.2", organization_id="ch.a", unit_id="z", role=role
+    ).save()
+    DatasetToUnitMapping(
+        dataset_id_prefix="d.2.1",
+        organization_id="ch.b",
+        unit_id="y",
+        role=role,
+    ).save()
 
     table = DatasetToUnitMapping.table()
 
-    assert table.match("d.1")[0].unit_id == "default"
-    assert table.match("d.1")[0].organization.organization_id == "ch.a"
+    assert table[role].match("d.1")[0].unit_id == "default"
+    assert table[role].match("d.1")[0].organization.organization_id == "ch.a"
 
-    assert table.match("d.1.1")[0].unit_id == "x"
-    assert table.match("d.1.1")[0].organization.organization_id == "ch.a"
+    assert table[role].match("d.1.1")[0].unit_id == "x"
+    assert table[role].match("d.1.1")[0].organization.organization_id == "ch.a"
 
-    assert table.match("d.1.2")[0].unit_id == "default"
-    assert table.match("d.1.2")[0].organization.organization_id == "ch.a"
+    assert table[role].match("d.1.2")[0].unit_id == "default"
+    assert table[role].match("d.1.2")[0].organization.organization_id == "ch.a"
 
-    assert table.match("d.2") == (None, None)
+    assert table[role].match("d.2") == (None, None)
 
-    assert table.match("d.2.1")[0].unit_id == "y"
-    assert table.match("d.2.1")[0].organization.organization_id == "ch.b"
+    assert table[role].match("d.2.1")[0].unit_id == "y"
+    assert table[role].match("d.2.1")[0].organization.organization_id == "ch.b"
 
-    assert table.match("d.3") == (None, None)
+    assert table[role].match("d.3") == (None, None)
 
 
 @patch("organization.models.Client")

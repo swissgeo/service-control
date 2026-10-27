@@ -1338,7 +1338,10 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
     ds.save()
 
     DatasetToUnitMapping(
-        dataset_id_prefix="ch.bafu", organization_id="ch.bafu", unit_id="ch.bafu.unit"
+        dataset_id_prefix="ch.bafu",
+        organization_id="ch.bafu",
+        unit_id="ch.bafu.unit",
+        role=DatasetToUnit.Role.OWNER,
     ).save()
 
     ds_in = DatasetImport(
