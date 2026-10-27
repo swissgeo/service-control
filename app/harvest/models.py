@@ -100,6 +100,14 @@ class OrganizationMapping(models.Model):
         )
 
 
+class DatasetMappingManager(models.Manager):
+    def get_by_natural_key(self, dataset_id_prefix: str, dataset_id: str) -> DatasetMapping:
+        return self.get(
+            dataset_id_prefix=dataset_id_prefix,
+            dataset_id=dataset_id,
+        )
+
+
 class DatasetMapping(models.Model):
     """Mapping used to map datasets during import of harvested datasets and STAC sync."""
 
@@ -168,8 +176,21 @@ class DatasetMapping(models.Model):
     )
     description = models.TextField(_(_context, "Description"), null=True, blank=True)
 
+    objects = DatasetMappingManager()
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["dataset_id_prefix", "dataset_id"],
+                name="unique_datasetmapping_prefix_ds",
+            ),
+        )
+
     def __str__(self) -> str:
         return f"{self.dataset_id_prefix} -> {self.dataset_id}"
+
+    def natural_key(self) -> tuple[str, str]:
+        return (self.dataset_id_prefix, self.dataset_id)
 
     @classmethod
     def table(cls) -> PrefixLookupTable[Dataset, DatasetMapping]:
