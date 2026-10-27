@@ -847,6 +847,54 @@ def test_dump_dataset_without_owner_has_no_owner(db, tmp_path):
     assert "owner" not in dataset_doc["de"]["properties"]
 
 
+@patch("organization.models.Client")
+def test_dump_dataset_contains_localized_attribution(cognito, db, tmp_path):
+    dataset = _make_dataset()
+    dataset.attribution = _make_organization().attribution_set.create(
+        attribution_id="ch.bafu",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM-RM",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        name_it="Ufficio federale dell'ambiente",
+        name_rm="Uffizi federal per l'ambient",
+        url_de="https://bafu.admin.ch/de/home.html",
+        url_fr="https://bafu.admin.ch/fr/home.html",
+        url_en="https://bafu.admin.ch/en/home.html",
+        url_it="https://bafu.admin.ch/it/home.html",
+        url_rm="https://bafu.admin.ch/rm/home.html",
+    )
+    dataset.save()
+
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    for lang, abbreviation, name in [
+        ("de", "BAFU", "Bundesamt für Umwelt"),
+        ("fr", "OFEV", "Office fédéral de l'environnement"),
+        ("en", "FOEN", "Federal Office for the Environment"),
+        ("it", "UFAM", "Ufficio federale dell'ambiente"),
+        ("rm", "UFAM-RM", "Uffizi federal per l'ambient"),
+    ]:
+        assert dataset_doc[lang]["properties"]["attribution"] == {
+            "abbreviation": abbreviation,
+            "name": name,
+            "links": [
+                {
+                    "href": f"https://bafu.admin.ch/{lang}/home.html",
+                    "rel": "about",
+                    "title": "Attribution Information",
+                    "type": "text/html",
+                    "hreflang": lang,
+                }
+            ],
+        }
+
+
 def test_dump_distribution_document(db, tmp_path):
     dataservice = _make_dataservice()
     dataset = _make_dataset()
@@ -874,7 +922,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -909,7 +957,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -944,7 +992,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -979,7 +1027,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -1014,7 +1062,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],

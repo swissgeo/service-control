@@ -132,6 +132,13 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     contacts = models.ManyToManyField(
         "organization.Contact", through="DatasetToContact", related_name="datasets"
     )
+    attribution = models.ForeignKey(
+        "organization.Attribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attribution_datasets",
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True,

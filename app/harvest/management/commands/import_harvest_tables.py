@@ -20,6 +20,7 @@ from distribution.models import (
     ExternalWMTSDistribution,
 )
 from harvest.import_models import (
+    AttributionImport,
     ContactList,
     DatasetImport,
     KeywordList,
@@ -35,7 +36,7 @@ from harvest.models import (
     PrefixLookupTable,
 )
 from legal.models import GeopoliticalEntity
-from organization.models import Contact, Organization, Unit
+from organization.models import Attribution, Contact, Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from utils.command import CustomBaseCommand
 
@@ -174,7 +175,7 @@ class Command(CustomBaseCommand):
                 org = Organization(
                     data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
                     geopolitical_entity=geopolitical_entity,
-                    **import_org.model_dump(by_alias=True),
+                    **import_org.model_dump(by_alias=True, exclude={"attributions"}),
                 )
 
         if update:
@@ -191,7 +192,67 @@ class Command(CustomBaseCommand):
 
         org.add_data_source_id(provider_id)
         org.save()
+        self.import_attributions(org, import_org.attributions)
         return provider_id, state
+
+    def import_attributions(self, org: Organization, attributions: list[AttributionImport]) -> None:
+        for _attribution in attributions:
+            # For now we only create or update Attributions and do not delete any existing ones as
+            # they might be referenced by datasets.
+            try:
+                attribution = Attribution.objects.get(
+                    attribution_id=_attribution.attribution_id,
+                    data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+                    organization=org,
+                )
+                self.print(
+                    f"Attribution with attribution_id {_attribution.attribution_id} already exists"
+                )
+            except Attribution.DoesNotExist:
+                self.print(
+                    f"Attribution with attribution_id {_attribution.attribution_id} does"
+                    " not exist yet, creating a new one"
+                )
+                _attr_dump = _attribution.model_dump(by_alias=True)
+                attribution = Attribution(
+                    data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+                    organization=org,
+                    abbreviation_de=_attr_dump.pop("name_de"),
+                    abbreviation_fr=_attr_dump.pop("name_fr"),
+                    abbreviation_en=_attr_dump.pop("name_en"),
+                    abbreviation_it=_attr_dump.pop("name_it"),
+                    abbreviation_rm=_attr_dump.pop("name_rm"),
+                    name_de=_attr_dump.pop("description_de"),
+                    name_fr=_attr_dump.pop("description_fr"),
+                    name_en=_attr_dump.pop("description_en"),
+                    name_it=_attr_dump.pop("description_it"),
+                    name_rm=_attr_dump.pop("description_rm"),
+                    url_de=_attr_dump.pop("url_de"),
+                    url_fr=_attr_dump.pop("url_fr"),
+                    url_en=_attr_dump.pop("url_en"),
+                    url_it=_attr_dump.pop("url_it"),
+                    url_rm=_attr_dump.pop("url_rm"),
+                    **_attr_dump,
+                )
+            else:
+                self.print(f"Updating Attribution {attribution}")
+                attribution.abbreviation_de = _attribution.name_de
+                attribution.abbreviation_fr = _attribution.name_fr
+                attribution.abbreviation_en = _attribution.name_en
+                attribution.abbreviation_it = _attribution.name_it
+                attribution.abbreviation_rm = _attribution.name_rm
+                attribution.name_de = _attribution.description_de
+                attribution.name_fr = _attribution.description_fr
+                attribution.name_en = _attribution.description_en
+                attribution.name_it = _attribution.description_it
+                attribution.name_rm = _attribution.description_rm
+                attribution.url_de = _attribution.url_de
+                attribution.url_fr = _attribution.url_fr
+                attribution.url_en = _attribution.url_en
+                attribution.url_it = _attribution.url_it
+                attribution.url_rm = _attribution.url_rm
+            attribution.add_data_source_id(_attribution.attribution_id)
+            attribution.save()
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -406,6 +467,27 @@ class Command(CustomBaseCommand):
                             updated = True
                     if updated:
                         log_metrics["datasets.updated"] += 1
+
+                # Handle attribution
+                if len(import_ds.attribution) > 1:
+                    self.print_warning(
+                        f"Dataset {import_ds.dataset_id} has more than one attribution, "
+                        "only the first one will be used"
+                    )
+                if len(import_ds.attribution) > 0:
+                    _attribution = import_ds.attribution[0]
+                    try:
+                        attribution = Attribution.objects.get(
+                            attribution_id=_attribution,
+                            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+                        )
+                    except Attribution.DoesNotExist:
+                        self.print_warning(
+                            f"Dataset {import_ds.dataset_id} has attribution {_attribution} "
+                            "which does not exist"
+                        )
+                        attribution = None
+                    ds.attribution = attribution
 
                 ds.add_data_source_id(dataset_id)
                 ds.save()
