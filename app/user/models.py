@@ -52,7 +52,7 @@ class Role(NamedTuple):
         ]
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class CustomUser(AbstractBaseUser, PermissionsMixin):  # ty: ignore[invalid-attribute-override]
     """CustomUser replaces the Django default User model and is set as AUTH_USER_MODEL in settings.
     A user can either be a human or a machine. Human users are stored as users in cognito, machine
     users are client apps in cognito.

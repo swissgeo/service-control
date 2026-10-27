@@ -11,7 +11,7 @@ def test_object_stored_as_expected_for_valid_input(organization):
         "name_en": "Name (EN)",
         "name_it": "Name (IT)",
         "name_rm": "Name (RM)",
-        "email": "test@example.org",
+        "emails": ["test@example.org"],
         "phone": "+123456789",
         "address_administrative_area": "Administrative Area",
         "address_delivery_point": "Delivery Point",
@@ -37,7 +37,7 @@ def test_object_stored_as_expected_for_valid_input(organization):
     assert contact_in["name_en"] == actual.name_en
     assert contact_in["name_it"] == actual.name_it
     assert contact_in["name_rm"] == actual.name_rm
-    assert contact_in["email"] == actual.email
+    assert contact_in["emails"] == actual.emails
     assert contact_in["phone"] == actual.phone
     assert contact_in["address_administrative_area"] == actual.address_administrative_area
     assert contact_in["address_delivery_point"] == actual.address_delivery_point

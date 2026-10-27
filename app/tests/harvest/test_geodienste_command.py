@@ -725,8 +725,8 @@ def test_command_creates_aggregate_contact(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "support@geodienste.kgk-cgc.ch"
-    assert contact.phone == "+41 31 300 09 20"
+    assert contact.emails == ["support@geodienste.kgk-cgc.ch"]
+    assert contact.phone is None
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
     assert contact.address_city == "Bern"
@@ -742,7 +742,6 @@ def test_command_creates_aggregate_contact(mock, client, db):
         "Speichergasse 6\n"
         "Postfach\n"
         "CH-3001 Bern\n"
-        "Tel. +41 31 300 09 20\n"
         "support@geodienste.kgk-cgc.ch\n"
     )
 
@@ -809,8 +808,8 @@ def test_command_updates_aggregate_contact(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "support@geodienste.kgk-cgc.ch"
-    assert contact.phone == "+41 31 300 09 20"
+    assert contact.emails == ["support@geodienste.kgk-cgc.ch"]
+    assert contact.phone is None
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
     assert contact.address_city == "Bern"
@@ -826,7 +825,6 @@ def test_command_updates_aggregate_contact(mock, client, db):
         "Speichergasse 6\n"
         "Postfach\n"
         "CH-3001 Bern\n"
-        "Tel. +41 31 300 09 20\n"
         "support@geodienste.kgk-cgc.ch\n"
     )
 
@@ -894,8 +892,8 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
     assert contact.name_en == ""
     assert contact.name_it == "Direzione operativa KGK-CGC"
     assert contact.name_rm == ""
-    assert contact.email == "support@geodienste.kgk-cgc.ch"
-    assert contact.phone == "+41 31 300 09 20"
+    assert contact.emails == ["support@geodienste.kgk-cgc.ch"]
+    assert contact.phone is None
     assert contact.address_delivery_point == "Haus der Kantone, Speichergasse 6, Postfach"
     assert contact.address_postal_code == "3001"
     assert contact.address_city == "Bern"
@@ -911,7 +909,6 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
         "Speichergasse 6\n"
         "Postfach\n"
         "CH-3001 Bern\n"
-        "Tel. +41 31 300 09 20\n"
         "support@geodienste.kgk-cgc.ch\n"
     )
 
@@ -1182,8 +1179,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     contact = Contact(
         organization=org,
-        email="support@geodienste.kgk-cgc.ch",
-        phone="+41 31 300 09 20",
+        emails=["support@geodienste.kgk-cgc.ch"],
         address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
         address_postal_code="3001",
         address_city="Bern",
@@ -1307,7 +1303,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
             "org_acronym_en": "KGK",
             "org_acronym_it": "CGC",
             "org_acronym_rm": "CGC",
-            "contact_voice": "+41 31 300 09 20",
+            "contact_voice": None,
             "contact_city": "Bern",
             "contact_postal_code": "3001",
             "contact_country": "CH",
@@ -1375,8 +1371,7 @@ def test_command_creates_broker_dataset(mock, client, db):
 
     contact = Contact(
         organization=org,
-        email="support@geodienste.kgk-cgc.ch",
-        phone="+41 31 300 09 20",
+        emails=["support@geodienste.kgk-cgc.ch"],
         address_delivery_point="Haus der Kantone, Speichergasse 6, Postfach",
         address_postal_code="3001",
         address_city="Bern",
@@ -1495,7 +1490,7 @@ def test_command_creates_broker_dataset(mock, client, db):
             "org_acronym_en": "KGK",
             "org_acronym_it": "CGC",
             "org_acronym_rm": "CGC",
-            "contact_voice": "+41 31 300 09 20",
+            "contact_voice": None,
             "contact_city": "Bern",
             "contact_postal_code": "3001",
             "contact_country": "CH",

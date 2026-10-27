@@ -1,0 +1,3029 @@
+{
+ "style": {
+  "version": 8,
+  "sources": {
+   "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min": {
+    "type": "geojson",
+    "data": {
+     "type": "FeatureCollection",
+     "features": []
+    }
+   }
+  },
+  "layers": [
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-0-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+     "icon-allow-overlap": true
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      -100000
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ]
+    ],
+    "maxzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-1-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+     "icon-allow-overlap": true,
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n - km/h"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      -100000
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-2-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_255_255_255.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      5
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-3-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_255_255_255.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      5
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-4-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_255_255_255.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      0
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      5
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-5-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_255_247_243.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      5
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      11
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-6-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_255_247_243.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      5
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      11
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-7-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_255_247_243.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      5
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      11
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-8-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_253_224_221.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      11
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      19
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-9-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_253_224_221.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      11
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      19
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-10-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_253_224_221.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      11
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      19
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-11-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_252_197_192.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      19
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      28
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-12-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_252_197_192.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      19
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      28
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-13-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_252_197_192.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      19
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      28
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-14-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_250_159_181.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      28
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      38
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-15-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_250_159_181.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      28
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      38
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-16-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_250_159_181.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      28
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      38
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-17-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_247_104_161.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      38
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      49
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-18-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_247_104_161.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      38
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      49
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-19-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_247_104_161.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      38
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      49
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-20-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_221_52_151.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      49
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      61
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-21-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_221_52_151.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      49
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      61
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-22-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_221_52_151.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      49
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      61
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-23-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_174_1_126.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      61
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      74
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-24-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_174_1_126.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      61
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      74
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-25-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_174_1_126.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      61
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      74
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-26-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_122_1_119.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      74
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      88
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-27-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_122_1_119.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      74
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      88
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-28-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_122_1_119.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      74
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      88
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-29-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_73_0_106.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      88
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      102
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-30-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_73_0_106.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      88
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      102
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-31-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_73_0_106.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      88
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      102
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-32-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_64_0_75.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      102
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      117
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-33-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_64_0_75.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      102
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      117
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-34-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_64_0_75.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      102
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      117
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-35-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow16_0_0_0.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map"
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      117
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      300
+     ]
+    ],
+    "maxzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-36-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_0_0_0.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -1.6666666666666667
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      117
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      300
+     ]
+    ],
+    "maxzoom": 4,
+    "minzoom": 3
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-37-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/arrow20_0_0_0.png",
+     "icon-allow-overlap": true,
+     "icon-rotate": [
+      "*",
+      [
+       "to-number",
+       [
+        "get",
+        "wind_direction_radian"
+       ]
+      ],
+      57.29577951308232
+     ],
+     "icon-rotation-alignment": "map",
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n ",
+      [
+       "get",
+       "value"
+      ],
+      " km/h | ",
+      [
+       "get",
+       "wind_direction"
+      ],
+      "°"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      117
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      300
+     ]
+    ],
+    "minzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-38-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata14.png",
+     "icon-allow-overlap": true
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      300
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      100000
+     ]
+    ],
+    "maxzoom": 4
+   },
+   {
+    "id": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min-39-icon",
+    "type": "symbol",
+    "source": "ch.meteoschweiz.messwerte-wind-boeenspitze-kmh-10min",
+    "layout": {
+     "icon-image": "https://data.geo.admin.ch/ch.meteoschweiz/images/nodata16.png",
+     "icon-allow-overlap": true,
+     "text-field": [
+      "concat",
+      [
+       "get",
+       "station_name"
+      ],
+      "\n - km/h"
+     ],
+     "text-allow-overlap": true,
+     "text-max-width": 100,
+     "text-size": 12,
+     "text-font": [
+      "FrutigerNeueW02-Regular",
+      "Frutiger",
+      "sans-serif"
+     ],
+     "text-anchor": "center",
+     "text-justify": "center",
+     "text-offset": [
+      0,
+      -2.3333333333333335
+     ]
+    },
+    "paint": {
+     "text-color": "white",
+     "text-halo-color": "rgba(14,80,114,0.9)",
+     "text-halo-width": 3
+    },
+    "metadata": {
+     "ol:text-background": {
+      "fill": "rgba(14,80,114,0.9)",
+      "padding": [
+       2,
+       2,
+       2,
+       2
+      ]
+     }
+    },
+    "filter": [
+     "all",
+     [
+      ">=",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      300
+     ],
+     [
+      "<",
+      [
+       "to-number",
+       [
+        "get",
+        "value"
+       ]
+      ],
+      100000
+     ]
+    ],
+    "minzoom": 4
+   }
+  ]
+ },
+ "icons": []
+}
