@@ -40,7 +40,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
     search_fields = (
         "distribution_id",
         "dataset__dataset_id",
-        "dataset__title_short_de",
+        "dataset__title_de",
     )
 
     @admin.display(empty_value="???")
@@ -70,7 +70,7 @@ class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
     search_fields = (
         "distribution_id",
         "dataset__dataset_id",
-        "dataset__title_short_de",
+        "dataset__title_de",
     )
     list_filter = (
         # DatasetFilter,
@@ -87,7 +87,7 @@ class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
     search_fields = (
         "distribution_id",
         "dataset__dataset_id",
-        "dataset__title_short_de",
+        "dataset__title_de",
     )
     list_filter = (
         # DatasetFilter,

@@ -33,9 +33,9 @@ def extract_delete_objects(session):
 def test_command_exports_wms_styles(session, db):
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
-        title_short_fr="Liste rouge mousses",
-        title_short_en="Red list bryophytes",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses",
+        title_en="Red list bryophytes",
         description_de="missing",
         description_fr="missing",
         description_en="missing",
@@ -79,9 +79,9 @@ def test_command_exports_wms_styles(session, db):
 def test_command_exports_wmts_styles(session, db):
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
-        title_short_fr="Liste rouge mousses",
-        title_short_en="Red list bryophytes",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses",
+        title_en="Red list bryophytes",
         description_de="missing",
         description_fr="missing",
         description_en="missing",
@@ -132,9 +132,9 @@ def test_command_exports_geojson_styles(session, db):
 
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
-        title_short_fr="Liste rouge mousses",
-        title_short_en="Red list bryophytes",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses",
+        title_en="Red list bryophytes",
         description_de="missing",
         description_fr="missing",
         description_en="missing",
@@ -168,9 +168,9 @@ def test_command_exports_geojson_styles(session, db):
 def test_command_exports_styles_dry(session, db):
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
-        title_short_fr="Liste rouge mousses",
-        title_short_en="Red list bryophytes",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses",
+        title_en="Red list bryophytes",
         description_de="missing",
         description_fr="missing",
         description_en="missing",
@@ -199,9 +199,9 @@ def test_command_exports_styles_dry(session, db):
 def test_command_cleans_styles(session, db):
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
-        title_short_fr="Liste rouge mousses",
-        title_short_en="Red list bryophytes",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses",
+        title_en="Red list bryophytes",
         description_de="missing",
         description_fr="missing",
         description_en="missing",

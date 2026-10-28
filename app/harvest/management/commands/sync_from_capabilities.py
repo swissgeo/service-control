@@ -78,9 +78,9 @@ class Command(CustomBaseCommand):
 
         Dataset.objects.create(
             dataset_id=self.options["orphanage_dataset"],
-            title_short_de="#Missing",
-            title_short_fr="#Missing",
-            title_short_en="#Missing",
+            title_de="#Missing",
+            title_fr="#Missing",
+            title_en="#Missing",
             description_de="#Missing",
             description_fr="#Missing",
             description_en="#Missing",

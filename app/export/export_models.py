@@ -218,7 +218,7 @@ class OARDataset(OARRecord):
                 concept.concept_id
                 for concept in ds.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID)
             ],
-            "title": getattr(ds, f"title_short_{lang}", None),
+            "title": getattr(ds, f"title_{lang}", None),
             "type": "Dataset",
         }
         dataset = OARDataset(
