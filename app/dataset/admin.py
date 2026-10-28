@@ -50,7 +50,7 @@ class DatasetAdmin(admin.ModelAdmin):
     list_display = ("dataset_id", "title_de", "data_source", "status")
     list_filter = ("data_source", PublishedNonPublished)
     readonly_fields = ("created_at", "updated_at", "dataset_list")
-    search_fields = ("dataset_id", "title_de")
+    search_fields = ("dataset_id", "title_de", "title_short_de")
     filter_horizontal = ("concepts",)
     inlines = (
         DatasetToDatasetInline,

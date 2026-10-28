@@ -41,6 +41,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         "distribution_id",
         "dataset__dataset_id",
         "dataset__title_de",
+        "dataset__title_short_de",
     )
 
     @admin.display(empty_value="???")
@@ -71,6 +72,7 @@ class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
         "distribution_id",
         "dataset__dataset_id",
         "dataset__title_de",
+        "dataset__title_short_de",
     )
     list_filter = (
         # DatasetFilter,
@@ -88,6 +90,7 @@ class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
         "distribution_id",
         "dataset__dataset_id",
         "dataset__title_de",
+        "dataset__title_short_de",
     )
     list_filter = (
         # DatasetFilter,

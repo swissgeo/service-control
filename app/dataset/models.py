@@ -59,6 +59,12 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     title_it = models.CharField(_(_context, "Title (Italian)"), null=True, blank=True)
     title_rm = models.CharField(_(_context, "Title (Romansh)"), null=True, blank=True)
 
+    title_short_de = models.CharField(_(_context, "Short Title (German)"), null=True, blank=True)
+    title_short_fr = models.CharField(_(_context, "Short Title (French)"), null=True, blank=True)
+    title_short_en = models.CharField(_(_context, "Short Title (English)"), null=True, blank=True)
+    title_short_it = models.CharField(_(_context, "Short Title (Italian)"), null=True, blank=True)
+    title_short_rm = models.CharField(_(_context, "Short Title (Romansh)"), null=True, blank=True)
+
     description_de = models.TextField(_(_context, "Description (German)"))
     description_fr = models.TextField(_(_context, "Description (French)"))
     description_en = models.TextField(_(_context, "Description (English)"))

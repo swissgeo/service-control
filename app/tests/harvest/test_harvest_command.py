@@ -754,11 +754,16 @@ def test_command_cleans_organizations(client, dynamodb, db):
 def test_command_creates_dataset(dynamodb, db):
     ds_in = DatasetImport(
         dataset_id="ch.bafu.moose",
-        title_de="Rote Liste Moose",
-        title_fr="Liste rouge mousses",
-        title_en="Red list bryophytes",
-        title_it="Lista rossa delle biofite minacciate",
-        title_rm="Glista cotschna dals mistgels",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+        title_en="Red list bryophytes (Threats to Mosses in Switzerland)",
+        title_it="Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+        title_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+        title_short_de="Rote Liste Moose",
+        title_short_fr="Liste rouge mousses",
+        title_short_en="Red list bryophytes",
+        title_short_it="Lista rossa delle biofite minacciate",
+        title_short_rm="Glista cotschna dals mistgels",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -780,11 +785,19 @@ def test_command_creates_dataset(dynamodb, db):
     ds_out = Dataset.objects.first()
     assert ds_out
     assert ds_out.dataset_id == "ch.bafu.moose"
-    assert ds_out.title_de == "Rote Liste Moose"
-    assert ds_out.title_fr == "Liste rouge mousses"
-    assert ds_out.title_en == "Red list bryophytes"
-    assert ds_out.title_it == "Lista rossa delle biofite minacciate"
-    assert ds_out.title_rm == "Glista cotschna dals mistgels"
+    assert ds_out.title_de == "Rote Liste Moose (Gefährdung der Moose in der Schweiz)"
+    assert ds_out.title_fr == "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)"
+    assert ds_out.title_en == "Red list bryophytes (Threats to Mosses in Switzerland)"
+    assert (
+        ds_out.title_it
+        == "Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)"
+    )
+    assert ds_out.title_rm == "Glista cotschna dals mistgels (mistgels periclitads en Svizra)"
+    assert ds_out.title_short_de == "Rote Liste Moose"
+    assert ds_out.title_short_fr == "Liste rouge mousses"
+    assert ds_out.title_short_en == "Red list bryophytes"
+    assert ds_out.title_short_it == "Lista rossa delle biofite minacciate"
+    assert ds_out.title_short_rm == "Glista cotschna dals mistgels"
     assert ds_out.description_de == "Description (DE)"
     assert ds_out.description_fr == "Description (FR)"
     assert ds_out.description_en == "Description (EN)"
@@ -804,6 +817,11 @@ def test_command_updates_dataset(dynamodb, db):
         title_en="x",
         title_it="x",
         title_rm="x",
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -817,11 +835,16 @@ def test_command_updates_dataset(dynamodb, db):
 
     ds_in = DatasetImport(
         dataset_id="ch.bafu.moose",
-        title_de="Rote Liste Moose",
-        title_fr="Liste rouge mousses",
-        title_en="Red list bryophytes",
-        title_it="Lista rossa delle biofite minacciate",
-        title_rm="Glista cotschna dals mistgels",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+        title_en="Red list bryophytes (Threats to Mosses in Switzerland)",
+        title_it="Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+        title_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+        title_short_de="Rote Liste Moose",
+        title_short_fr="Liste rouge mousses",
+        title_short_en="Red list bryophytes",
+        title_short_it="Lista rossa delle biofite minacciate",
+        title_short_rm="Glista cotschna dals mistgels",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -843,11 +866,20 @@ def test_command_updates_dataset(dynamodb, db):
     ds_out = Dataset.objects.first()
     assert ds_out
     assert ds_out.dataset_id == "ch.bafu.moose"
-    assert ds_out.title_de == "Rote Liste Moose"
-    assert ds_out.title_fr == "Liste rouge mousses"
-    assert ds_out.title_en == "Red list bryophytes"
-    assert ds_out.title_it == "Lista rossa delle biofite minacciate"
-    assert ds_out.title_rm == "Glista cotschna dals mistgels"
+    assert ds_out.dataset_id == "ch.bafu.moose"
+    assert ds_out.title_de == "Rote Liste Moose (Gefährdung der Moose in der Schweiz)"
+    assert ds_out.title_fr == "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)"
+    assert ds_out.title_en == "Red list bryophytes (Threats to Mosses in Switzerland)"
+    assert (
+        ds_out.title_it
+        == "Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)"
+    )
+    assert ds_out.title_rm == "Glista cotschna dals mistgels (mistgels periclitads en Svizra)"
+    assert ds_out.title_short_de == "Rote Liste Moose"
+    assert ds_out.title_short_fr == "Liste rouge mousses"
+    assert ds_out.title_short_en == "Red list bryophytes"
+    assert ds_out.title_short_it == "Lista rossa delle biofite minacciate"
+    assert ds_out.title_short_rm == "Glista cotschna dals mistgels"
     assert ds_out.description_de == "Description (DE)"
     assert ds_out.description_fr == "Description (FR)"
     assert ds_out.description_en == "Description (EN)"
@@ -902,6 +934,11 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -1012,6 +1049,11 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
         title_en="y",
         title_it="y",
         title_rm="y",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="y",
         description_fr="y",
         description_en="y",
@@ -1028,6 +1070,11 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -1130,6 +1177,11 @@ def test_command_cleans_datasets(dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -1213,6 +1265,11 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -1291,6 +1348,11 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
