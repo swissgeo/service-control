@@ -9,6 +9,7 @@ import pytest
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from distribution.models import Distribution, ExternalGeoJSONDistribution, ExternalStacDistribution
 from harvest.import_models import (
+    AttributionImport,
     Contact,
     ContactList,
     DatasetImport,
@@ -25,8 +26,8 @@ from harvest.models import (
     OrganizationMapping,
 )
 from legal.models import GeopoliticalEntity
+from organization.models import Attribution, Organization, Unit
 from organization.models import Contact as ContactModel
-from organization.models import Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 
@@ -80,6 +81,28 @@ def test_command_creates_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     geopolitical_entity = GeopoliticalEntity.objects.create(
@@ -114,6 +137,24 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert org_out.acronym_en == "FOEN"
     assert org_out.acronym_it == "UFAM"
     assert org_out.acronym_rm == "UFAM"
+    assert org_out.attribution_set.count() == 1
+    attribution = org_out.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu.1"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity == geopolitical_entity
@@ -133,6 +174,28 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
@@ -164,7 +227,7 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
 
 @patch("organization.models.Client")
 def test_command_updates_organizations(client, dynamodb, db):
-    Organization(
+    org = Organization(
         organization_id="ch.bafu",
         name_de="x",
         name_fr="x",
@@ -178,7 +241,27 @@ def test_command_updates_organizations(client, dynamodb, db):
         acronym_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
-    ).save()
+    )
+    org.save()
+    org.attribution_set.create(
+        attribution_id="ch.bafu.1",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
 
     org_in = OrganizationImport(
         provider_id="ch.bafu",
@@ -192,6 +275,28 @@ def test_command_updates_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     geopolitical_entity = GeopoliticalEntity.objects.create(
@@ -226,6 +331,24 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.acronym_en == "FOEN"
     assert org_out.acronym_it == "UFAM"
     assert org_out.acronym_rm == "UFAM"
+    assert org_out.attribution_set.count() == 1
+    attribution = org_out.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu.1"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity == geopolitical_entity
@@ -249,6 +372,26 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         data_source_ids=["ch.bafu"],
     )
     org_1.save()
+    org_1.attribution_set.create(
+        attribution_id="ch.bafu.1",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
+
     org_2 = Organization(
         organization_id="ch.bafu2",
         name_de="x",
@@ -278,6 +421,28 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     OrganizationMapping(
@@ -305,6 +470,24 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     assert org_1.acronym_en == "FOEN"
     assert org_1.acronym_it == "UFAM"
     assert org_1.acronym_rm == "UFAM"
+    assert org_1.attribution_set.count() == 1
+    attribution = org_1.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu.1"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_1.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_1.data_source_ids == ["ch.bafu"]
 
@@ -343,6 +526,28 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         acronym_en="y",
         acronym_it="y",
         acronym_rm="y",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu",
+                name_de="x",
+                name_fr="x",
+                name_en="x",
+                name_it="x",
+                name_rm="x",
+                description_de="x",
+                description_fr="x",
+                description_en="x",
+                description_it="x",
+                description_rm="x",
+                url_de="https://some.valid.url",
+                url_fr="https://some.valid.url",
+                url_en="https://some.valid.url",
+                url_it="https://some.valid.url",
+                url_rm="https://some.valid.url",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
     org_in_2 = OrganizationImport(
         provider_id="ch.bafu2",
@@ -356,6 +561,28 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     OrganizationMapping(
@@ -388,6 +615,24 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     assert org.acronym_en == "FOEN"
     assert org.acronym_it == "UFAM"
     assert org.acronym_rm == "UFAM"
+    assert org.attribution_set.count() == 1
+    attribution = org.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org.data_source_ids == ["ch.bafu1", "ch.bafu2"]
 
@@ -452,6 +697,28 @@ def test_command_cleans_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu",
+                name_de="x",
+                name_fr="x",
+                name_en="x",
+                name_it="x",
+                name_rm="x",
+                description_de="x",
+                description_fr="x",
+                description_en="x",
+                description_it="x",
+                description_rm="x",
+                url_de="https://some.valid.url",
+                url_fr="https://some.valid.url",
+                url_en="https://some.valid.url",
+                url_it="https://some.valid.url",
+                url_rm="https://some.valid.url",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
