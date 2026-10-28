@@ -90,8 +90,8 @@ ENV PYTHONHOME=""
 ARG VERSION=unknown
 RUN echo "APP_VERSION = '$VERSION'" > ${INSTALL_DIR}/app/config/version.py
 
-# Collect static files.
-RUN ${INSTALL_DIR}/app/manage.py collectstatic --noinput
+# Collect static files. OTEL is disabled as there is no collector during the build.
+RUN OTEL_SDK_DISABLED=true ${INSTALL_DIR}/app/manage.py collectstatic --noinput
 
 ARG GIT_HASH=unknown
 ARG GIT_BRANCH=unknown
@@ -133,8 +133,8 @@ ENV PYTHONHOME=""
 ARG VERSION=unknown
 RUN echo "APP_VERSION = '$VERSION'" > ${INSTALL_DIR}/app/config/version.py
 
-# Collect static files.
-RUN ${INSTALL_DIR}/app/manage.py collectstatic --noinput
+# Collect static files. OTEL is disabled as there is no collector during the build.
+RUN OTEL_SDK_DISABLED=true ${INSTALL_DIR}/app/manage.py collectstatic --noinput
 
 ARG GIT_HASH=unknown
 ARG GIT_BRANCH=unknown
