@@ -53,9 +53,9 @@ def test_organization_mapping(client, db):
 
 def test_dataset_mapping(db):
     attributes = {
-        "title_short_de": "title_short__de",
-        "title_short_fr": "title_short_fr",
-        "title_short_en": "title_short_en",
+        "title_de": "title__de",
+        "title_fr": "title_fr",
+        "title_en": "title_en",
         "description_de": "description_de",
         "description_fr": "description_fr",
         "description_en": "description_en",

@@ -1265,11 +1265,11 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert aggregate.description_it == "Abstract IT"
     assert aggregate.description_rm is None
     assert aggregate.geocat_id == "d929eef4-791d-4728-9d56-226b6952cf1f"
-    assert aggregate.title_short_de == "Title DE"
-    assert aggregate.title_short_en == "Title DE"
-    assert aggregate.title_short_fr == "Title FR"
-    assert aggregate.title_short_it == "Title IT"
-    assert aggregate.title_short_rm is None
+    assert aggregate.title_de == "Title DE"
+    assert aggregate.title_en == "Title DE"
+    assert aggregate.title_fr == "Title FR"
+    assert aggregate.title_it == "Title IT"
+    assert aggregate.title_rm is None
     assert aggregate.additional_search_text_de == ["Keyword 1 DE", "Keyword 2 DE"]
     assert aggregate.additional_search_text_en == []
     assert aggregate.additional_search_text_fr == []
@@ -1331,11 +1331,11 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert part.description_it == "Abstract IT"
     assert part.description_rm is None
     assert part.geocat_id is None
-    assert part.title_short_de == "Title DE"
-    assert part.title_short_en == "Title DE"
-    assert part.title_short_fr == "Title FR"
-    assert part.title_short_it == "Title IT"
-    assert part.title_short_rm is None
+    assert part.title_de == "Title DE"
+    assert part.title_en == "Title DE"
+    assert part.title_fr == "Title FR"
+    assert part.title_it == "Title IT"
+    assert part.title_rm is None
     assert part.status == Dataset.Status.PUBLISHED
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
@@ -1461,11 +1461,11 @@ def test_command_creates_broker_dataset(mock, client, db):
     assert dataset.description_it == "Abstract IT"
     assert dataset.description_rm is None
     assert dataset.geocat_id == "d929eef4-791d-4728-9d56-226b6952cf1f"
-    assert dataset.title_short_de == "Title DE"
-    assert dataset.title_short_en == "Title DE"
-    assert dataset.title_short_fr == "Title FR"
-    assert dataset.title_short_it == "Title IT"
-    assert dataset.title_short_rm is None
+    assert dataset.title_de == "Title DE"
+    assert dataset.title_en == "Title DE"
+    assert dataset.title_fr == "Title FR"
+    assert dataset.title_it == "Title IT"
+    assert dataset.title_rm is None
     assert dataset.additional_search_text_de == ["Keyword 1 DE", "Keyword 2 DE"]
     assert dataset.additional_search_text_en == []
     assert dataset.additional_search_text_fr == []
@@ -1533,11 +1533,11 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
         description_it="Abstract IT",
         description_rm=None,
         geocat_id="d929eef4-791d-4728-9d56-226b6952cf1f",
-        title_short_de="Title DE",
-        title_short_en="",
-        title_short_fr="Title FR",
-        title_short_it="Title IT",
-        title_short_rm=None,
+        title_de="Title DE",
+        title_en="",
+        title_fr="Title FR",
+        title_it="Title IT",
+        title_rm=None,
         status=Dataset.Status.PUBLISHED,
     )
     aggregate.save()
@@ -1552,11 +1552,11 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
         description_it="Abstract IT",
         description_rm=None,
         geocat_id=None,
-        title_short_de="Title DE",
-        title_short_en="Title DE",
-        title_short_fr="Title FR",
-        title_short_it="Title IT",
-        title_short_rm=None,
+        title_de="Title DE",
+        title_en="Title DE",
+        title_fr="Title FR",
+        title_it="Title IT",
+        title_rm=None,
         status=Dataset.Status.READY,
     )
     part.save()
@@ -1633,11 +1633,11 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
     assert aggregate.description_it == "Abstract IT"
     assert aggregate.description_rm is None
     assert aggregate.geocat_id == "d929eef4-791d-4728-9d56-226b6952cf1f"
-    assert aggregate.title_short_de == "Title DE"
-    assert aggregate.title_short_en == "Title DE"
-    assert aggregate.title_short_fr == "Title FR"
-    assert aggregate.title_short_it == "Title IT"
-    assert aggregate.title_short_rm is None
+    assert aggregate.title_de == "Title DE"
+    assert aggregate.title_en == "Title DE"
+    assert aggregate.title_fr == "Title FR"
+    assert aggregate.title_it == "Title IT"
+    assert aggregate.title_rm is None
     assert aggregate.status == Dataset.Status.PUBLISHED
 
     part.refresh_from_db()
@@ -1651,11 +1651,11 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
     assert part.description_rm is None
     assert part.geocat_id is None
     assert part.preferred_distribution_id is None
-    assert part.title_short_de == "Title DE"
-    assert part.title_short_en == "Title DE"
-    assert part.title_short_fr == "Title FR"
-    assert part.title_short_it == "Title IT"
-    assert part.title_short_rm is None
+    assert part.title_de == "Title DE"
+    assert part.title_en == "Title DE"
+    assert part.title_fr == "Title FR"
+    assert part.title_it == "Title IT"
+    assert part.title_rm is None
     assert part.status == Dataset.Status.READY
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
@@ -1682,11 +1682,11 @@ def test_command_uses_dataset_mapping(mock, db):
         description_it="x",
         description_rm="x",
         geocat_id="x",
-        title_short_de="x",
-        title_short_en="x",
-        title_short_fr="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_en="x",
+        title_fr="x",
+        title_it="x",
+        title_rm="x",
     )
     aggregate.save()
 
@@ -1700,11 +1700,11 @@ def test_command_uses_dataset_mapping(mock, db):
         description_it="x",
         description_rm="x",
         geocat_id=None,
-        title_short_de="x",
-        title_short_en="x",
-        title_short_fr="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_en="x",
+        title_fr="x",
+        title_it="x",
+        title_rm="x",
     )
     part.save()
 
@@ -1778,10 +1778,10 @@ def test_command_uses_dataset_mapping(mock, db):
     assert "Dataset mapping found for dataset_id ch.geodienste-lu.av: ch.rawi.av" in out
 
     aggregate.refresh_from_db()
-    assert aggregate.title_short_de == "x"
+    assert aggregate.title_de == "x"
 
     part.refresh_from_db()
-    assert aggregate.title_short_de == "x"
+    assert aggregate.title_de == "x"
 
     # ---------
     # Update
@@ -1803,12 +1803,12 @@ def test_command_uses_dataset_mapping(mock, db):
     aggregate.refresh_from_db()
     assert aggregate.data_source == Dataset.DataSource.USER_INPUT
     assert aggregate.data_source_ids == []
-    assert aggregate.title_short_de == "Title DE"
+    assert aggregate.title_de == "Title DE"
 
     part.refresh_from_db()
     assert part.data_source == Dataset.DataSource.USER_INPUT
     assert part.data_source_ids == []
-    assert part.title_short_de == "Title DE"
+    assert part.title_de == "Title DE"
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
 
@@ -1822,9 +1822,9 @@ def test_command_cleans_datasets(mock, db):
         description_de="Obsolete",
         description_en="Obsolete",
         description_fr="Obsolete",
-        title_short_de="Obsolete",
-        title_short_en="Obsolete",
-        title_short_fr="Obsolete",
+        title_de="Obsolete",
+        title_en="Obsolete",
+        title_fr="Obsolete",
     ).save()
     Dataset(
         dataset_id="removed",
@@ -1833,9 +1833,9 @@ def test_command_cleans_datasets(mock, db):
         description_de="Removed",
         description_en="Removed",
         description_fr="Removed",
-        title_short_de="Removed",
-        title_short_en="Removed",
-        title_short_fr="Removed",
+        title_de="Removed",
+        title_en="Removed",
+        title_fr="Removed",
     ).save()
 
     mock.side_effect = api_response(
@@ -2629,9 +2629,9 @@ def test_command_creates_concepts(rdf, mock, client, db):  # noqa: PLR0915
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     aggregate_dataset.save()
     aggregate_dataset.concepts.add(concept)
@@ -2641,9 +2641,9 @@ def test_command_creates_concepts(rdf, mock, client, db):  # noqa: PLR0915
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     part_dataset.save()
     part_dataset.concepts.add(concept)
@@ -2763,9 +2763,9 @@ def test_command_use_mapping_for_concepts(rdf, mock, client, db):
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     aggregate_dataset.save()
 
@@ -2774,9 +2774,9 @@ def test_command_use_mapping_for_concepts(rdf, mock, client, db):
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     part_dataset.save()
 
@@ -2879,9 +2879,9 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     dataset.save()
 
@@ -3121,9 +3121,9 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     dataset.save()
 
@@ -3310,9 +3310,9 @@ def test_command_creates_distributions_title_from_wms(mock, client, db):
         description_de="x",
         description_en="x",
         description_fr="x",
-        title_short_de="x",
-        title_short_en="x",
-        title_short_fr="x",
+        title_de="x",
+        title_en="x",
+        title_fr="x",
     )
     dataset.save()
 
@@ -3439,9 +3439,9 @@ def test_command_cleans_distributions(mock, client, db):
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     dataset.save()
 
@@ -3569,18 +3569,18 @@ def test_command_uses_dataset_mapping_for_distributions(mock, client, db):
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     ).save()
     dataset = Dataset(
         dataset_id="ch.kgk-cgc.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
-        title_short_de="Title DE",
-        title_short_en="Title EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="Title EN",
+        title_fr="Title FR",
     )
     dataset.save()
 

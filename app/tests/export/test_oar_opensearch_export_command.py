@@ -56,11 +56,16 @@ def _make_dataset() -> Dataset:
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
         status=Dataset.Status.PUBLISHED,
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+        title_en="Red list bryophytes (Threats to Mosses in Switzerland)",
+        title_it="Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+        title_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
         title_short_de="Rote Liste Moose",
         title_short_fr="Liste rouge mousses",
         title_short_en="Red list bryophytes",
-        title_short_it="Lista rossa biofite",
-        title_short_rm="idk",
+        title_short_it="Lista rossa delle biofite minacciate",
+        title_short_rm="Glista cotschna dals mistgels",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
@@ -119,10 +124,10 @@ def _make_dataset() -> Dataset:
 def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
     aggregate = Dataset(
         dataset_id="ch.kgk.av",
-        title_short_de="Amtliche Vermessung",
-        title_short_fr="Mensuration officielle",
-        title_short_en="Amtliche Vermessung",
-        title_short_it="Misurazione ufficiale",
+        title_de="Amtliche Vermessung",
+        title_fr="Mensuration officielle",
+        title_en="Amtliche Vermessung",
+        title_it="Misurazione ufficiale",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
@@ -134,10 +139,10 @@ def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
 
     part = Dataset(
         dataset_id="ch.geodienste-lu.av",
-        title_short_de="Amtliche Vermessung",
-        title_short_fr="Mensuration officielle",
-        title_short_en="Amtliche Vermessung",
-        title_short_it="Misurazione ufficiale",
+        title_de="Amtliche Vermessung",
+        title_fr="Mensuration officielle",
+        title_en="Amtliche Vermessung",
+        title_it="Misurazione ufficiale",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
@@ -488,7 +493,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Rote Liste Moose",
+                "title": "Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+                "shortTitle": "Rote Liste Moose",
                 "type": "Dataset",
             },
         },
@@ -559,7 +565,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Liste rouge mousses",
+                "title": "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+                "shortTitle": "Liste rouge mousses",
                 "type": "Dataset",
             },
         },
@@ -608,12 +615,7 @@ def test_dump_dataset_document(db, tmp_path):
                                 "country": "CH",
                             }
                         ],
-                        "links": [
-                            {
-                                "href": "http://www.swisstopo.ch",
-                                "type": "text/html",
-                            }
-                        ],
+                        "links": [{"href": "http://www.swisstopo.ch", "type": "text/html"}],
                         "roles": ["pointOfContact"],
                     },
                 ],
@@ -634,7 +636,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Lista rossa biofite",
+                "title": "Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+                "shortTitle": "Lista rossa delle biofite minacciate",
                 "type": "Dataset",
             },
         },
@@ -683,12 +686,7 @@ def test_dump_dataset_document(db, tmp_path):
                                 "country": "CH",
                             }
                         ],
-                        "links": [
-                            {
-                                "href": "http://www.swisstopo.ch",
-                                "type": "text/html",
-                            }
-                        ],
+                        "links": [{"href": "http://www.swisstopo.ch", "type": "text/html"}],
                         "roles": ["pointOfContact"],
                     },
                 ],
@@ -709,7 +707,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "idk",
+                "title": "Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+                "shortTitle": "Glista cotschna dals mistgels",
                 "type": "Dataset",
             },
         },
@@ -758,12 +757,7 @@ def test_dump_dataset_document(db, tmp_path):
                                 "country": "CH",
                             }
                         ],
-                        "links": [
-                            {
-                                "href": "http://www.swisstopo.ch",
-                                "type": "text/html",
-                            }
-                        ],
+                        "links": [{"href": "http://www.swisstopo.ch", "type": "text/html"}],
                         "roles": ["pointOfContact"],
                     },
                 ],
@@ -779,7 +773,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Red list bryophytes",
+                "title": "Red list bryophytes (Threats to Mosses in Switzerland)",
+                "shortTitle": "Red list bryophytes",
                 "type": "Dataset",
             },
         },

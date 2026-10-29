@@ -685,10 +685,10 @@ class Command(CustomBaseCommand):
 
         for key, service in services["de"].items():
             common = {
-                "title_short_de": service["topic_title"],
-                "title_short_en": service["topic_title"],
-                "title_short_fr": services["fr"][key]["topic_title"],
-                "title_short_it": services["it"][key]["topic_title"],
+                "title_de": service["topic_title"],
+                "title_en": service["topic_title"],
+                "title_fr": services["fr"][key]["topic_title"],
+                "title_it": services["it"][key]["topic_title"],
                 "description_de": service["abstract"],
                 "description_en": service["abstract"],
                 "description_fr": services["fr"][key]["abstract"],
@@ -1487,11 +1487,11 @@ class Command(CustomBaseCommand):
 
         if layer_names["de"] == "daten":
             return {
-                "title_de": dataset.title_short_de,
-                "title_fr": dataset.title_short_fr,
-                "title_en": dataset.title_short_en,
-                "title_it": dataset.title_short_it,
-                "title_rm": dataset.title_short_rm,
+                "title_de": dataset.title_de,
+                "title_fr": dataset.title_fr,
+                "title_en": dataset.title_en,
+                "title_it": dataset.title_it,
+                "title_rm": dataset.title_rm,
                 "description_de": dataset.description_de,
                 "description_fr": dataset.description_fr,
                 "description_en": dataset.description_en,
