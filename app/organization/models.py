@@ -76,11 +76,11 @@ class Organization(DataSourceIdModelMixin, models.Model):
     name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
     name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
 
-    acronym_de = models.CharField(_(_context, "Acronym (German)"))
-    acronym_fr = models.CharField(_(_context, "Acronym (French)"))
-    acronym_en = models.CharField(_(_context, "Acronym (English)"))
-    acronym_it = models.CharField(_(_context, "Acronym (Italian)"), null=True, blank=True)
-    acronym_rm = models.CharField(_(_context, "Acronym (Romansh)"), null=True, blank=True)
+    abbreviation_de = models.CharField(_(_context, "Abbreviation (German)"))
+    abbreviation_fr = models.CharField(_(_context, "Abbreviation (French)"))
+    abbreviation_en = models.CharField(_(_context, "Abbreviation (English)"))
+    abbreviation_it = models.CharField(_(_context, "Abbreviation (Italian)"), null=True, blank=True)
+    abbreviation_rm = models.CharField(_(_context, "Abbreviation (Romansh)"), null=True, blank=True)
 
     vp_org_admin_policy_id = models.CharField(
         _(_context, f"Verified Permissions Policy ID for {VPRole.ORG_ADMIN.value}"),

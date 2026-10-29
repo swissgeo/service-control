@@ -84,8 +84,8 @@ def test_get_unit_skips_translations_that_are_not_available(user_headers, unit, 
     unit = Unit.objects.last()
     unit.name_it = None
     unit.name_rm = None
-    unit.acronym_it = None
-    unit.acronym_rm = None
+    unit.abbreviation_it = None
+    unit.abbreviation_rm = None
     unit.save()
 
     response = client.get(

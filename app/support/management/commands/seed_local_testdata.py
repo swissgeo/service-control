@@ -18,11 +18,11 @@ class OrganizationSeed(TypedDict):
     name_en: str
     name_it: str
     name_rm: str
-    acronym_de: str
-    acronym_fr: str
-    acronym_en: str
-    acronym_it: str
-    acronym_rm: str
+    abbreviation_de: str
+    abbreviation_fr: str
+    abbreviation_en: str
+    abbreviation_it: str
+    abbreviation_rm: str
 
 
 class UserSeed(TypedDict):
@@ -43,11 +43,11 @@ ORGANIZATIONS: list[OrganizationSeed] = [
         "name_en": "Federal Office for the Environment",
         "name_it": "Ufficio federale dell'ambiente",
         "name_rm": "Uffizi federal per l'ambient",
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "FOEN",
-        "acronym_it": "UFAM",
-        "acronym_rm": "UFAM",
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "FOEN",
+        "abbreviation_it": "UFAM",
+        "abbreviation_rm": "UFAM",
     },
     {
         "organization_id": "ch.swisstopo",
@@ -56,11 +56,11 @@ ORGANIZATIONS: list[OrganizationSeed] = [
         "name_en": "Federal Office of Topography swisstopo",
         "name_it": "Ufficio federale di topografia swisstopo",
         "name_rm": "Uffizi federal da topografia swisstopo",
-        "acronym_de": "swisstopo",
-        "acronym_fr": "swisstopo",
-        "acronym_en": "swisstopo",
-        "acronym_it": "swisstopo",
-        "acronym_rm": "swisstopo",
+        "abbreviation_de": "swisstopo",
+        "abbreviation_fr": "swisstopo",
+        "abbreviation_en": "swisstopo",
+        "abbreviation_it": "swisstopo",
+        "abbreviation_rm": "swisstopo",
     },
 ]
 
@@ -219,11 +219,11 @@ class Command(CustomBaseCommand):
                     "name_en": org_data["name_en"],
                     "name_it": org_data["name_it"],
                     "name_rm": org_data["name_rm"],
-                    "acronym_de": org_data["acronym_de"],
-                    "acronym_fr": org_data["acronym_fr"],
-                    "acronym_en": org_data["acronym_en"],
-                    "acronym_it": org_data["acronym_it"],
-                    "acronym_rm": org_data["acronym_rm"],
+                    "abbreviation_de": org_data["abbreviation_de"],
+                    "abbreviation_fr": org_data["abbreviation_fr"],
+                    "abbreviation_en": org_data["abbreviation_en"],
+                    "abbreviation_it": org_data["abbreviation_it"],
+                    "abbreviation_rm": org_data["abbreviation_rm"],
                 },
             )
             self.print(

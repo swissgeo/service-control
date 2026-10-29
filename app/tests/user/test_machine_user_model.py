@@ -84,9 +84,9 @@ def test_machine_user_cannot_change_org(
     actual = MachineUser.objects.first()
     actual.organization = Organization.objects.create(
         organization_id="other_id",
-        acronym_de="Other",
-        acronym_fr="Other",
-        acronym_en="Other",
+        abbreviation_de="Other",
+        abbreviation_fr="Other",
+        abbreviation_en="Other",
         name_de="Other",
         name_fr="Other",
         name_en="Other",

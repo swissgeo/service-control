@@ -84,11 +84,11 @@ class OrganizationImport(DynamoDBParsableModel):
     name_en: str
     name_it: str | None
     name_rm: str | None
-    acronym_de: str
-    acronym_fr: str
-    acronym_en: str
-    acronym_it: str | None
-    acronym_rm: str | None
+    acronym_de: str = Field(serialization_alias="abbreviation_de")
+    acronym_fr: str = Field(serialization_alias="abbreviation_fr")
+    acronym_en: str = Field(serialization_alias="abbreviation_en")
+    acronym_it: str | None = Field(serialization_alias="abbreviation_it")
+    acronym_rm: str | None = Field(serialization_alias="abbreviation_rm")
     attributions: list[AttributionImport]
     _legacy_id: int
 

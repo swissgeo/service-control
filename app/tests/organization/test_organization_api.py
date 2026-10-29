@@ -41,8 +41,8 @@ def test_get_organization_returns_existing_organization_with_default_language(
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "FOEN",
-        "acronym_translations": {
+        "abbreviation": "FOEN",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -71,8 +71,8 @@ def test_get_organization_returns_organization_with_language_from_query(
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "BAFU",
-        "acronym_translations": {
+        "abbreviation": "BAFU",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -95,8 +95,8 @@ def test_get_organization_skips_translations_that_are_not_available(
     organization = Organization.objects.last()
     organization.name_it = None
     organization.name_rm = None
-    organization.acronym_it = None
-    organization.acronym_rm = None
+    organization.abbreviation_it = None
+    organization.abbreviation_rm = None
     organization.save()
 
     response = client.get(
@@ -113,8 +113,8 @@ def test_get_organization_skips_translations_that_are_not_available(
             "fr": "Office fédéral de l'environnement",
             "en": "Federal Office for the Environment",
         },
-        "acronym": "FOEN",
-        "acronym_translations": {
+        "abbreviation": "FOEN",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -141,8 +141,8 @@ def test_get_organization_returns_organization_with_language_from_header(
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "BAFU",
-        "acronym_translations": {
+        "abbreviation": "BAFU",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -171,8 +171,8 @@ def test_get_organization_returns_organization_with_language_from_query_param_ev
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "OFEV",
-        "acronym_translations": {
+        "abbreviation": "OFEV",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -201,8 +201,8 @@ def test_get_organization_returns_organization_with_default_language_if_header_e
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "FOEN",
-        "acronym_translations": {
+        "abbreviation": "FOEN",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -231,8 +231,8 @@ def test_get_organization_returns_organization_with_first_known_language_from_he
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "BAFU",
-        "acronym_translations": {
+        "abbreviation": "BAFU",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -261,8 +261,8 @@ def test_get_organization_returns_with_first_known_language_from_header_ignoring
             "it": "Ufficio federale dell'ambiente",
             "rm": "Uffizi federal per l'ambient",
         },
-        "acronym": "OFEV",
-        "acronym_translations": {
+        "abbreviation": "OFEV",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -307,8 +307,8 @@ def test_get_organizations_returns_single_organization_with_given_language(
                     "it": "Ufficio federale dell'ambiente",
                     "rm": "Uffizi federal per l'ambient",
                 },
-                "acronym": "OFEV",
-                "acronym_translations": {
+                "abbreviation": "OFEV",
+                "abbreviation_translations": {
                     "de": "BAFU",
                     "fr": "OFEV",
                     "en": "FOEN",
@@ -326,8 +326,8 @@ def test_get_organizations_skips_translations_that_are_not_available(
     organization = Organization.objects.last()
     organization.name_it = None
     organization.name_rm = None
-    organization.acronym_it = None
-    organization.acronym_rm = None
+    organization.abbreviation_it = None
+    organization.abbreviation_rm = None
     organization.save()
 
     response = client.get("/api/v1/organizations", headers=user_headers["superuser"])
@@ -343,8 +343,8 @@ def test_get_organizations_skips_translations_that_are_not_available(
                     "fr": "Office fédéral de l'environnement",
                     "en": "Federal Office for the Environment",
                 },
-                "acronym": "FOEN",
-                "acronym_translations": {
+                "abbreviation": "FOEN",
+                "abbreviation_translations": {
                     "de": "BAFU",
                     "fr": "OFEV",
                     "en": "FOEN",
@@ -374,8 +374,8 @@ def test_get_organizations_returns_organization_with_language_from_header(
                     "it": "Ufficio federale dell'ambiente",
                     "rm": "Uffizi federal per l'ambient",
                 },
-                "acronym": "BAFU",
-                "acronym_translations": {
+                "abbreviation": "BAFU",
+                "abbreviation_translations": {
                     "de": "BAFU",
                     "fr": "OFEV",
                     "en": "FOEN",
@@ -397,11 +397,11 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
         "name_en": "Federal Office of Transport",
         "name_it": "Ufficio federale dei trasporti",
         "name_rm": "Uffizi federal da traffic",
-        "acronym_de": "BAV",
-        "acronym_fr": "OFT",
-        "acronym_en": "FOT",
-        "acronym_it": "UFT",
-        "acronym_rm": "UFT",
+        "abbreviation_de": "BAV",
+        "abbreviation_fr": "OFT",
+        "abbreviation_en": "FOT",
+        "abbreviation_it": "UFT",
+        "abbreviation_rm": "UFT",
     }
     Organization.objects.create(**organization)
 
@@ -420,8 +420,8 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
                     "it": "Ufficio federale dell'ambiente",
                     "rm": "Uffizi federal per l'ambient",
                 },
-                "acronym": "OFEV",
-                "acronym_translations": {
+                "abbreviation": "OFEV",
+                "abbreviation_translations": {
                     "de": "BAFU",
                     "fr": "OFEV",
                     "en": "FOEN",
@@ -439,8 +439,8 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
                     "it": "Ufficio federale dei trasporti",
                     "rm": "Uffizi federal da traffic",
                 },
-                "acronym": "OFT",
-                "acronym_translations": {
+                "abbreviation": "OFT",
+                "abbreviation_translations": {
                     "de": "BAV",
                     "fr": "OFT",
                     "en": "FOT",
@@ -464,7 +464,7 @@ def test_create_organization_unauthorized(
 ):
     data = {
         "id": "ch.bfs",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFS",
             "en": "FSO",
@@ -495,7 +495,7 @@ def test_create_organization_creates_organization_as_expected(
 ):
     data = {
         "id": "ch.bfs",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFS",
             "en": "FSO",
@@ -520,8 +520,8 @@ def test_create_organization_creates_organization_as_expected(
     assert response.status_code == 201
     assert response.json() == {
         "id": "ch.bfs",
-        "acronym": "FSO",
-        "acronym_translations": {
+        "abbreviation": "FSO",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFS",
             "en": "FSO",
@@ -545,18 +545,18 @@ def test_create_organization_creates_organization_as_expected(
     assert actual.name_it == data["name_translations"]["it"]
     assert actual.name_rm == data["name_translations"]["rm"]
 
-    assert actual.acronym_de == data["acronym_translations"]["de"]
-    assert actual.acronym_fr == data["acronym_translations"]["fr"]
-    assert actual.acronym_en == data["acronym_translations"]["en"]
-    assert actual.acronym_it == data["acronym_translations"]["it"]
-    assert actual.acronym_rm == data["acronym_translations"]["rm"]
+    assert actual.abbreviation_de == data["abbreviation_translations"]["de"]
+    assert actual.abbreviation_fr == data["abbreviation_translations"]["fr"]
+    assert actual.abbreviation_en == data["abbreviation_translations"]["en"]
+    assert actual.abbreviation_it == data["abbreviation_translations"]["it"]
+    assert actual.abbreviation_rm == data["abbreviation_translations"]["rm"]
 
 
 @patch("organization.models.Client")
 def test_create_organization_required_only(boto_client, user_headers, client, db):
     data = {
         "id": "ch.bfs",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFS",
             "en": "FSO",
@@ -577,8 +577,8 @@ def test_create_organization_required_only(boto_client, user_headers, client, db
     assert response.status_code == 201
     assert response.json() == {
         "id": "ch.bfs",
-        "acronym": "FSO",
-        "acronym_translations": {
+        "abbreviation": "FSO",
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFS",
             "en": "FSO",
@@ -594,7 +594,7 @@ def test_create_organization_required_only(boto_client, user_headers, client, db
 
 def test_create_organization_missing_required(user_headers, client, db):
     data = {
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -629,7 +629,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -644,7 +644,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "fr": "OFEV",
             "en": "FOEN",
         },
@@ -663,7 +663,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "en": "FOEN",
         },
@@ -682,7 +682,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
         },
@@ -701,7 +701,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -720,7 +720,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -739,7 +739,7 @@ def test_create_organization_missing_required(user_headers, client, db):
     assert response.status_code == 400
     data = {
         "id": "ch.bafu",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFEV",
             "en": "FOEN",
@@ -762,7 +762,7 @@ def test_create_organization_missing_required(user_headers, client, db):
 def test_create_organization_already_exists(boto_client, user_headers, client, db):
     data = {
         "id": "ch.bfs",
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "BAFU",
             "fr": "OFS",
             "en": "FSO",
@@ -809,7 +809,7 @@ def test_update_organization_unauthorized(
 ):
     vp_client.return_value.is_authorized.return_value = False
     data = {
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "New DE",
             "fr": "New FR",
             "en": "New EN",
@@ -838,7 +838,7 @@ def test_update_organization_updates_organization_as_expected(
     client, username, user_headers, organization
 ):
     data = {
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "New DE",
             "fr": "New FR",
             "en": "New EN",
@@ -870,8 +870,8 @@ def test_update_organization_updates_organization_as_expected(
             "it": "Name IT",
             "rm": "Name RM",
         },
-        "acronym": "New EN",
-        "acronym_translations": {
+        "abbreviation": "New EN",
+        "abbreviation_translations": {
             "de": "New DE",
             "fr": "New FR",
             "en": "New EN",
@@ -886,16 +886,16 @@ def test_update_organization_updates_organization_as_expected(
     assert actual.name_it == data["name_translations"]["it"]
     assert actual.name_rm == data["name_translations"]["rm"]
 
-    assert actual.acronym_de == data["acronym_translations"]["de"]
-    assert actual.acronym_fr == data["acronym_translations"]["fr"]
-    assert actual.acronym_en == data["acronym_translations"]["en"]
-    assert actual.acronym_it == data["acronym_translations"]["it"]
-    assert actual.acronym_rm == data["acronym_translations"]["rm"]
+    assert actual.abbreviation_de == data["abbreviation_translations"]["de"]
+    assert actual.abbreviation_fr == data["abbreviation_translations"]["fr"]
+    assert actual.abbreviation_en == data["abbreviation_translations"]["en"]
+    assert actual.abbreviation_it == data["abbreviation_translations"]["it"]
+    assert actual.abbreviation_rm == data["abbreviation_translations"]["rm"]
 
 
 def test_update_organization_not_found(user_headers, client, organization):
     data = {
-        "acronym_translations": {
+        "abbreviation_translations": {
             "de": "New DE",
             "fr": "New FR",
             "en": "New EN",

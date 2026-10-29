@@ -94,11 +94,11 @@ def test_command_creates_aggregate_organization(mock, client, db):
     assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
-    assert org.acronym_de == "KGK"
-    assert org.acronym_fr == "CGC"
-    assert org.acronym_en == "KGK"
-    assert org.acronym_it == "CGC"
-    assert org.acronym_rm == "CGC"
+    assert org.abbreviation_de == "KGK"
+    assert org.abbreviation_fr == "CGC"
+    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_it == "CGC"
+    assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
     assert org.geopolitical_entity == geopolitical_entity
@@ -130,11 +130,11 @@ def test_command_aggregate_organization_federal_political_entity_not_existing(mo
     assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
-    assert org.acronym_de == "KGK"
-    assert org.acronym_fr == "CGC"
-    assert org.acronym_en == "KGK"
-    assert org.acronym_it == "CGC"
-    assert org.acronym_rm == "CGC"
+    assert org.abbreviation_de == "KGK"
+    assert org.abbreviation_fr == "CGC"
+    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_it == "CGC"
+    assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
     assert org.geopolitical_entity is None
@@ -150,11 +150,11 @@ def test_command_updates_aggregate_organization(mock, client, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["KGK"],
     )
@@ -188,11 +188,11 @@ def test_command_updates_aggregate_organization(mock, client, db):
     assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
-    assert org.acronym_de == "KGK"
-    assert org.acronym_fr == "CGC"
-    assert org.acronym_en == "KGK"
-    assert org.acronym_it == "CGC"
-    assert org.acronym_rm == "CGC"
+    assert org.abbreviation_de == "KGK"
+    assert org.abbreviation_fr == "CGC"
+    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_it == "CGC"
+    assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
     assert org.geopolitical_entity == geopolitical_entity
@@ -215,11 +215,11 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.USER_INPUT,
         data_source_ids=[],
     )
@@ -266,11 +266,11 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
     assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
-    assert org.acronym_de == "KGK"
-    assert org.acronym_fr == "CGC"
-    assert org.acronym_en == "KGK"
-    assert org.acronym_it == "CGC"
-    assert org.acronym_rm == "CGC"
+    assert org.abbreviation_de == "KGK"
+    assert org.abbreviation_fr == "CGC"
+    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_it == "CGC"
+    assert org.abbreviation_rm == "CGC"
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -313,11 +313,11 @@ def test_command_creates_cantonal_organization(mock, client, db):
     assert org.name_fr == "geodienste Lucerne"
     assert org.name_it == "geodienste Lucerna"
     assert org.name_rm == "geodienste Lucerna"
-    assert org.acronym_de == "LU"
-    assert org.acronym_fr == "LU"
-    assert org.acronym_en == "LU"
-    assert org.acronym_it == "LU"
-    assert org.acronym_rm == "LU"
+    assert org.abbreviation_de == "LU"
+    assert org.abbreviation_fr == "LU"
+    assert org.abbreviation_en == "LU"
+    assert org.abbreviation_it == "LU"
+    assert org.abbreviation_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["LU"]
     assert org.geopolitical_entity == geopolitical_entity
@@ -339,11 +339,11 @@ def test_command_updates_cantonal_organization(mock, client, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["LU"],
     )
@@ -377,11 +377,11 @@ def test_command_updates_cantonal_organization(mock, client, db):
     assert org.name_fr == "geodienste Lucerne"
     assert org.name_it == "geodienste Lucerna"
     assert org.name_rm == "geodienste Lucerna"
-    assert org.acronym_de == "LU"
-    assert org.acronym_fr == "LU"
-    assert org.acronym_en == "LU"
-    assert org.acronym_it == "LU"
-    assert org.acronym_rm == "LU"
+    assert org.abbreviation_de == "LU"
+    assert org.abbreviation_fr == "LU"
+    assert org.abbreviation_en == "LU"
+    assert org.abbreviation_it == "LU"
+    assert org.abbreviation_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["LU"]
     assert org.geopolitical_entity == geopolitical_entity
@@ -412,11 +412,11 @@ def test_command_creates_broker_organization(mock, client, db):
     assert org.name_fr == "BFE"
     assert org.name_it == "BFE"
     assert org.name_rm == "BFE"
-    assert org.acronym_de == "BFE"
-    assert org.acronym_fr == "BFE"
-    assert org.acronym_en == "BFE"
-    assert org.acronym_it == "BFE"
-    assert org.acronym_rm == "BFE"
+    assert org.abbreviation_de == "BFE"
+    assert org.abbreviation_fr == "BFE"
+    assert org.abbreviation_en == "BFE"
+    assert org.abbreviation_it == "BFE"
+    assert org.abbreviation_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["BFE"]
     assert org.geopolitical_entity is None
@@ -432,11 +432,11 @@ def test_command_updates_broker_organization(mock, client, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["BFE"],
     )
@@ -459,11 +459,11 @@ def test_command_updates_broker_organization(mock, client, db):
     assert org.name_fr == "BFE"
     assert org.name_it == "BFE"
     assert org.name_rm == "BFE"
-    assert org.acronym_de == "BFE"
-    assert org.acronym_fr == "BFE"
-    assert org.acronym_en == "BFE"
-    assert org.acronym_it == "BFE"
-    assert org.acronym_rm == "BFE"
+    assert org.abbreviation_de == "BFE"
+    assert org.abbreviation_fr == "BFE"
+    assert org.abbreviation_en == "BFE"
+    assert org.abbreviation_it == "BFE"
+    assert org.abbreviation_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["BFE"]
     assert org.geopolitical_entity is None
@@ -510,11 +510,11 @@ def test_command_uses_organization_mapping(mock, client, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["LU"],
     )
@@ -526,11 +526,11 @@ def test_command_uses_organization_mapping(mock, client, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["LU"],
     )
@@ -583,11 +583,11 @@ def test_command_uses_organization_mapping(mock, client, db):
     assert org_1.name_fr == "geodienste Lucerne"
     assert org_1.name_it == "geodienste Lucerna"
     assert org_1.name_rm == "geodienste Lucerna"
-    assert org_1.acronym_de == "LU"
-    assert org_1.acronym_fr == "LU"
-    assert org_1.acronym_en == "LU"
-    assert org_1.acronym_it == "LU"
-    assert org_1.acronym_rm == "LU"
+    assert org_1.abbreviation_de == "LU"
+    assert org_1.abbreviation_fr == "LU"
+    assert org_1.abbreviation_en == "LU"
+    assert org_1.abbreviation_it == "LU"
+    assert org_1.abbreviation_rm == "LU"
     assert org_1.data_source == Organization.DataSource.GEODIENSTE
     assert org_1.data_source_ids == ["LU"]
 
@@ -600,9 +600,9 @@ def test_command_cleans_organizations(mock, client, db):
         name_de="obsolete",
         name_en="obsolete",
         name_fr="obsolete",
-        acronym_de="obsolete",
-        acronym_fr="obsolete",
-        acronym_en="obsolete",
+        abbreviation_de="obsolete",
+        abbreviation_fr="obsolete",
+        abbreviation_en="obsolete",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=[],
     ).save()
@@ -611,9 +611,9 @@ def test_command_cleans_organizations(mock, client, db):
         name_de="removed",
         name_en="removed",
         name_fr="removed",
-        acronym_de="removed",
-        acronym_fr="removed",
-        acronym_en="removed",
+        abbreviation_de="removed",
+        abbreviation_fr="removed",
+        abbreviation_en="removed",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["removed"],
     ).save()
@@ -701,11 +701,11 @@ def test_command_creates_aggregate_contact(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["KGK"],
     )
@@ -776,11 +776,11 @@ def test_command_updates_aggregate_contact(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["KGK"],
     )
@@ -859,11 +859,11 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.USER_INPUT,
         data_source_ids=[],
     )
@@ -957,11 +957,11 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
         name_fr="geodienste Lucerne",
         name_it="geodienste Lucerna",
         name_rm="geodienste Lucerna",
-        acronym_de="LU",
-        acronym_fr="LU",
-        acronym_en="LU",
-        acronym_it="LU",
-        acronym_rm="LU",
+        abbreviation_de="LU",
+        abbreviation_fr="LU",
+        abbreviation_en="LU",
+        abbreviation_it="LU",
+        abbreviation_rm="LU",
         data_source=Organization.DataSource.GEODIENSTE,
     )
     org.save()
@@ -1115,11 +1115,11 @@ def test_command_organization_mapping_for_contact(mock, client, db):
         name_fr="geodienste Lucerne",
         name_it="geodienste Lucerna",
         name_rm="geodienste Lucerna",
-        acronym_de="LU",
-        acronym_fr="LU",
-        acronym_en="LU",
-        acronym_it="LU",
-        acronym_rm="LU",
+        abbreviation_de="LU",
+        abbreviation_fr="LU",
+        abbreviation_en="LU",
+        abbreviation_it="LU",
+        abbreviation_rm="LU",
         data_source=Organization.DataSource.GEODIENSTE,
     )
     org.save()
@@ -1169,11 +1169,11 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
     )
     org.save()
 
@@ -1361,11 +1361,11 @@ def test_command_creates_broker_dataset(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
     )
     org.save()
 
@@ -1387,9 +1387,9 @@ def test_command_creates_broker_dataset(mock, client, db):
         name_de="BFE",
         name_fr="BFE",
         name_en="BFE",
-        acronym_de="BFE",
-        acronym_fr="BFE",
-        acronym_en="BFE",
+        abbreviation_de="BFE",
+        abbreviation_fr="BFE",
+        abbreviation_en="BFE",
     ).save()
 
     meta_data = {
@@ -1987,11 +1987,11 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["KGK"],
     )
@@ -2004,11 +2004,11 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
         name_fr="Canton de Lucerne",
         name_it="Cantone di Lucerna",
         name_rm="Chantun Lucerna",
-        acronym_de="LU",
-        acronym_fr="LU",
-        acronym_en="LU",
-        acronym_it="LU",
-        acronym_rm="LU",
+        abbreviation_de="LU",
+        abbreviation_fr="LU",
+        abbreviation_en="LU",
+        abbreviation_it="LU",
+        abbreviation_rm="LU",
         data_source=Organization.DataSource.GEODIENSTE,
     )
     org_part.save()
@@ -2074,11 +2074,11 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
     )
     org_aggregate.save()
 
@@ -2087,9 +2087,9 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
         name_de="Raum und Wirtschaft",
         name_en="Raum und Wirtschaft",
         name_fr="Raum und Wirtschaft",
-        acronym_de="RAWI",
-        acronym_fr="RAWI",
-        acronym_en="RAWI",
+        abbreviation_de="RAWI",
+        abbreviation_fr="RAWI",
+        abbreviation_en="RAWI",
     )
     org_part.save()
 
@@ -2174,11 +2174,11 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
     )
     org_aggregate.save()
     unit_aggregate = Unit(
@@ -2191,9 +2191,9 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
         name_de="Raum und Wirtschaft",
         name_en="Raum und Wirtschaft",
         name_fr="Raum und Wirtschaft",
-        acronym_de="RAWI",
-        acronym_fr="RAWI",
-        acronym_en="RAWI",
+        abbreviation_de="RAWI",
+        abbreviation_fr="RAWI",
+        abbreviation_en="RAWI",
     )
     org_part.save()
     unit_part = Unit(organization=org_part, unit_id="part", name_de="x", name_fr="x", name_en="x")
@@ -2335,11 +2335,11 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
         data_source_ids=["KGK"],
     )
@@ -2359,11 +2359,11 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
         name_fr="Canton de Lucerne",
         name_it="Cantone di Lucerna",
         name_rm="Chantun Lucerna",
-        acronym_de="LU",
-        acronym_fr="LU",
-        acronym_en="LU",
-        acronym_it="LU",
-        acronym_rm="LU",
+        abbreviation_de="LU",
+        abbreviation_fr="LU",
+        abbreviation_en="LU",
+        abbreviation_it="LU",
+        abbreviation_rm="LU",
         data_source=Organization.DataSource.GEODIENSTE,
     )
     org_part.save()
@@ -2513,11 +2513,11 @@ def test_command_uses_contact_mappings(mock, client, db):
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
     )
     org_aggregate.save()
     contact_aggregate = Contact(
@@ -2534,11 +2534,11 @@ def test_command_uses_contact_mappings(mock, client, db):
         name_fr="Canton de Lucerne",
         name_it="Cantone di Lucerna",
         name_rm="Chantun Lucerna",
-        acronym_de="LU",
-        acronym_fr="LU",
-        acronym_en="LU",
-        acronym_it="LU",
-        acronym_rm="LU",
+        abbreviation_de="LU",
+        abbreviation_fr="LU",
+        abbreviation_en="LU",
+        abbreviation_it="LU",
+        abbreviation_rm="LU",
     )
     org_part.save()
     contact_part_org = Contact(
