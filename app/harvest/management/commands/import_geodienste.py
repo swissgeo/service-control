@@ -390,11 +390,11 @@ class Command(CustomBaseCommand):
                 "name_en": provider_id,
                 "name_it": provider_id,
                 "name_rm": provider_id,
-                "acronym_de": provider_id,
-                "acronym_fr": provider_id,
-                "acronym_en": provider_id,
-                "acronym_it": provider_id,
-                "acronym_rm": provider_id,
+                "abbreviation_de": provider_id,
+                "abbreviation_fr": provider_id,
+                "abbreviation_en": provider_id,
+                "abbreviation_it": provider_id,
+                "abbreviation_rm": provider_id,
             }
             created, updated = self.import_organization(provider_id, attributes, mappings)
             metrics["organizations.created"] += created
@@ -654,12 +654,12 @@ class Command(CustomBaseCommand):
                 "org_name_en": contact.organization.name_en,
                 "org_name_it": contact.organization.name_it,
                 "org_name_rm": contact.organization.name_rm,
-                "org_acronym": contact.organization.acronym_de,
-                "org_acronym_de": contact.organization.acronym_de,
-                "org_acronym_fr": contact.organization.acronym_fr,
-                "org_acronym_en": contact.organization.acronym_en,
-                "org_acronym_it": contact.organization.acronym_it,
-                "org_acronym_rm": contact.organization.acronym_rm,
+                "org_acronym": contact.organization.abbreviation_de,
+                "org_acronym_de": contact.organization.abbreviation_de,
+                "org_acronym_fr": contact.organization.abbreviation_fr,
+                "org_acronym_en": contact.organization.abbreviation_en,
+                "org_acronym_it": contact.organization.abbreviation_it,
+                "org_acronym_rm": contact.organization.abbreviation_rm,
                 "contact_voice": contact.phone,
                 "contact_city": contact.address_city,
                 "contact_postal_code": contact.address_postal_code,
@@ -685,10 +685,10 @@ class Command(CustomBaseCommand):
 
         for key, service in services["de"].items():
             common = {
-                "title_short_de": service["topic_title"],
-                "title_short_en": service["topic_title"],
-                "title_short_fr": services["fr"][key]["topic_title"],
-                "title_short_it": services["it"][key]["topic_title"],
+                "title_de": service["topic_title"],
+                "title_en": service["topic_title"],
+                "title_fr": services["fr"][key]["topic_title"],
+                "title_it": services["it"][key]["topic_title"],
                 "description_de": service["abstract"],
                 "description_en": service["abstract"],
                 "description_fr": services["fr"][key]["abstract"],
@@ -781,16 +781,6 @@ class Command(CustomBaseCommand):
                     self.print(f"Removing obsolete dataset unit {dataset_unit}")
                     dataset_unit.delete()
                     metrics["dataset_units.removed"] += 1
-
-                created, removed = self.import_dataset_unit(
-                    aggregate,
-                    aggregate_provider_id,
-                    DatasetToUnit.Role.OWNER,
-                    unit_mappings,
-                    organization_mappings,
-                )
-                metrics["dataset_units.created"] += created
-                metrics["dataset_units.removed"] += removed
 
                 # Unit: Owner of Aggregate
                 created, removed = self.import_dataset_unit(
@@ -931,7 +921,7 @@ class Command(CustomBaseCommand):
         dataset: Dataset,
         provider_id: str,
         role: DatasetToUnit.Role,
-        unit_mappings: PrefixLookupTable,
+        unit_mappings: dict[str, PrefixLookupTable[Unit, DatasetToUnitMapping]],
         organization_mappings: PrefixLookupTable,
     ) -> tuple[int, int]:
         """Create dataset unit with the given values if not yet existing.
@@ -941,9 +931,14 @@ class Command(CustomBaseCommand):
 
         organization_id = self.organization_id(provider_id)
         dataset_id = dataset.dataset_id
-        unit, _ = unit_mappings.match(dataset_id)
+        unit = None
+        if role in unit_mappings:
+            unit, _ = unit_mappings[role].match(dataset_id)
         if unit:
-            self.print(f"Unit mapping found for dataset_id {dataset_id}: {unit}")
+            self.print(
+                f"Unit mapping found for dataset_id {dataset_id} and role {role}: "
+                f"{unit} of {unit.organization}"
+            )
         else:
             organization, _ = organization_mappings.match(provider_id)
             if organization:
@@ -1487,11 +1482,11 @@ class Command(CustomBaseCommand):
 
         if layer_names["de"] == "daten":
             return {
-                "title_de": dataset.title_short_de,
-                "title_fr": dataset.title_short_fr,
-                "title_en": dataset.title_short_en,
-                "title_it": dataset.title_short_it,
-                "title_rm": dataset.title_short_rm,
+                "title_de": dataset.title_de,
+                "title_fr": dataset.title_fr,
+                "title_en": dataset.title_en,
+                "title_it": dataset.title_it,
+                "title_rm": dataset.title_rm,
                 "description_de": dataset.description_de,
                 "description_fr": dataset.description_fr,
                 "description_en": dataset.description_en,

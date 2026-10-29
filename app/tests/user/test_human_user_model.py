@@ -80,9 +80,9 @@ def test_user_unit_must_belong_to_same_organization(client, vp_client, organizat
     )
     other_organization = Organization.objects.create(
         organization_id="other_id",
-        acronym_de="Other",
-        acronym_fr="Other",
-        acronym_en="Other",
+        abbreviation_de="Other",
+        abbreviation_fr="Other",
+        abbreviation_en="Other",
         name_de="Other",
         name_fr="Other",
         name_en="Other",
@@ -108,9 +108,9 @@ def test_user_organization_change(client, vp_client, organization, unit, user):
     )
     user.organization = Organization.objects.create(
         organization_id="other_id",
-        acronym_de="Other",
-        acronym_fr="Other",
-        acronym_en="Other",
+        abbreviation_de="Other",
+        abbreviation_fr="Other",
+        abbreviation_en="Other",
         name_de="Other",
         name_fr="Other",
         name_en="Other",

@@ -4,9 +4,9 @@ from dataset.models import Dataset
 # @patch("dataset.models.Client")
 def test_data_source_ids(db):
     attributes = {
-        "title_short_de": "title_short__de",
-        "title_short_fr": "title_short_fr",
-        "title_short_en": "title_short_en",
+        "title_de": "title__de",
+        "title_fr": "title_fr",
+        "title_en": "title_en",
         "description_de": "description_de",
         "description_fr": "description_fr",
         "description_en": "description_en",

@@ -9,8 +9,8 @@ class OrganizationSchema(Schema):
     id: str = Field(alias="organization_id")
     name: str
     name_translations: TranslationsSchema
-    acronym: str
-    acronym_translations: TranslationsSchema
+    abbreviation: str
+    abbreviation_translations: TranslationsSchema
 
     @staticmethod
     def resolve_name(obj: Organization, context: ResolverContext) -> str:
@@ -22,13 +22,13 @@ class OrganizationSchema(Schema):
         return getattr(obj, f"name_{lang}")
 
     @staticmethod
-    def resolve_acronym(obj: Organization, context: ResolverContext) -> str:
-        """Resolves value of acronym field by getting the acronym in the appropriate
+    def resolve_abbreviation(obj: Organization, context: ResolverContext) -> str:
+        """Resolves value of abbreviation field by getting the abbreviation in the appropriate
         language based on the request context."""
         request = context["request"]
         lang = get_language(request.GET.get("lang"), request.headers)
 
-        return getattr(obj, f"acronym_{lang}")
+        return getattr(obj, f"abbreviation_{lang}")
 
     @staticmethod
     def resolve_name_translations(obj: Organization) -> dict[str, str]:
@@ -36,9 +36,9 @@ class OrganizationSchema(Schema):
         return build_translations(obj, "name")
 
     @staticmethod
-    def resolve_acronym_translations(obj: Organization) -> dict[str, str]:
-        """Resolves value of acronym_translations field."""
-        return build_translations(obj, "acronym")
+    def resolve_abbreviation_translations(obj: Organization) -> dict[str, str]:
+        """Resolves value of abbreviation_translations field."""
+        return build_translations(obj, "abbreviation")
 
 
 class OrganizationListSchema(Schema):
@@ -48,12 +48,12 @@ class OrganizationListSchema(Schema):
 class CreateOrganizationSchema(Schema):
     id: str
     name_translations: TranslationsSchema
-    acronym_translations: TranslationsSchema
+    abbreviation_translations: TranslationsSchema
 
 
 class UpdateOrganizationSchema(Schema):
     name_translations: TranslationsSchema
-    acronym_translations: TranslationsSchema
+    abbreviation_translations: TranslationsSchema
 
 
 class UnitSchema(Schema):

@@ -9,6 +9,7 @@ import pytest
 from dataset.models import Dataset, DatasetToContact, DatasetToUnit
 from distribution.models import Distribution, ExternalGeoJSONDistribution, ExternalStacDistribution
 from harvest.import_models import (
+    AttributionImport,
     Contact,
     ContactList,
     DatasetImport,
@@ -25,8 +26,8 @@ from harvest.models import (
     OrganizationMapping,
 )
 from legal.models import GeopoliticalEntity
+from organization.models import Attribution, Organization, Unit
 from organization.models import Contact as ContactModel
-from organization.models import Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 
@@ -80,6 +81,28 @@ def test_command_creates_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     geopolitical_entity = GeopoliticalEntity.objects.create(
@@ -109,11 +132,29 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert org_out.name_en == "Federal Office for the Environment"
     assert org_out.name_it == "Ufficio federale dell'ambiente"
     assert org_out.name_rm == "Uffizi federal per l'ambient"
-    assert org_out.acronym_de == "BAFU"
-    assert org_out.acronym_fr == "OFEV"
-    assert org_out.acronym_en == "FOEN"
-    assert org_out.acronym_it == "UFAM"
-    assert org_out.acronym_rm == "UFAM"
+    assert org_out.abbreviation_de == "BAFU"
+    assert org_out.abbreviation_fr == "OFEV"
+    assert org_out.abbreviation_en == "FOEN"
+    assert org_out.abbreviation_it == "UFAM"
+    assert org_out.abbreviation_rm == "UFAM"
+    assert org_out.attribution_set.count() == 1
+    attribution = org_out.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu.1"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity == geopolitical_entity
@@ -133,6 +174,28 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
@@ -152,11 +215,11 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
     assert org_out.name_en == "Federal Office for the Environment"
     assert org_out.name_it == "Ufficio federale dell'ambiente"
     assert org_out.name_rm == "Uffizi federal per l'ambient"
-    assert org_out.acronym_de == "BAFU"
-    assert org_out.acronym_fr == "OFEV"
-    assert org_out.acronym_en == "FOEN"
-    assert org_out.acronym_it == "UFAM"
-    assert org_out.acronym_rm == "UFAM"
+    assert org_out.abbreviation_de == "BAFU"
+    assert org_out.abbreviation_fr == "OFEV"
+    assert org_out.abbreviation_en == "FOEN"
+    assert org_out.abbreviation_it == "UFAM"
+    assert org_out.abbreviation_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity is None
@@ -164,21 +227,41 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
 
 @patch("organization.models.Client")
 def test_command_updates_organizations(client, dynamodb, db):
-    Organization(
+    org = Organization(
         organization_id="ch.bafu",
         name_de="x",
         name_fr="x",
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
-    ).save()
+    )
+    org.save()
+    org.attribution_set.create(
+        attribution_id="ch.bafu.1",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
 
     org_in = OrganizationImport(
         provider_id="ch.bafu",
@@ -192,6 +275,28 @@ def test_command_updates_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     geopolitical_entity = GeopoliticalEntity.objects.create(
@@ -221,11 +326,29 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.name_en == "Federal Office for the Environment"
     assert org_out.name_it == "Ufficio federale dell'ambiente"
     assert org_out.name_rm == "Uffizi federal per l'ambient"
-    assert org_out.acronym_de == "BAFU"
-    assert org_out.acronym_fr == "OFEV"
-    assert org_out.acronym_en == "FOEN"
-    assert org_out.acronym_it == "UFAM"
-    assert org_out.acronym_rm == "UFAM"
+    assert org_out.abbreviation_de == "BAFU"
+    assert org_out.abbreviation_fr == "OFEV"
+    assert org_out.abbreviation_en == "FOEN"
+    assert org_out.abbreviation_it == "UFAM"
+    assert org_out.abbreviation_rm == "UFAM"
+    assert org_out.attribution_set.count() == 1
+    attribution = org_out.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu.1"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity == geopolitical_entity
@@ -240,15 +363,35 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     )
     org_1.save()
+    org_1.attribution_set.create(
+        attribution_id="ch.bafu.1",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
+
     org_2 = Organization(
         organization_id="ch.bafu2",
         name_de="x",
@@ -256,11 +399,11 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     )
@@ -278,6 +421,28 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu.1",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     OrganizationMapping(
@@ -300,11 +465,29 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     assert org_1.name_en == "Federal Office for the Environment"
     assert org_1.name_it == "Ufficio federale dell'ambiente"
     assert org_1.name_rm == "Uffizi federal per l'ambient"
-    assert org_1.acronym_de == "BAFU"
-    assert org_1.acronym_fr == "OFEV"
-    assert org_1.acronym_en == "FOEN"
-    assert org_1.acronym_it == "UFAM"
-    assert org_1.acronym_rm == "UFAM"
+    assert org_1.abbreviation_de == "BAFU"
+    assert org_1.abbreviation_fr == "OFEV"
+    assert org_1.abbreviation_en == "FOEN"
+    assert org_1.abbreviation_it == "UFAM"
+    assert org_1.abbreviation_rm == "UFAM"
+    assert org_1.attribution_set.count() == 1
+    attribution = org_1.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu.1"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_1.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_1.data_source_ids == ["ch.bafu"]
 
@@ -321,11 +504,11 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
     )
@@ -343,6 +526,28 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         acronym_en="y",
         acronym_it="y",
         acronym_rm="y",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu",
+                name_de="x",
+                name_fr="x",
+                name_en="x",
+                name_it="x",
+                name_rm="x",
+                description_de="x",
+                description_fr="x",
+                description_en="x",
+                description_it="x",
+                description_rm="x",
+                url_de="https://some.valid.url",
+                url_fr="https://some.valid.url",
+                url_en="https://some.valid.url",
+                url_it="https://some.valid.url",
+                url_rm="https://some.valid.url",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
     org_in_2 = OrganizationImport(
         provider_id="ch.bafu2",
@@ -356,6 +561,28 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu",
+                name_de="BAFU",
+                name_fr="OFEV",
+                name_en="FOEN",
+                name_it="UFAM",
+                name_rm="UFAM",
+                description_de="Bundesamt für Umwelt",
+                description_fr="Office fédéral de l'environnement",
+                description_en="Federal Office for the Environment",
+                description_it="Ufficio federale dell'ambiente",
+                description_rm="Uffizi federal per l'ambient",
+                url_de="https://bafu.admin.ch/de/home.html",
+                url_fr="https://bafu.admin.ch/fr/home.html",
+                url_en="https://bafu.admin.ch/en/home.html",
+                url_it="https://bafu.admin.ch/it/home.html",
+                url_rm="https://bafu.admin.ch/rm/home.html",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     OrganizationMapping(
@@ -383,11 +610,29 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     assert org.name_en == "Federal Office for the Environment"
     assert org.name_it == "Ufficio federale dell'ambiente"
     assert org.name_rm == "Uffizi federal per l'ambient"
-    assert org.acronym_de == "BAFU"
-    assert org.acronym_fr == "OFEV"
-    assert org.acronym_en == "FOEN"
-    assert org.acronym_it == "UFAM"
-    assert org.acronym_rm == "UFAM"
+    assert org.abbreviation_de == "BAFU"
+    assert org.abbreviation_fr == "OFEV"
+    assert org.abbreviation_en == "FOEN"
+    assert org.abbreviation_it == "UFAM"
+    assert org.abbreviation_rm == "UFAM"
+    assert org.attribution_set.count() == 1
+    attribution = org.attribution_set.first()
+    assert attribution.attribution_id == "ch.bafu"
+    assert attribution.abbreviation_de == "BAFU"
+    assert attribution.abbreviation_fr == "OFEV"
+    assert attribution.abbreviation_en == "FOEN"
+    assert attribution.abbreviation_it == "UFAM"
+    assert attribution.abbreviation_rm == "UFAM"
+    assert attribution.name_de == "Bundesamt für Umwelt"
+    assert attribution.name_fr == "Office fédéral de l'environnement"
+    assert attribution.name_en == "Federal Office for the Environment"
+    assert attribution.name_it == "Ufficio federale dell'ambiente"
+    assert attribution.name_rm == "Uffizi federal per l'ambient"
+    assert attribution.url_de == "https://bafu.admin.ch/de/home.html"
+    assert attribution.url_fr == "https://bafu.admin.ch/fr/home.html"
+    assert attribution.url_en == "https://bafu.admin.ch/en/home.html"
+    assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
+    assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org.data_source_ids == ["ch.bafu1", "ch.bafu2"]
 
@@ -401,11 +646,11 @@ def test_command_cleans_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.unused"],
     ).save()
@@ -416,11 +661,11 @@ def test_command_cleans_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
@@ -431,11 +676,11 @@ def test_command_cleans_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
@@ -452,6 +697,28 @@ def test_command_cleans_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[
+            AttributionImport(
+                attribution_id="ch.bafu",
+                name_de="x",
+                name_fr="x",
+                name_en="x",
+                name_it="x",
+                name_rm="x",
+                description_de="x",
+                description_fr="x",
+                description_en="x",
+                description_it="x",
+                description_rm="x",
+                url_de="https://some.valid.url",
+                url_fr="https://some.valid.url",
+                url_en="https://some.valid.url",
+                url_it="https://some.valid.url",
+                url_rm="https://some.valid.url",
+                created="2024-01-01T00:00:00Z",
+                updated="2024-01-01T00:00:00Z",
+            )
+        ],
     )
 
     dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
@@ -487,11 +754,16 @@ def test_command_cleans_organizations(client, dynamodb, db):
 def test_command_creates_dataset(dynamodb, db):
     ds_in = DatasetImport(
         dataset_id="ch.bafu.moose",
-        title_de="Rote Liste Moose",
-        title_fr="Liste rouge mousses",
-        title_en="Red list bryophytes",
-        title_it="Lista rossa delle biofite minacciate",
-        title_rm="Glista cotschna dals mistgels",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+        title_en="Red list bryophytes (Threats to Mosses in Switzerland)",
+        title_it="Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+        title_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+        title_short_de="Rote Liste Moose",
+        title_short_fr="Liste rouge mousses",
+        title_short_en="Red list bryophytes",
+        title_short_it="Lista rossa delle biofite minacciate",
+        title_short_rm="Glista cotschna dals mistgels",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -513,6 +785,14 @@ def test_command_creates_dataset(dynamodb, db):
     ds_out = Dataset.objects.first()
     assert ds_out
     assert ds_out.dataset_id == "ch.bafu.moose"
+    assert ds_out.title_de == "Rote Liste Moose (Gefährdung der Moose in der Schweiz)"
+    assert ds_out.title_fr == "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)"
+    assert ds_out.title_en == "Red list bryophytes (Threats to Mosses in Switzerland)"
+    assert (
+        ds_out.title_it
+        == "Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)"
+    )
+    assert ds_out.title_rm == "Glista cotschna dals mistgels (mistgels periclitads en Svizra)"
     assert ds_out.title_short_de == "Rote Liste Moose"
     assert ds_out.title_short_fr == "Liste rouge mousses"
     assert ds_out.title_short_en == "Red list bryophytes"
@@ -532,6 +812,11 @@ def test_command_creates_dataset(dynamodb, db):
 def test_command_updates_dataset(dynamodb, db):
     Dataset(
         dataset_id="ch.bafu.moose",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         title_short_de="x",
         title_short_fr="x",
         title_short_en="x",
@@ -550,11 +835,16 @@ def test_command_updates_dataset(dynamodb, db):
 
     ds_in = DatasetImport(
         dataset_id="ch.bafu.moose",
-        title_de="Rote Liste Moose",
-        title_fr="Liste rouge mousses",
-        title_en="Red list bryophytes",
-        title_it="Lista rossa delle biofite minacciate",
-        title_rm="Glista cotschna dals mistgels",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+        title_en="Red list bryophytes (Threats to Mosses in Switzerland)",
+        title_it="Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+        title_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+        title_short_de="Rote Liste Moose",
+        title_short_fr="Liste rouge mousses",
+        title_short_en="Red list bryophytes",
+        title_short_it="Lista rossa delle biofite minacciate",
+        title_short_rm="Glista cotschna dals mistgels",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -576,6 +866,15 @@ def test_command_updates_dataset(dynamodb, db):
     ds_out = Dataset.objects.first()
     assert ds_out
     assert ds_out.dataset_id == "ch.bafu.moose"
+    assert ds_out.dataset_id == "ch.bafu.moose"
+    assert ds_out.title_de == "Rote Liste Moose (Gefährdung der Moose in der Schweiz)"
+    assert ds_out.title_fr == "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)"
+    assert ds_out.title_en == "Red list bryophytes (Threats to Mosses in Switzerland)"
+    assert (
+        ds_out.title_it
+        == "Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)"
+    )
+    assert ds_out.title_rm == "Glista cotschna dals mistgels (mistgels periclitads en Svizra)"
     assert ds_out.title_short_de == "Rote Liste Moose"
     assert ds_out.title_short_fr == "Liste rouge mousses"
     assert ds_out.title_short_en == "Red list bryophytes"
@@ -595,11 +894,11 @@ def test_command_updates_dataset(dynamodb, db):
 def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     ds_1 = Dataset(
         dataset_id="ch.bafu.moose1",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -612,11 +911,11 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     ds_1.save()
     ds_2 = Dataset(
         dataset_id="ch.bafu.moose2",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -635,6 +934,11 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -680,7 +984,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
 
     ds_1.refresh_from_db()
     assert ds_1.data_source_ids == ["ch.bafu.moose"]
-    assert ds_1.title_short_de == "x"
+    assert ds_1.title_de == "x"
 
     # -------------------------------
     # Mapping used
@@ -701,11 +1005,11 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
 
     ds_1.refresh_from_db()
     assert ds_1.dataset_id == "ch.bafu.moose1"
-    assert ds_1.title_short_de == "Rote Liste Moose"
-    assert ds_1.title_short_fr == "Liste rouge mousses"
-    assert ds_1.title_short_en == "Red list bryophytes"
-    assert ds_1.title_short_it == "Lista rossa delle biofite minacciate"
-    assert ds_1.title_short_rm == "Glista cotschna dals mistgels"
+    assert ds_1.title_de == "Rote Liste Moose"
+    assert ds_1.title_fr == "Liste rouge mousses"
+    assert ds_1.title_en == "Red list bryophytes"
+    assert ds_1.title_it == "Lista rossa delle biofite minacciate"
+    assert ds_1.title_rm == "Glista cotschna dals mistgels"
     assert ds_1.description_de == "Description (DE)"
     assert ds_1.description_fr == "Description (FR)"
     assert ds_1.description_en == "Description (EN)"
@@ -722,11 +1026,11 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
 def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
     ds = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -745,6 +1049,11 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
         title_en="y",
         title_it="y",
         title_rm="y",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="y",
         description_fr="y",
         description_en="y",
@@ -761,6 +1070,11 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -791,11 +1105,11 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
 
     ds.refresh_from_db()
     assert ds.dataset_id == "ch.bafu.moose"
-    assert ds.title_short_de == "Rote Liste Moose"
-    assert ds.title_short_fr == "Liste rouge mousses"
-    assert ds.title_short_en == "Red list bryophytes"
-    assert ds.title_short_it == "Lista rossa delle biofite minacciate"
-    assert ds.title_short_rm == "Glista cotschna dals mistgels"
+    assert ds.title_de == "Rote Liste Moose"
+    assert ds.title_fr == "Liste rouge mousses"
+    assert ds.title_en == "Red list bryophytes"
+    assert ds.title_it == "Lista rossa delle biofite minacciate"
+    assert ds.title_rm == "Glista cotschna dals mistgels"
     assert ds.description_de == "Description (DE)"
     assert ds.description_fr == "Description (FR)"
     assert ds.description_en == "Description (EN)"
@@ -809,11 +1123,11 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
 def test_command_cleans_datasets(dynamodb, db):
     Dataset(
         dataset_id="ch.bafu.unused",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -825,11 +1139,11 @@ def test_command_cleans_datasets(dynamodb, db):
     ).save()
     Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -841,11 +1155,11 @@ def test_command_cleans_datasets(dynamodb, db):
     ).save()
     Dataset(
         dataset_id="ch.bafu.moose-copy",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -863,6 +1177,11 @@ def test_command_cleans_datasets(dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -907,11 +1226,11 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 
@@ -920,11 +1239,11 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
 
     ds = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -946,6 +1265,11 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -984,11 +1308,11 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 
@@ -997,11 +1321,11 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
 
     ds = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -1014,7 +1338,10 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
     ds.save()
 
     DatasetToUnitMapping(
-        dataset_id_prefix="ch.bafu", organization_id="ch.bafu", unit_id="ch.bafu.unit"
+        dataset_id_prefix="ch.bafu",
+        organization_id="ch.bafu",
+        unit_id="ch.bafu.unit",
+        role=DatasetToUnit.Role.OWNER,
     ).save()
 
     ds_in = DatasetImport(
@@ -1024,6 +1351,11 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
         title_en="Red list bryophytes",
         title_it="Lista rossa delle biofite minacciate",
         title_rm="Glista cotschna dals mistgels",
+        title_short_de=None,
+        title_short_fr=None,
+        title_short_en=None,
+        title_short_it=None,
+        title_short_rm=None,
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -1061,11 +1393,11 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert "Installed" in out
 
     attributes = {
-        "title_short_de": "T DE",
-        "title_short_fr": "T FR",
-        "title_short_en": "T EN",
-        "title_short_it": "T IT",
-        "title_short_rm": "T RM",
+        "title_de": "T DE",
+        "title_fr": "T FR",
+        "title_en": "T EN",
+        "title_it": "T IT",
+        "title_rm": "T RM",
         "description_de": "D DE",
         "description_fr": "D FR",
         "description_en": "D EN",
@@ -1325,11 +1657,11 @@ def test_command_cleans_distributions(dynamodb, db):
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bazl.luftfahrthindernis"],
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -1386,11 +1718,11 @@ def test_command_uses_distribution_mapping(dynamodb, db):
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
         data_source_ids=["ch.bazl.luftfahrthindernis"],
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -1484,11 +1816,11 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 
     ds = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -1596,11 +1928,11 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 def test_command_creates_and_updates_contact(client, dynamodb, db):
     ds = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -1618,11 +1950,11 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 
@@ -1796,11 +2128,11 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
 def test_command_uses_contact_mapping(client, dynamodb, db):
     ds = Dataset(
         dataset_id="ch.bafu.moose",
-        title_short_de="x",
-        title_short_fr="x",
-        title_short_en="x",
-        title_short_it="x",
-        title_short_rm="x",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
         description_de="x",
         description_fr="x",
         description_en="x",
@@ -1818,11 +2150,11 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 

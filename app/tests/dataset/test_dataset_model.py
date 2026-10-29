@@ -11,9 +11,9 @@ from thesaurus.models import Concept, Thesaurus
 def fixture_dataset(db):
     return Dataset.objects.create(
         dataset_id="dataset.id",
-        title_short_de="Title (DE)",
-        title_short_fr="Title (FR)",
-        title_short_en="Title (EN)",
+        title_de="Title (DE)",
+        title_fr="Title (FR)",
+        title_en="Title (EN)",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -29,9 +29,9 @@ def test_dataset_all_required_fields(dataset):
     "field",
     [
         "dataset_id",
-        "title_short_de",
-        "title_short_fr",
-        "title_short_en",
+        "title_de",
+        "title_fr",
+        "title_en",
         "description_de",
         "description_fr",
         "description_en",
@@ -47,9 +47,9 @@ def test_dataset_required_field_empty(field, dataset):
     "field",
     [
         "dataset_id",
-        "title_short_de",
-        "title_short_fr",
-        "title_short_en",
+        "title_de",
+        "title_fr",
+        "title_en",
         "description_de",
         "description_fr",
         "description_en",
@@ -68,9 +68,9 @@ def test_dataset_required_field_null(field, dataset):
 def test_dataset_unique_fields(field, dataset):
     new_dataset = Dataset(
         dataset_id="xyz",
-        title_short_de="xyz",
-        title_short_fr="xyz",
-        title_short_en="xyz",
+        title_de="xyz",
+        title_fr="xyz",
+        title_en="xyz",
         description_de="xyz",
         description_fr="xyz",
         description_en="xyz",
@@ -84,9 +84,9 @@ def test_dataset_unique_fields(field, dataset):
 def test_dataset_to_dataset(db):
     parent = Dataset.objects.create(
         dataset_id="parent",
-        title_short_de="Title (DE)",
-        title_short_fr="Title (FR)",
-        title_short_en="Title (EN)",
+        title_de="Title (DE)",
+        title_fr="Title (FR)",
+        title_en="Title (EN)",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",
@@ -95,9 +95,9 @@ def test_dataset_to_dataset(db):
 
     child = Dataset.objects.create(
         dataset_id="child",
-        title_short_de="Title (DE)",
-        title_short_fr="Title (FR)",
-        title_short_en="Title (EN)",
+        title_de="Title (DE)",
+        title_fr="Title (FR)",
+        title_en="Title (EN)",
         description_de="Description (DE)",
         description_fr="Description (FR)",
         description_en="Description (EN)",

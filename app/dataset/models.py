@@ -53,14 +53,17 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         _(_context, "Status"), choices=Status.choices, default=Status.PUBLISHED, max_length=255
     )
 
-    # The title we currently harvest from BOD and store here is actually a short
-    # version of the original title. In a later iteration, we'll add the original
-    # title as well.
-    title_short_de = models.CharField(_(_context, "Title (German)"))
-    title_short_fr = models.CharField(_(_context, "Title (French)"))
-    title_short_en = models.CharField(_(_context, "Title (English)"))
-    title_short_it = models.CharField(_(_context, "Title (Italian)"), null=True, blank=True)
-    title_short_rm = models.CharField(_(_context, "Title (Romansh)"), null=True, blank=True)
+    title_de = models.CharField(_(_context, "Title (German)"))
+    title_fr = models.CharField(_(_context, "Title (French)"))
+    title_en = models.CharField(_(_context, "Title (English)"))
+    title_it = models.CharField(_(_context, "Title (Italian)"), null=True, blank=True)
+    title_rm = models.CharField(_(_context, "Title (Romansh)"), null=True, blank=True)
+
+    title_short_de = models.CharField(_(_context, "Short Title (German)"), null=True, blank=True)
+    title_short_fr = models.CharField(_(_context, "Short Title (French)"), null=True, blank=True)
+    title_short_en = models.CharField(_(_context, "Short Title (English)"), null=True, blank=True)
+    title_short_it = models.CharField(_(_context, "Short Title (Italian)"), null=True, blank=True)
+    title_short_rm = models.CharField(_(_context, "Short Title (Romansh)"), null=True, blank=True)
 
     description_de = models.TextField(_(_context, "Description (German)"))
     description_fr = models.TextField(_(_context, "Description (French)"))
@@ -131,6 +134,13 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     )
     contacts = models.ManyToManyField(
         "organization.Contact", through="DatasetToContact", related_name="datasets"
+    )
+    attribution = models.ForeignKey(
+        "organization.Attribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attribution_datasets",
     )
 
     created_at = models.DateTimeField(

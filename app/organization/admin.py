@@ -6,17 +6,29 @@ from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html_join
 
-from .models import Contact, Organization, Unit
+from .models import Attribution, Contact, Organization, Unit
+
+
+class AttributionInline(admin.TabularInline):  # type:ignore[type-arg]
+    """Read-only list of the attributions linked to a provider"""
+
+    model = Attribution
+    fields = ("attribution_id", "abbreviation_en", "name_en", "url_en")
+    readonly_fields = fields
+    show_change_link = True
+    extra = 0
+    can_delete = False
 
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     """Admin View for Organization"""
 
-    list_display = ("organization_id", "acronym_en", "name_en", "data_source")
+    list_display = ("organization_id", "abbreviation_en", "name_en", "data_source")
     list_filter = ("data_source",)
     readonly_fields = ("created", "updated")
-    search_fields = ("organization_id", "acronym_en", "name_en", "acronym_de", "name_de")
+    search_fields = ("organization_id", "abbreviation_en", "name_en", "abbreviation_de", "name_de")
+    inlines = (AttributionInline,)
 
     def get_readonly_fields(
         self,
@@ -136,5 +148,41 @@ class ContactAdmin(admin.ModelAdmin):
                     str(dataset),
                 )
                 for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
+            ),
+        )
+
+
+@admin.register(Attribution)
+class AttributionAdmin(admin.ModelAdmin):
+    """Admin View for Organization Attribution"""
+
+    list_display = ("attribution_id", "abbreviation_en", "name_en", "number_of_datasets")
+    readonly_fields = ("created", "updated", "dataset_list")
+    search_fields = (
+        "attribution_id",
+        "name_en",
+        "name_de",
+    )
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Attribution]:
+        qs = super().get_queryset(request)
+        return qs.annotate(number_of_datasets=Count("attribution_datasets"))
+
+    @admin.display(description="Number of Datasets")
+    def number_of_datasets(self, obj: Attribution) -> int:
+        return obj.number_of_datasets  # ty: ignore[unresolved-attribute]
+
+    @admin.display(description="Datasets")
+    def dataset_list(self, obj: Attribution) -> str:
+        # For performance reasons, related datasets are not shown inline
+        return format_html_join(
+            "\n",
+            '<a href="{}">{}</a><br>',
+            (
+                (
+                    reverse("admin:dataset_dataset_change", args=[dataset.pk]),
+                    str(dataset),
+                )
+                for dataset in obj.attribution_datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
             ),
         )

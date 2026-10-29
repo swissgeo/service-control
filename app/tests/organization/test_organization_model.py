@@ -25,11 +25,11 @@ def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
         "name_en": "Federal Office for the Environment",
         "name_it": "Ufficio federale dell'ambiente",
         "name_rm": "Uffizi federal per l'ambient",
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "FOEN",
-        "acronym_it": "UFAM",
-        "acronym_rm": "UFAM",
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "FOEN",
+        "abbreviation_it": "UFAM",
+        "abbreviation_rm": "UFAM",
     }
     Organization.objects.create(**organization_in)
 
@@ -44,11 +44,11 @@ def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
     assert organization_in["name_it"] == actual.name_it
     assert organization_in["name_rm"] == actual.name_rm
 
-    assert organization_in["acronym_de"] == actual.acronym_de
-    assert organization_in["acronym_fr"] == actual.acronym_fr
-    assert organization_in["acronym_en"] == actual.acronym_en
-    assert organization_in["acronym_it"] == actual.acronym_it
-    assert organization_in["acronym_rm"] == actual.acronym_rm
+    assert organization_in["abbreviation_de"] == actual.abbreviation_de
+    assert organization_in["abbreviation_fr"] == actual.abbreviation_fr
+    assert organization_in["abbreviation_en"] == actual.abbreviation_en
+    assert organization_in["abbreviation_it"] == actual.abbreviation_it
+    assert organization_in["abbreviation_rm"] == actual.abbreviation_rm
 
     assert actual.vp_org_admin_policy_id == "mock-policy-id"
 
@@ -80,11 +80,11 @@ def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
         "name_en": "Federal Office for the Environment",
         "name_it": None,
         "name_rm": None,
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "FOEN",
-        "acronym_it": None,
-        "acronym_rm": None,
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "FOEN",
+        "abbreviation_it": None,
+        "abbreviation_rm": None,
     }
     Organization.objects.create(**organization_in)
 
@@ -101,11 +101,11 @@ def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
     assert actual.name_it == organization_in["name_it"]
     assert actual.name_rm == organization_in["name_rm"]
 
-    assert actual.acronym_de == organization_in["acronym_de"]
-    assert actual.acronym_fr == organization_in["acronym_fr"]
-    assert actual.acronym_en == organization_in["acronym_en"]
-    assert actual.acronym_it == organization_in["acronym_it"]
-    assert actual.acronym_rm == organization_in["acronym_rm"]
+    assert actual.abbreviation_de == organization_in["abbreviation_de"]
+    assert actual.abbreviation_fr == organization_in["abbreviation_fr"]
+    assert actual.abbreviation_en == organization_in["abbreviation_en"]
+    assert actual.abbreviation_it == organization_in["abbreviation_it"]
+    assert actual.abbreviation_rm == organization_in["abbreviation_rm"]
     assert actual.vp_org_admin_policy_id == "mock-policy-id"
 
     assert client.return_value.create_group.called
@@ -138,9 +138,9 @@ def test_form_valid_for_blank_optional_field(db):
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
         "name_en": "Federal Office for the Environment",
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "FOEN",
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "FOEN",
     }
     form = OrganizationForm(data)
 
@@ -158,9 +158,9 @@ def test_form_invalid_for_blank_mandatory_field(db):
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
         "name_en": "Federal Office for the Environment",
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "",  # empty but mandatory field
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "",  # empty but mandatory field
     }
     form = OrganizationForm(data)
 
@@ -180,9 +180,9 @@ def test_raises_exception_for_existing_slug(vp_client, client, db):
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
         name_en="Federal Office for the Environment",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
     )
     with pytest.raises(ValidationError):
         Organization.objects.create(
@@ -190,9 +190,9 @@ def test_raises_exception_for_existing_slug(vp_client, client, db):
             name_de="XXX",
             name_fr="YYY",
             name_en="ZZZ",
-            acronym_de="xxx",
-            acronym_fr="yyy",
-            acronym_en="zzz",
+            abbreviation_de="xxx",
+            abbreviation_fr="yyy",
+            abbreviation_en="zzz",
         )
 
     assert Organization.objects.count() == 1
@@ -213,9 +213,9 @@ def test_save_updates_records(vp_client, client, db):
         "name_de": "Bundesamt für",
         "name_fr": "Office fédéral de l'environnement",
         "name_en": "Federal Office for the Environment",
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "FOEN",
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "FOEN",
     }
     Organization.objects.create(**model_fields)
     actual = Organization.objects.first()
@@ -237,9 +237,9 @@ def test_save_updates_records(vp_client, client, db):
             name_de="XXX",
             name_fr="YYY",
             name_en="ZZZ",
-            acronym_de="xxx",
-            acronym_fr="yyy",
-            acronym_en="zzz",
+            abbreviation_de="xxx",
+            abbreviation_fr="yyy",
+            abbreviation_en="zzz",
         )
 
     assert Organization.objects.count() == 1
@@ -260,9 +260,9 @@ def test_delete_deletes_records(vp_client, client, db):
         "name_de": "Bundesamt für",
         "name_fr": "Office fédéral de l'environnement",
         "name_en": "Federal Office for the Environment",
-        "acronym_de": "BAFU",
-        "acronym_fr": "OFEV",
-        "acronym_en": "FOEN",
+        "abbreviation_de": "BAFU",
+        "abbreviation_fr": "OFEV",
+        "abbreviation_en": "FOEN",
     }
 
     Organization.objects.create(**model_fields)

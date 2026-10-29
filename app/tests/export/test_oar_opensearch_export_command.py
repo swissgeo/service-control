@@ -56,11 +56,16 @@ def _make_dataset() -> Dataset:
     dataset = Dataset(
         dataset_id="ch.bafu.moose",
         status=Dataset.Status.PUBLISHED,
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+        title_en="Red list bryophytes (Threats to Mosses in Switzerland)",
+        title_it="Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+        title_rm="Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
         title_short_de="Rote Liste Moose",
         title_short_fr="Liste rouge mousses",
         title_short_en="Red list bryophytes",
-        title_short_it="Lista rossa biofite",
-        title_short_rm="idk",
+        title_short_it="Lista rossa delle biofite minacciate",
+        title_short_rm="Glista cotschna dals mistgels",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
@@ -119,10 +124,10 @@ def _make_dataset() -> Dataset:
 def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
     aggregate = Dataset(
         dataset_id="ch.kgk.av",
-        title_short_de="Amtliche Vermessung",
-        title_short_fr="Mensuration officielle",
-        title_short_en="Amtliche Vermessung",
-        title_short_it="Misurazione ufficiale",
+        title_de="Amtliche Vermessung",
+        title_fr="Mensuration officielle",
+        title_en="Amtliche Vermessung",
+        title_it="Misurazione ufficiale",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
@@ -134,10 +139,10 @@ def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
 
     part = Dataset(
         dataset_id="ch.geodienste-lu.av",
-        title_short_de="Amtliche Vermessung",
-        title_short_fr="Mensuration officielle",
-        title_short_en="Amtliche Vermessung",
-        title_short_it="Misurazione ufficiale",
+        title_de="Amtliche Vermessung",
+        title_fr="Mensuration officielle",
+        title_en="Amtliche Vermessung",
+        title_it="Misurazione ufficiale",
         description_de="Beschreibung",
         description_fr="Description",
         description_en="Description",
@@ -188,11 +193,11 @@ def _make_organization() -> Organization:
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     organization.save()
     return organization
@@ -206,11 +211,11 @@ def _make_aggregate_organization() -> Organization:
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
     )
     organization.save()
@@ -488,7 +493,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Rote Liste Moose",
+                "title": "Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+                "shortTitle": "Rote Liste Moose",
                 "type": "Dataset",
             },
         },
@@ -559,7 +565,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Liste rouge mousses",
+                "title": "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)",
+                "shortTitle": "Liste rouge mousses",
                 "type": "Dataset",
             },
         },
@@ -608,12 +615,7 @@ def test_dump_dataset_document(db, tmp_path):
                                 "country": "CH",
                             }
                         ],
-                        "links": [
-                            {
-                                "href": "http://www.swisstopo.ch",
-                                "type": "text/html",
-                            }
-                        ],
+                        "links": [{"href": "http://www.swisstopo.ch", "type": "text/html"}],
                         "roles": ["pointOfContact"],
                     },
                 ],
@@ -634,7 +636,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Lista rossa biofite",
+                "title": "Lista rossa delle biofite minacciate (Minaccia per i muschi in Svizzera)",
+                "shortTitle": "Lista rossa delle biofite minacciate",
                 "type": "Dataset",
             },
         },
@@ -683,12 +686,7 @@ def test_dump_dataset_document(db, tmp_path):
                                 "country": "CH",
                             }
                         ],
-                        "links": [
-                            {
-                                "href": "http://www.swisstopo.ch",
-                                "type": "text/html",
-                            }
-                        ],
+                        "links": [{"href": "http://www.swisstopo.ch", "type": "text/html"}],
                         "roles": ["pointOfContact"],
                     },
                 ],
@@ -709,7 +707,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "idk",
+                "title": "Glista cotschna dals mistgels (mistgels periclitads en Svizra)",
+                "shortTitle": "Glista cotschna dals mistgels",
                 "type": "Dataset",
             },
         },
@@ -758,12 +757,7 @@ def test_dump_dataset_document(db, tmp_path):
                                 "country": "CH",
                             }
                         ],
-                        "links": [
-                            {
-                                "href": "http://www.swisstopo.ch",
-                                "type": "text/html",
-                            }
-                        ],
+                        "links": [{"href": "http://www.swisstopo.ch", "type": "text/html"}],
                         "roles": ["pointOfContact"],
                     },
                 ],
@@ -779,7 +773,8 @@ def test_dump_dataset_document(db, tmp_path):
                 ],
                 "preferredDistributionId": None,
                 "concepts": ["location"],
-                "title": "Red list bryophytes",
+                "title": "Red list bryophytes (Threats to Mosses in Switzerland)",
+                "shortTitle": "Red list bryophytes",
                 "type": "Dataset",
             },
         },
@@ -824,17 +819,17 @@ def test_dump_dataset_contains_localized_owner(unit, tmp_path):
     assert dataset_doc["de"]["properties"]["owner"] == {
         "id": "ch.bafu",
         "name": "Bundesamt für Umwelt",
-        "acronym": "BAFU",
+        "abbreviation": "BAFU",
     }
     assert dataset_doc["fr"]["properties"]["owner"] == {
         "id": "ch.bafu",
         "name": "Office fédéral de l'environnement",
-        "acronym": "OFEV",
+        "abbreviation": "OFEV",
     }
     assert dataset_doc["en"]["properties"]["owner"] == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
-        "acronym": "FOEN",
+        "abbreviation": "FOEN",
     }
 
 
@@ -845,6 +840,54 @@ def test_dump_dataset_without_owner_has_no_owner(db, tmp_path):
 
     dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
     assert "owner" not in dataset_doc["de"]["properties"]
+
+
+@patch("organization.models.Client")
+def test_dump_dataset_contains_localized_attribution(cognito, db, tmp_path):
+    dataset = _make_dataset()
+    dataset.attribution = _make_organization().attribution_set.create(
+        attribution_id="ch.bafu",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM-RM",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        name_it="Ufficio federale dell'ambiente",
+        name_rm="Uffizi federal per l'ambient",
+        url_de="https://bafu.admin.ch/de/home.html",
+        url_fr="https://bafu.admin.ch/fr/home.html",
+        url_en="https://bafu.admin.ch/en/home.html",
+        url_it="https://bafu.admin.ch/it/home.html",
+        url_rm="https://bafu.admin.ch/rm/home.html",
+    )
+    dataset.save()
+
+    call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
+
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    for lang, abbreviation, name in [
+        ("de", "BAFU", "Bundesamt für Umwelt"),
+        ("fr", "OFEV", "Office fédéral de l'environnement"),
+        ("en", "FOEN", "Federal Office for the Environment"),
+        ("it", "UFAM", "Ufficio federale dell'ambiente"),
+        ("rm", "UFAM-RM", "Uffizi federal per l'ambient"),
+    ]:
+        assert dataset_doc[lang]["properties"]["attribution"] == {
+            "abbreviation": abbreviation,
+            "name": name,
+            "links": [
+                {
+                    "href": f"https://bafu.admin.ch/{lang}/home.html",
+                    "rel": "about",
+                    "title": "Attribution Information",
+                    "type": "text/html",
+                    "hreflang": lang,
+                }
+            ],
+        }
 
 
 def test_dump_distribution_document(db, tmp_path):
@@ -874,7 +917,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -909,7 +952,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -944,7 +987,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -979,7 +1022,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -1014,7 +1057,7 @@ def test_dump_distribution_document(db, tmp_path):
                 {
                     "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
                     "rel": "styledBy",
-                    "title": "Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
                 },
             ],
@@ -1050,7 +1093,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Bundesamt für Umwelt",
-                "acronym": "BAFU",
+                "abbreviation": "BAFU",
             },
         },
         "fr": {
@@ -1061,7 +1104,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Office fédéral de l'environnement",
-                "acronym": "OFEV",
+                "abbreviation": "OFEV",
             },
         },
         "it": {
@@ -1072,7 +1115,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Ufficio federale dell'ambiente",
-                "acronym": "UFAM",
+                "abbreviation": "UFAM",
             },
         },
         "rm": {
@@ -1083,7 +1126,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Uffizi federal per l'ambient",
-                "acronym": "UFAM",
+                "abbreviation": "UFAM",
             },
         },
         "en": {
@@ -1094,7 +1137,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Federal Office for the Environment",
-                "acronym": "FOEN",
+                "abbreviation": "FOEN",
             },
         },
         "id": "ch.bafu",

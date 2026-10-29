@@ -80,19 +80,19 @@ class CreateAccessRequestSchema(Schema):
 class UserAccessRequestSchema(Schema):
     id: str = Field(alias="access_request_id")
     organization_id: str = Field(alias="organization.organization_id")
-    organization_acronym: str
+    organization_abbreviation: str
     organization_name: str
     state: AccessRequest.AccessRequestState
     created: datetime.datetime
 
     @staticmethod
-    def resolve_organization_acronym(obj: AccessRequest, context: ResolverContext) -> str:
-        """Resolves value of organization_acronym field by getting the acronym
+    def resolve_organization_abbreviation(obj: AccessRequest, context: ResolverContext) -> str:
+        """Resolves value of organization_abbreviation field by getting the abbreviation
         in the appropriate language based on the request context."""
         request = context["request"]
         lang = get_language(request.GET.get("lang"), request.headers)
 
-        return getattr(obj.organization, f"acronym_{lang}")
+        return getattr(obj.organization, f"abbreviation_{lang}")
 
     @staticmethod
     def resolve_organization_name(obj: AccessRequest, context: ResolverContext) -> str:

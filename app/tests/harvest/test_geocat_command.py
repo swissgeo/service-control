@@ -53,9 +53,9 @@ def test_command_updates_dataset_ech_concepts(mock, db):
         description_en="Abstract EN",
         description_fr="Abstract FR",
         geocat_id="d929eef4-791d-4728-9d56-226b6952cf1f",
-        title_short_de="Title DE",
-        title_short_en="TITLE EN",
-        title_short_fr="Title FR",
+        title_de="Title DE",
+        title_en="TITLE EN",
+        title_fr="Title FR",
     )
     dataset.save()
 

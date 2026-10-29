@@ -20,6 +20,7 @@ from distribution.models import (
     ExternalWMTSDistribution,
 )
 from harvest.import_models import (
+    AttributionImport,
     ContactList,
     DatasetImport,
     KeywordList,
@@ -35,7 +36,7 @@ from harvest.models import (
     PrefixLookupTable,
 )
 from legal.models import GeopoliticalEntity
-from organization.models import Contact, Organization, Unit
+from organization.models import Attribution, Contact, Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from utils.command import CustomBaseCommand
 
@@ -174,12 +175,14 @@ class Command(CustomBaseCommand):
                 org = Organization(
                     data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
                     geopolitical_entity=geopolitical_entity,
-                    **import_org.model_dump(by_alias=True),
+                    **import_org.model_dump(by_alias=True, exclude={"attributions"}),
                 )
 
         if update:
             self.print(f"Updating {org}")
-            for name, value in import_org:
+            for name, value in import_org.model_dump(
+                by_alias=True, exclude={"provider_id", "attributions"}
+            ).items():
                 if hasattr(org, name) and getattr(org, name) != value:
                     state = "updated"
                     setattr(org, name, value)
@@ -191,7 +194,67 @@ class Command(CustomBaseCommand):
 
         org.add_data_source_id(provider_id)
         org.save()
+        self.import_attributions(org, import_org.attributions)
         return provider_id, state
+
+    def import_attributions(self, org: Organization, attributions: list[AttributionImport]) -> None:
+        for _attribution in attributions:
+            # For now we only create or update Attributions and do not delete any existing ones as
+            # they might be referenced by datasets.
+            try:
+                attribution = Attribution.objects.get(
+                    attribution_id=_attribution.attribution_id,
+                    data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+                    organization=org,
+                )
+                self.print(
+                    f"Attribution with attribution_id {_attribution.attribution_id} already exists"
+                )
+            except Attribution.DoesNotExist:
+                self.print(
+                    f"Attribution with attribution_id {_attribution.attribution_id} does"
+                    " not exist yet, creating a new one"
+                )
+                _attr_dump = _attribution.model_dump(by_alias=True)
+                attribution = Attribution(
+                    data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+                    organization=org,
+                    abbreviation_de=_attr_dump.pop("name_de"),
+                    abbreviation_fr=_attr_dump.pop("name_fr"),
+                    abbreviation_en=_attr_dump.pop("name_en"),
+                    abbreviation_it=_attr_dump.pop("name_it"),
+                    abbreviation_rm=_attr_dump.pop("name_rm"),
+                    name_de=_attr_dump.pop("description_de"),
+                    name_fr=_attr_dump.pop("description_fr"),
+                    name_en=_attr_dump.pop("description_en"),
+                    name_it=_attr_dump.pop("description_it"),
+                    name_rm=_attr_dump.pop("description_rm"),
+                    url_de=_attr_dump.pop("url_de"),
+                    url_fr=_attr_dump.pop("url_fr"),
+                    url_en=_attr_dump.pop("url_en"),
+                    url_it=_attr_dump.pop("url_it"),
+                    url_rm=_attr_dump.pop("url_rm"),
+                    **_attr_dump,
+                )
+            else:
+                self.print(f"Updating Attribution {attribution}")
+                attribution.abbreviation_de = _attribution.name_de
+                attribution.abbreviation_fr = _attribution.name_fr
+                attribution.abbreviation_en = _attribution.name_en
+                attribution.abbreviation_it = _attribution.name_it
+                attribution.abbreviation_rm = _attribution.name_rm
+                attribution.name_de = _attribution.description_de
+                attribution.name_fr = _attribution.description_fr
+                attribution.name_en = _attribution.description_en
+                attribution.name_it = _attribution.description_it
+                attribution.name_rm = _attribution.description_rm
+                attribution.url_de = _attribution.url_de
+                attribution.url_fr = _attribution.url_fr
+                attribution.url_en = _attribution.url_en
+                attribution.url_it = _attribution.url_it
+                attribution.url_rm = _attribution.url_rm
+            attribution.add_data_source_id(_attribution.attribution_id)
+            attribution.save()
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -361,11 +424,16 @@ class Command(CustomBaseCommand):
                         dataset_id=dataset_id,
                         data_source=Dataset.DataSource.BOD_DATASET,
                         defaults={
-                            "title_short_de": import_ds.title_de,
-                            "title_short_fr": import_ds.title_fr,
-                            "title_short_en": import_ds.title_en,
-                            "title_short_it": import_ds.title_it,
-                            "title_short_rm": import_ds.title_rm,
+                            "title_de": import_ds.title_de,
+                            "title_fr": import_ds.title_fr,
+                            "title_en": import_ds.title_en,
+                            "title_it": import_ds.title_it,
+                            "title_rm": import_ds.title_rm,
+                            "title_short_de": import_ds.title_short_de,
+                            "title_short_fr": import_ds.title_short_fr,
+                            "title_short_en": import_ds.title_short_en,
+                            "title_short_it": import_ds.title_short_it,
+                            "title_short_rm": import_ds.title_short_rm,
                             "description_de": import_ds.description_de,
                             "description_fr": import_ds.description_fr,
                             "description_en": import_ds.description_en,
@@ -389,11 +457,16 @@ class Command(CustomBaseCommand):
                     self.print(f"Updating {ds}")
                     updated = False
                     for target, source in (
-                        ("title_short_de", "title_de"),
-                        ("title_short_fr", "title_fr"),
-                        ("title_short_en", "title_en"),
-                        ("title_short_it", "title_it"),
-                        ("title_short_rm", "title_rm"),
+                        ("title_de", "title_de"),
+                        ("title_fr", "title_fr"),
+                        ("title_en", "title_en"),
+                        ("title_it", "title_it"),
+                        ("title_rm", "title_rm"),
+                        ("title_short_de", "title_short_de"),
+                        ("title_short_fr", "title_short_fr"),
+                        ("title_short_en", "title_short_en"),
+                        ("title_short_it", "title_short_it"),
+                        ("title_short_rm", "title_short_rm"),
                         ("description_de", "description_de"),
                         ("description_fr", "description_fr"),
                         ("description_en", "description_en"),
@@ -407,11 +480,36 @@ class Command(CustomBaseCommand):
                     if updated:
                         log_metrics["datasets.updated"] += 1
 
+                # Handle attribution
+                if len(import_ds.attribution) > 1:
+                    self.print_warning(
+                        f"Dataset {import_ds.dataset_id} has more than one attribution, "
+                        "only the first one will be used"
+                    )
+                if len(import_ds.attribution) > 0:
+                    _attribution = import_ds.attribution[0]
+                    try:
+                        attribution = Attribution.objects.get(
+                            attribution_id=_attribution,
+                            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+                        )
+                    except Attribution.DoesNotExist:
+                        self.print_warning(
+                            f"Dataset {import_ds.dataset_id} has attribution {_attribution} "
+                            "which does not exist"
+                        )
+                        attribution = None
+                    ds.attribution = attribution
+
                 ds.add_data_source_id(dataset_id)
                 ds.save()
 
                 # Link unit
-                unit, _ = unit_mappings.match(dataset_id)
+                unit, _ = (
+                    unit_mappings[DatasetToUnit.Role.OWNER].match(dataset_id)
+                    if DatasetToUnit.Role.OWNER in unit_mappings
+                    else (None, None)
+                )
                 if not unit:
                     if not import_ds.provider:
                         self.print_warning(f"Dataset {dataset_id} has no provider")
@@ -664,11 +762,11 @@ class Command(CustomBaseCommand):
         values = {
             "dataservice": wmts_dataservice,
             "data_source": Distribution.DataSource.BOD_LAYERS_JS,
-            "title_de": dataset.title_short_de,
-            "title_fr": dataset.title_short_fr,
-            "title_it": dataset.title_short_it,
-            "title_en": dataset.title_short_en,
-            "title_rm": dataset.title_short_rm,
+            "title_de": dataset.title_de,
+            "title_fr": dataset.title_fr,
+            "title_it": dataset.title_it,
+            "title_en": dataset.title_en,
+            "title_rm": dataset.title_rm,
             "description_de": dataset.description_de,
             "description_fr": dataset.description_fr,
             "description_it": dataset.description_it,
@@ -707,11 +805,11 @@ class Command(CustomBaseCommand):
         values = {
             "dataservice": wms_dataservice,
             "data_source": Distribution.DataSource.BOD_LAYERS_JS,
-            "title_de": dataset.title_short_de,
-            "title_fr": dataset.title_short_fr,
-            "title_it": dataset.title_short_it,
-            "title_en": dataset.title_short_en,
-            "title_rm": dataset.title_short_rm,
+            "title_de": dataset.title_de,
+            "title_fr": dataset.title_fr,
+            "title_it": dataset.title_it,
+            "title_en": dataset.title_en,
+            "title_rm": dataset.title_rm,
             "description_de": dataset.description_de,
             "description_fr": dataset.description_fr,
             "description_it": dataset.description_it,
@@ -752,11 +850,11 @@ class Command(CustomBaseCommand):
 
         values = {
             "data_source": Distribution.DataSource.BOD_LAYERS_JS,
-            "title_de": dataset.title_short_de,
-            "title_fr": dataset.title_short_fr,
-            "title_it": dataset.title_short_it,
-            "title_en": dataset.title_short_en,
-            "title_rm": dataset.title_short_rm,
+            "title_de": dataset.title_de,
+            "title_fr": dataset.title_fr,
+            "title_it": dataset.title_it,
+            "title_en": dataset.title_en,
+            "title_rm": dataset.title_rm,
             "description_de": dataset.description_de,
             "description_fr": dataset.description_fr,
             "description_it": dataset.description_it,
@@ -948,7 +1046,7 @@ class Command(CustomBaseCommand):
         2. Process each harvested contact:
         - If a valid contact mapping exists, reuse the mapped contact.
         - Otherwise, try to find an existing contact where:
-            - the organization matches one of the provided organization names or acronyms, and
+            - the organization matches one of the provided organization names or abbreviations, and
             - the contact matches the harvested position name.
         - If no matching contact is found, create a new contact.
         3. Assign the contact to the dataset using the harvested role.
@@ -1023,8 +1121,8 @@ class Command(CustomBaseCommand):
                 )
                 if not contact:
                     organization = self.find_organization(
-                        acronym_de=item_contact.org_acronym_de,
-                        acronym_fr=item_contact.org_acronym_fr,
+                        abbreviation_de=item_contact.org_acronym_de,
+                        abbreviation_fr=item_contact.org_acronym_fr,
                         name_de=item_contact.org_name_de,
                         name_fr=item_contact.org_name_fr,
                     )
@@ -1098,21 +1196,21 @@ class Command(CustomBaseCommand):
 
     def find_organization(
         self,
-        acronym_de: str | None,
-        acronym_fr: str | None,
+        abbreviation_de: str | None,
+        abbreviation_fr: str | None,
         name_de: str | None,
         name_fr: str | None,
     ) -> Organization | None:
-        """Find an organization which best matches the given acronyms or name.
+        """Find an organization which best matches the given abbreviations or name.
 
         Returns None if none found.
         """
 
         query = Q()
-        if acronym_de:
-            query |= Q(acronym_de=acronym_de)
-        if acronym_fr:
-            query |= Q(acronym_fr=acronym_fr)
+        if abbreviation_de:
+            query |= Q(abbreviation_de=abbreviation_de)
+        if abbreviation_fr:
+            query |= Q(abbreviation_fr=abbreviation_fr)
         if name_de:
             query |= Q(name_de__icontains=name_de)
         if name_fr:

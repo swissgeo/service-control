@@ -218,7 +218,8 @@ class OARDataset(OARRecord):
                 concept.concept_id
                 for concept in ds.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID)
             ],
-            "title": getattr(ds, f"title_short_{lang}", None),
+            "title": getattr(ds, f"title_{lang}", None),
+            "shortTitle": getattr(ds, f"title_short_{lang}", None),
             "type": "Dataset",
         }
         dataset = OARDataset(
@@ -255,8 +256,30 @@ class OARDataset(OARRecord):
             dataset.properties["owner"] = Owner(
                 id=organization.organization_id,
                 name=getattr(organization, f"name_{lang}", None) or organization.name_de,
-                acronym=getattr(organization, f"acronym_{lang}", None) or organization.acronym_de,
+                abbreviation=getattr(organization, f"abbreviation_{lang}", None)
+                or organization.abbreviation_de,
             )
+        if ds.attribution:
+            # Note that the structure of the attribution property is not defined in the OGC API
+            # Records specification. There is a stac extension for attribution but at the moment
+            # it's too basic since it's just one string attribute `attribution`.
+            # There's an issue checking for the possibility to add more structured attribution
+            # information: https://github.com/stac-extensions/attribution/issues/1
+            dataset.properties["attribution"] = {
+                "abbreviation": getattr(ds.attribution, f"abbreviation_{lang}", None),
+                "name": getattr(ds.attribution, f"name_{lang}", None),
+            }
+            url = getattr(ds.attribution, f"url_{lang}", None)
+            if url:
+                dataset.properties["attribution"]["links"] = [
+                    UnvalidatedLink(
+                        href=url,
+                        rel="about",
+                        title="Attribution Information",
+                        typ="text/html",
+                        hreflang=lang,
+                    )
+                ]
 
         if ds.is_aggregate:
             dataset.properties["aggregated"] = True
@@ -378,7 +401,7 @@ class OARDistribution(OARRecord):
                 OASStyleLink.from_distribution_id(
                     distribution_id=dist.distribution_id,
                     rel="styledBy",
-                    title="Style Hints for WMTS Raster Layer (Maplibre Style Spec)",
+                    title="Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     typ="application/json",
                 )
             )
@@ -541,7 +564,7 @@ class OAROrganization(OARRecord):
         # Set common properties
         record.properties["type"] = "Organization"
         record.properties["name"] = getattr(organization, f"name_{lang}", None)
-        record.properties["acronym"] = getattr(organization, f"acronym_{lang}", None)
+        record.properties["abbreviation"] = getattr(organization, f"abbreviation_{lang}", None)
 
         return record
 
@@ -651,7 +674,7 @@ class Owner(BaseModel):
 
     id: str
     name: str
-    acronym: str
+    abbreviation: str
 
 
 class PaintConfig(BaseModel):

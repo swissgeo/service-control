@@ -76,11 +76,11 @@ class Organization(DataSourceIdModelMixin, models.Model):
     name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
     name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
 
-    acronym_de = models.CharField(_(_context, "Acronym (German)"))
-    acronym_fr = models.CharField(_(_context, "Acronym (French)"))
-    acronym_en = models.CharField(_(_context, "Acronym (English)"))
-    acronym_it = models.CharField(_(_context, "Acronym (Italian)"), null=True, blank=True)
-    acronym_rm = models.CharField(_(_context, "Acronym (Romansh)"), null=True, blank=True)
+    abbreviation_de = models.CharField(_(_context, "Abbreviation (German)"))
+    abbreviation_fr = models.CharField(_(_context, "Abbreviation (French)"))
+    abbreviation_en = models.CharField(_(_context, "Abbreviation (English)"))
+    abbreviation_it = models.CharField(_(_context, "Abbreviation (Italian)"), null=True, blank=True)
+    abbreviation_rm = models.CharField(_(_context, "Abbreviation (Romansh)"), null=True, blank=True)
 
     vp_org_admin_policy_id = models.CharField(
         _(_context, f"Verified Permissions Policy ID for {VPRole.ORG_ADMIN.value}"),
@@ -386,3 +386,83 @@ class Contact(DataSourceIdModelMixin, models.Model):
 
     def __str__(self) -> str:
         return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"
+
+
+class Attribution(DataSourceIdModelMixin, models.Model):
+    _context = "Attribution model"
+
+    class DataSource(models.TextChoices):
+        BOD_CONTACT_ORGANIZATION = (
+            "bod-contact-organization",
+            _("Organization DataSource", "BOD (contactorganization)"),
+        )
+        USER_INPUT = "user-input", _("Organization DataSource", "User Input (Admin UI/API)")
+        GEODIENSTE = "geodienste", _("Organization DataSource", "geodienste.ch")
+
+    data_source = models.CharField(
+        _(_context, "Data Source"),
+        choices=DataSource.choices,
+        default=DataSource.USER_INPUT,
+        max_length=255,
+    )
+    data_source_ids = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Original IDs"),
+        help_text=_(_context, "List of original external IDs"),
+    )
+
+    attribution_id = CustomSlugField(
+        _(_context, "External ID"), max_length=100, unique=True, db_index=True
+    )
+    created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
+    updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
+
+    abbreviation_de = models.CharField(_(_context, "Abbreviation (German)"))
+    abbreviation_fr = models.CharField(_(_context, "Abbreviation (French)"))
+    abbreviation_en = models.CharField(_(_context, "Abbreviation (English)"))
+    abbreviation_it = models.CharField(_(_context, "Abbreviation (Italian)"), null=True, blank=True)
+    abbreviation_rm = models.CharField(_(_context, "Abbreviation (Romansh)"), null=True, blank=True)
+
+    name_de = models.CharField(_(_context, "Name (German)"))
+    name_fr = models.CharField(_(_context, "Name (French)"))
+    name_en = models.CharField(_(_context, "Name (English)"))
+    name_it = models.CharField(_(_context, "Name (Italian)"), null=True, blank=True)
+    name_rm = models.CharField(_(_context, "Name (Romansh)"), null=True, blank=True)
+
+    url_de = models.URLField(
+        _(_context, "URL (German)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_fr = models.URLField(
+        _(_context, "URL (French)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_en = models.URLField(
+        _(_context, "URL (English)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_it = models.URLField(
+        _(_context, "URL (Italian)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    url_rm = models.URLField(
+        _(_context, "URL (Romansh)"),
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+
+    organization = models.ForeignKey("organization.Organization", on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return str(self.attribution_id)

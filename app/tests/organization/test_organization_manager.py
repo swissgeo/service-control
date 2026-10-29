@@ -9,9 +9,9 @@ def test_data_source_ids(client, db):
         "name_de": "name_de",
         "name_fr": "name_fr",
         "name_en": "name_en",
-        "acronym_de": "acronym_de",
-        "acronym_fr": "acronym_fr",
-        "acronym_en": "acronym_en",
+        "abbreviation_de": "abbreviation_de",
+        "abbreviation_fr": "abbreviation_fr",
+        "abbreviation_en": "abbreviation_en",
     }
     Organization(
         organization_id="a",

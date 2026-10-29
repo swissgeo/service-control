@@ -2,10 +2,11 @@
   "settings": {
     "index.query.default_field": [
       "*.properties.title^3",
+      "*.properties.shortTitle^3",
       "*.properties.description",
       "*.properties.additionalSearchText",
       "*.properties.owner.name^2",
-      "*.properties.owner.acronym^20"
+      "*.properties.owner.abbreviation^20"
     ],
     "analysis": {
       "filter": {
@@ -80,6 +81,12 @@
                 "search_analyzer": "german_search",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
+              "shortTitle": {
+                "type": "search_as_you_type",
+                "analyzer": "german_decompound",
+                "search_analyzer": "german_search",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
               "description": {
                 "type": "search_as_you_type",
                 "analyzer": "german_decompound",
@@ -101,7 +108,7 @@
                     "analyzer": "german_decompound",
                     "search_analyzer": "german_search"
                   },
-                  "acronym": {"type": "search_as_you_type"}
+                  "abbreviation": {"type": "search_as_you_type"}
                 }
               }
             }
@@ -118,6 +125,10 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
+              "shortTitle": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {
@@ -131,7 +142,7 @@
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "fr.properties.ownerId"},
                   "name": {"type": "search_as_you_type"},
-                  "acronym": {"type": "search_as_you_type"}
+                  "abbreviation": {"type": "search_as_you_type"}
                 }
               }
             }
@@ -148,6 +159,10 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
+              "shortTitle": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {
@@ -161,7 +176,7 @@
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "it.properties.ownerId"},
                   "name": {"type": "search_as_you_type"},
-                  "acronym": {"type": "search_as_you_type"}
+                  "abbreviation": {"type": "search_as_you_type"}
                 }
               }
             }
@@ -178,6 +193,10 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
+              "shortTitle": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {
@@ -191,7 +210,7 @@
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "rm.properties.ownerId"},
                   "name": {"type": "search_as_you_type"},
-                  "acronym": {"type": "search_as_you_type"}
+                  "abbreviation": {"type": "search_as_you_type"}
                 }
               }
             }
@@ -208,6 +227,10 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
+              "shortTitle": {
+                "type": "search_as_you_type",
+                "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
+              },
               "description": {"type": "search_as_you_type"},
               "additionalSearchText": {"type": "search_as_you_type"},
               "concepts": {
@@ -221,7 +244,7 @@
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "en.properties.ownerId"},
                   "name": {"type": "search_as_you_type"},
-                  "acronym": {"type": "search_as_you_type"}
+                  "abbreviation": {"type": "search_as_you_type"}
                 }
               }
             }

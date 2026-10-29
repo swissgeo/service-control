@@ -77,4 +77,4 @@ class GeopoliticalEntity(models.Model):
     )
 
     def __str__(self) -> str:
-        return str(self.geopolitical_entity_id)
+        return str(self.name_de)

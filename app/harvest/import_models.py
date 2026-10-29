@@ -55,6 +55,28 @@ class DynamoDBParsableModel(BaseModel):
         return {key: serializer.serialize(value) for key, value in item.items()}
 
 
+class AttributionImport(DynamoDBParsableModel):
+    attribution_id: str
+    name_de: str
+    name_fr: str
+    name_en: str
+    name_it: str | None
+    name_rm: str | None
+    description_de: str
+    description_fr: str
+    description_en: str
+    description_it: str | None
+    description_rm: str | None
+    url_de: str | None
+    url_fr: str | None
+    url_en: str | None
+    url_it: str | None
+    url_rm: str | None
+    created: str
+    updated: str
+    _legacy_id: int
+
+
 class OrganizationImport(DynamoDBParsableModel):
     provider_id: str = Field(serialization_alias="organization_id")
     name_de: str
@@ -62,11 +84,12 @@ class OrganizationImport(DynamoDBParsableModel):
     name_en: str
     name_it: str | None
     name_rm: str | None
-    acronym_de: str
-    acronym_fr: str
-    acronym_en: str
-    acronym_it: str | None
-    acronym_rm: str | None
+    acronym_de: str = Field(serialization_alias="abbreviation_de")
+    acronym_fr: str = Field(serialization_alias="abbreviation_fr")
+    acronym_en: str = Field(serialization_alias="abbreviation_en")
+    acronym_it: str | None = Field(serialization_alias="abbreviation_it")
+    acronym_rm: str | None = Field(serialization_alias="abbreviation_rm")
+    attributions: list[AttributionImport]
     _legacy_id: int
 
 
@@ -77,6 +100,11 @@ class DatasetImport(DynamoDBParsableModel):
     title_en: str
     title_it: str | None
     title_rm: str | None
+    title_short_de: str | None
+    title_short_fr: str | None
+    title_short_en: str | None
+    title_short_it: str | None
+    title_short_rm: str | None
     description_de: str
     description_fr: str
     description_en: str
