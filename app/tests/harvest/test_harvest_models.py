@@ -31,9 +31,9 @@ def test_organization_mapping(client, db):
         "name_de": "name_de",
         "name_fr": "name_fr",
         "name_en": "name_en",
-        "acronym_de": "acronym_de",
-        "acronym_fr": "acronym_fr",
-        "acronym_en": "acronym_en",
+        "abbreviation_de": "abbreviation_de",
+        "abbreviation_fr": "abbreviation_fr",
+        "abbreviation_en": "abbreviation_en",
     }
     Organization(organization_id="ch.a", **attributes).save()
     Organization(organization_id="ch.b", **attributes).save()
@@ -97,11 +97,15 @@ def test_dataset_mapping(db):
 @patch("organization.models.Client")
 def test_dataset_to_unit_mapping(client, db):
     names = {"name_de": "name_de", "name_fr": "name_fr", "name_en": "name_en"}
-    acronyms = {"acronym_de": "acronym_de", "acronym_fr": "acronym_fr", "acronym_en": "acronym_en"}
+    abbreviations = {
+        "abbreviation_de": "abbreviation_de",
+        "abbreviation_fr": "abbreviation_fr",
+        "abbreviation_en": "abbreviation_en",
+    }
 
-    org_a = Organization(organization_id="ch.a", **names, **acronyms)
+    org_a = Organization(organization_id="ch.a", **names, **abbreviations)
     org_a.save()
-    org_b = Organization(organization_id="ch.b", **names, **acronyms)
+    org_b = Organization(organization_id="ch.b", **names, **abbreviations)
     org_b.save()
 
     Unit(unit_id="x", organization=org_a, **names).save()
@@ -171,9 +175,9 @@ def test_dataset_to_contact_mapping(client, db):
         "name_de": "name_de",
         "name_fr": "name_fr",
         "name_en": "name_en",
-        "acronym_de": "acronym_de",
-        "acronym_fr": "acronym_fr",
-        "acronym_en": "acronym_en",
+        "abbreviation_de": "abbreviation_de",
+        "abbreviation_fr": "abbreviation_fr",
+        "abbreviation_en": "abbreviation_en",
     }
     org_a = Organization(organization_id="ch.a", **attributes)
     org_a.save()

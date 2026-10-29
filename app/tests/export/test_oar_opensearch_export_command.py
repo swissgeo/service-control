@@ -193,11 +193,11 @@ def _make_organization() -> Organization:
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     organization.save()
     return organization
@@ -211,11 +211,11 @@ def _make_aggregate_organization() -> Organization:
         name_en="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_it="Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
         name_rm="Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
-        acronym_de="KGK",
-        acronym_fr="CGC",
-        acronym_en="KGK",
-        acronym_it="CGC",
-        acronym_rm="CGC",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="KGK",
+        abbreviation_it="CGC",
+        abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
     )
     organization.save()
@@ -819,17 +819,17 @@ def test_dump_dataset_contains_localized_owner(unit, tmp_path):
     assert dataset_doc["de"]["properties"]["owner"] == {
         "id": "ch.bafu",
         "name": "Bundesamt für Umwelt",
-        "acronym": "BAFU",
+        "abbreviation": "BAFU",
     }
     assert dataset_doc["fr"]["properties"]["owner"] == {
         "id": "ch.bafu",
         "name": "Office fédéral de l'environnement",
-        "acronym": "OFEV",
+        "abbreviation": "OFEV",
     }
     assert dataset_doc["en"]["properties"]["owner"] == {
         "id": "ch.bafu",
         "name": "Federal Office for the Environment",
-        "acronym": "FOEN",
+        "abbreviation": "FOEN",
     }
 
 
@@ -1093,7 +1093,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Bundesamt für Umwelt",
-                "acronym": "BAFU",
+                "abbreviation": "BAFU",
             },
         },
         "fr": {
@@ -1104,7 +1104,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Office fédéral de l'environnement",
-                "acronym": "OFEV",
+                "abbreviation": "OFEV",
             },
         },
         "it": {
@@ -1115,7 +1115,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Ufficio federale dell'ambiente",
-                "acronym": "UFAM",
+                "abbreviation": "UFAM",
             },
         },
         "rm": {
@@ -1126,7 +1126,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Uffizi federal per l'ambient",
-                "acronym": "UFAM",
+                "abbreviation": "UFAM",
             },
         },
         "en": {
@@ -1137,7 +1137,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             "properties": {
                 "type": "Organization",
                 "name": "Federal Office for the Environment",
-                "acronym": "FOEN",
+                "abbreviation": "FOEN",
             },
         },
         "id": "ch.bafu",

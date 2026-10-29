@@ -62,7 +62,7 @@
                 "search_analyzer": "german_search",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "acronym": {
+              "abbreviation": {
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }
@@ -80,7 +80,7 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "acronym": {
+              "abbreviation": {
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }
@@ -98,7 +98,7 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "acronym": {
+              "abbreviation": {
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }
@@ -116,7 +116,7 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "acronym": {
+              "abbreviation": {
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }
@@ -134,7 +134,7 @@
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "acronym": {
+              "abbreviation": {
                 "type": "search_as_you_type",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               }

@@ -180,7 +180,9 @@ class Command(CustomBaseCommand):
 
         if update:
             self.print(f"Updating {org}")
-            for name, value in import_org:
+            for name, value in import_org.model_dump(
+                by_alias=True, exclude={"provider_id", "attributions"}
+            ).items():
                 if hasattr(org, name) and getattr(org, name) != value:
                     state = "updated"
                     setattr(org, name, value)
@@ -1044,7 +1046,7 @@ class Command(CustomBaseCommand):
         2. Process each harvested contact:
         - If a valid contact mapping exists, reuse the mapped contact.
         - Otherwise, try to find an existing contact where:
-            - the organization matches one of the provided organization names or acronyms, and
+            - the organization matches one of the provided organization names or abbreviations, and
             - the contact matches the harvested position name.
         - If no matching contact is found, create a new contact.
         3. Assign the contact to the dataset using the harvested role.
@@ -1119,8 +1121,8 @@ class Command(CustomBaseCommand):
                 )
                 if not contact:
                     organization = self.find_organization(
-                        acronym_de=item_contact.org_acronym_de,
-                        acronym_fr=item_contact.org_acronym_fr,
+                        abbreviation_de=item_contact.org_acronym_de,
+                        abbreviation_fr=item_contact.org_acronym_fr,
                         name_de=item_contact.org_name_de,
                         name_fr=item_contact.org_name_fr,
                     )
@@ -1194,21 +1196,21 @@ class Command(CustomBaseCommand):
 
     def find_organization(
         self,
-        acronym_de: str | None,
-        acronym_fr: str | None,
+        abbreviation_de: str | None,
+        abbreviation_fr: str | None,
         name_de: str | None,
         name_fr: str | None,
     ) -> Organization | None:
-        """Find an organization which best matches the given acronyms or name.
+        """Find an organization which best matches the given abbreviations or name.
 
         Returns None if none found.
         """
 
         query = Q()
-        if acronym_de:
-            query |= Q(acronym_de=acronym_de)
-        if acronym_fr:
-            query |= Q(acronym_fr=acronym_fr)
+        if abbreviation_de:
+            query |= Q(abbreviation_de=abbreviation_de)
+        if abbreviation_fr:
+            query |= Q(abbreviation_fr=abbreviation_fr)
         if name_de:
             query |= Q(name_de__icontains=name_de)
         if name_fr:

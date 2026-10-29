@@ -132,11 +132,11 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert org_out.name_en == "Federal Office for the Environment"
     assert org_out.name_it == "Ufficio federale dell'ambiente"
     assert org_out.name_rm == "Uffizi federal per l'ambient"
-    assert org_out.acronym_de == "BAFU"
-    assert org_out.acronym_fr == "OFEV"
-    assert org_out.acronym_en == "FOEN"
-    assert org_out.acronym_it == "UFAM"
-    assert org_out.acronym_rm == "UFAM"
+    assert org_out.abbreviation_de == "BAFU"
+    assert org_out.abbreviation_fr == "OFEV"
+    assert org_out.abbreviation_en == "FOEN"
+    assert org_out.abbreviation_it == "UFAM"
+    assert org_out.abbreviation_rm == "UFAM"
     assert org_out.attribution_set.count() == 1
     attribution = org_out.attribution_set.first()
     assert attribution.attribution_id == "ch.bafu.1"
@@ -215,11 +215,11 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
     assert org_out.name_en == "Federal Office for the Environment"
     assert org_out.name_it == "Ufficio federale dell'ambiente"
     assert org_out.name_rm == "Uffizi federal per l'ambient"
-    assert org_out.acronym_de == "BAFU"
-    assert org_out.acronym_fr == "OFEV"
-    assert org_out.acronym_en == "FOEN"
-    assert org_out.acronym_it == "UFAM"
-    assert org_out.acronym_rm == "UFAM"
+    assert org_out.abbreviation_de == "BAFU"
+    assert org_out.abbreviation_fr == "OFEV"
+    assert org_out.abbreviation_en == "FOEN"
+    assert org_out.abbreviation_it == "UFAM"
+    assert org_out.abbreviation_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity is None
@@ -234,11 +234,11 @@ def test_command_updates_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
     )
@@ -326,11 +326,11 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.name_en == "Federal Office for the Environment"
     assert org_out.name_it == "Ufficio federale dell'ambiente"
     assert org_out.name_rm == "Uffizi federal per l'ambient"
-    assert org_out.acronym_de == "BAFU"
-    assert org_out.acronym_fr == "OFEV"
-    assert org_out.acronym_en == "FOEN"
-    assert org_out.acronym_it == "UFAM"
-    assert org_out.acronym_rm == "UFAM"
+    assert org_out.abbreviation_de == "BAFU"
+    assert org_out.abbreviation_fr == "OFEV"
+    assert org_out.abbreviation_en == "FOEN"
+    assert org_out.abbreviation_it == "UFAM"
+    assert org_out.abbreviation_rm == "UFAM"
     assert org_out.attribution_set.count() == 1
     attribution = org_out.attribution_set.first()
     assert attribution.attribution_id == "ch.bafu.1"
@@ -363,11 +363,11 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     )
@@ -399,11 +399,11 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     )
@@ -465,11 +465,11 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     assert org_1.name_en == "Federal Office for the Environment"
     assert org_1.name_it == "Ufficio federale dell'ambiente"
     assert org_1.name_rm == "Uffizi federal per l'ambient"
-    assert org_1.acronym_de == "BAFU"
-    assert org_1.acronym_fr == "OFEV"
-    assert org_1.acronym_en == "FOEN"
-    assert org_1.acronym_it == "UFAM"
-    assert org_1.acronym_rm == "UFAM"
+    assert org_1.abbreviation_de == "BAFU"
+    assert org_1.abbreviation_fr == "OFEV"
+    assert org_1.abbreviation_en == "FOEN"
+    assert org_1.abbreviation_it == "UFAM"
+    assert org_1.abbreviation_rm == "UFAM"
     assert org_1.attribution_set.count() == 1
     attribution = org_1.attribution_set.first()
     assert attribution.attribution_id == "ch.bafu.1"
@@ -504,11 +504,11 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=[],
     )
@@ -610,11 +610,11 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     assert org.name_en == "Federal Office for the Environment"
     assert org.name_it == "Ufficio federale dell'ambiente"
     assert org.name_rm == "Uffizi federal per l'ambient"
-    assert org.acronym_de == "BAFU"
-    assert org.acronym_fr == "OFEV"
-    assert org.acronym_en == "FOEN"
-    assert org.acronym_it == "UFAM"
-    assert org.acronym_rm == "UFAM"
+    assert org.abbreviation_de == "BAFU"
+    assert org.abbreviation_fr == "OFEV"
+    assert org.abbreviation_en == "FOEN"
+    assert org.abbreviation_it == "UFAM"
+    assert org.abbreviation_rm == "UFAM"
     assert org.attribution_set.count() == 1
     attribution = org.attribution_set.first()
     assert attribution.attribution_id == "ch.bafu"
@@ -646,11 +646,11 @@ def test_command_cleans_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.unused"],
     ).save()
@@ -661,11 +661,11 @@ def test_command_cleans_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
@@ -676,11 +676,11 @@ def test_command_cleans_organizations(client, dynamodb, db):
         name_en="x",
         name_it="x",
         name_rm="x",
-        acronym_de="x",
-        acronym_fr="x",
-        acronym_en="x",
-        acronym_it="x",
-        acronym_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
@@ -1226,11 +1226,11 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 
@@ -1308,11 +1308,11 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 
@@ -1950,11 +1950,11 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 
@@ -2150,11 +2150,11 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
         name_en="Federal Office for the Environment",
         name_it="Ufficio federale dell'ambiente",
         name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        abbreviation_it="UFAM",
+        abbreviation_rm="UFAM",
     )
     org.save()
 

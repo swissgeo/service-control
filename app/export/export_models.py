@@ -256,7 +256,8 @@ class OARDataset(OARRecord):
             dataset.properties["owner"] = Owner(
                 id=organization.organization_id,
                 name=getattr(organization, f"name_{lang}", None) or organization.name_de,
-                acronym=getattr(organization, f"acronym_{lang}", None) or organization.acronym_de,
+                abbreviation=getattr(organization, f"abbreviation_{lang}", None)
+                or organization.abbreviation_de,
             )
         if ds.attribution:
             # Note that the structure of the attribution property is not defined in the OGC API
@@ -563,7 +564,7 @@ class OAROrganization(OARRecord):
         # Set common properties
         record.properties["type"] = "Organization"
         record.properties["name"] = getattr(organization, f"name_{lang}", None)
-        record.properties["acronym"] = getattr(organization, f"acronym_{lang}", None)
+        record.properties["abbreviation"] = getattr(organization, f"abbreviation_{lang}", None)
 
         return record
 
@@ -673,7 +674,7 @@ class Owner(BaseModel):
 
     id: str
     name: str
-    acronym: str
+    abbreviation: str
 
 
 class PaintConfig(BaseModel):

@@ -46,11 +46,11 @@ def create_organization(
         name_en=organization_in.name_translations.en,
         name_it=organization_in.name_translations.it,
         name_rm=organization_in.name_translations.rm,
-        acronym_de=organization_in.acronym_translations.de,
-        acronym_fr=organization_in.acronym_translations.fr,
-        acronym_en=organization_in.acronym_translations.en,
-        acronym_it=organization_in.acronym_translations.it,
-        acronym_rm=organization_in.acronym_translations.rm,
+        abbreviation_de=organization_in.abbreviation_translations.de,
+        abbreviation_fr=organization_in.abbreviation_translations.fr,
+        abbreviation_en=organization_in.abbreviation_translations.en,
+        abbreviation_it=organization_in.abbreviation_translations.it,
+        abbreviation_rm=organization_in.abbreviation_translations.rm,
     )
 
 
@@ -77,11 +77,11 @@ def update_organization(
     org.name_en = organization_in.name_translations.en
     org.name_it = organization_in.name_translations.it
     org.name_rm = organization_in.name_translations.rm
-    org.acronym_de = organization_in.acronym_translations.de
-    org.acronym_fr = organization_in.acronym_translations.fr
-    org.acronym_en = organization_in.acronym_translations.en
-    org.acronym_it = organization_in.acronym_translations.it
-    org.acronym_rm = organization_in.acronym_translations.rm
+    org.abbreviation_de = organization_in.abbreviation_translations.de
+    org.abbreviation_fr = organization_in.abbreviation_translations.fr
+    org.abbreviation_en = organization_in.abbreviation_translations.en
+    org.abbreviation_it = organization_in.abbreviation_translations.it
+    org.abbreviation_rm = organization_in.abbreviation_translations.rm
     org.save()
 
     return org
