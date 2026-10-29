@@ -503,7 +503,11 @@ class Command(CustomBaseCommand):
                 ds.save()
 
                 # Link unit
-                unit, _ = unit_mappings.match(dataset_id)
+                unit, _ = (
+                    unit_mappings[DatasetToUnit.Role.OWNER].match(dataset_id)
+                    if DatasetToUnit.Role.OWNER in unit_mappings
+                    else (None, None)
+                )
                 if not unit:
                     if not import_ds.provider:
                         self.print_warning(f"Dataset {dataset_id} has no provider")

@@ -2215,7 +2215,16 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
                         "keywords": "Keywords DE",
-                    }
+                    },
+                    {
+                        "canton": "Broker",
+                        "broker": "BFE",
+                        "base_topic": "thermische_netze",
+                        "topic_title": "Title DE",
+                        "abstract": "Abstract DE",
+                        "meta_data": meta_data,
+                        "keywords": "Keyword 1 DE, Keyword 2 DE",
+                    },
                 ]
             },
             "fr": {
@@ -2229,7 +2238,16 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
                         "keywords": "Keywords FR",
-                    }
+                    },
+                    {
+                        "canton": "Broker",
+                        "broker": "BFE",
+                        "base_topic": "thermische_netze",
+                        "topic_title": "Title FR",
+                        "abstract": "Abstract FR",
+                        "meta_data": meta_data,
+                        "keywords": "",
+                    },
                 ]
             },
             "it": {
@@ -2243,33 +2261,65 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
                         "meta_data": meta_data,
                         "website": "https://geodienste.ch/services/av",
                         "keywords": "Keywords IT",
-                    }
+                    },
+                    {
+                        "canton": "Broker",
+                        "broker": "BFE",
+                        "base_topic": "thermische_netze",
+                        "topic_title": "Title IT",
+                        "abstract": "Abstract IT",
+                        "meta_data": meta_data,
+                        "keywords": None,
+                    },
                 ]
             },
         }
     )
 
     DatasetToUnitMapping(
-        dataset_id_prefix="ch.kgk.av", organization_id="ch.kgk-cgc", unit_id="aggregate"
+        dataset_id_prefix="ch.kgk.av",
+        organization_id="ch.kgk-cgc",
+        unit_id="aggregate",
+        role=DatasetToUnit.Role.OWNER,
     ).save()
     DatasetToUnitMapping(
-        dataset_id_prefix="ch.geodienste-lu.av", organization_id="ch.rawi", unit_id="part"
+        dataset_id_prefix="ch.geodienste-lu.av",
+        organization_id="ch.rawi",
+        unit_id="part",
+        role=DatasetToUnit.Role.MAINTAINER,
+    ).save()
+
+    DatasetToUnitMapping(
+        dataset_id_prefix="ch.bfe.thermische_netze",
+        organization_id="ch.kgk-cgc",
+        unit_id="aggregate",
+        role=DatasetToUnit.Role.OWNER,
+    ).save()
+    DatasetToUnitMapping(
+        dataset_id_prefix="ch.bfe.thermische_netze",
+        organization_id="ch.rawi",
+        unit_id="part",
+        role=DatasetToUnit.Role.MAINTAINER,
     ).save()
 
     out = StringIO()
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Unit mapping found for dataset_id ch.kgk.av: aggregate" in out
-    assert "Unit mapping found for dataset_id ch.geodienste-lu.av: part" in out
+    assert "dataset_id ch.bfe.thermische_netze and role owner: aggregate of ch.kgk-cgc" in out
+    assert "dataset_id ch.geodienste-lu.av and role maintainer: part of ch.rawi" in out
+    assert "dataset_id ch.bfe.thermische_netze and role owner: aggregate of ch.kgk-cgc" in out
+    assert "dataset_id ch.bfe.thermische_netze and role maintainer: part of ch.rawi" in out
 
-    dataset_unit = unit_aggregate.dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.OWNER
-    assert dataset_unit.dataset.dataset_id == "ch.kgk.av"
+    assert {(du.role, du.dataset.dataset_id) for du in unit_aggregate.dataset_units.all()} == {
+        ("owner", "ch.bfe.thermische_netze"),
+        ("owner", "ch.kgk.av"),
+    }
 
-    dataset_unit = unit_part.dataset_units.get()
-    assert dataset_unit.role == DatasetToUnit.Role.MAINTAINER
-    assert dataset_unit.dataset.dataset_id == "ch.geodienste-lu.av"
+    assert {(du.role, du.dataset.dataset_id) for du in unit_part.dataset_units.all()} == {
+        ("maintainer", "ch.geodienste-lu.av"),
+        ("maintainer", "ch.bfe.thermische_netze"),
+    }
 
 
 # --------------------------------------------------------------------------------------------------

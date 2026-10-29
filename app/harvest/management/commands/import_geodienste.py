@@ -782,16 +782,6 @@ class Command(CustomBaseCommand):
                     dataset_unit.delete()
                     metrics["dataset_units.removed"] += 1
 
-                created, removed = self.import_dataset_unit(
-                    aggregate,
-                    aggregate_provider_id,
-                    DatasetToUnit.Role.OWNER,
-                    unit_mappings,
-                    organization_mappings,
-                )
-                metrics["dataset_units.created"] += created
-                metrics["dataset_units.removed"] += removed
-
                 # Unit: Owner of Aggregate
                 created, removed = self.import_dataset_unit(
                     aggregate,
@@ -931,7 +921,7 @@ class Command(CustomBaseCommand):
         dataset: Dataset,
         provider_id: str,
         role: DatasetToUnit.Role,
-        unit_mappings: PrefixLookupTable,
+        unit_mappings: dict[str, PrefixLookupTable[Unit, DatasetToUnitMapping]],
         organization_mappings: PrefixLookupTable,
     ) -> tuple[int, int]:
         """Create dataset unit with the given values if not yet existing.
@@ -941,9 +931,14 @@ class Command(CustomBaseCommand):
 
         organization_id = self.organization_id(provider_id)
         dataset_id = dataset.dataset_id
-        unit, _ = unit_mappings.match(dataset_id)
+        unit = None
+        if role in unit_mappings:
+            unit, _ = unit_mappings[role].match(dataset_id)
         if unit:
-            self.print(f"Unit mapping found for dataset_id {dataset_id}: {unit}")
+            self.print(
+                f"Unit mapping found for dataset_id {dataset_id} and role {role}: "
+                f"{unit} of {unit.organization}"
+            )
         else:
             organization, _ = organization_mappings.match(provider_id)
             if organization:
