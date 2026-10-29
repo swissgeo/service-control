@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("dataset", "0020_rename_title_short_de_dataset_title_de_and_more"),
+        ("dataset", "0021_rename_title_short_de_dataset_title_de_and_more"),
     ]
 
     operations = [

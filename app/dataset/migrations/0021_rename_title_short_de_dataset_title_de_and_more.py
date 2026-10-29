@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("dataset", "0019_dataset_status"),
+        ("dataset", "0020_dataset_attribution"),
     ]
 
     operations = [
