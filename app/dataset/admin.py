@@ -1,9 +1,10 @@
 from typing import Any
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import QuerySet
 from django.http.request import HttpRequest
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import format_html_join
 
 from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
@@ -57,6 +58,26 @@ class DatasetAdmin(admin.ModelAdmin):
         DatasetToUnitInline,
         DatasetToContactInline,
     )
+    actions = ("set_status_draft", "set_status_published")
+
+    def _set_status(
+        self, request: HttpRequest, queryset: QuerySet[Dataset], status: Dataset.Status
+    ) -> None:
+        # Use update() for efficiency; auto_now is not applied by update(), so set it explicitly
+        updated = queryset.exclude(status=status).update(status=status, updated_at=timezone.now())
+        self.message_user(
+            request,
+            f"{updated} dataset(s) set to status '{status.label}'.",
+            messages.SUCCESS,
+        )
+
+    @admin.action(description="Transition selected datasets to Draft")
+    def set_status_draft(self, request: HttpRequest, queryset: QuerySet[Dataset]) -> None:
+        self._set_status(request, queryset, Dataset.Status.DRAFT)
+
+    @admin.action(description="Transition selected datasets to Published")
+    def set_status_published(self, request: HttpRequest, queryset: QuerySet[Dataset]) -> None:
+        self._set_status(request, queryset, Dataset.Status.PUBLISHED)
 
     @admin.display(description="Reverse Dataset Relations")
     def dataset_list(self, obj: Dataset) -> str:
