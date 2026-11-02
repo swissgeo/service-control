@@ -2,12 +2,12 @@ AGGREGATE_PROVIDER_ID = "KGK"
 AGGREGATE_PROVIDER_ORGANIZATION = {
     "name_de": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
     "name_fr": "Conférence des services cantonaux de la Géoinformation et du Cadastre",
-    "name_en": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+    "name_en": "Conference of Cantonal Geoinformation and Surveying Offices",
     "name_it": "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
     "name_rm": "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
     "abbreviation_de": "KGK",
     "abbreviation_fr": "CGC",
-    "abbreviation_en": "KGK",
+    "abbreviation_en": "CGC",
     "abbreviation_it": "CGC",
     "abbreviation_rm": "CGC",
 }
@@ -26,9 +26,9 @@ AGGREGATE_PROVIDER_CONTACT = {
     "address_country": "CH",
     "url_de": "https://kgk-cgc.ch/",
     "url_fr": "https://kgk-cgc.ch/fr",
-    "url_en": "",
+    "url_en": "https://kgk-cgc.ch/",
     "url_it": "https://kgk-cgc.ch/it",
-    "url_rm": "",
+    "url_rm": "https://kgk-cgc.ch/",
     "legacy_contact": (
         "Geschäftsstelle KGK-CGC\n"
         "Haus der Kantone\n"
@@ -37,6 +37,23 @@ AGGREGATE_PROVIDER_CONTACT = {
         "CH-3001 Bern\n"
         "support@geodienste.kgk-cgc.ch\n"
     ),
+}
+AGGREGATE_PROVIDER_ATTRIBUTION = {
+    "name_de": "Konferenz der kantonalen Geoinformations- und Katasterstellen",
+    "name_fr": "Conférence des services cantonaux de la Géoinformation et du Cadastre",
+    "name_en": "Conference of Cantonal Geoinformation and Surveying Offices",
+    "name_it": "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto",
+    "name_rm": "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster",
+    "abbreviation_de": "KGK",
+    "abbreviation_fr": "CGC",
+    "abbreviation_en": "CGC",
+    "abbreviation_it": "CGC",
+    "abbreviation_rm": "CGC",
+    "url_de": "https://geodienste.ch/terms-of-use?locale=de",
+    "url_fr": "https://geodienste.ch/terms-of-use?locale=fr",
+    "url_en": "https://geodienste.ch/terms-of-use?locale=de",
+    "url_it": "https://geodienste.ch/terms-of-use?locale=it",
+    "url_rm": "https://geodienste.ch/terms-of-use?locale=de",
 }
 
 CANTONAL_PROVIDER_ORGANIZATIONS = {
