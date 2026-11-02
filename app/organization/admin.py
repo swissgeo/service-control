@@ -157,6 +157,7 @@ class AttributionAdmin(admin.ModelAdmin):
     """Admin View for Organization Attribution"""
 
     list_display = ("attribution_id", "abbreviation_en", "name_en", "number_of_datasets")
+    list_filter = ("data_source", "organization")
     readonly_fields = ("created", "updated", "dataset_list")
     search_fields = (
         "attribution_id",
