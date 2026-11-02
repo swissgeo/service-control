@@ -1,8 +1,11 @@
 from django.conf import settings
+from django.contrib.admin.sites import AdminSite
+from django.test import RequestFactory
 from django.urls import reverse
 
 import pytest
 
+from dataset.admin import DatasetAdmin
 from dataset.models import Dataset
 
 ADMIN_HEADERS = {
@@ -78,3 +81,122 @@ def test_dataset_admin_status_action_skips_datasets_already_in_status(client, db
     assert draft.status == Dataset.Status.DRAFT
     assert draft.updated_at == draft_updated_at
     assert published.status == Dataset.Status.DRAFT
+
+
+# Read-only fields tests
+
+
+@pytest.fixture(name="dataset_admin")
+def fixture_dataset_admin():
+    return DatasetAdmin(Dataset, AdminSite())
+
+
+@pytest.fixture(name="admin_request")
+def fixture_admin_request():
+    return RequestFactory().get("/admin/")
+
+
+def make_dataset(data_source: Dataset.DataSource) -> Dataset:
+    return Dataset(
+        dataset_id="dataset.id",
+        data_source=data_source,
+        title_de="Title (DE)",
+        title_fr="Title (FR)",
+        title_en="Title (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_en="Description (EN)",
+    )
+
+
+def test_get_readonly_fields_add_view(dataset_admin, admin_request):
+    """Without an existing object (add view) only the static readonly fields apply."""
+    assert dataset_admin.get_readonly_fields(admin_request, None) == dataset_admin.readonly_fields
+
+
+def test_get_readonly_fields_user_input(dataset_admin, admin_request):
+    """User-input datasets only have the static readonly fields plus the dataset_id."""
+    obj = make_dataset(Dataset.DataSource.USER_INPUT)
+    readonly = dataset_admin.get_readonly_fields(admin_request, obj)
+    assert readonly == ("dataset_id", *dataset_admin.readonly_fields)
+    # Manually editable fields must stay editable
+    assert "status" not in readonly
+    assert "title_de" not in readonly
+    assert "concepts" not in readonly
+
+
+@pytest.mark.parametrize(
+    ("data_source", "expected_fields"),
+    [
+        (
+            Dataset.DataSource.BOD_DATASET,
+            [
+                "data_source",
+                "data_source_ids",
+                "geocat_id",
+                "attribution",
+                "concepts",
+                "title_de",
+                "title_fr",
+                "title_short_de",
+                "title_short_fr",
+                "description_de",
+                "description_fr",
+            ],
+        ),
+        (
+            Dataset.DataSource.GEODIENSTE,
+            [
+                "data_source",
+                "data_source_ids",
+                "geocat_id",
+                "attribution",
+                "concepts",
+                "title_de",
+                "title_fr",
+                "description_de",
+                "description_fr",
+                "additional_search_text_de",
+                "additional_search_text_fr",
+                "legacy_contacts",
+                "legacy_part_info_url_de",
+                "legacy_part_info_url_fr",
+            ],
+        ),
+    ],
+)
+def test_get_readonly_fields_harvested(dataset_admin, admin_request, data_source, expected_fields):
+    """Harvested datasets have all fields written by the importers read-only."""
+    obj = make_dataset(data_source)
+    readonly = dataset_admin.get_readonly_fields(admin_request, obj)
+    assert "dataset_id" in readonly
+    for field in expected_fields:
+        assert field in readonly
+    # Not imported by the harvesters, must stay editable
+    assert "status" not in readonly
+
+
+def test_get_readonly_fields_harvested_excludes_non_imported(dataset_admin, admin_request):
+    """Fields that are not written by the importers must not become read-only."""
+    bod = make_dataset(Dataset.DataSource.BOD_DATASET)
+    geodienste = make_dataset(Dataset.DataSource.GEODIENSTE)
+    readonly_bod = dataset_admin.get_readonly_fields(admin_request, bod)
+    readonly_geodienste = dataset_admin.get_readonly_fields(admin_request, geodienste)
+    # geodienste.ch-only fields are not read-only for BOD datasets
+    for field in (
+        "additional_search_text_de",
+        "legacy_contacts",
+        "legacy_part_info_url_de",
+    ):
+        assert field not in readonly_bod
+    # BOD-only fields are not read-only for geodienste.ch datasets
+    for field in (
+        "title_short_de",
+        "title_short_fr",
+        "title_rm",
+        "description_rm",
+        "additional_search_text_en",
+        "additional_search_text_rm",
+        "legacy_part_info_url_rm",
+    ):
+        assert field not in readonly_geodienste
