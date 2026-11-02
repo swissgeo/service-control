@@ -26,8 +26,15 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     list_display = ("organization_id", "abbreviation_en", "name_en", "data_source")
     list_filter = ("data_source",)
-    readonly_fields = ("created", "updated")
-    search_fields = ("organization_id", "abbreviation_en", "name_en", "abbreviation_de", "name_de")
+    readonly_fields = ("sgid", "created", "updated")
+    search_fields = (
+        "sgid",
+        "organization_id",
+        "abbreviation_en",
+        "name_en",
+        "abbreviation_de",
+        "name_de",
+    )
     inlines = (AttributionInline,)
 
     def get_readonly_fields(
@@ -37,7 +44,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     ) -> list[str] | tuple[Any, ...]:
         if obj:
             # Organization id cannot be updated
-            return (*self.readonly_fields, "organization_id")
+            return (*self.readonly_fields, "sgid", "organization_id")
         return self.readonly_fields
 
     def delete_queryset(

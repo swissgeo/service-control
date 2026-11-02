@@ -12,6 +12,7 @@ from dataset.models import Dataset
 from distribution.models import Distribution, ExternalStacDistribution
 from harvest.models import DatasetMapping
 from utils.command import CustomBaseCommand
+from utils.identifier import distribution_sgid_from_dataset_sgid, normalize
 
 env = environ.Env()
 
@@ -77,6 +78,7 @@ class Command(CustomBaseCommand):
             return
 
         Dataset.objects.create(
+            sgid="dat_{}".format(normalize(self.options["orphanage_dataset"])),
             dataset_id=self.options["orphanage_dataset"],
             title_de="#Missing",
             title_fr="#Missing",
@@ -199,6 +201,7 @@ class Command(CustomBaseCommand):
 
                 # create new distribution
                 ExternalStacDistribution.objects.create(
+                    sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
                     distribution_id=f"{collection_id}:stac",
                     dataset=dataset,
                     title_de="STAC Download Collection",

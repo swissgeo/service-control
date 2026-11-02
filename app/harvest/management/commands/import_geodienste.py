@@ -37,6 +37,11 @@ from organization.models import Attribution, Contact, Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
+from utils.identifier import (
+    dataset_sgid_from_dataset_id,
+    distribution_sgid_from_dataset_sgid,
+    organization_sgid_from_abbreviation,
+)
 
 # Note: The services API only supports German, French and Italian - no English. Also two kind of
 #       language codes are used: two-letter ISO 639-1 for API parameters and three-letter ISO 639-3
@@ -377,7 +382,11 @@ class Command(CustomBaseCommand):
                 "Federal geopolitical entity is None! Import geopolitical entities first"
             )
         organization, created, updated = self.import_organization(
-            provider_id, AGGREGATE_PROVIDER_ORGANIZATION, mappings, geopolitical_entity_ch
+            organization_sgid_from_abbreviation(AGGREGATE_PROVIDER_ID),
+            provider_id,
+            AGGREGATE_PROVIDER_ORGANIZATION,
+            mappings,
+            geopolitical_entity_ch,
         )
         metrics["organizations.created"] += created
         metrics["organizations.updated"] += updated
@@ -393,7 +402,11 @@ class Command(CustomBaseCommand):
         for provider_id, attributes in CANTONAL_PROVIDER_ORGANIZATIONS.items():
             geopolitical_entity = geopolitical_entities.get(provider_id)
             _, created, updated = self.import_organization(
-                provider_id, attributes, mappings, geopolitical_entity
+                organization_sgid_from_abbreviation(provider_id, cantonal_org=True),
+                provider_id,
+                attributes,
+                mappings,
+                geopolitical_entity,
             )
             metrics["organizations.created"] += created
             metrics["organizations.updated"] += updated
@@ -416,7 +429,12 @@ class Command(CustomBaseCommand):
                 "abbreviation_it": provider_id,
                 "abbreviation_rm": provider_id,
             }
-            _, created, updated = self.import_organization(provider_id, attributes, mappings)
+            _, created, updated = self.import_organization(
+                organization_sgid_from_abbreviation(provider_id),
+                provider_id,
+                attributes,
+                mappings,
+            )
             metrics["organizations.created"] += created
             metrics["organizations.updated"] += updated
             processed.add(provider_id)
@@ -430,6 +448,7 @@ class Command(CustomBaseCommand):
 
     def import_organization(
         self,
+        sgid: str,
         provider_id: str,
         attributes: dict,
         mappings: PrefixLookupTable,
@@ -464,6 +483,7 @@ class Command(CustomBaseCommand):
                     " yet, creating a new one"
                 )
                 org = Organization(
+                    sgid=sgid,
                     organization_id=organization_id,
                     data_source=Organization.DataSource.GEODIENSTE,
                     data_source_ids=[provider_id],
@@ -972,6 +992,7 @@ class Command(CustomBaseCommand):
                     f"Dataset with dataset_id {dataset_id} does not exist yet, creating a new one"
                 )
                 dataset = Dataset(
+                    sgid=dataset_sgid_from_dataset_id(dataset_id, Dataset.DataSource.GEODIENSTE),
                     dataset_id=dataset_id,
                     data_source_ids=[data_source_id],
                     data_source=Dataset.DataSource.GEODIENSTE,
@@ -1411,6 +1432,7 @@ class Command(CustomBaseCommand):
             capabilities_url, layer_names, dataset
         )
         distribution, created, updated = self.import_wms_distribution(
+            distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id,
             data_source_id=base_topic,
             dataset=dataset,
@@ -1444,6 +1466,7 @@ class Command(CustomBaseCommand):
         ds_updated += updated
 
         _, created, updated = self.import_wms_distribution(
+            distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", "-availability:wms"),
             data_source_id=base_topic,
             dataset=dataset,
@@ -1468,6 +1491,7 @@ class Command(CustomBaseCommand):
 
         # STAC distribution
         created, updated = self.import_stac_distribution(
+            distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", ":stac"),
             data_source_id=base_topic,
             wms_url=capabilities_url,
@@ -1523,7 +1547,7 @@ class Command(CustomBaseCommand):
         return dataservice, 0, 0
 
     def import_wms_distribution(
-        self, distribution_id: str, data_source_id: str, **kwargs
+        self, distribution_sgid: str, distribution_id: str, data_source_id: str, **kwargs
     ) -> tuple[ExternalWMSDistribution, int, int]:
         """Ensures that the external WMS distribution with the given ID exists and that it has the
         given attributes.
@@ -1542,6 +1566,7 @@ class Command(CustomBaseCommand):
                 "creating a new one"
             )
             distribution = ExternalWMSDistribution(
+                sgid=distribution_sgid,
                 distribution_id=distribution_id,
                 data_source=Distribution.DataSource.GEODIENSTE,
                 data_source_ids=[data_source_id],
@@ -1638,7 +1663,12 @@ class Command(CustomBaseCommand):
         return re.sub(r"_\d/", "/", result)
 
     def import_stac_distribution(
-        self, distribution_id: str, data_source_id: str, wms_url: str, **kwargs
+        self,
+        distribution_sgid: str,
+        distribution_id: str,
+        data_source_id: str,
+        wms_url: str,
+        **kwargs,
     ) -> tuple[int, int]:
         """Ensures that the external STAC dataservice and distribution with the given ID exists and
         that it has the given attributes.
@@ -1673,6 +1703,7 @@ class Command(CustomBaseCommand):
                 "creating a new one"
             )
             distribution = ExternalStacDistribution(
+                sgid=distribution_sgid,
                 distribution_id=distribution_id,
                 data_source=Distribution.DataSource.GEODIENSTE,
                 data_source_ids=[data_source_id],

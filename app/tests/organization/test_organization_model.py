@@ -19,6 +19,7 @@ def test_object_stored_as_expected_for_valid_input(vp_client, client, db):
         "mock-contributor-policy-id"
     )
     organization_in = {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
@@ -74,6 +75,7 @@ def test_object_created_in_db_with_optional_fields_null(vp_client, client, db):
         "mock-contributor-policy-id"
     )
     organization_in = {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
@@ -133,6 +135,7 @@ def test_form_valid_for_blank_optional_field(db):
             fields = "__all__"  # noqa: DJ007
 
     data = {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "data_source": Organization.DataSource.USER_INPUT,
         "name_de": "Bundesamt für Umwelt",
@@ -154,6 +157,7 @@ def test_form_invalid_for_blank_mandatory_field(db):
             fields = "__all__"  # noqa: DJ007
 
     data = {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
@@ -176,6 +180,7 @@ def test_raises_exception_for_existing_slug(vp_client, client, db):
         "mock-contributor-policy-id"
     )
     Organization.objects.create(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
@@ -209,6 +214,7 @@ def test_save_updates_records(vp_client, client, db):
         "mock-contributor-policy-id"
     )
     model_fields = {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für",
         "name_fr": "Office fédéral de l'environnement",
@@ -256,6 +262,7 @@ def test_delete_deletes_records(vp_client, client, db):
         "mock-contributor-policy-id"
     )
     model_fields = {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für",
         "name_fr": "Office fédéral de l'environnement",
@@ -331,3 +338,47 @@ def test_add_data_source_id(organization):
     organization.add_data_source_id("a")
 
     assert organization.data_source_ids == ["a", "b"]
+
+
+@patch("organization.models.Client")
+@pytest.mark.parametrize(
+    ("sgid", "valid"),
+    [
+        ("org_a", True),
+        ("org_bafu", True),
+        ("org_2024-census", True),
+        ("org_", False),  # empty body
+        ("dst_foo", False),  # other prefix
+        ("org_Foo", False),  # uppercase
+        ("org_foo_bar", False),  # underscore in body
+        ("org_foo--bar", False),  # double hyphen
+        ("org_foo-", False),  # trailing hyphen
+        ("org_foo\n", False),  # trailing newline
+        ("ch.bafu", False),  # BGDI organization ID
+    ],
+)
+def test_organiaztion_sgid(client, db, sgid, valid):
+    if valid:
+        Organization(
+            sgid=sgid,
+            organization_id="ch.bafu",
+            name_de="Bundesamt für Umwelt",
+            name_fr="Office fédéral de l'environnement",
+            name_en="Federal Office for the Environment",
+            abbreviation_de="BAFU",
+            abbreviation_fr="OFEV",
+            abbreviation_en="FOEN",
+        ).save()
+        assert Organization.objects.filter(sgid=sgid).exists()
+    else:
+        with pytest.raises(ValidationError):
+            Organization(
+                sgid=sgid,
+                organization_id="ch.bafu",
+                name_de="Bundesamt für Umwelt",
+                name_fr="Office fédéral de l'environnement",
+                name_en="Federal Office for the Environment",
+                abbreviation_de="BAFU",
+                abbreviation_fr="OFEV",
+                abbreviation_en="FOEN",
+            ).save()

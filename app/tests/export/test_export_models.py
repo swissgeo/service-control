@@ -127,6 +127,7 @@ def test_from_legacy_returns_none_without_organization():
 
 def test_from_dataset_exports_all_roles(db):
     dataset = Dataset(
+        sgid="dat_test",
         dataset_id="ch.swisstopo.test",
         title_de="Test",
         title_fr="Test",

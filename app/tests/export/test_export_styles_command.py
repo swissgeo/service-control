@@ -32,6 +32,7 @@ def extract_delete_objects(session):
 @patch("export.management.commands.export_styles.Session")
 def test_command_exports_wms_styles(session, db):
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
         title_fr="Liste rouge mousses",
@@ -43,6 +44,7 @@ def test_command_exports_wms_styles(session, db):
     dataset.save()
 
     ExternalWMSDistribution(
+        sgid="dst_moose-123",
         distribution_id="ch.bafu.moose:wms",
         dataset=dataset,
         opacity=0.5,
@@ -78,6 +80,7 @@ def test_command_exports_wms_styles(session, db):
 @patch("export.management.commands.export_styles.Session")
 def test_command_exports_wmts_styles(session, db):
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
         title_fr="Liste rouge mousses",
@@ -89,6 +92,7 @@ def test_command_exports_wmts_styles(session, db):
     dataset.save()
 
     ExternalWMTSDistribution(
+        sgid="dst_moose-123",
         distribution_id="ch.bafu.moose:wmts",
         dataset=dataset,
         opacity=0.5,
@@ -131,6 +135,7 @@ def test_command_exports_geojson_styles(session, db):
         style = json.load(file)
 
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
         title_fr="Liste rouge mousses",
@@ -142,6 +147,7 @@ def test_command_exports_geojson_styles(session, db):
     dataset.save()
 
     ExternalGeoJSONDistribution(
+        sgid="dst_moose-123",
         distribution_id="ch.bafu.moose:geojson",
         dataset=dataset,
         style_url="/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json",
@@ -167,6 +173,7 @@ def test_command_exports_geojson_styles(session, db):
 @patch("export.management.commands.export_styles.Session")
 def test_command_exports_styles_dry(session, db):
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
         title_fr="Liste rouge mousses",
@@ -178,6 +185,7 @@ def test_command_exports_styles_dry(session, db):
     dataset.save()
 
     ExternalWMSDistribution(
+        sgid="dst_moose-123",
         distribution_id="ch.bafu.moose:wms",
         dataset=dataset,
         opacity=0.5,
@@ -198,6 +206,7 @@ def test_command_exports_styles_dry(session, db):
 @patch("export.management.commands.export_styles.Session")
 def test_command_cleans_styles(session, db):
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
         title_fr="Liste rouge mousses",
@@ -209,6 +218,7 @@ def test_command_cleans_styles(session, db):
     dataset.save()
 
     ExternalWMSDistribution(
+        sgid="dst_moose-123",
         distribution_id="ch.bafu.moose:wms",
         dataset=dataset,
         opacity=0.5,

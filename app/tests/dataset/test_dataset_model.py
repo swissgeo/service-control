@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 import pytest
 
@@ -10,6 +11,7 @@ from thesaurus.models import Concept, Thesaurus
 @pytest.fixture(name="dataset")
 def fixture_dataset(db):
     return Dataset.objects.create(
+        sgid="dat_dataset",
         dataset_id="dataset.id",
         title_de="Title (DE)",
         title_fr="Title (FR)",
@@ -67,6 +69,7 @@ def test_dataset_required_field_null(field, dataset):
 )
 def test_dataset_unique_fields(field, dataset):
     new_dataset = Dataset(
+        sgid="dat_xyz",
         dataset_id="xyz",
         title_de="xyz",
         title_fr="xyz",
@@ -83,6 +86,7 @@ def test_dataset_unique_fields(field, dataset):
 
 def test_dataset_to_dataset(db):
     parent = Dataset.objects.create(
+        sgid="dat_parent",
         dataset_id="parent",
         title_de="Title (DE)",
         title_fr="Title (FR)",
@@ -94,6 +98,7 @@ def test_dataset_to_dataset(db):
     )
 
     child = Dataset.objects.create(
+        sgid="dat_child",
         dataset_id="child",
         title_de="Title (DE)",
         title_fr="Title (FR)",
@@ -157,3 +162,28 @@ def test_add_data_source_id(dataset):
     dataset.add_data_source_id("a")
 
     assert dataset.data_source_ids == ["a", "b"]
+
+
+@pytest.mark.parametrize(
+    ("sgid", "valid"),
+    [
+        ("dat_a", True),
+        ("dat_neophyten-portulak-heusenkraut", True),
+        ("dat_2024-census", True),
+        ("dat_", False),  # empty body
+        ("dst_foo", False),  # other prefix
+        ("dat_Foo", False),  # uppercase
+        ("dat_foo_bar", False),  # underscore in body
+        ("dat_foo--bar", False),  # double hyphen
+        ("dat_foo-", False),  # trailing hyphen
+        ("dat_foo\n", False),  # trailing newline
+        ("ch.bafu.neophyten-portulak_heusenkraut", False),  # raw BGDI layer name
+    ],
+)
+def test_dataset_sgid_constraint(db, sgid, valid):
+    if valid:
+        Dataset(sgid=sgid).save()
+        assert Dataset.objects.filter(sgid=sgid).exists()
+    else:
+        with pytest.raises(IntegrityError):
+            Dataset(sgid=sgid).save()

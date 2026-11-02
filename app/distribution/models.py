@@ -6,7 +6,7 @@ from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 _context = "Distribution Model"
 
 
+DISTRIBUTION_SGID_REGEX = r"^dst_[a-z0-9]+(-[a-z0-9]+)*$"
+
+
 class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
     pass
 
@@ -25,7 +28,12 @@ class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
 class Distribution(DataSourceIdModelMixin, PolymorphicModel):
     """Abstract Base Distribution model."""
 
-    # TODO: should this identifier be globally unique or just unique per dataset?
+    sgid = models.CharField(
+        max_length=128,
+        unique=True,
+        validators=[RegexValidator(DISTRIBUTION_SGID_REGEX)],
+    )
+
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
@@ -94,6 +102,12 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
     class Meta:
         verbose_name = _("Distribution", "Distributions")
         verbose_name_plural = _("Distribution", "Distributions")
+        constraints = (
+            models.CheckConstraint(
+                condition=models.Q(sgid__regex=DISTRIBUTION_SGID_REGEX),
+                name="distribution_sgid_format",
+            ),
+        )
 
     def __str__(self) -> str:
         return self.distribution_id

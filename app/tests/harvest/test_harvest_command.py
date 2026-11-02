@@ -126,6 +126,7 @@ def test_command_creates_organizations(client, dynamodb, db):
 
     org_out = Organization.objects.first()
     assert org_out
+    assert org_out.sgid == "org_bafu"
     assert org_out.organization_id == "ch.bafu"
     assert org_out.name_de == "Bundesamt für Umwelt"
     assert org_out.name_fr == "Office fédéral de l'environnement"
@@ -228,6 +229,7 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
 @patch("organization.models.Client")
 def test_command_updates_organizations(client, dynamodb, db):
     org = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="x",
         name_fr="x",
@@ -357,6 +359,7 @@ def test_command_updates_organizations(client, dynamodb, db):
 @patch("organization.models.Client")
 def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     org_1 = Organization(
+        sgid="org_bafu1",
         organization_id="ch.bafu1",
         name_de="x",
         name_fr="x",
@@ -393,6 +396,7 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     )
 
     org_2 = Organization(
+        sgid="org_bafu2",
         organization_id="ch.bafu2",
         name_de="x",
         name_fr="x",
@@ -498,6 +502,7 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
 @patch("organization.models.Client")
 def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     org = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="x",
         name_fr="x",
@@ -640,6 +645,7 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
 @patch("organization.models.Client")
 def test_command_cleans_organizations(client, dynamodb, db):
     Organization(
+        sgid="org_unused",
         organization_id="ch.unused",
         name_de="x",
         name_fr="x",
@@ -655,6 +661,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         data_source_ids=["ch.unused"],
     ).save()
     Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="x",
         name_fr="x",
@@ -670,6 +677,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         data_source_ids=["ch.bafu"],
     ).save()
     Organization(
+        sgid="org_bafu-copy",
         organization_id="ch.bafu-copy",
         name_de="x",
         name_fr="x",
@@ -784,6 +792,7 @@ def test_command_creates_dataset(dynamodb, db):
 
     ds_out = Dataset.objects.first()
     assert ds_out
+    assert ds_out.sgid == "dat_moose"
     assert ds_out.dataset_id == "ch.bafu.moose"
     assert ds_out.title_de == "Rote Liste Moose (Gefährdung der Moose in der Schweiz)"
     assert ds_out.title_fr == "Liste rouge mousses (Menaces pesant sur les mousses en Suisse)"
@@ -811,6 +820,7 @@ def test_command_creates_dataset(dynamodb, db):
 
 def test_command_updates_dataset(dynamodb, db):
     Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -893,6 +903,7 @@ def test_command_updates_dataset(dynamodb, db):
 
 def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     ds_1 = Dataset(
+        sgid="dat_moose1",
         dataset_id="ch.bafu.moose1",
         title_de="x",
         title_fr="x",
@@ -910,6 +921,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     )
     ds_1.save()
     ds_2 = Dataset(
+        sgid="dat_moose2",
         dataset_id="ch.bafu.moose2",
         title_de="x",
         title_fr="x",
@@ -1025,6 +1037,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
 
 def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
     ds = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -1122,6 +1135,7 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
 
 def test_command_cleans_datasets(dynamodb, db):
     Dataset(
+        sgid="dat_unused",
         dataset_id="ch.bafu.unused",
         title_de="x",
         title_fr="x",
@@ -1138,6 +1152,7 @@ def test_command_cleans_datasets(dynamodb, db):
         data_source_ids=["ch.bafu.unused"],
     ).save()
     Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -1154,6 +1169,7 @@ def test_command_cleans_datasets(dynamodb, db):
         data_source_ids=["ch.bafu.moose"],
     ).save()
     Dataset(
+        sgid="dat_moose-copy",
         dataset_id="ch.bafu.moose-copy",
         title_de="x",
         title_fr="x",
@@ -1220,6 +1236,7 @@ def test_command_cleans_datasets(dynamodb, db):
 @patch("organization.models.Client")
 def test_command_matches_existing_dataset_provider(client, dynamodb, db):
     org = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
@@ -1238,6 +1255,7 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
     unit.save()
 
     ds = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -1302,6 +1320,7 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
 @patch("organization.models.Client")
 def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
     org = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
@@ -1320,6 +1339,7 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
     unit.save()
 
     ds = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -1406,6 +1426,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     }
 
     ds_wmts = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         geocat_id="a",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -1415,6 +1436,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_wmts.save()
 
     ds_wms = Dataset(
+        sgid="dat_luftfahrthindernis",
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="b",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -1424,6 +1446,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     ds_wms.save()
 
     ds_geojson = Dataset(
+        sgid="dat_shared-mobility",
         dataset_id="ch.bfe.shared-mobility",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -1503,6 +1526,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_1.description_rm == "D RM"
     assert dist_1.meta_information is False
     assert dist_1.opacity == Decimal("0.5")
+    assert dist_1.sgid.startswith("dst_moose-")
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
     assert dist_2
@@ -1521,6 +1545,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_2.meta_information is False
     assert dist_2.opacity == Decimal("0.5")
     assert dist_2.gutter == 0
+    assert dist_2.sgid.startswith("dst_moose-")
 
     dist_3 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:api3features").first()
     assert dist_3
@@ -1534,6 +1559,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_3.meta_information is True
     assert dist_3.renderable is True
     assert dist_3.queryable is False
+    assert dist_3.sgid.startswith("dst_moose-")
 
     ds_wms.refresh_from_db()
     assert ds_wms.distribution_set.count() == 2
@@ -1558,6 +1584,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_4.meta_information is False
     assert dist_4.opacity == Decimal("0.6")
     assert dist_4.gutter == 1
+    assert dist_4.sgid.startswith("dst_luftfahrthindernis-")
 
     dist_5 = ds_wms.distribution_set.filter(
         distribution_id="ch.bazl.luftfahrthindernis:api3features"
@@ -1573,6 +1600,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_5.meta_information is True
     assert dist_5.renderable is False
     assert dist_5.queryable is True
+    assert dist_5.sgid.startswith("dst_luftfahrthindernis-")
 
     ds_geojson.refresh_from_db()
     assert ds_geojson.distribution_set.count() == 1
@@ -1600,6 +1628,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.geojson_url_en == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_en.json"
     assert dist_6.geojson_url_rm == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json"
     assert dist_6.style_url == "/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json"
+    assert dist_6.sgid.startswith("dst_shared-mobility-")
 
     # =========================
     # Update
@@ -1653,6 +1682,7 @@ def test_command_cleans_distributions(dynamodb, db):
     assert "Installed" in out
 
     dataset = Dataset(
+        sgid="dat_luftfahrthindernis",
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -1671,12 +1701,14 @@ def test_command_cleans_distributions(dynamodb, db):
     dataset.save()
 
     ExternalGeoJSONDistribution(
+        sgid="dst_luftfahrthindernis-123",
         distribution_id="ch.bazl.luftfahrthindernis:geojson",
         dataset=dataset,
         data_source=Distribution.DataSource.BOD_LAYERS_JS,
     ).save()
 
     ExternalStacDistribution(
+        sgid="dst_luftfahrthindernis-234",
         distribution_id="ch.bazl.luftfahrthindernis:stac",
         dataset=dataset,
         data_source=Distribution.DataSource.USER_INPUT,
@@ -1714,6 +1746,7 @@ def test_command_uses_distribution_mapping(dynamodb, db):
     assert "Installed" in out
 
     dataset = Dataset(
+        sgid="dat_luftfahrthindernis",
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -1815,6 +1848,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
     ).first()
 
     ds = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -1927,6 +1961,7 @@ def test_command_creates_and_updates_concepts(dynamodb, db):
 @patch("organization.models.Client")
 def test_command_creates_and_updates_contact(client, dynamodb, db):
     ds = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -1944,6 +1979,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
     ds.save()
 
     org = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
@@ -2127,6 +2163,7 @@ def test_command_creates_and_updates_contact(client, dynamodb, db):
 @patch("organization.models.Client")
 def test_command_uses_contact_mapping(client, dynamodb, db):
     ds = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         title_de="x",
         title_fr="x",
@@ -2144,6 +2181,7 @@ def test_command_uses_contact_mapping(client, dynamodb, db):
     ds.save()
 
     org = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
