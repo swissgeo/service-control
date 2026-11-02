@@ -25,13 +25,14 @@ from harvest.models import (
     PrefixLookupTable,
 )
 from harvest.utils import (
+    AGGREGATE_PROVIDER_ATTRIBUTION,
     AGGREGATE_PROVIDER_CONTACT,
     AGGREGATE_PROVIDER_ID,
     AGGREGATE_PROVIDER_ORGANIZATION,
     CANTONAL_PROVIDER_ORGANIZATIONS,
 )
 from legal.models import GeopoliticalEntity
-from organization.models import Contact, Organization, Unit
+from organization.models import Attribution, Contact, Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
@@ -264,6 +265,16 @@ class Command(CustomBaseCommand):
 
         return f"ch.{provider_id.lower()}"
 
+    def attribution_id(self, provider_id: str) -> str:
+        """Returns the attribution ID for the given provider ID. This follows the naming scheme
+        used for the service-control entities elsewhere (i.e. lowercase with a prefix).
+
+        The organization ID is:
+        - for aggregate organization: "ch.kgk"
+
+        """
+        return f"ch.{provider_id.lower()}"
+
     def dataset_id(
         self, service: dict, aggregate: bool = False, provider_id: str | None = None
     ) -> str:
@@ -345,6 +356,8 @@ class Command(CustomBaseCommand):
         metrics = {
             "organizations.created": 0,
             "organizations.updated": 0,
+            "attributions.created": 0,
+            "attributions.updated": 0,
             "contacts.removed": 0,
             "contacts.obsoleted": 0,
         }
@@ -362,17 +375,23 @@ class Command(CustomBaseCommand):
             self.print_warning(
                 "Federal geopolitical entity is None! Import geopolitical entities first"
             )
-        created, updated = self.import_organization(
+        organization, created, updated = self.import_organization(
             provider_id, AGGREGATE_PROVIDER_ORGANIZATION, mappings, geopolitical_entity_ch
         )
         metrics["organizations.created"] += created
         metrics["organizations.updated"] += updated
         processed.add(provider_id)
 
+        created, updated = self.import_attribution(
+            provider_id, AGGREGATE_PROVIDER_ATTRIBUTION, organization
+        )
+        metrics["attributions.created"] += created
+        metrics["attributions.updated"] += updated
+
         # Cantonal provider
         for provider_id, attributes in CANTONAL_PROVIDER_ORGANIZATIONS.items():
             geopolitical_entity = geopolitical_entities.get(provider_id)
-            created, updated = self.import_organization(
+            _, created, updated = self.import_organization(
                 provider_id, attributes, mappings, geopolitical_entity
             )
             metrics["organizations.created"] += created
@@ -396,7 +415,7 @@ class Command(CustomBaseCommand):
                 "abbreviation_it": provider_id,
                 "abbreviation_rm": provider_id,
             }
-            created, updated = self.import_organization(provider_id, attributes, mappings)
+            _, created, updated = self.import_organization(provider_id, attributes, mappings)
             metrics["organizations.created"] += created
             metrics["organizations.updated"] += updated
             processed.add(provider_id)
@@ -414,10 +433,10 @@ class Command(CustomBaseCommand):
         attributes: dict,
         mappings: PrefixLookupTable,
         geopolitical_entity: GeopoliticalEntity | None = None,
-    ) -> tuple[int, int]:
+    ) -> tuple[Organization, int, int]:
         """Create an organization with the given values if not yet existing, or update if necessary.
 
-        Returns the number of created and updated organizations.
+        Returns the organization and the number of created and updated organizations.
         """
 
         created, updated = False, False
@@ -470,7 +489,51 @@ class Command(CustomBaseCommand):
         org.add_data_source_id(provider_id)
         org.save()
 
-        return 1 if created else 0, 1 if updated else 0
+        return org, 1 if created else 0, 1 if updated else 0
+
+    def import_attribution(
+        self, provider_id: str, attributes: dict, organization: Organization
+    ) -> tuple[int, int]:
+        """Create an attribution with the given values if not yet existing, or update if necessary.
+
+        Returns the number of created and updated attributions.
+        """
+
+        Attribution.objects.remove_data_source_id(provider_id)
+
+        attribution_id = self.attribution_id(provider_id)
+        attribution = Attribution.objects.filter(
+            attribution_id=attribution_id,
+            data_source=Attribution.DataSource.GEODIENSTE,
+        ).first()
+        if not attribution:
+            self.print(
+                f"Attribution with attribution_id {attribution_id} does not exist"
+                " yet, creating a new one"
+            )
+            attribution = Attribution(
+                attribution_id=attribution_id,
+                data_source=Attribution.DataSource.GEODIENSTE,
+                data_source_ids=[provider_id],
+                organization=organization,
+                **attributes,
+            )
+            attribution.save()
+            return 1, 0
+
+        self.print(f"Attribution with attribution_id {attribution_id} already exists")
+        updated = False
+        for key, value in attributes.items():
+            if value != getattr(attribution, key):
+                updated = True
+                setattr(attribution, key, value)
+        if updated:
+            attribution.save()
+            self.print(f"Attribution {attribution} updated")
+        attribution.add_data_source_id(provider_id)
+        attribution.save()
+
+        return 0, 1
 
     # ##########################################################################
     def import_contacts(self, services: dict, clean: bool) -> None:
@@ -641,6 +704,7 @@ class Command(CustomBaseCommand):
             "dataset_units.removed": 0,
             "dataset_contacts.created": 0,
             "dataset_contacts.removed": 0,
+            "dataset_attributions.updated": 0,
         }
 
         processed = set()
@@ -716,6 +780,11 @@ class Command(CustomBaseCommand):
                 metrics["datasets.created"] += created
                 metrics["datasets.updated"] += updated
 
+                # Attribution
+                metrics["dataset_attributions.updated"] += self.import_dataset_attribution(
+                    broker, provider_id
+                )
+
                 # Unit: Owner of broker dataset
                 created, removed = self.import_dataset_unit(
                     broker,
@@ -773,6 +842,11 @@ class Command(CustomBaseCommand):
                 aggregated[aggregate_dataset_id] = aggregate
                 metrics["datasets.created"] += created
                 metrics["datasets.updated"] += updated
+
+                # Attribution
+                metrics["dataset_attributions.updated"] += self.import_dataset_attribution(
+                    aggregate, aggregate_provider_id
+                )
 
                 # Unit: Maintainer of Aggregate -> not used anymore
                 for dataset_unit in DatasetToUnit.objects.filter(
@@ -915,6 +989,26 @@ class Command(CustomBaseCommand):
             self.print(f"Dataset with dataset_id {dataset_id} changed, updating")
             dataset.save()
         return dataset, 0, 1 if updated else 0
+
+    def import_dataset_attribution(self, dataset: Dataset, provider_id: str) -> int:
+        """Sets the attribution of the given dataset.
+
+        Returns the number of changed attributions.
+        """
+
+        attribution_id = self.attribution_id(provider_id)
+        attribution = Attribution.objects.filter(attribution_id=attribution_id).first()
+        if not attribution:
+            self.print_warning(f"Attribution with attribution_id {attribution_id} does not exist")
+            return 0
+
+        if dataset.attribution != attribution:
+            self.print(f"Setting attribution {attribution} for {dataset}")
+            dataset.attribution = attribution
+            dataset.save()
+            return 1
+
+        return 0
 
     def import_dataset_unit(
         self,

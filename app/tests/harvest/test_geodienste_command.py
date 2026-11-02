@@ -19,7 +19,7 @@ from harvest.models import (
     OrganizationMapping,
 )
 from legal.models import GeopoliticalEntity
-from organization.models import Contact, Organization, Unit
+from organization.models import Attribution, Contact, Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
 
@@ -87,27 +87,46 @@ def test_command_creates_aggregate_organization(mock, client, db):
     out = out.getvalue()
 
     assert "Organization with organization_id ch.kgk does not exist yet, creating a new one" in out
+    assert "Attribution with attribution_id ch.kgk does not exist yet, creating a new one" in out
 
     org = Organization.objects.get(organization_id="ch.kgk")
     assert org.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
-    assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert org.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
     assert org.abbreviation_de == "KGK"
     assert org.abbreviation_fr == "CGC"
-    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_en == "CGC"
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
     assert org.geopolitical_entity == geopolitical_entity
 
+    att = org.attribution_set.get()
+    assert att.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert att.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
+    assert att.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
+    assert att.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
+    assert att.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
+    assert att.abbreviation_de == "KGK"
+    assert att.abbreviation_fr == "CGC"
+    assert att.abbreviation_en == "CGC"
+    assert att.abbreviation_it == "CGC"
+    assert att.abbreviation_rm == "CGC"
+    assert att.url_de == "https://geodienste.ch/terms-of-use?locale=de"
+    assert att.url_fr == "https://geodienste.ch/terms-of-use?locale=fr"
+    assert att.url_en == "https://geodienste.ch/terms-of-use?locale=de"
+    assert att.url_it == "https://geodienste.ch/terms-of-use?locale=it"
+    assert att.url_rm == "https://geodienste.ch/terms-of-use?locale=de"
+
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
     assert "Organization with organization_id ch.kgk already exists" in out
+    assert "Attribution with attribution_id ch.kgk already exists" in out
 
 
 @patch("organization.models.Client")
@@ -127,12 +146,12 @@ def test_command_aggregate_organization_federal_political_entity_not_existing(mo
     org = Organization.objects.get(organization_id="ch.kgk")
     assert org.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
-    assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert org.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
     assert org.abbreviation_de == "KGK"
     assert org.abbreviation_fr == "CGC"
-    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_en == "CGC"
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
@@ -160,6 +179,29 @@ def test_command_updates_aggregate_organization(mock, client, db):
     )
     org.save()
 
+    att = Attribution(
+        organization=org,
+        attribution_id="ch.kgk",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        url_de="x",
+        url_fr="x",
+        url_en="x",
+        url_it="x",
+        url_rm="x",
+        data_source=Attribution.DataSource.GEODIENSTE,
+        data_source_ids=["KGK"],
+    )
+    att.save()
+
     geopolitical_entity = GeopoliticalEntity.objects.create(
         geopolitical_entity_id="1",
         parent=None,
@@ -181,21 +223,40 @@ def test_command_updates_aggregate_organization(mock, client, db):
 
     assert "Organization with organization_id ch.kgk already exists" in out
     assert "Organization ch.kgk updated" in out
+    assert "Attribution with attribution_id ch.kgk already exists" in out
+    assert "Attribution ch.kgk updated" in out
 
     org.refresh_from_db()
     assert org.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
-    assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert org.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
     assert org.abbreviation_de == "KGK"
     assert org.abbreviation_fr == "CGC"
-    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_en == "CGC"
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
     assert org.data_source_ids == ["KGK"]
     assert org.geopolitical_entity == geopolitical_entity
+
+    att.refresh_from_db()
+    assert att.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert att.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
+    assert att.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
+    assert att.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
+    assert att.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
+    assert att.abbreviation_de == "KGK"
+    assert att.abbreviation_fr == "CGC"
+    assert att.abbreviation_en == "CGC"
+    assert att.abbreviation_it == "CGC"
+    assert att.abbreviation_rm == "CGC"
+    assert att.url_de == "https://geodienste.ch/terms-of-use?locale=de"
+    assert att.url_fr == "https://geodienste.ch/terms-of-use?locale=fr"
+    assert att.url_en == "https://geodienste.ch/terms-of-use?locale=de"
+    assert att.url_it == "https://geodienste.ch/terms-of-use?locale=it"
+    assert att.url_rm == "https://geodienste.ch/terms-of-use?locale=de"
 
     out = StringIO()
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
@@ -263,12 +324,12 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
     org.refresh_from_db()
     assert org.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
-    assert org.name_en == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
+    assert org.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
     assert org.name_it == "Conferenza dei servizi cantonali per la Geoinformazione e del Catasto"
     assert org.name_rm == "Conferenza dals posts chantunals da Geoinfurmaziun e Cataster"
     assert org.abbreviation_de == "KGK"
     assert org.abbreviation_fr == "CGC"
-    assert org.abbreviation_en == "KGK"
+    assert org.abbreviation_en == "CGC"
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
 
@@ -733,9 +794,9 @@ def test_command_creates_aggregate_contact(mock, client, db):
     assert contact.address_country == "CH"
     assert contact.url_de == "https://kgk-cgc.ch/"
     assert contact.url_fr == "https://kgk-cgc.ch/fr"
-    assert contact.url_en == ""
+    assert contact.url_en == "https://kgk-cgc.ch/"
     assert contact.url_it == "https://kgk-cgc.ch/it"
-    assert contact.url_rm == ""
+    assert contact.url_rm == "https://kgk-cgc.ch/"
     assert contact.legacy_contact == (
         "Geschäftsstelle KGK-CGC\n"
         "Haus der Kantone\n"
@@ -816,9 +877,9 @@ def test_command_updates_aggregate_contact(mock, client, db):
     assert contact.address_country == "CH"
     assert contact.url_de == "https://kgk-cgc.ch/"
     assert contact.url_fr == "https://kgk-cgc.ch/fr"
-    assert contact.url_en == ""
+    assert contact.url_en == "https://kgk-cgc.ch/"
     assert contact.url_it == "https://kgk-cgc.ch/it"
-    assert contact.url_rm == ""
+    assert contact.url_rm == "https://kgk-cgc.ch/"
     assert contact.legacy_contact == (
         "Geschäftsstelle KGK-CGC\n"
         "Haus der Kantone\n"
@@ -900,9 +961,9 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
     assert contact.address_country == "CH"
     assert contact.url_de == "https://kgk-cgc.ch/"
     assert contact.url_fr == "https://kgk-cgc.ch/fr"
-    assert contact.url_en == ""
+    assert contact.url_en == "https://kgk-cgc.ch/"
     assert contact.url_it == "https://kgk-cgc.ch/it"
-    assert contact.url_rm == ""
+    assert contact.url_rm == "https://kgk-cgc.ch/"
     assert contact.legacy_contact == (
         "Geschäftsstelle KGK-CGC\n"
         "Haus der Kantone\n"
@@ -1177,6 +1238,18 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     )
     org.save()
 
+    attribution = Attribution(
+        attribution_id="ch.kgk",
+        organization=org,
+        name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
+        name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
+        name_en="Conference of Cantonal Geoinformation and Surveying Offices",
+        abbreviation_de="KGK",
+        abbreviation_fr="CGC",
+        abbreviation_en="CGC",
+    )
+    attribution.save()
+
     contact = Contact(
         organization=org,
         emails=["support@geodienste.kgk-cgc.ch"],
@@ -1188,7 +1261,6 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
         url_fr="https://kgk-cgc.ch/fr",
         url_it="https://kgk-cgc.ch/it",
     )
-
     contact.save()
 
     meta_data = {
@@ -1253,6 +1325,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
         "Dataset with dataset_id ch.geodienste-lu.av does not exist yet, creating a new one" in out
     )
     assert "Adding relationship 'ch.geodienste-lu.av is a part of ch.kgk.av'" in out
+    assert "Setting attribution ch.kgk for ch.kgk.av" in out
 
     assert Dataset.objects.count() == 2
 
@@ -1321,6 +1394,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
             ],
         }
     ]
+    assert aggregate.attribution == attribution
 
     part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
     assert part.data_source == Dataset.DataSource.GEODIENSTE
@@ -1382,7 +1456,7 @@ def test_command_creates_broker_dataset(mock, client, db):
     )
     contact.save()
 
-    Organization(
+    broker = Organization(
         organization_id="ch.bfe",
         name_de="BFE",
         name_fr="BFE",
@@ -1390,7 +1464,20 @@ def test_command_creates_broker_dataset(mock, client, db):
         abbreviation_de="BFE",
         abbreviation_fr="BFE",
         abbreviation_en="BFE",
-    ).save()
+    )
+    broker.save()
+
+    attribution = Attribution(
+        attribution_id="ch.bfe",
+        organization=broker,
+        name_de="BFE",
+        name_fr="BFE",
+        name_en="BFE",
+        abbreviation_de="BFE",
+        abbreviation_fr="BFE",
+        abbreviation_en="BFE",
+    )
+    attribution.save()
 
     meta_data = {
         "dataset_url": "https://www.geocat.ch/geonetwork/srv/ita/catalog.search#/metadata/d929eef4-791d-4728-9d56-226b6952cf1f"
@@ -1449,6 +1536,7 @@ def test_command_creates_broker_dataset(mock, client, db):
     assert "Dataset with dataset_id ch.bfe.thermische_netze does not exist yet" in out
     assert "Creating dataset unit ch.bfe (default) as owner in ch.bfe.thermische_netze" in out
     assert "Creating dataset unit ch.kgk (default) as maintainer in ch.bfe.thermische_netze" in out
+    assert "Setting attribution ch.bfe for ch.bfe.thermische_netze" in out
 
     assert Dataset.objects.count() == 1
 
@@ -1508,6 +1596,7 @@ def test_command_creates_broker_dataset(mock, client, db):
             ],
         }
     ]
+    assert dataset.attribution == attribution
 
     # ------
     # Re-Run
