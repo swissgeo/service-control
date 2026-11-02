@@ -7,7 +7,40 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html_join
 
+from utils.language import LanguageCode
+
 from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
+
+LANGUAGES = tuple(lang.value for lang in LanguageCode)
+
+# Fields set by the importers in harvest/management/commands for every harvested data source.
+# These are read-only in the admin UI since any change would be overwritten by the next import.
+# Note: "concepts" is a many-to-many relation that the importers replace wholesale.
+COMMON_IMPORTED_FIELDS: tuple[str, ...] = (
+    "data_source",
+    "data_source_ids",
+    "geocat_id",
+    "attribution",
+    "concepts",
+)
+
+# Additional fields set by the importers, per data source.
+IMPORTED_FIELDS: dict[str, tuple[str, ...]] = {
+    Dataset.DataSource.BOD_DATASET: (
+        *COMMON_IMPORTED_FIELDS,
+        *(f"title_{lang}" for lang in LANGUAGES),
+        *(f"title_short_{lang}" for lang in LANGUAGES),
+        *(f"description_{lang}" for lang in LANGUAGES),
+    ),
+    Dataset.DataSource.GEODIENSTE: (
+        *COMMON_IMPORTED_FIELDS,
+        *(f"title_{lang}" for lang in ("de", "fr", "en", "it")),
+        *(f"description_{lang}" for lang in ("de", "fr", "en", "it")),
+        *(f"additional_search_text_{lang}" for lang in ("de", "fr", "it")),
+        "legacy_contacts",
+        *(f"legacy_part_info_url_{lang}" for lang in ("de", "fr", "it")),
+    ),
+}
 
 
 class DatasetToDatasetInline(admin.TabularInline):
@@ -97,10 +130,15 @@ class DatasetAdmin(admin.ModelAdmin):
         self,
         request: HttpRequest,
         obj: Any | None = None,
-    ) -> list[str] | tuple[Any, ...]:
+    ) -> tuple[str, ...]:
         if obj:
             # Dataset id cannot be updated
             # TODO: depending on how we handle identifiers, we might want implement auto-generation
             # for identifiers (probably preferrable than making it readonly in edit)
-            return ("sgid", "dataset_id", *self.readonly_fields)
-        return self.readonly_fields
+            return (
+                "sgid",
+                "dataset_id",
+                *self.readonly_fields,
+                *IMPORTED_FIELDS.get(obj.data_source, ()),
+            )
+        return tuple(self.readonly_fields)
