@@ -48,14 +48,19 @@
       },
       "analyzer": {
         "german_decompound": {
-          "//": "Index-time. 'lowercase' MUST come first: dictionary_decompounder is case-sensitive, so 'Wanderwege' would otherwise never match the lowercase word list. 'german_normalization' MUST come last: it folds ä/ö/ü/ß, and running it first would stop 'fläche' in the word list from matching.",
+          "//": "Index-time. 'lowercase' MUST come first: dictionary_decompounder is case-sensitive, so 'Wanderwege' would otherwise never match the lowercase word list. 'german_normalization' and 'asciifolding' MUST come after the decompounder: they fold ä/ö/ü/ß, and running them first would stop 'fläche' in the word list from matching. 'asciifolding' MUST come after 'german_normalization' so 'ue'->'u' still applies; it adds the accents german_normalization ignores (é/è/ê/à/ç), so 'arret' matches 'Arrêt'.",
           "tokenizer": "standard",
-          "filter": ["lowercase", "german_decompound", "german_normalization"]
+          "filter": ["lowercase", "german_decompound", "german_normalization", "asciifolding"]
         },
         "german_search": {
           "//": "Search-time. Deliberately does NOT decompound: splitting the query too makes 'wanderkarte' match 'Wanderwege' (shared 'wander' subword). Splitting only at index time keeps that false positive out.",
           "tokenizer": "standard",
-          "filter": ["lowercase", "german_normalization"]
+          "filter": ["lowercase", "german_normalization", "asciifolding"]
+        },
+        "folding": {
+          "//": "Default for all non-German text fields: case- and accent-insensitive matching, so 'arret' finds 'Arrêt' and 'zurich' finds 'Zürich'. Used at index and search time (no separate search_analyzer).",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding"]
         },
         "list_search": {
           "type": "custom",
@@ -92,7 +97,7 @@
                 "analyzer": "german_decompound",
                 "search_analyzer": "german_search"
               },
-              "additionalSearchText": {"type": "search_as_you_type"},
+              "additionalSearchText": {"type": "search_as_you_type", "analyzer": "folding"},
               "concepts": {
                   "type": "text",
                   "analyzer": "keyword",
@@ -108,7 +113,7 @@
                     "analyzer": "german_decompound",
                     "search_analyzer": "german_search"
                   },
-                  "abbreviation": {"type": "search_as_you_type"}
+                  "abbreviation": {"type": "search_as_you_type", "analyzer": "folding"}
                 }
               }
             }
@@ -123,14 +128,16 @@
               "type": {"type": "keyword", "index": false},
               "title": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
               "shortTitle": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "description": {"type": "search_as_you_type"},
-              "additionalSearchText": {"type": "search_as_you_type"},
+              "description": {"type": "search_as_you_type", "analyzer": "folding"},
+              "additionalSearchText": {"type": "search_as_you_type", "analyzer": "folding"},
               "concepts": {
                   "type": "text",
                   "analyzer": "keyword",
@@ -141,8 +148,8 @@
               "owner": {
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "fr.properties.ownerId"},
-                  "name": {"type": "search_as_you_type"},
-                  "abbreviation": {"type": "search_as_you_type"}
+                  "name": {"type": "search_as_you_type", "analyzer": "folding"},
+                  "abbreviation": {"type": "search_as_you_type", "analyzer": "folding"}
                 }
               }
             }
@@ -157,14 +164,16 @@
               "type": {"type": "keyword", "index": false},
               "title": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
               "shortTitle": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "description": {"type": "search_as_you_type"},
-              "additionalSearchText": {"type": "search_as_you_type"},
+              "description": {"type": "search_as_you_type", "analyzer": "folding"},
+              "additionalSearchText": {"type": "search_as_you_type", "analyzer": "folding"},
               "concepts": {
                   "type": "text",
                   "analyzer": "keyword",
@@ -175,8 +184,8 @@
               "owner": {
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "it.properties.ownerId"},
-                  "name": {"type": "search_as_you_type"},
-                  "abbreviation": {"type": "search_as_you_type"}
+                  "name": {"type": "search_as_you_type", "analyzer": "folding"},
+                  "abbreviation": {"type": "search_as_you_type", "analyzer": "folding"}
                 }
               }
             }
@@ -191,14 +200,16 @@
               "type": {"type": "keyword", "index": false},
               "title": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
               "shortTitle": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "description": {"type": "search_as_you_type"},
-              "additionalSearchText": {"type": "search_as_you_type"},
+              "description": {"type": "search_as_you_type", "analyzer": "folding"},
+              "additionalSearchText": {"type": "search_as_you_type", "analyzer": "folding"},
               "concepts": {
                   "type": "text",
                   "analyzer": "keyword",
@@ -209,8 +220,8 @@
               "owner": {
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "rm.properties.ownerId"},
-                  "name": {"type": "search_as_you_type"},
-                  "abbreviation": {"type": "search_as_you_type"}
+                  "name": {"type": "search_as_you_type", "analyzer": "folding"},
+                  "abbreviation": {"type": "search_as_you_type", "analyzer": "folding"}
                 }
               }
             }
@@ -225,14 +236,16 @@
               "type": {"type": "keyword", "index": false},
               "title": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
               "shortTitle": {
                 "type": "search_as_you_type",
+                "analyzer": "folding",
                 "fields": {"sort": {"type": "keyword", "normalizer": "sort_normalizer", "ignore_above": 256}}
               },
-              "description": {"type": "search_as_you_type"},
-              "additionalSearchText": {"type": "search_as_you_type"},
+              "description": {"type": "search_as_you_type", "analyzer": "folding"},
+              "additionalSearchText": {"type": "search_as_you_type", "analyzer": "folding"},
               "concepts": {
                   "type": "text",
                   "analyzer": "keyword",
@@ -243,8 +256,8 @@
               "owner": {
                 "properties": {
                   "id": {"type": "keyword", "copy_to": "en.properties.ownerId"},
-                  "name": {"type": "search_as_you_type"},
-                  "abbreviation": {"type": "search_as_you_type"}
+                  "name": {"type": "search_as_you_type", "analyzer": "folding"},
+                  "abbreviation": {"type": "search_as_you_type", "analyzer": "folding"}
                 }
               }
             }
