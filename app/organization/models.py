@@ -388,6 +388,10 @@ class Contact(DataSourceIdModelMixin, models.Model):
         return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"
 
 
+class AttributionManager(DataSourceIdManagerMixin, models.Manager):
+    pass
+
+
 class Attribution(DataSourceIdModelMixin, models.Model):
     _context = "Attribution model"
 
@@ -463,6 +467,8 @@ class Attribution(DataSourceIdModelMixin, models.Model):
     )
 
     organization = models.ForeignKey("organization.Organization", on_delete=models.CASCADE)
+
+    objects = AttributionManager()
 
     def __str__(self) -> str:
         return str(self.attribution_id)

@@ -137,17 +137,18 @@ class Command(CustomBaseCommand):
         item: dict[str, Any],
         mappings: PrefixLookupTable,
         geopolitical_entity: GeopoliticalEntity | None = None,
-    ) -> tuple[str | None, str]:
+    ) -> tuple[str | None, str, int, int]:
         """Import a single organization from a dynamoDB item.
 
-        Returns the provider_id and the state of the import (created, updated, unchanged, failed)
+        Returns the provider_id, the state of the import (created, updated, unchanged, failed) and
+        the number of created and updated attributions.
         """
         try:
             import_org = OrganizationImport.from_dynamodb_item(item)
             self.print(f"Parsed organization: {import_org.provider_id} - {import_org.name_de}")
         except ParsingError as e:
             self.print_error(f"Failed to parse item: {item}. Error: {e}")
-            return None, "failed"
+            return None, "failed", 0, 0
 
         provider_id = import_org.provider_id
         Organization.objects.remove_data_source_id(provider_id)
@@ -194,10 +195,20 @@ class Command(CustomBaseCommand):
 
         org.add_data_source_id(provider_id)
         org.save()
-        self.import_attributions(org, import_org.attributions)
-        return provider_id, state
 
-    def import_attributions(self, org: Organization, attributions: list[AttributionImport]) -> None:
+        created, updated = self.import_attributions(org, import_org.attributions)
+
+        return provider_id, state, created, updated
+
+    def import_attributions(
+        self, org: Organization, attributions: list[AttributionImport]
+    ) -> tuple[int, int]:
+        """Import all attribution dynamoDB items to the given organization.
+
+        Returns the number of created and updated attributions
+        """
+
+        created, updated = 0, 0
         for _attribution in attributions:
             # For now we only create or update Attributions and do not delete any existing ones as
             # they might be referenced by datasets.
@@ -236,25 +247,36 @@ class Command(CustomBaseCommand):
                     url_rm=_attr_dump.pop("url_rm"),
                     **_attr_dump,
                 )
+                created += 1
             else:
-                self.print(f"Updating Attribution {attribution}")
-                attribution.abbreviation_de = _attribution.name_de
-                attribution.abbreviation_fr = _attribution.name_fr
-                attribution.abbreviation_en = _attribution.name_en
-                attribution.abbreviation_it = _attribution.name_it
-                attribution.abbreviation_rm = _attribution.name_rm
-                attribution.name_de = _attribution.description_de
-                attribution.name_fr = _attribution.description_fr
-                attribution.name_en = _attribution.description_en
-                attribution.name_it = _attribution.description_it
-                attribution.name_rm = _attribution.description_rm
-                attribution.url_de = _attribution.url_de
-                attribution.url_fr = _attribution.url_fr
-                attribution.url_en = _attribution.url_en
-                attribution.url_it = _attribution.url_it
-                attribution.url_rm = _attribution.url_rm
+                changed = False
+                for target, source in (
+                    ("abbreviation_de", "name_de"),
+                    ("abbreviation_fr", "name_fr"),
+                    ("abbreviation_en", "name_en"),
+                    ("abbreviation_it", "name_it"),
+                    ("abbreviation_rm", "name_rm"),
+                    ("name_de", "description_de"),
+                    ("name_fr", "description_fr"),
+                    ("name_en", "description_en"),
+                    ("name_it", "description_it"),
+                    ("name_rm", "description_rm"),
+                    ("url_de", "url_de"),
+                    ("url_fr", "url_fr"),
+                    ("url_en", "url_en"),
+                    ("url_it", "url_it"),
+                    ("url_rm", "url_rm"),
+                ):
+                    if getattr(attribution, target) != (new := getattr(_attribution, source)):
+                        setattr(attribution, target, new)
+                        changed = True
+                if changed:
+                    self.print(f"Updating Attribution {attribution}")
+                    updated += 1
             attribution.add_data_source_id(_attribution.attribution_id)
             attribution.save()
+
+        return created, updated
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -283,6 +305,8 @@ class Command(CustomBaseCommand):
             "organizations.updated": 0,
             "organizations.removed": 0,
             "organizations.obsolete": 0,
+            "attributions.created": 0,
+            "attributions.updated": 0,
         }
 
         self.print_success("Importing organizations")
@@ -306,12 +330,16 @@ class Command(CustomBaseCommand):
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 log_metrics["organizations.total"] += 1
-                provider_id, state = self.import_organization(item, mappings, geopolitical_entity)
+                provider_id, state, created, updated = self.import_organization(
+                    item, mappings, geopolitical_entity
+                )
                 if provider_id:
                     processed.add(provider_id)
                 match state:
                     case "created" | "updated" | "failed":
                         log_metrics[f"organizations.{state}"] += 1
+                log_metrics["attributions.created"] += created
+                log_metrics["attributions.updated"] += updated
 
         removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
         log_metrics["organizations.removed"] = removed_count
