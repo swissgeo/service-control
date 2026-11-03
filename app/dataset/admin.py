@@ -7,40 +7,20 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html_join
 
-from utils.language import LanguageCode
-
 from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
 
-LANGUAGES = tuple(lang.value for lang in LanguageCode)
-
-# Fields set by the importers in harvest/management/commands for every harvested data source.
-# These are read-only in the admin UI since any change would be overwritten by the next import.
-# Note: "concepts" is a many-to-many relation that the importers replace wholesale.
-COMMON_IMPORTED_FIELDS: tuple[str, ...] = (
-    "data_source",
-    "data_source_ids",
-    "geocat_id",
-    "attribution",
-    "concepts",
-)
-
-# Additional fields set by the importers, per data source.
-IMPORTED_FIELDS: dict[str, tuple[str, ...]] = {
-    Dataset.DataSource.BOD_DATASET: (
-        *COMMON_IMPORTED_FIELDS,
-        *(f"title_{lang}" for lang in LANGUAGES),
-        *(f"title_short_{lang}" for lang in LANGUAGES),
-        *(f"description_{lang}" for lang in LANGUAGES),
-    ),
-    Dataset.DataSource.GEODIENSTE: (
-        *COMMON_IMPORTED_FIELDS,
-        *(f"title_{lang}" for lang in ("de", "fr", "en", "it")),
-        *(f"description_{lang}" for lang in ("de", "fr", "en", "it")),
-        *(f"additional_search_text_{lang}" for lang in ("de", "fr", "it")),
-        "legacy_contacts",
-        *(f"legacy_part_info_url_{lang}" for lang in ("de", "fr", "it")),
-    ),
+# Data sources whose fields are overwritten by the harvesters in
+# harvest/management/commands.  Editing them in the admin is allowed but
+# the user should be aware that the next import will overwrite the changes.
+HARVESTED_DATA_SOURCES: set[str] = {
+    Dataset.DataSource.BOD_DATASET,
+    Dataset.DataSource.GEODIENSTE,
 }
+
+HARVEST_WARNING = (
+    "This dataset is imported from an external source. "
+    "Any changes to harvested fields will be overwritten by the next import."
+)
 
 
 class DatasetToDatasetInline(admin.TabularInline):
@@ -135,10 +115,17 @@ class DatasetAdmin(admin.ModelAdmin):
             # Dataset id cannot be updated
             # TODO: depending on how we handle identifiers, we might want implement auto-generation
             # for identifiers (probably preferrable than making it readonly in edit)
-            return (
-                "sgid",
-                "dataset_id",
-                *self.readonly_fields,
-                *IMPORTED_FIELDS.get(obj.data_source, ()),
-            )
+            return ("sgid", "dataset_id", *self.readonly_fields)
         return tuple(self.readonly_fields)
+
+    def change_view(
+        self,
+        request: HttpRequest,
+        object_id: str,
+        form_url: str = "",
+        extra_context: dict[str, Any] | None = None,
+    ) -> Any:
+        obj = self.get_object(request, object_id)
+        if obj and obj.data_source in HARVESTED_DATA_SOURCES:
+            messages.warning(request, HARVEST_WARNING)
+        return super().change_view(request, object_id, form_url, extra_context)
