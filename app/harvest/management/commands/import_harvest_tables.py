@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -50,6 +51,15 @@ if TYPE_CHECKING:
 
 
 env = environ.Env()
+
+
+@dataclass
+# TODO: use that everywhere instead of passing anonymous tuples around
+class ImportStats:
+    created: int = 0
+    updated: int = 0
+    removed: int = 0
+    obsolete: int = 0
 
 
 class Command(CustomBaseCommand):
@@ -143,18 +153,18 @@ class Command(CustomBaseCommand):
         mappings: PrefixLookupTable,
         geopolitical_entity: GeopoliticalEntity | None,
         **options: Any,
-    ) -> tuple[str | None, str, int, int]:
+    ) -> tuple[str | None, str, ImportStats]:
         """Import a single organization from a dynamoDB item.
 
-        Returns the provider_id, the state of the import (created, updated, unchanged, failed) and
-        the number of created and updated attributions.
+        Returns the provider_id, the state of the import (created, updated, unchanged, failed)
+        and the ImportStats of the attributions.
         """
         try:
             import_org = OrganizationImport.from_dynamodb_item(item)
             self.print(f"Parsed organization: {import_org.provider_id} - {import_org.name_de}")
         except ParsingError as e:
             self.print_error(f"Failed to parse item: {item}. Error: {e}")
-            return None, "failed", 0, 0
+            return None, "failed", ImportStats()
 
         provider_id = import_org.provider_id
         Organization.objects.remove_data_source_id(provider_id)
@@ -203,17 +213,14 @@ class Command(CustomBaseCommand):
         org.add_data_source_id(provider_id)
         org.save()
 
-        created, updated = self.import_attributions(org, import_org.attributions, **options)
+        attr_stats = self.import_attributions(org, import_org.attributions, **options)
 
-        return provider_id, state, created, updated
+        return provider_id, state, attr_stats
 
     def import_attributions(
         self, org: Organization, attributions: list[AttributionImport], **options: Any
-    ) -> tuple[int, int]:
-        """Import all attribution dynamoDB items to the given organization.
-
-        Returns the number of created and updated attributions
-        """
+    ) -> ImportStats:
+        """Import all attribution dynamoDB items to the given organization."""
 
         created, updated = 0, 0
         processed = set()
@@ -285,12 +292,14 @@ class Command(CustomBaseCommand):
             attribution.save()
             processed.add(_attribution.attribution_id)
 
-        self.cleanup_attributions(org, processed, **options)
-        return created, updated
+        retval = self.cleanup_attributions(org, processed, **options)
+        retval.created = created
+        retval.updated = updated
+        return retval
 
     def cleanup_attributions(
         self, org: Organization, processed: set[str], **options: Any
-    ) -> tuple[int, int]:
+    ) -> ImportStats:
         existing = Attribution.objects.filter(
             organization=org,
             attribution_id__in=Attribution.objects.existing_data_source_ids(
@@ -314,7 +323,7 @@ class Command(CustomBaseCommand):
             self.print_warning(f"Obsolete attributions found: {', '.join(sorted(obsolete))}")
             if options["clean"]:
                 Attribution.objects.filter(attribution_id__in=obsolete).delete()
-        return len(removed), len(obsolete)
+        return ImportStats(removed=len(removed), obsolete=len(obsolete))
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -345,6 +354,8 @@ class Command(CustomBaseCommand):
             "organizations.obsolete": 0,
             "attributions.created": 0,
             "attributions.updated": 0,
+            "attributions.removed": 0,
+            "attributions.obsolete": 0,
         }
 
         self.print_success("Importing organizations")
@@ -368,7 +379,7 @@ class Command(CustomBaseCommand):
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 log_metrics["organizations.total"] += 1
-                provider_id, state, created, updated = self.import_organization(
+                provider_id, state, attr_stats = self.import_organization(
                     item, mappings, geopolitical_entity, **options
                 )
                 if provider_id:
@@ -376,8 +387,10 @@ class Command(CustomBaseCommand):
                 match state:
                     case "created" | "updated" | "failed":
                         log_metrics[f"organizations.{state}"] += 1
-                log_metrics["attributions.created"] += created
-                log_metrics["attributions.updated"] += updated
+                log_metrics["attributions.created"] += attr_stats.created
+                log_metrics["attributions.updated"] += attr_stats.updated
+                log_metrics["attributions.removed"] += attr_stats.removed
+                log_metrics["attributions.obsolete"] += attr_stats.obsolete
 
         removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
         log_metrics["organizations.removed"] = removed_count
