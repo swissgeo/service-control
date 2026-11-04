@@ -292,17 +292,11 @@ class Command(CustomBaseCommand):
         existing = Attribution.objects.existing_data_source_ids(
             Attribution.DataSource.BOD_CONTACT_ORGANIZATION
         )
-        if removed := existing - processed:
+        removed = existing - processed
+        for attribution_id in removed:
+            self.print_warning(f"Removing obsolete data_source_id (attribution) {attribution_id}")
             if options["clean"]:
-                for attribution_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id (attribution) {attribution_id}"
-                    )
-                    Attribution.objects.remove_data_source_id(attribution_id)
-            else:
-                self.print_warning(
-                    f"Removed data_source_id (attribution) found: {', '.join(removed)}"
-                )
+                Attribution.objects.remove_data_source_id(attribution_id)
 
         obsolete = Attribution.objects.filter(
             data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
@@ -310,12 +304,9 @@ class Command(CustomBaseCommand):
             attribution_datasets__isnull=True,
         ).values_list("attribution_id", flat=True)
         if obsolete:
+            self.print_warning(f"Obsolete attributions found: {', '.join(sorted(obsolete))}")
             if options["clean"]:
-                for attribution_id in obsolete:
-                    self.print_warning(f"Removing obsolete attribution {attribution_id}")
-                    Attribution.objects.filter(attribution_id=attribution_id).delete()
-            else:
-                self.print_warning(f"Obsolete attributions found: {', '.join(sorted(obsolete))}")
+                Attribution.objects.filter(attribution_id__in=obsolete).delete()
         return len(removed), len(obsolete)
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
