@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from decimal import Decimal
 from io import StringIO
 from unittest.mock import MagicMock, patch
@@ -665,75 +666,52 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
 
 @patch("organization.models.Client")
 def test_command_cleans_organizations(client, dynamodb, db):
-    Organization(
-        sgid="org_unused",
-        organization_id="ch.unused",
-        name_de="x",
-        name_fr="x",
-        name_en="x",
-        name_it="x",
-        name_rm="x",
-        abbreviation_de="x",
-        abbreviation_fr="x",
-        abbreviation_en="x",
-        abbreviation_it="x",
-        abbreviation_rm="x",
-        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.unused"],
-    ).save()
-    remaining_org = Organization(
-        sgid="org_bafu",
-        organization_id="ch.bafu",
-        name_de="x",
-        name_fr="x",
-        name_en="x",
-        name_it="x",
-        name_rm="x",
-        abbreviation_de="x",
-        abbreviation_fr="x",
-        abbreviation_en="x",
-        abbreviation_it="x",
-        abbreviation_rm="x",
-        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
-    )
-    remaining_org.save()
-    remaining_org.attribution_set.create(
-        attribution_id="ch.bafu.bogus",
-        abbreviation_de="x",
-        abbreviation_fr="x",
-        abbreviation_en="x",
-        abbreviation_it="x",
-        abbreviation_rm="x",
-        name_de="x",
-        name_fr="x",
-        name_en="x",
-        name_it="x",
-        name_rm="x",
-        url_de="https://some.valid.url",
-        url_fr="https://some.valid.url",
-        url_en="https://some.valid.url",
-        url_it="https://some.valid.url",
-        url_rm="https://some.valid.url",
-        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu.bogus"],
-    )
-    Organization(
-        sgid="org_bafu-copy",
-        organization_id="ch.bafu-copy",
-        name_de="x",
-        name_fr="x",
-        name_en="x",
-        name_it="x",
-        name_rm="x",
-        abbreviation_de="x",
-        abbreviation_fr="x",
-        abbreviation_en="x",
-        abbreviation_it="x",
-        abbreviation_rm="x",
-        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
-    ).save()
+    # TODO: move make_org to a higher level
+    def make_org(sgid, oid) -> Organization:
+        org = Organization(
+            sgid=sgid,
+            organization_id=oid,
+            name_de="x",
+            name_fr="x",
+            name_en="x",
+            name_it="x",
+            name_rm="x",
+            abbreviation_de="x",
+            abbreviation_fr="x",
+            abbreviation_en="x",
+            abbreviation_it="x",
+            abbreviation_rm="x",
+            data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
+            data_source_ids=[oid],
+        )
+        org.save()
+        org.attribution_set.create(
+            attribution_id=f"{oid}.someattribution",
+            abbreviation_de="x",
+            abbreviation_fr="x",
+            abbreviation_en="x",
+            abbreviation_it="x",
+            abbreviation_rm="x",
+            name_de="x",
+            name_fr="x",
+            name_en="x",
+            name_it="x",
+            name_rm="x",
+            url_de="https://some.valid.url",
+            url_fr="https://some.valid.url",
+            url_en="https://some.valid.url",
+            url_it="https://some.valid.url",
+            url_rm="https://some.valid.url",
+            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+            data_source_ids=[f"{oid}.someattribution"],
+        )
+        return org
+
+    make_org("org_unused", "ch.unused")
+    remaining_org = make_org("org_bafu", "ch.bafu")
+    other_org = make_org("org_bafu-copy", "ch.bafu-copy")
+    other_org.data_source_ids = ["ch.bafu"]
+    other_org.save()
     ds = Dataset(
         sgid="dat_moose",
         dataset_id="ch.bafu.moose",
@@ -759,7 +737,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
     )
     ds.attribution = Attribution(
         organization=remaining_org,
-        attribution_id="ch.bafu.legit",
+        attribution_id="ch.unlinked",
         abbreviation_de="x",
         abbreviation_fr="x",
         abbreviation_en="x",
@@ -780,53 +758,85 @@ def test_command_cleans_organizations(client, dynamodb, db):
     ds.attribution.save()
     ds.save()
 
-    org_in = OrganizationImport(
-        provider_id="ch.bafu",
-        name_de="Bundesamt für Umwelt",
-        name_fr="Office fédéral de l'environnement",
-        name_en="Federal Office for the Environment",
-        name_it="Ufficio federale dell'ambiente",
-        name_rm="Uffizi federal per l'ambient",
-        acronym_de="BAFU",
-        acronym_fr="OFEV",
-        acronym_en="FOEN",
-        acronym_it="UFAM",
-        acronym_rm="UFAM",
-        attributions=[
-            AttributionImport(
-                attribution_id="ch.bafu",
-                name_de="x",
-                name_fr="x",
-                name_en="x",
-                name_it="x",
-                name_rm="x",
-                description_de="x",
-                description_fr="x",
-                description_en="x",
-                description_it="x",
-                description_rm="x",
-                url_de="https://some.valid.url",
-                url_fr="https://some.valid.url",
-                url_en="https://some.valid.url",
-                url_it="https://some.valid.url",
-                url_rm="https://some.valid.url",
-                created="2024-01-01T00:00:00Z",
-                updated="2024-01-01T00:00:00Z",
-            )
-        ],
+    # TODO: move these assert_* to a higher level
+    def assert_objs(obj_type, attr_name, *expected_values) -> None:
+        assert set(obj_type.objects.all().values_list(attr_name, flat=True)) == set(expected_values)
+
+    def assert_attributions(*aids) -> None:
+        assert_objs(Attribution, "attribution_id", *aids)
+
+    def assert_orgs(*sgids) -> None:
+        assert_objs(Organization, "sgid", *sgids)
+
+    assert_attributions(
+        "ch.unlinked",
+        "ch.bafu.someattribution",
+        "ch.unused.someattribution",
+        "ch.bafu-copy.someattribution",
     )
 
-    dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
+    # TODO: move make_orgs_imports to a higher level
+    # TODO: don't rely on sgid being generated solely on acronym_de
+    def make_orgs_imports() -> Sequence[OrganizationImport]:
+        for pid, ssgid in [("ch.bafu", "BAFU"), ("ch.otherimport", "OIMP")]:
+            yield OrganizationImport(
+                provider_id=pid,
+                name_de="Bundesamt für Umwelt",
+                name_fr="Office fédéral de l'environnement",
+                name_en="Federal Office for the Environment",
+                name_it="Ufficio federale dell'ambiente",
+                name_rm="Uffizi federal per l'ambient",
+                acronym_de=ssgid,
+                acronym_fr="OFEV",
+                acronym_en="FOEN",
+                acronym_it="UFAM",
+                acronym_rm="UFAM",
+                attributions=[
+                    AttributionImport(
+                        attribution_id=f"{pid}.imported",
+                        name_de="x",
+                        name_fr="x",
+                        name_en="x",
+                        name_it="x",
+                        name_rm="x",
+                        description_de="x",
+                        description_fr="x",
+                        description_en="x",
+                        description_it="x",
+                        description_rm="x",
+                        url_de="https://some.valid.url",
+                        url_fr="https://some.valid.url",
+                        url_en="https://some.valid.url",
+                        url_it="https://some.valid.url",
+                        url_rm="https://some.valid.url",
+                        created="2024-01-01T00:00:00Z",
+                        updated="2024-01-01T00:00:00Z",
+                    )
+                ],
+            )
+
+    dynamodb.get_paginator().paginate.return_value = [
+        {"Items": [o.as_dynamodb_item() for o in make_orgs_imports()]}
+    ]
 
     # only report
     out = StringIO()
     call_command("import_harvest_tables", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
+    assert_attributions(
+        "ch.bafu.imported",
+        "ch.otherimport.imported",
+        "ch.unlinked",
+        "ch.bafu.someattribution",
+        "ch.unused.someattribution",
+        "ch.bafu-copy.someattribution",
+    )
+
     assert "Removed data_source_ids (provider) found: ch.unused" in out
     assert "Obsolete organizations found: ch.bafu-copy" in out
 
-    assert Organization.objects.count() == 3
+    assert_orgs("org_bafu", "org_oimp", "org_unused", "org_bafu-copy")
 
     # clean
     out = StringIO()
@@ -837,10 +847,8 @@ def test_command_cleans_organizations(client, dynamodb, db):
     assert "Removing obsolete organization ch.bafu-copy" in out
     assert "Removing obsolete organization ch.unused" in out
 
-    assert Organization.objects.count() == 1
-    assert Organization.objects.filter(organization_id="ch.bafu").first()
-
-    assert {a.attribution_id for a in Attribution.objects.all()} == {"ch.bafu", "ch.bafu.legit"}
+    assert_orgs("org_bafu", "org_oimp")
+    assert_attributions("ch.bafu.imported", "ch.otherimport.imported", "ch.unlinked")
 
 
 # --------------------------------------------------------------------------------------------------
