@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% comment %}
+  Extends the default admin base_site.html with an environment banner: the header is colored per
+  environment (see config.context_processors) and shows the environment and the app version.
+{% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+<style {% csp_nonce_attr %}>
+  {% if app_env_background %}
+  /* Only set on the header (custom properties are inherited by descendants only): the admin
+     reuses these variables elsewhere, e.g. for the module captions in the navigation sidebar.
+     The ID selector also wins over the theme specific values (auto/light/dark). */
+  #header {
+    --header-bg: {{ app_env_background }};
+    --header-color: {{ app_env_text }};
+    --header-branding-color: {{ app_env_text }};
+    --header-link-color: {{ app_env_text }};
+  }
+  /* The site name link uses --accent directly in base.css instead of --header-branding-color */
+  #site-name a:link, #site-name a:visited {
+    color: var(--header-branding-color);
+  }
+  {% endif %}
+  .app-env-badge {
+    margin-left: 0.75rem;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+  <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+  <span class="app-env-badge">{{ app_env|upper }} · {{ app_version }}</span>
+</div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
