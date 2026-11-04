@@ -13,6 +13,7 @@ from requests import get
 from django.conf import settings
 from django.core.management import CommandError
 from django.core.management.base import CommandParser
+from django.template.defaultfilters import slugify
 
 from dataservice.models import Dataservice, OGCAPIStacDataservice, WMSDataservice
 from dataset.models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
@@ -261,9 +262,9 @@ class Command(CustomBaseCommand):
 
         """
         if provider_id in CANTONAL_PROVIDER_ORGANIZATIONS:
-            return f"ch.geodienste-{provider_id.lower()}"
+            return f"ch.geodienste-{slugify(provider_id)}"
 
-        return f"ch.{provider_id.lower()}"
+        return f"ch.{slugify(provider_id)}"
 
     def attribution_id(self, provider_id: str) -> str:
         """Returns the attribution ID for the given provider ID. This follows the naming scheme
@@ -273,7 +274,7 @@ class Command(CustomBaseCommand):
         - for aggregate organization: "ch.kgk"
 
         """
-        return f"ch.{provider_id.lower()}"
+        return f"ch.{slugify(provider_id)}"
 
     def dataset_id(
         self, service: dict, aggregate: bool = False, provider_id: str | None = None
