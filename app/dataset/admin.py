@@ -106,5 +106,3 @@ class DatasetAdmin(HarvestWarningMixin, admin.ModelAdmin):
             # for identifiers (probably preferrable than making it readonly in edit)
             return ("sgid", "dataset_id", *self.readonly_fields)
         return tuple(self.readonly_fields)
-
-

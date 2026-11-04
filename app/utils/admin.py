@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.http.request import HttpRequest
 
 HARVEST_WARNING = (
-    "This dataset is imported from an external source. "
+    "This object is imported from an external source. "
     "Any changes to harvested fields might be overwritten by the next import."
 )
 
