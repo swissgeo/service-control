@@ -54,6 +54,7 @@ def _make_dataset() -> Dataset:
     concept.save()
 
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         status=Dataset.Status.PUBLISHED,
         title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
@@ -123,6 +124,7 @@ def _make_dataset() -> Dataset:
 
 def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
     aggregate = Dataset(
+        sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         title_de="Amtliche Vermessung",
         title_fr="Mensuration officielle",
@@ -138,6 +140,7 @@ def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
     aggregate.save()
 
     part = Dataset(
+        sgid="dat_av-lu",
         dataset_id="ch.geodienste-lu.av",
         title_de="Amtliche Vermessung",
         title_fr="Mensuration officielle",
@@ -159,11 +162,13 @@ def _make_aggregate_part_datasets() -> tuple[Dataset, Dataset]:
 def _make_distribution(
     dataset: Dataset,
     dataservice: WMSDataservice,
+    distribution_sgid="dst_moose-123",
     distribution_id: str = "ch.bafu.moose:wms",
     # The layer name is unique per dataservice, so a second distribution needs its own.
     wms_layer_name: str = "ch.bafu.moose",
 ) -> ExternalWMSDistribution:
     distribution = ExternalWMSDistribution(
+        sgid=distribution_sgid,
         distribution_id=distribution_id,
         dataset=dataset,
         title_de="WMS Layer (DE)",
@@ -187,6 +192,7 @@ def _make_distribution(
 
 def _make_organization() -> Organization:
     organization = Organization(
+        sgid="org_bafu",
         organization_id="ch.bafu",
         name_de="Bundesamt für Umwelt",
         name_fr="Office fédéral de l'environnement",
@@ -205,6 +211,7 @@ def _make_organization() -> Organization:
 
 def _make_aggregate_organization() -> Organization:
     organization = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -272,6 +279,7 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
     _make_distribution(
         dataset,
         dataservice,
+        distribution_sgid="dst_moose-234",
         distribution_id="ch.bafu.moose:wmts",
         wms_layer_name="ch.bafu.moose.wmts",
     )
@@ -1477,8 +1485,12 @@ def test_export_does_not_dump_to_disk(get_client, bulk, db, tmp_path):
 
 
 def test_build_documents_dataset_with_depublished_dataset(db):
-    dataset_1 = Dataset(dataset_id="ch.bafu.moose", status=Dataset.Status.DEPUBLISHED)
-    dataset_2 = Dataset(dataset_id="ch.bafu.karibu", status=Dataset.Status.PUBLISHED)
+    dataset_1 = Dataset(
+        sgid="dat_moose", dataset_id="ch.bafu.moose", status=Dataset.Status.DEPUBLISHED
+    )
+    dataset_2 = Dataset(
+        sgid="dat_karibu", dataset_id="ch.bafu.karibu", status=Dataset.Status.PUBLISHED
+    )
     dataset_1.save()
     dataset_2.save()
 

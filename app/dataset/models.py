@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import QuerySet
 from django.utils.translation import pgettext_lazy as _
@@ -12,6 +13,9 @@ from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 logger = logging.getLogger(__name__)
 
 
+DATASET_SGID_REGEX = r"^dat_[a-z0-9]+(-[a-z0-9]+)*$"
+
+
 class DatasetManager(DataSourceIdManagerMixin, models.Manager):
     pass
 
@@ -20,6 +24,12 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     """Dataset model."""
 
     _context = "Dataset Model"
+
+    sgid = models.CharField(
+        max_length=128,
+        unique=True,
+        validators=[RegexValidator(DATASET_SGID_REGEX)],
+    )
 
     dataset_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
@@ -182,6 +192,12 @@ class Dataset(DataSourceIdModelMixin, models.Model):
     class Meta:
         verbose_name = _("Dataset Model", "Dataset")
         verbose_name_plural = _("Dataset Model", "Datasets")
+        constraints = (
+            models.CheckConstraint(
+                condition=models.Q(sgid__regex=DATASET_SGID_REGEX),
+                name="dataset_sgid_format",
+            ),
+        )
 
     def __str__(self) -> str:
         return self.dataset_id

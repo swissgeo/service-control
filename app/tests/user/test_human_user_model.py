@@ -79,6 +79,7 @@ def test_user_unit_must_belong_to_same_organization(client, vp_client, organizat
         "mock-contributor-policy-id"
     )
     other_organization = Organization.objects.create(
+        sgid="org_other-id",
         organization_id="other_id",
         abbreviation_de="Other",
         abbreviation_fr="Other",
@@ -107,6 +108,7 @@ def test_user_organization_change(client, vp_client, organization, unit, user):
         "mock-contributor-policy-id"
     )
     user.organization = Organization.objects.create(
+        sgid="org_other-id",
         organization_id="other_id",
         abbreviation_de="Other",
         abbreviation_fr="Other",

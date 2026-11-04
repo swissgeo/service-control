@@ -1,11 +1,14 @@
 from typing import Any
 
 from django.contrib import admin, messages
-from django.db.models import QuerySet
+from django.db.models import OuterRef, QuerySet, StringAgg, Subquery, Value
 from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html_join
+
+from organization.models import Organization
+from utils.admin import HarvestWarningMixin, HideFieldsetsOnAddMixin
 
 from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
 
@@ -44,14 +47,40 @@ class PublishedNonPublished(admin.SimpleListFilter):
         return queryset
 
 
+class OwnerOrganizationFilter(admin.SimpleListFilter):
+    """Filters datasets by the organization of the units having the owner role."""
+
+    title = "Owner Organization"
+    parameter_name = "owner_organization"
+
+    def lookups(self, request: HttpRequest, model_admin: admin.ModelAdmin) -> list[tuple[str, str]]:  # noqa: ARG002
+        # Only list organizations that actually own datasets
+        organizations = (
+            Organization.objects.filter(unit__dataset_units__role=DatasetToUnit.Role.OWNER)
+            .distinct()
+            .order_by("abbreviation_de")
+        )
+        return [(str(org.pk), f"{org.abbreviation_de}") for org in organizations]
+
+    def queryset(self, request: HttpRequest, queryset: QuerySet[Dataset]) -> QuerySet[Dataset]:
+        if self.value():
+            # Subquery instead of a join, to avoid duplicates when an organization owns a dataset
+            # via several units
+            owned = DatasetToUnit.objects.filter(
+                role=DatasetToUnit.Role.OWNER, unit__organization_id=self.value()
+            ).values("dataset_id")
+            return queryset.filter(pk__in=owned)
+        return queryset
+
+
 @admin.register(Dataset)
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmin):
     """Admin View for Dataset"""
 
-    list_display = ("dataset_id", "title_de", "data_source", "status")
-    list_filter = ("data_source", PublishedNonPublished)
-    readonly_fields = ("created_at", "updated_at", "dataset_list")
-    search_fields = ("dataset_id", "title_de", "title_short_de")
+    list_display = ("sgid", "dataset_id", "title_de", "owner", "data_source", "status")
+    list_filter = ("data_source", PublishedNonPublished, OwnerOrganizationFilter)
+    readonly_fields = ("sgid", "owner_organization", "created_at", "updated_at", "dataset_list")
+    search_fields = ("sgid", "dataset_id", "title_de", "title_short_de")
     filter_horizontal = ("concepts",)
     inlines = (
         DatasetToDatasetInline,
@@ -59,6 +88,89 @@ class DatasetAdmin(admin.ModelAdmin):
         DatasetToContactInline,
     )
     actions = ("set_status_draft", "set_status_published")
+    save_on_top = True
+    hidden_fieldsets_on_add = ("Relations", "Metadata")
+    fieldsets = (
+        (
+            "Identification",
+            {
+                "fields": (
+                    ("sgid", "dataset_id"),
+                    "owner_organization",
+                    "status",
+                    ("data_source", "data_source_ids"),
+                    "geocat_id",
+                ),
+            },
+        ),
+        (
+            "Titles",
+            {
+                "description": "Title and short title per language.",
+                "fields": (
+                    ("title_de", "title_short_de"),
+                    ("title_fr", "title_short_fr"),
+                    ("title_en", "title_short_en"),
+                    ("title_it", "title_short_it"),
+                    ("title_rm", "title_short_rm"),
+                ),
+            },
+        ),
+        (
+            "Descriptions",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "description_de",
+                    "description_fr",
+                    "description_en",
+                    "description_it",
+                    "description_rm",
+                ),
+            },
+        ),
+        (
+            "Search",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "additional_search_text_de",
+                    "additional_search_text_fr",
+                    "additional_search_text_en",
+                    "additional_search_text_it",
+                    "additional_search_text_rm",
+                ),
+            },
+        ),
+        (
+            "Classification & attribution",
+            {"fields": ("concepts", "attribution", "preferred_distribution")},
+        ),
+        (
+            "Relations",
+            {
+                "classes": ("collapse",),
+                "description": "Datasets in which this dataset is the subject of a relation.",
+                "fields": ("dataset_list",),
+            },
+        ),
+        (
+            "Legacy",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "legacy_contacts",
+                    "legacy_part_info_url_de",
+                    "legacy_part_info_url_fr",
+                    "legacy_part_info_url_it",
+                ),
+            },
+        ),
+        (
+            "Metadata",
+            {"classes": ("collapse",), "fields": ("created_at", "updated_at")},
+        ),
+    )
 
     def _set_status(
         self, request: HttpRequest, queryset: QuerySet[Dataset], status: Dataset.Status
@@ -79,6 +191,49 @@ class DatasetAdmin(admin.ModelAdmin):
     def set_status_published(self, request: HttpRequest, queryset: QuerySet[Dataset]) -> None:
         self._set_status(request, queryset, Dataset.Status.PUBLISHED)
 
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Dataset]:
+        # Annotate the German abbreviations of the owner organizations for the list view (in a
+        # subquery, so that the main query is neither multiplied nor grouped)
+        owners = (
+            DatasetToUnit.objects.filter(dataset=OuterRef("pk"), role=DatasetToUnit.Role.OWNER)
+            .values("dataset")
+            .annotate(
+                abbreviations=StringAgg(
+                    "unit__organization__abbreviation_de",
+                    delimiter=Value(", "),
+                    distinct=True,
+                    order_by="unit__organization__abbreviation_de",
+                )
+            )
+            .values("abbreviations")
+        )
+        return super().get_queryset(request).annotate(owner_abbreviations=Subquery(owners))
+
+    @admin.display(description="Owner", ordering="owner_abbreviations")
+    def owner(self, obj: Dataset) -> str | None:
+        return obj.owner_abbreviations  # ty: ignore[unresolved-attribute]
+
+    @admin.display(description="Owner Organization")
+    def owner_organization(self, obj: Dataset) -> str:
+        organizations = (
+            Organization.objects.filter(
+                unit__dataset_units__dataset=obj,
+                unit__dataset_units__role=DatasetToUnit.Role.OWNER,
+            )
+            .distinct()
+            .order_by("name_en")
+        )
+        if not organizations:
+            return self.get_empty_value_display()
+        return format_html_join(
+            ", ",
+            '<a href="{}">{}</a>',
+            (
+                (reverse("admin:organization_organization_change", args=[org.pk]), org.name_en)
+                for org in organizations
+            ),
+        )
+
     @admin.display(description="Reverse Dataset Relations")
     def dataset_list(self, obj: Dataset) -> str:
         return format_html_join(
@@ -97,10 +252,10 @@ class DatasetAdmin(admin.ModelAdmin):
         self,
         request: HttpRequest,
         obj: Any | None = None,
-    ) -> list[str] | tuple[Any, ...]:
+    ) -> tuple[str, ...]:
         if obj:
             # Dataset id cannot be updated
             # TODO: depending on how we handle identifiers, we might want implement auto-generation
             # for identifiers (probably preferrable than making it readonly in edit)
-            return ("dataset_id", *self.readonly_fields)
-        return self.readonly_fields
+            return ("sgid", "dataset_id", *self.readonly_fields)
+        return tuple(self.readonly_fields)

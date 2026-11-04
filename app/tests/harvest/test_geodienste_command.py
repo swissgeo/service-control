@@ -90,6 +90,7 @@ def test_command_creates_aggregate_organization(mock, client, db):
     assert "Attribution with attribution_id ch.kgk does not exist yet, creating a new one" in out
 
     org = Organization.objects.get(organization_id="ch.kgk")
+    assert org.sgid == "org_kgk"
     assert org.name_de == "Konferenz der kantonalen Geoinformations- und Katasterstellen"
     assert org.name_fr == "Conférence des services cantonaux de la Géoinformation et du Cadastre"
     assert org.name_en == "Conference of Cantonal Geoinformation and Surveying Offices"
@@ -163,6 +164,7 @@ def test_command_aggregate_organization_federal_political_entity_not_existing(mo
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_updates_aggregate_organization(mock, client, db):
     org = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="x",
         name_fr="x",
@@ -270,6 +272,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_aggregate_organization_mapping(mock, client, db):
     org = Organization(
+        sgid="org_kgk-cgc",
         organization_id="ch.kgk-cgc",
         name_de="x",
         name_fr="x",
@@ -369,6 +372,7 @@ def test_command_creates_cantonal_organization(mock, client, db):
     )
 
     org = Organization.objects.filter(organization_id="ch.geodienste-lu").first()
+    assert org.sgid == "org_geodienste-lu"
     assert org.name_de == "geodienste Luzern"
     assert org.name_en == "geodienste Lucerne"
     assert org.name_fr == "geodienste Lucerne"
@@ -394,6 +398,7 @@ def test_command_creates_cantonal_organization(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_updates_cantonal_organization(mock, client, db):
     org = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="x",
         name_fr="x",
@@ -487,6 +492,7 @@ def test_command_creates_broker_organization(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_updates_broker_organization(mock, client, db):
     org = Organization(
+        sgid="org_bfe",
         organization_id="ch.bfe",
         name_de="x",
         name_fr="x",
@@ -565,6 +571,7 @@ def test_command_creates_organization_from_file(client, db, tmp_path):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_organization_mapping(mock, client, db):
     org_1 = Organization(
+        sgid="org_geodienste-lu-new",
         organization_id="ch.geodienste-lu-new",
         name_de="x",
         name_fr="x",
@@ -581,6 +588,7 @@ def test_command_uses_organization_mapping(mock, client, db):
     )
     org_1.save()
     org_2 = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="x",
         name_fr="x",
@@ -657,6 +665,7 @@ def test_command_uses_organization_mapping(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_cleans_organizations(mock, client, db):
     Organization(
+        sgid="org_obsolete",
         organization_id="obsolete",
         name_de="obsolete",
         name_en="obsolete",
@@ -668,6 +677,7 @@ def test_command_cleans_organizations(mock, client, db):
         data_source_ids=[],
     ).save()
     Organization(
+        sgid="org_removed",
         organization_id="removed",
         name_de="removed",
         name_en="removed",
@@ -756,6 +766,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
     )
 
     org = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -831,6 +842,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
     )
 
     org = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -914,6 +926,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
     )
 
     org = Organization(
+        sgid="org_kgk-cgc",
         organization_id="ch.kgk-cgc",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -1012,6 +1025,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_updates_cleans_contact(mock, client, db):
     org = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="geodienste Luzern",
         name_en="geodienste Lucerne",
@@ -1170,6 +1184,7 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_organization_mapping_for_contact(mock, client, db):
     org = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="geodienste Luzern",
         name_en="geodienste Lucerne",
@@ -1224,6 +1239,7 @@ def test_command_organization_mapping_for_contact(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     org = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -1332,6 +1348,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     aggregate = Dataset.objects.get(dataset_id="ch.kgk.av")
     assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
     assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.sgid == "dat_av"
     assert aggregate.description_de == "Abstract DE"
     assert aggregate.description_en == "Abstract DE"
     assert aggregate.description_fr == "Abstract FR"
@@ -1399,6 +1416,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
     assert part.data_source == Dataset.DataSource.GEODIENSTE
     assert part.data_source_ids == ["LU.av"]
+    assert part.sgid == "dat_av-lu"
     assert part.description_de == "Abstract DE"
     assert part.description_en == "Abstract DE"
     assert part.description_fr == "Abstract FR"
@@ -1429,6 +1447,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_broker_dataset(mock, client, db):
     org = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -1457,6 +1476,7 @@ def test_command_creates_broker_dataset(mock, client, db):
     contact.save()
 
     broker = Organization(
+        sgid="org_bfe",
         organization_id="ch.bfe",
         name_de="BFE",
         name_fr="BFE",
@@ -1613,6 +1633,7 @@ def test_command_creates_broker_dataset(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_updates_datasets(mock, db):  # noqa: PLR0915
     aggregate = Dataset(
+        sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         data_source=Dataset.DataSource.GEODIENSTE,
         data_source_ids=["KGK.av"],
@@ -1632,6 +1653,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
     aggregate.save()
 
     part = Dataset(
+        sgid="dat_av-lu",
         dataset_id="ch.geodienste-lu.av",
         data_source=Dataset.DataSource.GEODIENSTE,
         data_source_ids=["LU.av"],
@@ -1762,6 +1784,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_dataset_mapping(mock, db):
     aggregate = Dataset(
+        sgid="dat_av-kgk-cgc",
         dataset_id="ch.kgk-cgc.av",
         data_source=Dataset.DataSource.USER_INPUT,
         data_source_ids=[],
@@ -1780,6 +1803,7 @@ def test_command_uses_dataset_mapping(mock, db):
     aggregate.save()
 
     part = Dataset(
+        sgid="dat_av-rawi",
         dataset_id="ch.rawi.av",
         data_source=Dataset.DataSource.USER_INPUT,
         data_source_ids=[],
@@ -1905,6 +1929,7 @@ def test_command_uses_dataset_mapping(mock, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_cleans_datasets(mock, db):
     Dataset(
+        sgid="dat_obsolete",
         dataset_id="obsolete",
         data_source=Dataset.DataSource.GEODIENSTE,
         data_source_ids=[],
@@ -1916,6 +1941,7 @@ def test_command_cleans_datasets(mock, db):
         title_fr="Obsolete",
     ).save()
     Dataset(
+        sgid="dat_removed",
         dataset_id="removed",
         data_source=Dataset.DataSource.GEODIENSTE,
         data_source_ids=["KGK.removed"],
@@ -2070,6 +2096,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     # Create
     # ------
     org_aggregate = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -2087,6 +2114,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
     org_aggregate.save()
 
     org_part = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="Kanton Luzern",
         name_en="Canton of Lucerne",
@@ -2157,6 +2185,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
     org_aggregate = Organization(
+        sgid="org_kgk-cgc",
         organization_id="ch.kgk-cgc",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -2172,6 +2201,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
     org_aggregate.save()
 
     org_part = Organization(
+        sgid="org_rawi",
         organization_id="ch.rawi",
         name_de="Raum und Wirtschaft",
         name_en="Raum und Wirtschaft",
@@ -2257,6 +2287,7 @@ def test_command_uses_org_mapping_for_dataset_unit(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_mapping_for_dataset_unit(mock, client, db):
     org_aggregate = Organization(
+        sgid="org_kgk-cgc",
         organization_id="ch.kgk-cgc",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -2276,6 +2307,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
     unit_aggregate.save()
 
     org_part = Organization(
+        sgid="org_rawi",
         organization_id="ch.rawi",
         name_de="Raum und Wirtschaft",
         name_en="Raum und Wirtschaft",
@@ -2418,6 +2450,7 @@ def test_command_uses_mapping_for_dataset_unit(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     org_aggregate = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -2442,6 +2475,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     contact_aggregate.save()
 
     org_part = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="Kanton Luzern",
         name_en="Canton of Lucerne",
@@ -2596,6 +2630,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_contact_mappings(mock, client, db):
     org_aggregate = Organization(
+        sgid="org_kgk",
         organization_id="ch.kgk",
         name_de="Konferenz der kantonalen Geoinformations- und Katasterstellen",
         name_fr="Conférence des services cantonaux de la Géoinformation et du Cadastre",
@@ -2617,6 +2652,7 @@ def test_command_uses_contact_mappings(mock, client, db):
     contact_aggregate.save()
 
     org_part = Organization(
+        sgid="org_geodienste-lu",
         organization_id="ch.geodienste-lu",
         name_de="Kanton Luzern",
         name_en="Canton of Lucerne",
@@ -2764,6 +2800,7 @@ def test_command_creates_concepts(rdf, mock, client, db):  # noqa: PLR0915
     ).first()
 
     aggregate_dataset = Dataset(
+        sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -2776,6 +2813,7 @@ def test_command_creates_concepts(rdf, mock, client, db):  # noqa: PLR0915
     aggregate_dataset.concepts.add(concept)
 
     part_dataset = Dataset(
+        sgid="dat_av-lu",
         dataset_id="ch.geodienste-lu.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -2898,6 +2936,7 @@ def test_command_creates_concepts(rdf, mock, client, db):  # noqa: PLR0915
 @patch("thesaurus.utils.get", name="rdf")
 def test_command_use_mapping_for_concepts(rdf, mock, client, db):
     aggregate_dataset = Dataset(
+        sgid="dat_av-kgk-cgc",
         dataset_id="ch.kgk-cgc.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -2909,6 +2948,7 @@ def test_command_use_mapping_for_concepts(rdf, mock, client, db):
     aggregate_dataset.save()
 
     part_dataset = Dataset(
+        sgid="dat_av-rawi",
         dataset_id="ch.rawi.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -3014,6 +3054,7 @@ def test_command_use_mapping_for_concepts(rdf, mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR0915
     dataset = Dataset(
+        sgid="dat_fixpunkte",
         dataset_id="ch.kgk.fixpunkte",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -3131,6 +3172,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_data.meta_information is False
     assert distribution_data.dataservice == dataservice_data
     assert distribution_data.dataset == dataset
+    assert distribution_data.sgid.startswith("dst_fixpunkte-")
 
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte-availability:wms"
@@ -3154,6 +3196,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_availability.meta_information is True
     assert distribution_availability.dataservice == dataservice_availability
     assert distribution_availability.dataset == dataset
+    assert distribution_availability.sgid.startswith("dst_fixpunkte-")
 
     dataservice_stac = Dataservice.objects.get(
         dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
@@ -3183,6 +3226,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_stac.meta_information is False
     assert distribution_stac.dataservice.dataservice_id == "stac-geodienste"
     assert distribution_stac.dataset == dataset
+    assert distribution_stac.sgid.startswith("dst_fixpunkte-")
 
     dataset.refresh_from_db()
     assert dataset.preferred_distribution == distribution_data
@@ -3256,6 +3300,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR0915
     dataset = Dataset(
+        sgid="dat_thermische-netze",
         dataset_id="ch.bfe.thermische_netze",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -3379,6 +3424,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     assert distribution_data.meta_information is False
     assert distribution_data.dataservice == dataservice_data
     assert distribution_data.dataset == dataset
+    assert distribution_data.sgid.startswith("dst_thermische-netze-")
 
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze-availability:wms"
@@ -3402,6 +3448,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     assert distribution_availability.meta_information is True
     assert distribution_availability.dataservice == dataservice_availability
     assert distribution_availability.dataset == dataset
+    assert distribution_availability.sgid.startswith("dst_thermische-netze-")
 
     dataservice_stac = Dataservice.objects.get(
         dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
@@ -3431,6 +3478,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     assert distribution_stac.meta_information is False
     assert distribution_stac.dataservice.dataservice_id == "stac-geodienste"
     assert distribution_stac.dataset == dataset
+    assert distribution_stac.sgid.startswith("dst_thermische-netze-")
 
     dataset.refresh_from_db()
     assert dataset.preferred_distribution == distribution_data
@@ -3445,6 +3493,7 @@ def test_command_creates_distributions_title_from_wms(mock, client, db):
     assert "Installed" in out
 
     dataset = Dataset(
+        sgid="dat_fixpunkte",
         dataset_id="ch.kgk.fixpunkte",
         description_de="x",
         description_en="x",
@@ -3574,6 +3623,7 @@ def test_command_creates_distributions_title_from_wms(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_cleans_distributions(mock, client, db):
     dataset = Dataset(
+        sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -3596,6 +3646,7 @@ def test_command_cleans_distributions(mock, client, db):
     ).save()
 
     ExternalWMSDistribution(
+        sgid="dst_obsolete-123",
         distribution_id="obsolete",
         data_source=Distribution.DataSource.GEODIENSTE,
         data_source_ids=[],
@@ -3603,6 +3654,7 @@ def test_command_cleans_distributions(mock, client, db):
         dataset=dataset,
     ).save()
     ExternalWMSDistribution(
+        sgid="dst_removed-123",
         distribution_id="removed",
         data_source=Distribution.DataSource.GEODIENSTE,
         data_source_ids=["removed"],
@@ -3704,6 +3756,7 @@ def test_command_cleans_distributions(mock, client, db):
 @patch("harvest.management.commands.import_geodienste.get", name="get")
 def test_command_uses_dataset_mapping_for_distributions(mock, client, db):
     Dataset(
+        sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
         description_en="Abstract EN",
@@ -3713,6 +3766,7 @@ def test_command_uses_dataset_mapping_for_distributions(mock, client, db):
         title_fr="Title FR",
     ).save()
     dataset = Dataset(
+        sgid="dat_av-kgk-cgc",
         dataset_id="ch.kgk-cgc.av",
         description_de="Abstract DE",
         description_en="Abstract EN",

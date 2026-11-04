@@ -83,6 +83,7 @@ def test_machine_user_cannot_change_org(
 
     actual = MachineUser.objects.first()
     actual.organization = Organization.objects.create(
+        sgid="org_other-id",
         organization_id="other_id",
         abbreviation_de="Other",
         abbreviation_fr="Other",

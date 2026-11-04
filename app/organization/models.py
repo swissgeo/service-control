@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from typing import Any, ClassVar
 
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import QuerySet
 from django.db.models.base import ModelBase
@@ -20,6 +21,9 @@ from verified_permissions.utils.client import Client as VPClient
 logger = logging.getLogger(__name__)
 
 
+ORGANIZATION_SGID_REGEX = r"^org_[a-z0-9]+(-[a-z0-9]+)*$"
+
+
 class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
     pass
 
@@ -27,10 +31,12 @@ class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
 class Organization(DataSourceIdModelMixin, models.Model):
     _context = "Organization model"
 
-    """
-    Note: The "blank=False" for a model field doesn't prevent DB changes.
-          It only has an effect on form validation.
-    """
+    sgid = models.CharField(
+        max_length=128,
+        unique=True,
+        validators=[RegexValidator(ORGANIZATION_SGID_REGEX)],
+    )
+
     organization_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
@@ -70,6 +76,7 @@ class Organization(DataSourceIdModelMixin, models.Model):
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
 
+    # FIXME: rename to title
     name_de = models.CharField(_(_context, "Name (German)"))
     name_fr = models.CharField(_(_context, "Name (French)"))
     name_en = models.CharField(_(_context, "Name (English)"))
@@ -90,6 +97,14 @@ class Organization(DataSourceIdModelMixin, models.Model):
     )
 
     objects = OrganizationManager()
+
+    class Meta:
+        constraints = (
+            models.CheckConstraint(
+                condition=models.Q(sgid__regex=ORGANIZATION_SGID_REGEX),
+                name="organization_sgid_format",
+            ),
+        )
 
     def __str__(self) -> str:
         return str(self.organization_id)

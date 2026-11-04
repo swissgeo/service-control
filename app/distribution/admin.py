@@ -1,3 +1,5 @@
+from typing import Any
+
 from polymorphic.admin import (
     PolymorphicChildModelAdmin,
     PolymorphicChildModelFilter,
@@ -5,6 +7,9 @@ from polymorphic.admin import (
 )
 
 from django.contrib import admin
+from django.http.request import HttpRequest
+
+from utils.admin import HarvestWarningMixin, HideFieldsetsOnAddMixin
 
 from .models import (
     Distribution,
@@ -35,39 +40,125 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
     list_display = ("distribution_id", "proto", "title_de", "dataset", "data_source")
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("sgid", "created_at", "updated_at")
 
     search_fields = (
+        "sgid",
         "distribution_id",
         "dataset__dataset_id",
         "dataset__title_de",
         "dataset__title_short_de",
     )
 
+    def get_readonly_fields(
+        self,
+        request: HttpRequest,
+        obj: Any | None = None,
+    ) -> list[str] | tuple[Any, ...]:
+        if obj:
+            return ("sgid", *self.readonly_fields)
+        return self.readonly_fields
+
     @admin.display(empty_value="???")
     def proto(self, obj: Distribution) -> str:
         return obj.get_real_instance().protocol
 
 
+def distribution_fieldsets(service_fields: tuple[Any, ...]) -> tuple[Any, ...]:
+    """Fieldsets shared by all concrete distribution types.
+
+    `service_fields` are the protocol specific fields, shown in the "Service" fieldset.
+    """
+    return (
+        (
+            "Identification",
+            {
+                "fields": (
+                    ("sgid", "distribution_id"),
+                    "dataset",
+                    ("data_source", "data_source_ids"),
+                ),
+            },
+        ),
+        ("Service", {"fields": (*service_fields, "meta_information")}),
+        (
+            "Titles",
+            {"fields": ("title_de", "title_fr", "title_en", "title_it", "title_rm")},
+        ),
+        (
+            "Descriptions",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "description_de",
+                    "description_fr",
+                    "description_en",
+                    "description_it",
+                    "description_rm",
+                ),
+            },
+        ),
+        ("Metadata", {"classes": ("collapse",), "fields": ("created_at", "updated_at")}),
+    )
+
+
+class DistributionChildAdmin(
+    HarvestWarningMixin, HideFieldsetsOnAddMixin, PolymorphicChildModelAdmin
+):
+    """Common admin view for all concrete distribution types."""
+
+    readonly_fields = ("sgid", "created_at", "updated_at")
+    save_on_top = True
+
+    def get_readonly_fields(
+        self,
+        request: HttpRequest,
+        obj: Any | None = None,
+    ) -> list[str] | tuple[Any, ...]:
+        if obj:
+            return ("sgid", *self.readonly_fields)
+        return self.readonly_fields
+
+
 @admin.register(ExternalWMTSDistribution)
-class ExternalWMTSDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalWMTSDistributionAdmin(DistributionChildAdmin):
     """Admin View for ExternalWMTSDistribution"""
 
-    readonly_fields = ("created_at", "updated_at")
+    fieldsets = distribution_fieldsets(
+        (
+            "dataservice",
+            "wmts_layer_name_de",
+            "wmts_layer_name_fr",
+            "wmts_layer_name_en",
+            "wmts_layer_name_it",
+            "wmts_layer_name_rm",
+            "opacity",
+        )
+    )
 
 
 @admin.register(ExternalWMSDistribution)
-class ExternalWMSDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalWMSDistributionAdmin(DistributionChildAdmin):
     """Admin View for ExternalWMSDistribution"""
 
-    readonly_fields = ("created_at", "updated_at")
+    fieldsets = distribution_fieldsets(
+        (
+            "dataservice",
+            "wms_layer_name_de",
+            "wms_layer_name_fr",
+            "wms_layer_name_en",
+            "wms_layer_name_it",
+            "wms_layer_name_rm",
+            ("opacity", "gutter"),
+        )
+    )
 
 
 @admin.register(ExternalStacDistribution)
-class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalStacDistributionAdmin(DistributionChildAdmin):
     """Admin View for ExternalStacDistribution"""
 
-    readonly_fields = ("created_at", "updated_at")
+    fieldsets = distribution_fieldsets(("dataservice", "stac_collection_id"))
     search_fields = (
         "distribution_id",
         "dataset__dataset_id",
@@ -82,10 +173,19 @@ class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(ExternalGeoJSONDistribution)
-class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalGeoJSONDistributionAdmin(DistributionChildAdmin):
     """Admin View for ExternalGeoJSONDistribution"""
 
-    readonly_fields = ("created_at", "updated_at")
+    fieldsets = distribution_fieldsets(
+        (
+            "geojson_url_de",
+            "geojson_url_fr",
+            "geojson_url_en",
+            "geojson_url_it",
+            "geojson_url_rm",
+            "style_url",
+        )
+    )
     search_fields = (
         "distribution_id",
         "dataset__dataset_id",
@@ -100,5 +200,7 @@ class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(ExternalGeoadminFeaturesDistribution)
-class ExternalGeoadminFeaturesDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalGeoadminFeaturesDistributionAdmin(DistributionChildAdmin):
     """Admin View for ExternalGeoadminFeaturesDistribution"""
+
+    fieldsets = distribution_fieldsets(("dataservice", "layer_id", ("queryable", "renderable")))
