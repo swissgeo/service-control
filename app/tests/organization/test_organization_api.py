@@ -391,6 +391,7 @@ def test_get_organizations_returns_all_organizations_ordered_by_id_with_given_la
     user_headers, organization, client
 ):
     organization = {
+        "sgid": "org_bav",
         "organization_id": "ch.bav",
         "name_de": "Bundesamt für Verkehr",
         "name_fr": "Office fédéral des transports",
@@ -496,7 +497,7 @@ def test_create_organization_creates_organization_as_expected(
     data = {
         "id": "ch.bfs",
         "abbreviation_translations": {
-            "de": "BAFU",
+            "de": "BFS",
             "fr": "OFS",
             "en": "FSO",
             "it": "UST",
@@ -522,7 +523,7 @@ def test_create_organization_creates_organization_as_expected(
         "id": "ch.bfs",
         "abbreviation": "FSO",
         "abbreviation_translations": {
-            "de": "BAFU",
+            "de": "BFS",
             "fr": "OFS",
             "en": "FSO",
             "it": "UST",
@@ -557,7 +558,7 @@ def test_create_organization_required_only(boto_client, user_headers, client, db
     data = {
         "id": "ch.bfs",
         "abbreviation_translations": {
-            "de": "BAFU",
+            "de": "BFS",
             "fr": "OFS",
             "en": "FSO",
         },
@@ -579,7 +580,7 @@ def test_create_organization_required_only(boto_client, user_headers, client, db
         "id": "ch.bfs",
         "abbreviation": "FSO",
         "abbreviation_translations": {
-            "de": "BAFU",
+            "de": "BFS",
             "fr": "OFS",
             "en": "FSO",
         },
@@ -763,7 +764,7 @@ def test_create_organization_already_exists(boto_client, user_headers, client, d
     data = {
         "id": "ch.bfs",
         "abbreviation_translations": {
-            "de": "BAFU",
+            "de": "BFS",
             "fr": "OFS",
             "en": "FSO",
             "it": "UST",
@@ -795,7 +796,10 @@ def test_create_organization_already_exists(boto_client, user_headers, client, d
     assert response.status_code == 409
     assert response.json() == {
         "code": 409,
-        "description": ["Organization with this External ID already exists."],
+        "description": [
+            "Organization with this Sgid already exists.",
+            "Organization with this External ID already exists.",
+        ],
     }
 
 

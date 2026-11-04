@@ -13,8 +13,9 @@ ADMIN_HEADERS = {
 }
 
 
-def create_dataset(dataset_id: str, status: Dataset.Status) -> Dataset:
+def create_dataset(sgid: str, dataset_id: str, status: Dataset.Status) -> Dataset:
     return Dataset.objects.create(
+        sgid=sgid,
         dataset_id=dataset_id,
         title_de="Title (DE)",
         title_fr="Title (FR)",
@@ -36,8 +37,8 @@ def create_dataset(dataset_id: str, status: Dataset.Status) -> Dataset:
     ],
 )
 def test_dataset_admin_status_actions(client, db, action, initial_status, expected_status):
-    selected = create_dataset("dataset.selected", initial_status)
-    not_selected = create_dataset("dataset.not_selected", initial_status)
+    selected = create_dataset("dat_selected", "dataset.selected", initial_status)
+    not_selected = create_dataset("dat_not-selected", "dataset.not_selected", initial_status)
     updated_at = selected.updated_at
 
     response = client.post(
@@ -58,8 +59,8 @@ def test_dataset_admin_status_actions(client, db, action, initial_status, expect
 
 
 def test_dataset_admin_status_action_skips_datasets_already_in_status(client, db):
-    draft = create_dataset("dataset.draft", Dataset.Status.DRAFT)
-    published = create_dataset("dataset.published", Dataset.Status.PUBLISHED)
+    draft = create_dataset("dat_draft", "dataset.draft", Dataset.Status.DRAFT)
+    published = create_dataset("dat_published", "dataset.published", Dataset.Status.PUBLISHED)
     draft_updated_at = draft.updated_at
 
     response = client.post(

@@ -43,7 +43,9 @@ def test_command_creates_default_orphaned_dataset(db):
     out = out.getvalue()
 
     assert "Added orphanage dataset 'ORPHANAGE'" in out
-    assert Dataset.objects.filter(dataset_id="ORPHANAGE").first()
+    dataset = Dataset.objects.filter(dataset_id="ORPHANAGE").first()
+    assert dataset
+    assert dataset.sgid == "dat_orphanage"
 
 
 def test_command_creates_orphaned_dataset(db):
@@ -52,7 +54,9 @@ def test_command_creates_orphaned_dataset(db):
     out = out.getvalue()
 
     assert "Added orphanage dataset 'ods'" in out
-    assert Dataset.objects.filter(dataset_id="ods").first()
+    dataset = Dataset.objects.filter(dataset_id="ods").first()
+    assert dataset
+    assert dataset.sgid == "dat_ods"
 
 
 def test_command_creates_stac_distributions_in_orphaned(stac, db):
@@ -77,6 +81,7 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db):
 
     dist = dataset.distribution_set.first()
     assert dist
+    assert dist.sgid.startswith("dst_orphanage-")
     assert dist.protocol == "ogcapi:stac"
     assert dist.distribution_id == "ch.bafu.moose:stac"
     assert dist.stac_collection_id == "ch.bafu.moose"
@@ -90,6 +95,7 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db):
 
 def test_command_creates_stac_distributions(stac, db):
     dataset = Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         geocat_id="abcd",
         title_de="x",
@@ -123,6 +129,7 @@ def test_command_creates_stac_distributions(stac, db):
 
     dist = dataset.distribution_set.first()
     assert dist
+    assert dist.sgid.startswith("dst_moose-")
     assert dist.protocol == "ogcapi:stac"
     assert dist.distribution_id == "ch.bafu.moose:stac"
     assert dist.stac_collection_id == "ch.bafu.moose"
@@ -158,6 +165,7 @@ def test_command_updates_distribution_dataset(stac, db):
 
     # Change to existing dataset
     Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         geocat_id="abcd",
         title_de="x",
@@ -193,6 +201,7 @@ def test_command_cleans_obsolete_stac_distributions(stac, db):
     assert "Installed" in out
 
     dataset = Dataset(
+        sgid="dat_luftfahrthindernis",
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="abcd",
         title_de="x",
@@ -208,9 +217,12 @@ def test_command_cleans_obsolete_stac_distributions(stac, db):
     )
     dataset.save()
     ExternalGeoJSONDistribution(
-        distribution_id="ch.bazl.luftfahrthindernis:geojson", dataset=dataset
+        sgid="dst_luftfahrthindernis-123",
+        distribution_id="ch.bazl.luftfahrthindernis:geojson",
+        dataset=dataset,
     ).save()
     ExternalStacDistribution(
+        sgid="dst_luftfahrthindernis-234",
         distribution_id="ch.bazl.luftfahrthindernis:stac",
         dataset=dataset,
         data_source=Distribution.DataSource.SERVICE_CAPABILITIES,
@@ -241,6 +253,7 @@ def test_command_cleans_obsolete_stac_distributions(stac, db):
 
 def test_command_uses_dataset_mapping_for_distribution(stac, db):
     Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         geocat_id="abcd",
         title_de="x",
@@ -281,6 +294,7 @@ def test_command_uses_dataset_mapping_for_distribution(stac, db):
 
 def test_command_updates_distribution_dataset_from_mapping(stac, db):
     Dataset(
+        sgid="dat_moose-stac",
         dataset_id="ch.bafu.moose-stac",
         geocat_id="abcd",
         title_de="x",
@@ -295,6 +309,7 @@ def test_command_updates_distribution_dataset_from_mapping(stac, db):
         description_rm="x",
     ).save()
     Dataset(
+        sgid="dat_moose",
         dataset_id="ch.bafu.moose",
         geocat_id="efgh",
         title_de="x",

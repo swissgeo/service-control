@@ -35,8 +35,8 @@ def test_organization_mapping(client, db):
         "abbreviation_fr": "abbreviation_fr",
         "abbreviation_en": "abbreviation_en",
     }
-    Organization(organization_id="ch.a", **attributes).save()
-    Organization(organization_id="ch.b", **attributes).save()
+    Organization(sgid="org_a", organization_id="ch.a", **attributes).save()
+    Organization(sgid="org_b", organization_id="ch.b", **attributes).save()
 
     OrganizationMapping(provider_id_prefix="ch.a.b", organization_id="ch.b").save()
     OrganizationMapping(provider_id_prefix="ch.a.c", organization_id="ch.c").save()
@@ -73,8 +73,8 @@ def test_dataset_mapping(db):
         "description_fr": "description_fr",
         "description_en": "description_en",
     }
-    Dataset(dataset_id="ch.a", geocat_id="ch.a", **attributes).save()
-    Dataset(dataset_id="ch.b", geocat_id="ch.b", **attributes).save()
+    Dataset(sgid="dat_a", dataset_id="ch.a", geocat_id="ch.a", **attributes).save()
+    Dataset(sgid="dat_b", dataset_id="ch.b", geocat_id="ch.b", **attributes).save()
 
     DatasetMapping(dataset_id_prefix="ch.a.b", dataset_id="ch.b").save()
     DatasetMapping(dataset_id_prefix="ch.a.c", dataset_id="ch.c").save()
@@ -103,9 +103,9 @@ def test_dataset_to_unit_mapping(client, db):
         "abbreviation_en": "abbreviation_en",
     }
 
-    org_a = Organization(organization_id="ch.a", **names, **abbreviations)
+    org_a = Organization(sgid="org_a", organization_id="ch.a", **names, **abbreviations)
     org_a.save()
-    org_b = Organization(organization_id="ch.b", **names, **abbreviations)
+    org_b = Organization(sgid="org_b", organization_id="ch.b", **names, **abbreviations)
     org_b.save()
 
     Unit(unit_id="x", organization=org_a, **names).save()
@@ -179,9 +179,9 @@ def test_dataset_to_contact_mapping(client, db):
         "abbreviation_fr": "abbreviation_fr",
         "abbreviation_en": "abbreviation_en",
     }
-    org_a = Organization(organization_id="ch.a", **attributes)
+    org_a = Organization(sgid="org_a", organization_id="ch.a", **attributes)
     org_a.save()
-    org_b = Organization(organization_id="ch.b", **attributes)
+    org_b = Organization(sgid="org_b", organization_id="ch.b", **attributes)
     org_b.save()
 
     Contact(name_en="x", organization=org_a).save()

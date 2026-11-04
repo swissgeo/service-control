@@ -12,6 +12,7 @@ def test_data_source_ids(db):
         "description_en": "description_en",
     }
     Dataset(
+        sgid="dat_a",
         dataset_id="a",
         geocat_id="a",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -19,6 +20,7 @@ def test_data_source_ids(db):
         **attributes,
     ).save()
     Dataset(
+        sgid="dat_b",
         dataset_id="b",
         geocat_id="b",
         data_source=Dataset.DataSource.BOD_DATASET,
@@ -26,6 +28,7 @@ def test_data_source_ids(db):
         **attributes,
     ).save()
     Dataset(
+        sgid="dat_c",
         dataset_id="c",
         geocat_id="c",
         data_source=Dataset.DataSource.USER_INPUT,

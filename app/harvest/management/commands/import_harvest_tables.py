@@ -39,6 +39,11 @@ from legal.models import GeopoliticalEntity
 from organization.models import Attribution, Contact, Organization, Unit
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from utils.command import CustomBaseCommand
+from utils.identifier import (
+    dataset_sgid_from_dataset_id,
+    distribution_sgid_from_dataset_sgid,
+    organization_sgid_from_abbreviation,
+)
 
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBClient
@@ -174,6 +179,7 @@ class Command(CustomBaseCommand):
                 update = False
                 state = "created"
                 org = Organization(
+                    sgid=organization_sgid_from_abbreviation(import_org.acronym_de),
                     data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
                     geopolitical_entity=geopolitical_entity,
                     **import_org.model_dump(by_alias=True, exclude={"attributions"}),
@@ -452,6 +458,9 @@ class Command(CustomBaseCommand):
                         dataset_id=dataset_id,
                         data_source=Dataset.DataSource.BOD_DATASET,
                         defaults={
+                            "sgid": dataset_sgid_from_dataset_id(
+                                dataset_id, Dataset.DataSource.BOD_DATASET
+                            ),
                             "title_de": import_ds.title_de,
                             "title_fr": import_ds.title_fr,
                             "title_en": import_ds.title_en,
@@ -785,6 +794,7 @@ class Command(CustomBaseCommand):
             distribution_id=wmts_distribution_id,
             dataset=dataset,
             wmts_layer_name_de=ljs.layer_id,
+            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
         )
 
         values = {
@@ -828,6 +838,7 @@ class Command(CustomBaseCommand):
             distribution_id=wms_distribution_id,
             dataset=dataset,
             wms_layer_name_de=ljs.layer_id,
+            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
         )
 
         values = {
@@ -873,7 +884,10 @@ class Command(CustomBaseCommand):
         dist, created = ExternalGeoJSONDistribution.objects.get_or_create(
             distribution_id=geojson_distribution_id,
             dataset=dataset,
-            defaults={"geojson_url_de": ljs.geojson_url_de},
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "geojson_url_de": ljs.geojson_url_de,
+            },
         )
 
         values = {
@@ -935,6 +949,7 @@ class Command(CustomBaseCommand):
             distribution_id=geoadminfeature_distribution_id,
             dataset=dataset,
             layer_id=ljs.layer_id,
+            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
         )
 
         values = {

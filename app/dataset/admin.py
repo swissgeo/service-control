@@ -50,8 +50,8 @@ class DatasetAdmin(admin.ModelAdmin):
 
     list_display = ("dataset_id", "title_de", "data_source", "status")
     list_filter = ("data_source", PublishedNonPublished)
-    readonly_fields = ("created_at", "updated_at", "dataset_list")
-    search_fields = ("dataset_id", "title_de", "title_short_de")
+    readonly_fields = ("sgid", "created_at", "updated_at", "dataset_list")
+    search_fields = ("sgid", "dataset_id", "title_de", "title_short_de")
     filter_horizontal = ("concepts",)
     inlines = (
         DatasetToDatasetInline,
@@ -102,5 +102,5 @@ class DatasetAdmin(admin.ModelAdmin):
             # Dataset id cannot be updated
             # TODO: depending on how we handle identifiers, we might want implement auto-generation
             # for identifiers (probably preferrable than making it readonly in edit)
-            return ("dataset_id", *self.readonly_fields)
+            return ("sgid", "dataset_id", *self.readonly_fields)
         return self.readonly_fields

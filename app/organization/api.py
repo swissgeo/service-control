@@ -7,6 +7,7 @@ from ninja import Router
 from config.authorization import VPAction
 from utils import api_path
 from utils.auth import is_authenticated, superuser_auth, vp_auth
+from utils.identifier import organization_sgid_from_abbreviation
 from utils.language import LanguageCode
 
 from .models import Organization, Unit
@@ -40,6 +41,7 @@ def create_organization(
     Create an organization.
     """
     return Organization.objects.create(
+        sgid=organization_sgid_from_abbreviation(organization_in.abbreviation_translations.de),
         organization_id=organization_in.id,
         name_de=organization_in.name_translations.de,
         name_fr=organization_in.name_translations.fr,

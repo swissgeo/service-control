@@ -48,6 +48,7 @@ def test_command_updates_dataset_ech_concepts(mock, db):
     assert "Installed" in out
 
     dataset = Dataset(
+        sgid="dat_av",
         dataset_id="ch.kgk.av",
         description_de="Abstract DE",
         description_en="Abstract EN",

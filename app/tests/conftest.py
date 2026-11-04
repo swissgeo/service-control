@@ -21,6 +21,7 @@ def fixture_organization(db):
             "mock-contributor-policy-id"
         )
         yield Organization.objects.create(
+            sgid="org_bafu",
             organization_id="ch.bafu",
             abbreviation_de="BAFU",
             abbreviation_fr="OFEV",

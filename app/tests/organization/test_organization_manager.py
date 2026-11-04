@@ -14,18 +14,21 @@ def test_data_source_ids(client, db):
         "abbreviation_en": "abbreviation_en",
     }
     Organization(
+        sgid="org_a",
         organization_id="a",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["1", "2"],
         **attributes,
     ).save()
     Organization(
+        sgid="org_b",
         organization_id="b",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["2", "3"],
         **attributes,
     ).save()
     Organization(
+        sgid="org_c",
         organization_id="c",
         data_source=Organization.DataSource.USER_INPUT,
         data_source_ids=["1", "2", "3", "4"],
