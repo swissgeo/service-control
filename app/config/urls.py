@@ -22,6 +22,8 @@ from django.views.i18n import JavaScriptCatalog
 
 from .api import api, root
 
+admin.site.site_header = "Service Control administration"
+
 urlpatterns = [
     path(settings.ROOT_PATH_PREFIX + "", root.urls),
     path(settings.API_PATH_PREFIX + "v1/", api.urls),

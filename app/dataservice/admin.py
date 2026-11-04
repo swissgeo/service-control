@@ -1,3 +1,5 @@
+from typing import Any
+
 from polymorphic.admin import (
     PolymorphicChildModelAdmin,
     PolymorphicChildModelFilter,
@@ -6,7 +8,7 @@ from polymorphic.admin import (
 
 from django.contrib import admin
 
-from utils.admin import HarvestWarningMixin
+from utils.admin import HarvestWarningMixin, HideFieldsetsOnAddMixin
 
 from .models import (
     Dataservice,
@@ -38,49 +40,88 @@ class DataserviceAdmin(PolymorphicParentModelAdmin):
     search_fields = ("dataservice_id", "title")
 
 
-@admin.register(WMSDataservice)
-class WMSDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
-    """Admin View for WMSDataservice"""
+def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ...]:
+    """Fieldsets shared by all concrete dataservice types.
+
+    `service_fields` are the service type specific fields, shown in the "Service" fieldset (which
+    is omitted for types without specific fields).
+    """
+    service = (("Service", {"fields": service_fields}),) if service_fields else ()
+    return (
+        (
+            "Identification",
+            {
+                "description": "The external ID is generated from the title when creating.",
+                "fields": (
+                    "dataservice_id",
+                    "title",
+                    ("data_source", "data_source_ids"),
+                ),
+            },
+        ),
+        *service,
+        (
+            "Documentation",
+            {
+                "fields": (
+                    "openapi_spec_url",
+                    "documentation_url_de",
+                    "documentation_url_fr",
+                    "documentation_url_en",
+                    "documentation_url_it",
+                ),
+            },
+        ),
+        ("Metadata", {"classes": ("collapse",), "fields": ("created_at", "updated_at")}),
+    )
+
+
+class DataserviceChildAdmin(
+    HarvestWarningMixin, HideFieldsetsOnAddMixin, PolymorphicChildModelAdmin
+):
+    """Common admin view for all concrete dataservice types."""
 
     list_display = ("dataservice_id", "title", "service_type")
     readonly_fields = ("created_at", "updated_at", "dataservice_id")
+    save_on_top = True
+    fieldsets = dataservice_fieldsets()
+
+
+@admin.register(WMSDataservice)
+class WMSDataserviceAdmin(DataserviceChildAdmin):
+    """Admin View for WMSDataservice"""
+
+    fieldsets = dataservice_fieldsets(("capabilities_url", ("languages", "default_language")))
 
 
 @admin.register(WMTSDataservice)
-class WMTSDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
+class WMTSDataserviceAdmin(DataserviceChildAdmin):
     """Admin View for WMTSDataservice"""
 
-    list_display = ("dataservice_id", "title", "service_type")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
+    fieldsets = dataservice_fieldsets(
+        ("capabilities_url", ("languages", "default_language"), "variable_epsg_list")
+    )
 
 
 @admin.register(WFSDataservice)
-class WFSDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
+class WFSDataserviceAdmin(DataserviceChildAdmin):
     """Admin View for WFSDataservice"""
-
-    list_display = ("dataservice_id", "title", "service_type")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
 
 
 @admin.register(OGCAPIFeaturesDataservice)
-class OGCAPIFeaturesDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
+class OGCAPIFeaturesDataserviceAdmin(DataserviceChildAdmin):
     """Admin View for OGCAPIFeaturesDataservice"""
-
-    list_display = ("dataservice_id", "title", "service_type")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
 
 
 @admin.register(OGCAPIStacDataservice)
-class OGCAPIStacDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
+class OGCAPIStacDataserviceAdmin(DataserviceChildAdmin):
     """Admin View for OGCAPIStacDataservice"""
 
-    list_display = ("dataservice_id", "title", "service_type")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
+    fieldsets = dataservice_fieldsets(("landing_page_url",))
 
 
 @admin.register(GeoadminFeaturesDataservice)
-class GeoadminFeaturesDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
+class GeoadminFeaturesDataserviceAdmin(DataserviceChildAdmin):
     """Admin View for GeoadminFeaturesDataservice"""
 
-    list_display = ("dataservice_id", "title", "service_type")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
+    fieldsets = dataservice_fieldsets(("landing_page_url",))
