@@ -3,7 +3,7 @@ from django.urls import reverse
 
 import pytest
 
-from dataset.models import Dataset
+from dataset.models import Dataset, DatasetToUnit
 from utils.admin import HARVEST_WARNING
 
 ADMIN_HEADERS = {
@@ -124,3 +124,72 @@ def test_harvest_warning_not_shown_for_user_input_dataset(client, db):
     )
     assert response.status_code == 200
     assert HARVEST_WARNING not in response.text
+
+
+def test_dataset_admin_owner_organization_filter(client, organization, unit):
+    default_unit = organization.unit_set.get(unit_id="default")
+    owned = create_dataset("dat_owned", "dataset.owned", Dataset.Status.PUBLISHED)
+    owned_twice = create_dataset("dat_owned-twice", "dataset.owned_twice", Dataset.Status.PUBLISHED)
+    maintained = create_dataset("dat_maintained", "dataset.maintained", Dataset.Status.PUBLISHED)
+    create_dataset("dat_unrelated", "dataset.unrelated", Dataset.Status.PUBLISHED)
+    DatasetToUnit.objects.create(dataset=owned, unit=unit, role=DatasetToUnit.Role.OWNER)
+    DatasetToUnit.objects.create(dataset=owned_twice, unit=unit, role=DatasetToUnit.Role.OWNER)
+    DatasetToUnit.objects.create(
+        dataset=owned_twice, unit=default_unit, role=DatasetToUnit.Role.OWNER
+    )
+    DatasetToUnit.objects.create(dataset=maintained, unit=unit, role=DatasetToUnit.Role.MAINTAINER)
+
+    response = client.get(
+        reverse("admin:dataset_dataset_changelist"),
+        {"owner_organization": organization.pk},
+        **ADMIN_HEADERS,
+    )
+
+    assert response.status_code == 200
+    result = list(response.context["cl"].queryset.order_by("dataset_id"))
+    assert result == [owned, owned_twice]
+    assert organization.abbreviation_de in response.text
+
+
+def test_dataset_admin_shows_owner_organization(client, organization, unit):
+    dataset = create_dataset("dat_owned", "dataset.owned", Dataset.Status.PUBLISHED)
+    DatasetToUnit.objects.create(dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER)
+    organization_url = reverse("admin:organization_organization_change", args=[organization.pk])
+
+    response = client.get(
+        reverse("admin:dataset_dataset_change", args=[dataset.pk]), **ADMIN_HEADERS
+    )
+
+    assert response.status_code == 200
+    assert f'<a href="{organization_url}">{organization.name_en}</a>' in response.text
+
+
+def test_dataset_admin_owner_organization_ignores_other_roles(client, unit):
+    dataset = create_dataset("dat_maintained", "dataset.maintained", Dataset.Status.PUBLISHED)
+    DatasetToUnit.objects.create(dataset=dataset, unit=unit, role=DatasetToUnit.Role.MAINTAINER)
+
+    response = client.get(
+        reverse("admin:dataset_dataset_change", args=[dataset.pk]), **ADMIN_HEADERS
+    )
+
+    assert response.status_code == 200
+    assert reverse("admin:organization_organization_change", args=[unit.organization.pk]) not in (
+        response.text
+    )
+
+
+def test_dataset_admin_list_shows_owner_abbreviation(client, organization, unit):
+    default_unit = organization.unit_set.get(unit_id="default")
+    owned = create_dataset("dat_owned", "dataset.owned", Dataset.Status.PUBLISHED)
+    maintained = create_dataset("dat_maintained", "dataset.maintained", Dataset.Status.PUBLISHED)
+    unowned = create_dataset("dat_unowned", "dataset.unowned", Dataset.Status.PUBLISHED)
+    DatasetToUnit.objects.create(dataset=owned, unit=unit, role=DatasetToUnit.Role.OWNER)
+    DatasetToUnit.objects.create(dataset=owned, unit=default_unit, role=DatasetToUnit.Role.OWNER)
+    DatasetToUnit.objects.create(dataset=maintained, unit=unit, role=DatasetToUnit.Role.MAINTAINER)
+
+    # Sort by the owner column to make sure ordering on the annotation works
+    response = client.get(reverse("admin:dataset_dataset_changelist"), {"o": "4"}, **ADMIN_HEADERS)
+
+    assert response.status_code == 200
+    owners = {ds.pk: ds.owner_abbreviations for ds in response.context["cl"].result_list}
+    assert owners == {owned.pk: organization.abbreviation_de, maintained.pk: None, unowned.pk: None}
