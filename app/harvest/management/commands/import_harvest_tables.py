@@ -285,18 +285,25 @@ class Command(CustomBaseCommand):
             attribution.save()
             processed.add(_attribution.attribution_id)
 
-        self.cleanup_attributions(processed, **options)
+        self.cleanup_attributions(org, processed, **options)
         return created, updated
 
-    def cleanup_attributions(self, processed: set[str], **options: Any) -> tuple[int, int]:
-        existing = Attribution.objects.existing_data_source_ids(
-            Attribution.DataSource.BOD_CONTACT_ORGANIZATION
+    def cleanup_attributions(
+        self, org: Organization, processed: set[str], **options: Any
+    ) -> tuple[int, int]:
+        existing = Attribution.objects.filter(
+            organization=org,
+            attribution_id__in=Attribution.objects.existing_data_source_ids(
+                Attribution.DataSource.BOD_CONTACT_ORGANIZATION
+            ),
         )
-        removed = existing - processed
-        for attribution_id in removed:
-            self.print_warning(f"Removing obsolete data_source_id (attribution) {attribution_id}")
+        removed = existing.exclude(attribution_id__in=processed)
+        for attribution in removed:
+            self.print_warning(
+                f"Removing obsolete data_source_id (attribution) {attribution.attribution_id}"
+            )
             if options["clean"]:
-                Attribution.objects.remove_data_source_id(attribution_id)
+                Attribution.objects.remove_data_source_id(attribution.attribution_id)
 
         obsolete = Attribution.objects.filter(
             data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
