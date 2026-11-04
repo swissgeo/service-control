@@ -4,6 +4,7 @@ from django.urls import reverse
 import pytest
 
 from dataset.models import Dataset
+from utils.admin import HARVEST_WARNING
 
 ADMIN_HEADERS = {
     "HTTP_X_AUTH_REQUEST_USER": "test",
@@ -78,3 +79,48 @@ def test_dataset_admin_status_action_skips_datasets_already_in_status(client, db
     assert draft.status == Dataset.Status.DRAFT
     assert draft.updated_at == draft_updated_at
     assert published.status == Dataset.Status.DRAFT
+
+
+# Harvest warning banner tests
+def create_harvested_dataset(
+    sgid: str, dataset_id: str, data_source: Dataset.DataSource
+) -> Dataset:
+    return Dataset.objects.create(
+        sgid=sgid,
+        dataset_id=dataset_id,
+        data_source=data_source,
+        title_de="Title (DE)",
+        title_fr="Title (FR)",
+        title_en="Title (EN)",
+        description_de="Description (DE)",
+        description_fr="Description (FR)",
+        description_en="Description (EN)",
+    )
+
+
+@pytest.mark.parametrize(
+    "data_source",
+    [Dataset.DataSource.BOD_DATASET, Dataset.DataSource.GEODIENSTE],
+)
+def test_harvest_warning_shown_for_harvested_dataset(client, db, data_source):
+    """A warning banner is shown when editing a harvested dataset."""
+    dataset = create_harvested_dataset("dat_harvested", "dataset.harvested", data_source)
+    response = client.get(
+        reverse("admin:dataset_dataset_change", args=[dataset.pk]),
+        follow=True,
+        **ADMIN_HEADERS,
+    )
+    assert response.status_code == 200
+    assert HARVEST_WARNING in response.text
+
+
+def test_harvest_warning_not_shown_for_user_input_dataset(client, db):
+    """No warning banner is shown when editing a user-input dataset."""
+    dataset = create_harvested_dataset("dat_user", "dataset.user", Dataset.DataSource.USER_INPUT)
+    response = client.get(
+        reverse("admin:dataset_dataset_change", args=[dataset.pk]),
+        follow=True,
+        **ADMIN_HEADERS,
+    )
+    assert response.status_code == 200
+    assert HARVEST_WARNING not in response.text

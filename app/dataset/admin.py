@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html_join
 
+from utils.admin import HarvestWarningMixin
+
 from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
 
 
@@ -45,7 +47,7 @@ class PublishedNonPublished(admin.SimpleListFilter):
 
 
 @admin.register(Dataset)
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(HarvestWarningMixin, admin.ModelAdmin):
     """Admin View for Dataset"""
 
     list_display = ("dataset_id", "title_de", "data_source", "status")
@@ -97,10 +99,10 @@ class DatasetAdmin(admin.ModelAdmin):
         self,
         request: HttpRequest,
         obj: Any | None = None,
-    ) -> list[str] | tuple[Any, ...]:
+    ) -> tuple[str, ...]:
         if obj:
             # Dataset id cannot be updated
             # TODO: depending on how we handle identifiers, we might want implement auto-generation
             # for identifiers (probably preferrable than making it readonly in edit)
             return ("sgid", "dataset_id", *self.readonly_fields)
-        return self.readonly_fields
+        return tuple(self.readonly_fields)
