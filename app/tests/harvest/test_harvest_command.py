@@ -264,6 +264,25 @@ def test_command_updates_organizations(client, dynamodb, db):
         url_rm="https://some.valid.url",
         data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
     )
+    org.attribution_set.create(
+        attribution_id="ch.bafu.bogus",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
 
     org_in = OrganizationImport(
         provider_id="ch.bafu",
@@ -333,7 +352,7 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.abbreviation_en == "FOEN"
     assert org_out.abbreviation_it == "UFAM"
     assert org_out.abbreviation_rm == "UFAM"
-    assert org_out.attribution_set.count() == 1
+    assert org_out.attribution_set.count() == 2
     attribution = org_out.attribution_set.first()
     assert attribution.attribution_id == "ch.bafu.1"
     assert attribution.abbreviation_de == "BAFU"
@@ -354,6 +373,8 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
     assert org_out.data_source_ids == ["ch.bafu"]
     assert org_out.geopolitical_entity == geopolitical_entity
+
+    assert {a.attribution_id for a in Attribution.objects.all()} == {"ch.bafu.1", "ch.bafu.bogus"}
 
 
 @patch("organization.models.Client")
