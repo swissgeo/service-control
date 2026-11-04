@@ -654,7 +654,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.unused"],
     ).save()
-    Organization(
+    remaining_org = Organization(
         organization_id="ch.bafu",
         name_de="x",
         name_fr="x",
@@ -668,7 +668,27 @@ def test_command_cleans_organizations(client, dynamodb, db):
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
-    ).save()
+    )
+    remaining_org.save()
+    remaining_org.attribution_set.create(
+        attribution_id="ch.bafu.bogus",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
     Organization(
         organization_id="ch.bafu-copy",
         name_de="x",
@@ -684,6 +704,50 @@ def test_command_cleans_organizations(client, dynamodb, db):
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
         data_source_ids=["ch.bafu"],
     ).save()
+    ds = Dataset(
+        dataset_id="ch.bafu.moose",
+        title_de="x",
+        title_fr="x",
+        title_en="x",
+        title_it="x",
+        title_rm="x",
+        title_short_de="x",
+        title_short_fr="x",
+        title_short_en="x",
+        title_short_it="x",
+        title_short_rm="x",
+        description_de="x",
+        description_fr="x",
+        description_en="x",
+        description_it="x",
+        description_rm="x",
+        geocat_id="x",
+        data_source=Dataset.DataSource.BOD_DATASET,
+        data_source_ids=[],
+        status=Dataset.Status.DRAFT,
+    )
+    ds.attribution = Attribution(
+        organization=remaining_org,
+        attribution_id="ch.bafu.legit",
+        abbreviation_de="x",
+        abbreviation_fr="x",
+        abbreviation_en="x",
+        abbreviation_it="x",
+        abbreviation_rm="x",
+        name_de="x",
+        name_fr="x",
+        name_en="x",
+        name_it="x",
+        name_rm="x",
+        url_de="https://some.valid.url",
+        url_fr="https://some.valid.url",
+        url_en="https://some.valid.url",
+        url_it="https://some.valid.url",
+        url_rm="https://some.valid.url",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+    )
+    ds.attribution.save()
+    ds.save()
 
     org_in = OrganizationImport(
         provider_id="ch.bafu",
@@ -744,6 +808,8 @@ def test_command_cleans_organizations(client, dynamodb, db):
 
     assert Organization.objects.count() == 1
     assert Organization.objects.filter(organization_id="ch.bafu").first()
+
+    assert {a.attribution_id for a in Attribution.objects.all()} == {"ch.bafu", "ch.bafu.legit"}
 
 
 # --------------------------------------------------------------------------------------------------
