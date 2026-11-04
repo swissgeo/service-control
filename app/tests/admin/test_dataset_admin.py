@@ -82,8 +82,11 @@ def test_dataset_admin_status_action_skips_datasets_already_in_status(client, db
 
 
 # Harvest warning banner tests
-def create_harvested_dataset(dataset_id: str, data_source: Dataset.DataSource) -> Dataset:
+def create_harvested_dataset(
+    sgid: str, dataset_id: str, data_source: Dataset.DataSource
+) -> Dataset:
     return Dataset.objects.create(
+        sgid=sgid,
         dataset_id=dataset_id,
         data_source=data_source,
         title_de="Title (DE)",
@@ -101,7 +104,7 @@ def create_harvested_dataset(dataset_id: str, data_source: Dataset.DataSource) -
 )
 def test_harvest_warning_shown_for_harvested_dataset(client, db, data_source):
     """A warning banner is shown when editing a harvested dataset."""
-    dataset = create_harvested_dataset("dataset.harvested", data_source)
+    dataset = create_harvested_dataset("dat_harvested", "dataset.harvested", data_source)
     response = client.get(
         reverse("admin:dataset_dataset_change", args=[dataset.pk]),
         follow=True,
@@ -113,7 +116,7 @@ def test_harvest_warning_shown_for_harvested_dataset(client, db, data_source):
 
 def test_harvest_warning_not_shown_for_user_input_dataset(client, db):
     """No warning banner is shown when editing a user-input dataset."""
-    dataset = create_harvested_dataset("dataset.user", Dataset.DataSource.USER_INPUT)
+    dataset = create_harvested_dataset("dat_user", "dataset.user", Dataset.DataSource.USER_INPUT)
     response = client.get(
         reverse("admin:dataset_dataset_change", args=[dataset.pk]),
         follow=True,
