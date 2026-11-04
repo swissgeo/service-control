@@ -716,6 +716,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
         url_it="https://some.valid.url",
         url_rm="https://some.valid.url",
         data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+        data_source_ids=["ch.bafu.bogus"],
     )
     Organization(
         sgid="org_bafu-copy",
