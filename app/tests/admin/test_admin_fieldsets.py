@@ -2,6 +2,14 @@ from django.urls import reverse
 
 import pytest
 
+from dataservice.models import (
+    GeoadminFeaturesDataservice,
+    OGCAPIFeaturesDataservice,
+    OGCAPIStacDataservice,
+    WFSDataservice,
+    WMSDataservice,
+    WMTSDataservice,
+)
 from dataset.models import Dataset
 from distribution.models import (
     ExternalGeoadminFeaturesDistribution,
@@ -12,6 +20,7 @@ from distribution.models import (
 )
 from organization.models import Attribution, Contact
 from tests.admin.test_dataset_admin import ADMIN_HEADERS
+from thesaurus.models import Concept, Thesaurus
 
 ADMIN_MODELS = (
     "dataset_dataset",
@@ -24,11 +33,20 @@ ADMIN_MODELS = (
     "organization_unit",
     "organization_contact",
     "organization_attribution",
+    "dataservice_wmsdataservice",
+    "dataservice_wmtsdataservice",
+    "dataservice_wfsdataservice",
+    "dataservice_ogcapifeaturesdataservice",
+    "dataservice_ogcapistacdataservice",
+    "dataservice_geoadminfeaturesdataservice",
+    "thesaurus_thesaurus",
+    "thesaurus_concept",
 )
 
 
 @pytest.fixture(name="admin_objects")
 def fixture_admin_objects(organization, unit):
+    thesaurus = Thesaurus.objects.create(thesaurus_id="thesaurus")
     dataset = Dataset.objects.create(
         sgid="dat_test",
         dataset_id="dataset.test",
@@ -74,6 +92,30 @@ def fixture_admin_objects(organization, unit):
             name_de="Name",
             name_fr="Name",
             name_en="Name",
+        ),
+        "dataservice_wmsdataservice": WMSDataservice.objects.create(
+            title="WMS", capabilities_url="https://example.com/wms"
+        ),
+        "dataservice_wmtsdataservice": WMTSDataservice.objects.create(
+            title="WMTS", capabilities_url="https://example.com/wmts", variable_epsg_list=[2056]
+        ),
+        "dataservice_wfsdataservice": WFSDataservice.objects.create(title="WFS"),
+        "dataservice_ogcapifeaturesdataservice": OGCAPIFeaturesDataservice.objects.create(
+            title="OGC API Features"
+        ),
+        "dataservice_ogcapistacdataservice": OGCAPIStacDataservice.objects.create(
+            title="STAC", landing_page_url="https://example.com/stac"
+        ),
+        "dataservice_geoadminfeaturesdataservice": GeoadminFeaturesDataservice.objects.create(
+            title="Geoadmin Features"
+        ),
+        "thesaurus_thesaurus": thesaurus,
+        "thesaurus_concept": Concept.objects.create(
+            thesaurus=thesaurus,
+            concept_id="concept",
+            label_de="Label",
+            label_fr="Label",
+            label_en="Label",
         ),
     }
 
