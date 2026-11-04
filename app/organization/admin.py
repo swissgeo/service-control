@@ -6,6 +6,8 @@ from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html_join
 
+from utils.admin import HarvestWarningMixin
+
 from .models import Attribution, Contact, Organization, Unit
 
 
@@ -21,7 +23,7 @@ class AttributionInline(admin.TabularInline):  # type:ignore[type-arg]
 
 
 @admin.register(Organization)
-class OrganizationAdmin(admin.ModelAdmin):
+class OrganizationAdmin(HarvestWarningMixin, admin.ModelAdmin):
     """Admin View for Organization"""
 
     list_display = ("organization_id", "abbreviation_en", "name_en", "data_source")
@@ -160,7 +162,7 @@ class ContactAdmin(admin.ModelAdmin):
 
 
 @admin.register(Attribution)
-class AttributionAdmin(admin.ModelAdmin):
+class AttributionAdmin(HarvestWarningMixin, admin.ModelAdmin):
     """Admin View for Organization Attribution"""
 
     list_display = ("attribution_id", "abbreviation_en", "name_en", "number_of_datasets")

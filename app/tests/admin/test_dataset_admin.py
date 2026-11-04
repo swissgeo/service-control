@@ -3,8 +3,8 @@ from django.urls import reverse
 
 import pytest
 
-from dataset.admin import HARVEST_WARNING
 from dataset.models import Dataset
+from utils.admin import HARVEST_WARNING
 
 ADMIN_HEADERS = {
     "HTTP_X_AUTH_REQUEST_USER": "test",

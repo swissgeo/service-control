@@ -9,6 +9,8 @@ from polymorphic.admin import (
 from django.contrib import admin
 from django.http.request import HttpRequest
 
+from utils.admin import HarvestWarningMixin
+
 from .models import (
     Distribution,
     ExternalGeoadminFeaturesDistribution,
@@ -63,7 +65,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
 
 
 @admin.register(ExternalWMTSDistribution)
-class ExternalWMTSDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalWMTSDistributionAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for ExternalWMTSDistribution"""
 
     readonly_fields = ("sgid", "created_at", "updated_at")
@@ -79,7 +81,7 @@ class ExternalWMTSDistributionAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(ExternalWMSDistribution)
-class ExternalWMSDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalWMSDistributionAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for ExternalWMSDistribution"""
 
     readonly_fields = ("sgid", "created_at", "updated_at")
@@ -95,7 +97,7 @@ class ExternalWMSDistributionAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(ExternalStacDistribution)
-class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalStacDistributionAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for ExternalStacDistribution"""
 
     readonly_fields = ("sgid", "created_at", "updated_at")
@@ -122,7 +124,7 @@ class ExternalStacDistributionAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(ExternalGeoJSONDistribution)
-class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalGeoJSONDistributionAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for ExternalGeoJSONDistribution"""
 
     readonly_fields = ("sgid", "created_at", "updated_at")
@@ -149,7 +151,7 @@ class ExternalGeoJSONDistributionAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(ExternalGeoadminFeaturesDistribution)
-class ExternalGeoadminFeaturesDistributionAdmin(PolymorphicChildModelAdmin):
+class ExternalGeoadminFeaturesDistributionAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for ExternalGeoadminFeaturesDistribution"""
 
     def get_readonly_fields(

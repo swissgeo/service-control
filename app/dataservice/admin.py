@@ -6,6 +6,8 @@ from polymorphic.admin import (
 
 from django.contrib import admin
 
+from utils.admin import HarvestWarningMixin
+
 from .models import (
     Dataservice,
     GeoadminFeaturesDataservice,
@@ -37,7 +39,7 @@ class DataserviceAdmin(PolymorphicParentModelAdmin):
 
 
 @admin.register(WMSDataservice)
-class WMSDataserviceAdmin(PolymorphicChildModelAdmin):
+class WMSDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for WMSDataservice"""
 
     list_display = ("dataservice_id", "title", "service_type")
@@ -45,7 +47,7 @@ class WMSDataserviceAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(WMTSDataservice)
-class WMTSDataserviceAdmin(PolymorphicChildModelAdmin):
+class WMTSDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for WMTSDataservice"""
 
     list_display = ("dataservice_id", "title", "service_type")
@@ -53,7 +55,7 @@ class WMTSDataserviceAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(WFSDataservice)
-class WFSDataserviceAdmin(PolymorphicChildModelAdmin):
+class WFSDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for WFSDataservice"""
 
     list_display = ("dataservice_id", "title", "service_type")
@@ -61,7 +63,7 @@ class WFSDataserviceAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(OGCAPIFeaturesDataservice)
-class OGCAPIFeaturesDataserviceAdmin(PolymorphicChildModelAdmin):
+class OGCAPIFeaturesDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for OGCAPIFeaturesDataservice"""
 
     list_display = ("dataservice_id", "title", "service_type")
@@ -69,7 +71,7 @@ class OGCAPIFeaturesDataserviceAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(OGCAPIStacDataservice)
-class OGCAPIStacDataserviceAdmin(PolymorphicChildModelAdmin):
+class OGCAPIStacDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for OGCAPIStacDataservice"""
 
     list_display = ("dataservice_id", "title", "service_type")
@@ -77,7 +79,7 @@ class OGCAPIStacDataserviceAdmin(PolymorphicChildModelAdmin):
 
 
 @admin.register(GeoadminFeaturesDataservice)
-class GeoadminFeaturesDataserviceAdmin(PolymorphicChildModelAdmin):
+class GeoadminFeaturesDataserviceAdmin(HarvestWarningMixin, PolymorphicChildModelAdmin):
     """Admin View for GeoadminFeaturesDataservice"""
 
     list_display = ("dataservice_id", "title", "service_type")

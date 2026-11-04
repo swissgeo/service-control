@@ -7,20 +7,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html_join
 
+from utils.admin import HarvestWarningMixin
+
 from .models import Dataset, DatasetToContact, DatasetToDataset, DatasetToUnit
-
-# Data sources whose fields are overwritten by the harvesters in
-# harvest/management/commands.  Editing them in the admin is allowed but
-# the user should be aware that the next import will overwrite the changes.
-HARVESTED_DATA_SOURCES: set[str] = {
-    Dataset.DataSource.BOD_DATASET,
-    Dataset.DataSource.GEODIENSTE,
-}
-
-HARVEST_WARNING = (
-    "This dataset is imported from an external source. "
-    "Any changes to harvested fields will be overwritten by the next import."
-)
 
 
 class DatasetToDatasetInline(admin.TabularInline):
@@ -58,7 +47,7 @@ class PublishedNonPublished(admin.SimpleListFilter):
 
 
 @admin.register(Dataset)
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(HarvestWarningMixin, admin.ModelAdmin):
     """Admin View for Dataset"""
 
     list_display = ("dataset_id", "title_de", "data_source", "status")
@@ -118,14 +107,4 @@ class DatasetAdmin(admin.ModelAdmin):
             return ("sgid", "dataset_id", *self.readonly_fields)
         return tuple(self.readonly_fields)
 
-    def change_view(
-        self,
-        request: HttpRequest,
-        object_id: str,
-        form_url: str = "",
-        extra_context: dict[str, Any] | None = None,
-    ) -> Any:
-        obj = self.get_object(request, object_id)
-        if obj and obj.data_source in HARVESTED_DATA_SOURCES:
-            messages.warning(request, HARVEST_WARNING)
-        return super().change_view(request, object_id, form_url, extra_context)
+
