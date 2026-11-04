@@ -141,7 +141,8 @@ class Command(CustomBaseCommand):
         self,
         item: dict[str, Any],
         mappings: PrefixLookupTable,
-        geopolitical_entity: GeopoliticalEntity | None = None,
+        geopolitical_entity: GeopoliticalEntity | None,
+        **options: Any,
     ) -> tuple[str | None, str, int, int]:
         """Import a single organization from a dynamoDB item.
 
@@ -202,12 +203,12 @@ class Command(CustomBaseCommand):
         org.add_data_source_id(provider_id)
         org.save()
 
-        created, updated = self.import_attributions(org, import_org.attributions)
+        created, updated = self.import_attributions(org, import_org.attributions, **options)
 
         return provider_id, state, created, updated
 
     def import_attributions(
-        self, org: Organization, attributions: list[AttributionImport]
+        self, org: Organization, attributions: list[AttributionImport], **options: Any
     ) -> tuple[int, int]:
         """Import all attribution dynamoDB items to the given organization.
 
@@ -215,6 +216,7 @@ class Command(CustomBaseCommand):
         """
 
         created, updated = 0, 0
+        processed = set()
         for _attribution in attributions:
             # For now we only create or update Attributions and do not delete any existing ones as
             # they might be referenced by datasets.
@@ -281,8 +283,40 @@ class Command(CustomBaseCommand):
                     updated += 1
             attribution.add_data_source_id(_attribution.attribution_id)
             attribution.save()
+            processed.add(_attribution.attribution_id)
 
+        self.cleanup_attributions(processed, **options)
         return created, updated
+
+    def cleanup_attributions(self, processed: set[str], **options: Any) -> tuple[int, int]:
+        existing = Attribution.objects.existing_data_source_ids(
+            Attribution.DataSource.BOD_CONTACT_ORGANIZATION
+        )
+        if removed := existing - processed:
+            if options["clean"]:
+                for attribution_id in removed:
+                    self.print_warning(
+                        f"Removing obsolete data_source_id (attribution) {attribution_id}"
+                    )
+                    Attribution.objects.remove_data_source_id(attribution_id)
+            else:
+                self.print_warning(
+                    f"Removed data_source_id (attribution) found: {', '.join(removed)}"
+                )
+
+        obsolete = Attribution.objects.filter(
+            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+            data_source_ids=[],
+            attribution_datasets__isnull=True,
+        ).values_list("attribution_id", flat=True)
+        if obsolete:
+            if options["clean"]:
+                for attribution_id in obsolete:
+                    self.print_warning(f"Removing obsolete attribution {attribution_id}")
+                    Attribution.objects.filter(attribution_id=attribution_id).delete()
+            else:
+                self.print_warning(f"Obsolete attributions found: {', '.join(sorted(obsolete))}")
+        return len(removed), len(obsolete)
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -337,7 +371,7 @@ class Command(CustomBaseCommand):
             for item in page["Items"]:
                 log_metrics["organizations.total"] += 1
                 provider_id, state, created, updated = self.import_organization(
-                    item, mappings, geopolitical_entity
+                    item, mappings, geopolitical_entity, **options
                 )
                 if provider_id:
                     processed.add(provider_id)
