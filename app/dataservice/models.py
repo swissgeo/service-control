@@ -47,6 +47,7 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
     class DataSource(models.TextChoices):
         USER_INPUT = "user-input", _("Dataservice DataSource", "User Input (Via Admin Interface)")
         GEODIENSTE = "geodienste", _("Dataservice DataSource", "geodienste.ch")
+        FIXTURE = "fixture", _("Dataset DataSource", "Static fixture")
 
     data_source = models.CharField(
         _(_context, "Data Source"),
