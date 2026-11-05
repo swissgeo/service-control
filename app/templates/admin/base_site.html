@@ -1,9 +1,16 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% comment %}
   Extends the default admin base_site.html with an environment banner: the header is colored per
   environment (see config.context_processors) and shows the environment and the app version.
+  It also sets the favicon (SWISSGEO logo with a settings gear overlay).
 {% endcomment %}
+
+{% block extrahead %}{{ block.super }}
+<link rel="icon" href="{% static 'shared/favicon.svg' %}" type="image/svg+xml">
+<link rel="icon" href="{% static 'shared/favicon.ico' %}" sizes="48x48">
+<link rel="apple-touch-icon" href="{% static 'shared/apple-touch-icon.png' %}">
+{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
 <style {% csp_nonce_attr %}>
