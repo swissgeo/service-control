@@ -173,11 +173,6 @@ class OARRecord(BaseModel):
     )
     type: Literal["Feature"] = "Feature"
     geometry: dict | None = None
-    lang: str = Field(default="de", exclude=True)
-    collection_id: str = Field(default="MISSING", exclude=True)
-
-    def get_key(self) -> str:
-        return f"/collections/{self.collection_id}/items/{self.id}.{self.lang}"
 
 
 class OARDataset(OARRecord):
@@ -212,7 +207,7 @@ class OARDataset(OARRecord):
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
             "preferredDistributionId": (  # TODO: needs further clarification
-                ds.preferred_distribution.distribution_id if ds.preferred_distribution else None
+                ds.preferred_distribution.sgid if ds.preferred_distribution else None
             ),
             "concepts": [
                 concept.concept_id
@@ -231,17 +226,15 @@ class OARDataset(OARRecord):
             "type": "Dataset",
         }
         dataset = OARDataset(
-            id=ds.dataset_id,
+            id=ds.sgid,
             properties=properties,
-            collection_id=settings.OAR_DATASETS_COLLECTION_ID,
-            lang=lang,
         )
         dataset.links.append(
             OARCollectionItemsLink.from_record_id(
                 collection_id=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
                 rel="distributions",
                 title="Distributions",
-                query={"dataset": ds.dataset_id},
+                query={"dataset": ds.sgid},
             )
         )
 
@@ -262,7 +255,7 @@ class OARDataset(OARRecord):
         if owner:
             organization = owner.unit.organization
             dataset.properties["owner"] = Owner(
-                id=organization.organization_id,
+                id=organization.sgid,
                 name=getattr(organization, f"name_{lang}", None) or organization.name_de,
                 abbreviation=getattr(organization, f"abbreviation_{lang}", None)
                 or organization.abbreviation_de,
@@ -328,11 +321,7 @@ class OARDistribution(OARRecord):
     def from_distribution(  # noqa: C901
         cls, dist: Distribution, lang: str
     ) -> OARDistribution:
-        record = OARDistribution(
-            id=dist.distribution_id,
-            collection_id=f"{dist.dataset.dataset_id}.distributions",
-            lang=lang,
-        )
+        record = OARDistribution(id=dist.sgid)
 
         # Set properties
         record.properties["title"] = getattr(dist, f"title_{lang}", dist.title_de)
@@ -342,14 +331,14 @@ class OARDistribution(OARRecord):
         record.links.append(
             OARRecordLink.from_record_id(
                 collection_id=settings.OAR_DATASETS_COLLECTION_ID,
-                record_id=dist.dataset.dataset_id,
+                record_id=dist.dataset.sgid,
                 rel="dataset",
                 title="Dataset Record",
             )
         )
         record.properties["protocol"] = dist.protocol
         record.properties["metaInformation"] = dist.meta_information
-        record.properties["dataset"] = dist.dataset.dataset_id
+        record.properties["dataset"] = dist.dataset.sgid
 
         # GeoJSON Distributions behave slightly different as they are not linked to a dataservice
         # but directly to a file
@@ -398,7 +387,7 @@ class OARDistribution(OARRecord):
             record.links.append(
                 OARRecordLink.from_record_id(
                     collection_id=settings.OAR_DISTRIBUTIONS_COLLECTION_ID,
-                    record_id=info_dist.distribution_id,
+                    record_id=info_dist.sgid,
                     rel="featureinfo",
                 )
             )
@@ -407,7 +396,7 @@ class OARDistribution(OARRecord):
         if isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
             record.links.append(
                 OASStyleLink.from_distribution_id(
-                    distribution_id=dist.distribution_id,
+                    distribution_id=dist.sgid,
                     rel="styledBy",
                     title="Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     typ="application/json",
@@ -460,9 +449,7 @@ class OARDataservice(OARRecord):
     def from_dataservice(cls, ds: Dataservice, lang: str) -> OARDataservice:
 
         # Instantiate record with common properties
-        record = OARDataservice(
-            id=ds.dataservice_id, lang=lang, collection_id=settings.OAR_SERVICES_COLLECTION_ID
-        )
+        record = OARDataservice(id=ds.dataservice_id)
 
         # Set common properties
         record.properties["title"] = getattr(ds, "title", None)
@@ -563,11 +550,7 @@ class OAROrganization(OARRecord):
     def from_organization(cls, organization: Organization, lang: str) -> OAROrganization:
 
         # Instantiate record with common properties
-        record = OAROrganization(
-            id=organization.organization_id,
-            lang=lang,
-            collection_id=settings.OAR_ORGANIZATIONS_COLLECTION_ID,
-        )
+        record = OAROrganization(id=organization.sgid)
 
         # Set common properties
         record.properties["type"] = "Organization"
@@ -753,11 +736,7 @@ class OARThesaurus(OARRecord):
     def from_thesaurus(cls, thesaurus: ThesaurusModel, lang: str) -> OARThesaurus:
 
         # Instantiate record with common properties
-        record = OARThesaurus(
-            id=thesaurus.thesaurus_id,
-            lang=lang,
-            collection_id=settings.OAR_THESAURI_COLLECTION_ID,
-        )
+        record = OARThesaurus(id=thesaurus.thesaurus_id)
 
         record.properties["type"] = "Thesaurus"
         record.links.extend(
