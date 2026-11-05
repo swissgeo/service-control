@@ -1359,7 +1359,11 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert aggregate.title_en == "Title DE"
     assert aggregate.title_fr == "Title FR"
     assert aggregate.title_it == "Title IT"
-    assert aggregate.title_rm is None
+    assert aggregate.title_short_de == "Title DE"
+    assert aggregate.title_short_en == "Title DE"
+    assert aggregate.title_short_fr == "Title FR"
+    assert aggregate.title_short_it == "Title IT"
+    assert aggregate.title_short_rm is None
     assert aggregate.additional_search_text_de == ["Keyword 1 DE", "Keyword 2 DE"]
     assert aggregate.additional_search_text_en == []
     assert aggregate.additional_search_text_fr == []
@@ -1428,6 +1432,11 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
     assert part.title_fr == "Title FR"
     assert part.title_it == "Title IT"
     assert part.title_rm is None
+    assert part.title_short_de == "Title DE"
+    assert part.title_short_en == "Title DE"
+    assert part.title_short_fr == "Title FR"
+    assert part.title_short_it == "Title IT"
+    assert part.title_short_rm is None
     assert part.status == Dataset.Status.PUBLISHED
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
@@ -1445,7 +1454,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
 @patch("organization.models.Client")
 @patch("harvest.management.commands.import_geodienste.get", name="get")
-def test_command_creates_broker_dataset(mock, client, db):
+def test_command_creates_broker_dataset(mock, client, db):  # noqa: PLR0915
     org = Organization(
         sgid="org_kgk",
         organization_id="ch.kgk",
@@ -1574,6 +1583,11 @@ def test_command_creates_broker_dataset(mock, client, db):
     assert dataset.title_fr == "Title FR"
     assert dataset.title_it == "Title IT"
     assert dataset.title_rm is None
+    assert dataset.title_short_de == "Title DE"
+    assert dataset.title_short_en == "Title DE"
+    assert dataset.title_short_fr == "Title FR"
+    assert dataset.title_short_it == "Title IT"
+    assert dataset.title_short_rm is None
     assert dataset.additional_search_text_de == ["Keyword 1 DE", "Keyword 2 DE"]
     assert dataset.additional_search_text_en == []
     assert dataset.additional_search_text_fr == []
