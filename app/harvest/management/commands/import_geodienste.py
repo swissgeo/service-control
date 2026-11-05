@@ -38,6 +38,7 @@ from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 from utils.identifier import (
+    dataservice_sgid_from_dataservice_id,
     dataset_sgid_from_dataset_id,
     distribution_sgid_from_dataset_sgid,
     organization_sgid_from_abbreviation,
@@ -1528,6 +1529,7 @@ class Command(CustomBaseCommand):
                 "creating a new one"
             )
             dataservice = WMSDataservice(
+                sgid=dataservice_sgid_from_dataservice_id(dataservice_id),
                 dataservice_id=dataservice_id,
                 data_source=Dataservice.DataSource.GEODIENSTE,
                 data_source_ids=[data_source_id],
@@ -1685,6 +1687,9 @@ class Command(CustomBaseCommand):
         dataservice, created = OGCAPIStacDataservice.objects.update_or_create(
             dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE,
             defaults={
+                "sgid": dataservice_sgid_from_dataservice_id(
+                    settings.STAC_DATASERVICE_ID_GEODIENSTE
+                ),
                 "title": "STAC API Geodienste",
                 "landing_page_url": f"{parts.scheme}://{parts.netloc}/stac",
                 "documentation_url_de": None,

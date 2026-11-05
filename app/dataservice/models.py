@@ -6,6 +6,7 @@ from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import RegexValidator
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
@@ -16,6 +17,8 @@ from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
 logger = logging.getLogger(__name__)
 
 _context = "Dataservice Module"
+
+DATASERVICE_SGID_REGEX = r"^srv_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
 if TYPE_CHECKING:
@@ -32,6 +35,13 @@ class DataserviceManager(DataSourceIdManagerMixin, PolymorphicManager):
 class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
     """Dataservice model."""
 
+    sgid = models.CharField(
+        max_length=128,
+        unique=True,
+        validators=[RegexValidator(DATASERVICE_SGID_REGEX)],
+    )
+
+    # srv
     dataservice_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     class DataSource(models.TextChoices):
@@ -100,6 +110,12 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
     class Meta:
         verbose_name = _("Dataservice Model", "Dataservice")
         verbose_name_plural = _("Dataservice Model", "Dataservices")
+        constraints = (
+            models.CheckConstraint(
+                condition=models.Q(sgid__regex=DATASERVICE_SGID_REGEX),
+                name="dataservice_sgid_format",
+            ),
+        )
 
     def __str__(self) -> str:
         return self.dataservice_id

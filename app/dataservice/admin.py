@@ -34,10 +34,10 @@ class DataserviceAdmin(PolymorphicParentModelAdmin):
         GeoadminFeaturesDataservice,
     ]
 
-    list_display = ("dataservice_id", "title")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
+    list_display = ("sgid", "dataservice_id", "title")
+    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id")
     list_filter = (PolymorphicChildModelFilter, "data_source")
-    search_fields = ("dataservice_id", "title")
+    search_fields = ("sgid", "dataservice_id", "title")
 
 
 def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ...]:
@@ -53,7 +53,7 @@ def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ..
             {
                 "description": "The external ID is generated from the title when creating.",
                 "fields": (
-                    "dataservice_id",
+                    ("sgid", "dataservice_id"),
                     "title",
                     ("data_source", "data_source_ids"),
                 ),
@@ -81,8 +81,8 @@ class DataserviceChildAdmin(
 ):
     """Common admin view for all concrete dataservice types."""
 
-    list_display = ("dataservice_id", "title", "service_type")
-    readonly_fields = ("created_at", "updated_at", "dataservice_id")
+    list_display = ("sgid", "dataservice_id", "title", "service_type")
+    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id")
     save_on_top = True
     fieldsets = dataservice_fieldsets()
 
