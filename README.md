@@ -242,32 +242,53 @@ The `oar_opensearch_export` command builds OGC API Records documents from the da
 uv run app/manage.py oar_opensearch_export
 ```
 
-Every run processes all three record types, each written to its own index:
+Every run processes all record types, each written to its own index:
 
-| Record type     | OpenSearch index         | Source model   |
-| --------------- | ------------------------ | -------------- |
-| `services`      | `geoadmin-services`      | `Dataservice`  |
-| `datasets`      | `swissgeo-catalog`       | `Dataset`      |
-| `distributions` | `swissgeo-distributions` | `Distribution` |
+| Record type (`--types`) | OpenSearch alias         | Source model   |
+| ----------------------- | ------------------------ | -------------- |
+| `services`              | `geoadmin-services`      | `Dataservice`  |
+| `datasets`              | `swissgeo-catalog`       | `Dataset`      |
+| `distributions`         | `swissgeo-distributions` | `Distribution` |
+| `organizations`         | `swissgeo-organizations` | `Organization` |
+| `thesauri`              | `swissgeo-thesauri`      | `Thesaurus`    |
 
-With no flags the command always does the full run: it creates the indices and imports the
-documents. Pass `--dump` to build the documents without touching OpenSearch at all (see below).
+The names above are *aliases* (configurable via the `OAR_*_COLLECTION_ID` environment variables,
+see `app/config/settings_base.py`), not concrete indices. With no flags the command always does
+the full run: it creates the indices and imports the documents. Pass `--dump` to build the
+documents without touching OpenSearch at all (see below).
 
 ### Atomic Replacement Without Downtime
 
 A full run replaces the whole collection atomically, so searches never see an empty or
-half-filled index. The three names above are *aliases*, not indices. Each run:
+half-filled index. The names above are *aliases*, not indices. Each run:
 
 1. creates new timestamped indices (`swissgeo-catalog-20260722153000`);
 2. indexes all documents into them, while readers keep using the previous generation;
 3. refreshes the new indices so their documents are actually searchable;
-4. repoints all three aliases in a **single** `_aliases` request, which OpenSearch applies as
+4. repoints all aliases in a **single** `_aliases` request, which OpenSearch applies as
    one atomic cluster-state update;
 5. deletes superseded indices, keeping the last `--keep-generations` (default 2) for rollback.
 
 Because all aliases move in one request, the cross-index links between datasets, distributions
 and services never point at a stale generation. If any document fails to index, the command
 aborts *before* the swap, so a broken export can never reach the aliases.
+
+### Managing The Indices: `oar_opensearch_indexes`
+
+The companion command `oar_opensearch_indexes` inspects and cleans up the indices behind the
+aliases (same connection flags as the export command):
+
+```bash
+uv run app/manage.py oar_opensearch_indexes list [--all]
+uv run app/manage.py oar_opensearch_indexes delete 'swissgeo-catalog-2026*' --dry-run
+uv run app/manage.py oar_opensearch_indexes delete swissgeo-catalog-20260722100000
+uv run app/manage.py oar_opensearch_indexes rename swissgeo-catalog-20260722100000 swissgeo-catalog-20260722100001 [--dry-run] [--keep-source]
+```
+
+`list` shows the timestamped generations and which aliases point at them; `delete` supports
+wildcards and warns when an index is still serving reads through an alias (but deletes it anyway,
+so use `--dry-run` first); `rename` clones the index under the new name (hard-linked segments,
+so cheap) and moves the aliases over.
 
 ### Inspecting The Documents With --dump
 
@@ -318,7 +339,8 @@ uv run app/manage.py oar_opensearch_export
 
 | Option              | Default                    | Description                                                                       |
 | ------------------- | -------------------------- | --------------------------------------------------------------------------------- |
-| `--dump [DIR]`      | `.generated/oar_opensearch_export`                        | Write the documents to `DIR/<index>/<id>.json` instead of talking to OpenSearch at all |
+| `--types`           | all record types           | Subset of `services datasets distributions organizations thesauri` to export       |
+| `--dump [DIR]`      | `.generated/oar_opensearch_export`                        | Write the documents to `DIR/<alias>/<id>.json` instead of talking to OpenSearch at all |
 | `--opensearch-url`  | `$OPENSEARCH_URL` or `http://localhost:9200` | OpenSearch endpoint URL                                         |
 | `--aws-auth` / `--no-aws-auth` | auto            | Force/disable SigV4 auth (enabled automatically for `https` URLs)                 |
 | `--keep-generations`| 2                          | Number of superseded indices to keep after a swap, for rollback                   |
