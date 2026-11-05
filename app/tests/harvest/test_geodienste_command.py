@@ -3134,6 +3134,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert "Dataservice stac-geodienste not found, created" in out
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-fixpunkte")
+    assert dataservice_data.sgid == "srv_wms-geodienste-fixpunkte"
     assert dataservice_data.data_source == "geodienste"
     assert dataservice_data.default_language == "de"
     assert dataservice_data.languages == ["de", "fr", "it", "en"]
@@ -3146,6 +3147,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     dataservice_availability = Dataservice.objects.get(
         dataservice_id="wms-geodienste-fixpunkte-availability"
     )
+    assert dataservice_availability.sgid == "srv_wms-geodienste-fixpunkte-availability"
     assert dataservice_availability.data_source == "geodienste"
     assert dataservice_availability.default_language == "de"
     assert dataservice_availability.languages == ["de", "fr", "it", "en"]
@@ -3201,6 +3203,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     dataservice_stac = Dataservice.objects.get(
         dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
     )
+    assert dataservice_stac.sgid == "srv_stac-geodienste"
     assert dataservice_stac.title == "STAC API Geodienste"
     assert (
         dataservice_stac.documentation_url_en
@@ -3384,6 +3387,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     )
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-thermische_netze")
+    assert dataservice_data.sgid == "srv_wms-geodienste-thermische-netze"
     assert dataservice_data.data_source == "geodienste"
     assert dataservice_data.default_language == "de"
     assert dataservice_data.languages == ["de", "fr", "it", "en"]
@@ -3396,6 +3400,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     dataservice_availability = Dataservice.objects.get(
         dataservice_id="wms-geodienste-thermische_netze-availability"
     )
+    assert dataservice_availability.sgid == "srv_wms-geodienste-thermische-netze-availability"
     assert dataservice_availability.data_source == "geodienste"
     assert dataservice_availability.default_language == "de"
     assert dataservice_availability.languages == ["de", "fr", "it", "en"]
@@ -3453,6 +3458,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     dataservice_stac = Dataservice.objects.get(
         dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
     )
+    assert dataservice_stac.sgid == "srv_stac-geodienste"
     assert dataservice_stac.title == "STAC API Geodienste"
     assert (
         dataservice_stac.documentation_url_en
@@ -3635,11 +3641,13 @@ def test_command_cleans_distributions(mock, client, db):
     dataset.save()
 
     WMSDataservice(
+        sgid="srv_obsolete",
         dataservice_id="obsolete",
         data_source=Dataservice.DataSource.GEODIENSTE,
         data_source_ids=[],
     ).save()
     WMSDataservice(
+        sgid="srv_removed",
         dataservice_id="removed",
         data_source=Dataservice.DataSource.GEODIENSTE,
         data_source_ids=["removed"],
