@@ -162,6 +162,33 @@ def test_from_dataset_exports_all_roles(db):
 
 
 @pytest.mark.parametrize(
+    ("short_titles", "lang", "expected"),
+    [
+        ({"title_short_fr": "Court FR", "title_short_en": "Short EN"}, "fr", "Court FR"),
+        ({"title_short_en": "Short EN", "title_short_de": "Kurz DE"}, "fr", "Short EN"),
+        ({"title_short_de": "Kurz DE"}, "fr", "Kurz DE"),
+        ({}, "fr", "Titre FR"),
+        ({}, "rm", "Title EN"),
+    ],
+)
+def test_from_dataset_short_title_fallback(db, short_titles, lang, expected):
+    dataset = Dataset(
+        sgid="dat_test",
+        dataset_id="ch.swisstopo.test",
+        title_de="Titel DE",
+        title_fr="Titre FR",
+        title_en="Title EN",
+        geocat_id="abcd",
+        **short_titles,
+    )
+    dataset.save()
+
+    record = OARDataset.from_dataset(dataset, lang=lang)
+
+    assert record.properties["shortTitle"] == expected
+
+
+@pytest.mark.parametrize(
     "href",
     [
         "/collections/abc/items",
