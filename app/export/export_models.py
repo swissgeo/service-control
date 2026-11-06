@@ -219,13 +219,10 @@ class OARDataset(OARRecord):
                 for concept in ds.concepts.filter(thesaurus__thesaurus_id=ECH0166_THESAURUS_ID)
             ],
             "title": getattr(ds, f"title_{lang}", None) or ds.title_en or ds.title_de,
-            "shortTitle": getattr(
-                ds,
-                f"title_short_{lang}",
-                None,
-            )
+            "shortTitle": getattr(ds, f"title_short_{lang}", None)
             or ds.title_short_en
             or ds.title_short_de
+            or getattr(ds, f"title_{lang}", None)
             or ds.title_en
             or ds.title_de,
             "type": "Dataset",
