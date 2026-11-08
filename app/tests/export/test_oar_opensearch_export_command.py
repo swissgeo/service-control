@@ -288,7 +288,7 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     # One file per document, in the per-index sub-directories.
-    assert (tmp_path / "geoadmin-services" / "wmts-geoadminch.json").is_file()
+    assert (tmp_path / "geoadmin-services" / "srv_wmts-geoadminch.json").is_file()
     assert (tmp_path / "swissgeo-catalog" / "dat_moose.json").is_file()
     # Every distribution of the dataset gets a document of its own.
     assert sorted(p.name for p in (tmp_path / "swissgeo-distributions").iterdir()) == [
@@ -302,9 +302,9 @@ def test_dump_service_document(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["services"], dump=str(tmp_path), verbosity=0)
 
-    assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
+    assert _read_dump(tmp_path, "geoadmin-services", "srv_wmts-geoadminch") == {
         "de": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -328,7 +328,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "fr": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -352,7 +352,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "it": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -376,7 +376,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "rm": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -400,7 +400,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "en": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -423,7 +423,7 @@ def test_dump_service_document(db, tmp_path):
                 "protocol": "ogc:wms",
             },
         },
-        "id": "wmts-geoadminch",
+        "id": "srv_wmts-geoadminch",
         "type": "Feature",
     }
 
@@ -1352,8 +1352,8 @@ def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client,
     service_actions = indexed["geoadmin-services"]
     assert len(service_actions) == 1
     action = service_actions[0]
-    assert action["_id"] == "wmts-geoadminch"
-    assert action["_source"]["id"] == "wmts-geoadminch"
+    assert action["_id"] == "srv_wmts-geoadminch"
+    assert action["_source"]["id"] == "srv_wmts-geoadminch"
     assert action["_source"]["de"]["properties"]["title"] == "WMTS geo.admin.ch"
 
     # The dataset, distribution and organization documents reach their respective generations.

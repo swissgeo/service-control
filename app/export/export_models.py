@@ -446,7 +446,7 @@ class OARDataservice(OARRecord):
     def from_dataservice(cls, ds: Dataservice, lang: str) -> OARDataservice:
 
         # Instantiate record with common properties
-        record = OARDataservice(id=ds.dataservice_id)
+        record = OARDataservice(id=ds.sgid)
 
         # Set common properties
         record.properties["title"] = getattr(ds, "title", None)

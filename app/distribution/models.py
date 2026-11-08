@@ -138,8 +138,10 @@ class ExternalDistribution(Distribution):
         verbose_name = _(_context, "External Distributions")
         verbose_name_plural = _(_context, "External Distributions")
 
+
 def form_style_url(sgid: str) -> str:
     return f"{settings.OAS_PATH_PREFIX}/sty_{sgid.removeprefix('dst_')}"
+
 
 class ExternalWMSDistribution(ExternalDistribution):
     """Distribution model for external WMS distributions."""
