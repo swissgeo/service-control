@@ -6,7 +6,9 @@ from polymorphic.admin import (
     PolymorphicParentModelAdmin,
 )
 
+from django.conf import settings
 from django.contrib import admin
+from django.utils.html import format_html
 
 from utils.admin import HarvestWarningMixin, HideFieldsetsOnAddMixin
 
@@ -35,9 +37,20 @@ class DataserviceAdmin(PolymorphicParentModelAdmin):
     ]
 
     list_display = ("sgid", "dataservice_id", "title")
-    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id")
+    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id", "oar_preview")
     list_filter = (PolymorphicChildModelFilter, "data_source")
     search_fields = ("sgid", "dataservice_id", "title")
+
+    @admin.display(description="Link to OAR Record from last export")
+    def oar_preview(self, obj: Dataservice) -> str:
+        host = (
+            f"{settings.APP_ENV}.sgdi.tech" if settings.APP_ENV in ("dev", "int") else "swissgeo.ch"
+        )
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>',
+            f"https://services.{host}/api/oar/rc1/collections/geoadmin-services/items/{obj.sgid}",
+            f"Preview Dataservice '{obj.sgid}' in OAR API",
+        )
 
 
 def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ...]:
@@ -57,6 +70,12 @@ def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ..
                     "title",
                     ("data_source", "data_source_ids"),
                 ),
+            },
+        ),
+        (
+            "Export",
+            {
+                "fields": ("oar_preview",),
             },
         ),
         *service,
@@ -82,9 +101,20 @@ class DataserviceChildAdmin(
     """Common admin view for all concrete dataservice types."""
 
     list_display = ("sgid", "dataservice_id", "title", "service_type")
-    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id")
+    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id", "oar_preview")
     save_on_top = True
     fieldsets = dataservice_fieldsets()
+
+    @admin.display(description="Link to OAR Record from last export")
+    def oar_preview(self, obj: Dataservice) -> str:
+        host = (
+            f"{settings.APP_ENV}.sgdi.tech" if settings.APP_ENV in ("dev", "int") else "swissgeo.ch"
+        )
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>',
+            f"https://services.{host}/api/oar/rc1/collections/geoadmin-services/items/{obj.sgid}",
+            f"Preview Dataservice '{obj.sgid}' in OAR API",
+        )
 
 
 @admin.register(WMSDataservice)

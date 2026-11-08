@@ -6,8 +6,10 @@ from polymorphic.admin import (
     PolymorphicParentModelAdmin,
 )
 
+from django.conf import settings
 from django.contrib import admin
 from django.http.request import HttpRequest
+from django.utils.html import format_html
 
 from utils.admin import HarvestWarningMixin, HideFieldsetsOnAddMixin
 
@@ -40,7 +42,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
     list_display = ("distribution_id", "proto", "title_de", "dataset", "data_source")
-    readonly_fields = ("sgid", "created_at", "updated_at")
+    readonly_fields = ("sgid", "created_at", "updated_at", "oar_preview")
 
     search_fields = (
         "sgid",
@@ -58,6 +60,17 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         if obj:
             return ("sgid", *self.readonly_fields)
         return self.readonly_fields
+
+    @admin.display(description="Link to OAR Record from last export")
+    def oar_preview(self, obj: Distribution) -> str:
+        host = (
+            f"{settings.APP_ENV}.sgdi.tech" if settings.APP_ENV in ("dev", "int") else "swissgeo.ch"
+        )
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>',
+            f"https://services.{host}/api/oar/rc1/collections/swissgeo-distributions/items/{obj.sgid}",
+            f"Preview Distribution '{obj.sgid}' in OAR API",
+        )
 
     @admin.display(empty_value="???")
     def proto(self, obj: Distribution) -> str:
@@ -78,6 +91,12 @@ def distribution_fieldsets(service_fields: tuple[Any, ...]) -> tuple[Any, ...]:
                     "dataset",
                     ("data_source", "data_source_ids"),
                 ),
+            },
+        ),
+        (
+            "Export",
+            {
+                "fields": ("oar_preview",),
             },
         ),
         ("Service", {"fields": (*service_fields, "meta_information")}),
@@ -107,8 +126,19 @@ class DistributionChildAdmin(
 ):
     """Common admin view for all concrete distribution types."""
 
-    readonly_fields = ("sgid", "created_at", "updated_at")
+    readonly_fields = ("sgid", "created_at", "updated_at", "oar_preview")
     save_on_top = True
+
+    @admin.display(description="Link to OAR Record from last export")
+    def oar_preview(self, obj: Distribution) -> str:
+        host = (
+            f"{settings.APP_ENV}.sgdi.tech" if settings.APP_ENV in ("dev", "int") else "swissgeo.ch"
+        )
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>',
+            f"https://services.{host}/api/oar/rc1/collections/swissgeo-distributions/items/{obj.sgid}",
+            f"Preview Distribution '{obj.sgid}' in OAR API",
+        )
 
     def get_readonly_fields(
         self,

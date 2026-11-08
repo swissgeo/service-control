@@ -12,7 +12,6 @@ from django.conf import settings
 from django.core.management.base import CommandParser
 
 from distribution.models import (
-    Distribution,
     ExternalGeoJSONDistribution,
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
@@ -224,14 +223,6 @@ class Command(CustomBaseCommand):
 
             nr_objs += 1
         return nr_objs
-
-    # ##########################################################################
-    def style_key(self, distribution: Distribution) -> str:
-        """Build the default S3 key for a distribution's style file."""
-        # Key format: api/oas/v0/{distribution_id}/{distribution_id}.style.json
-        # FIX: We should use distribution identifiers without colons in the URL
-        # once this has been changed, we can remove the replace() call
-        return f"{KEY_PREFIX}/{distribution.distribution_id}.style.json".replace(":", ".")
 
     # ##########################################################################
     def do_upload(self, snippet: dict[str, Any], key: str) -> None:
