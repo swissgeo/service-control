@@ -143,13 +143,13 @@ class Command(CustomBaseCommand):
         # }
         nr_objs = 0
         for distribution in ExternalWMTSDistribution.objects.all():
-            if distribution.opacity >= 1.0:
+            if not distribution.style_url:
                 continue
-            key = self.style_key(distribution)
+            key = distribution.style_url.strip("/")
             style = MaplibreStyle(
                 layers=[
                     MaplibreRasterLayer(
-                        id=f"{distribution.distribution_id}",
+                        id=f"{distribution.sgid}",
                         source="wmts.geo.admin.ch",
                         typ="raster",
                         paint=PaintConfig(raster_opacity=distribution.opacity),
@@ -158,7 +158,7 @@ class Command(CustomBaseCommand):
             )
             self.print(
                 f" - {'[DRY RUN]: ' if options['dry_run'] else ''}"
-                f"Uploading style for {distribution.distribution_id} to {key}"
+                f"Uploading style for {distribution.sgid} to {key}"
             )
             if not options["dry_run"]:
                 self.do_upload(style.model_dump(exclude_none=True, by_alias=True), key)
@@ -172,9 +172,9 @@ class Command(CustomBaseCommand):
         # WMS Distributions can have an opacity different from 1.0 or a gutter > 0
         nr_objs = 0
         for distribution in ExternalWMSDistribution.objects.all():
-            if not (distribution.opacity < Decimal("1.0") or distribution.gutter > 0):
+            if not distribution.style_url:
                 continue
-            key = self.style_key(distribution)
+            key = distribution.style_url.strip("/")
             paintconfig = PaintConfig()
             if distribution.opacity < Decimal("1.0"):
                 paintconfig.raster_opacity = float(distribution.opacity)
@@ -183,7 +183,7 @@ class Command(CustomBaseCommand):
             style = MaplibreStyle(
                 layers=[
                     MaplibreRasterLayer(
-                        id=f"{distribution.distribution_id}",
+                        id=f"{distribution.sgid}",
                         source="wms.geo.admin.ch",
                         typ="raster",
                         paint=paintconfig,
@@ -192,7 +192,7 @@ class Command(CustomBaseCommand):
             )
             self.print(
                 f" - {'[DRY RUN]: ' if options['dry_run'] else ''}"
-                f"Uploading style for {distribution.distribution_id} to {key}"
+                f"Uploading style for {distribution.sgid} to {key}"
             )
             if not options["dry_run"]:
                 self.do_upload(style.model_dump(exclude_none=True, by_alias=True), key)

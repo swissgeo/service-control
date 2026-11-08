@@ -390,10 +390,10 @@ class OARDistribution(OARRecord):
             )
 
         # Add style relation
-        if isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)):
+        if isinstance(dist, (ExternalWMSDistribution, ExternalWMTSDistribution)) and dist.style_url:
             record.links.append(
-                OASStyleLink.from_distribution_id(
-                    distribution_id=dist.sgid,
+                RelativeLink(
+                    href=dist.style_url,
                     rel="styledBy",
                     title="Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     typ="application/json",

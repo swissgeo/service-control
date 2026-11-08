@@ -924,7 +924,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/dst_moose-123:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -959,7 +959,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/dst_moose-123:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -994,7 +994,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/dst_moose-123:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -1029,7 +1029,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/dst_moose-123:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -1064,7 +1064,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/dst_moose-123:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
