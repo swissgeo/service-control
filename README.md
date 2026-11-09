@@ -290,6 +290,11 @@ wildcards and warns when an index is still serving reads through an alias (but d
 so use `--dry-run` first); `rename` clones the index under the new name (hard-linked segments,
 so cheap) and moves the aliases over.
 
+In production the indices are created by the `opensearch-export` CronJob in
+`swissgeo-infra-kubernetes` (`services/service-control/base/cron-opensearch-export.yaml`): daily
+at 01:45 UTC via `manage.py oar_opensearch_export --keep-generations=2`, with
+`concurrencyPolicy: Forbid`, against the VPC-internal OpenSearch over HTTPS with SigV4 auth.
+
 ### Inspecting The Documents With --dump
 
 `--dump` writes the generated documents to disk instead of talking to OpenSearch at all, one
