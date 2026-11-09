@@ -362,6 +362,15 @@ class OARDistribution(OARRecord):
                             typ="application/json",
                         )
                     )
+            if legend_url := getattr(dist, f"geojson_legend_{lang}", None):
+                record.links.append(
+                    UnvalidatedLink(
+                        href=legend_url,
+                        rel="legend",
+                        title="Legend of the GeoJSON layer",
+                        typ="image/png",
+                    )
+                )
         elif hasattr(dist, "dataservice") and dist.dataservice:
             # TODO: We should probably only export distributions that actually have an
             # associated dataservice, as otherwise the distribution record would be

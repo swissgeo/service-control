@@ -1,5 +1,7 @@
+from collections.abc import Callable
 from decimal import Decimal
 from io import StringIO
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from django.core.management import call_command
@@ -60,6 +62,17 @@ def fixture_dynamodb():
         session.client.return_value = client
         mock_session_cls.return_value = session
         yield client
+
+
+@pytest.fixture(name="legend_head", autouse=True)
+def fixture_legend_head():
+    """Mocks the HEAD requests used to check for GeoJSON legends.
+
+    By default no legend exists (404). Override `side_effect` to simulate existing legends.
+    """
+    with patch("harvest.management.commands.import_harvest_tables.head") as mock_head:
+        mock_head.return_value = MagicMock(status_code=404)
+        yield mock_head
 
 
 # --------------------------------------------------------------------------------------------------
@@ -1765,6 +1778,72 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     dist_6.refresh_from_db()
     assert dist_6.geojson_url_rm is None
+
+
+def test_command_imports_geojson_legends(dynamodb, legend_head, db):
+    legend_url = "https://api3.geo.admin.ch/static/images/legends/ch.bfe.shared-mobility_{}.png"
+
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=StringIO())
+
+    dataset = Dataset(
+        sgid="dat_shared-mobility",
+        dataset_id="ch.bfe.shared-mobility",
+        title_de="T DE",
+        geocat_id="c",
+        data_source=Dataset.DataSource.BOD_DATASET,
+        data_source_ids=["ch.bfe.shared-mobility"],
+    )
+    dataset.save()
+
+    layer = LayersJSImport(
+        layer_id="ch.bfe.shared-mobility",
+        layertype="geojson",
+        geojson_url_de="https://data.geo.admin.ch/ch.bfe.shared-mobility/shared-mobility_de.json",
+    )
+    dynamodb.get_paginator().paginate.return_value = [{"Items": [layer.as_dynamodb_item()]}]
+
+    def head_side_effect(available: list[str]) -> Callable[..., MagicMock]:
+        def side_effect(url: str, **kwargs: Any) -> MagicMock:
+            exists = any(url == legend_url.format(lang) for lang in available)
+            return MagicMock(status_code=200 if exists else 404)
+
+        return side_effect
+
+    # =========================
+    # Create: only DE and FR legends exist
+    # =========================
+    legend_head.side_effect = head_side_effect(["de", "fr"])
+
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert {call.args[0] for call in legend_head.call_args_list} == {
+        legend_url.format(lang) for lang in ("de", "fr", "it", "en", "rm")
+    }
+    assert f"Found legend {legend_url.format('de')}" in out
+    assert "No legend found for layer_id ch.bfe.shared-mobility (it)" in out
+
+    dist = ExternalGeoJSONDistribution.objects.get(distribution_id="ch.bfe.shared-mobility:geojson")
+    assert dist.geojson_legend_de == legend_url.format("de")
+    assert dist.geojson_legend_fr == legend_url.format("fr")
+    assert dist.geojson_legend_it is None
+    assert dist.geojson_legend_en is None
+    assert dist.geojson_legend_rm is None
+
+    # =========================
+    # Update: FR legend disappears, IT legend appears
+    # =========================
+    legend_head.side_effect = head_side_effect(["de", "it"])
+
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=StringIO())
+
+    dist.refresh_from_db()
+    assert dist.geojson_legend_de == legend_url.format("de")
+    assert dist.geojson_legend_fr is None
+    assert dist.geojson_legend_it == legend_url.format("it")
+    assert dist.geojson_legend_en is None
+    assert dist.geojson_legend_rm is None
 
 
 def test_command_cleans_distributions(dynamodb, db):
