@@ -1,5 +1,5 @@
 from io import StringIO
-from json import loads
+from json import dumps, loads
 from unittest.mock import patch
 
 from django.core.management import call_command
@@ -210,6 +210,30 @@ def test_command_skips_non_ech_thesauri(session, db, thesaurus):
 
     result = extract_put_object(session)
     assert result == []
+
+
+@patch("export.management.commands.export_thesauri.Session")
+@pytest.mark.parametrize("parent_id", [ROOT_CONCEPT_ID, "parent_a"])
+def test_command_skips_excluded_concepts(session, db, thesaurus, parent_id):
+    Concept(
+        thesaurus=thesaurus,
+        parent=Concept.objects.get(thesaurus=thesaurus, concept_id=parent_id),
+        concept_id="oceans",
+        label_de="oceans de",
+        label_fr="oceans fr",
+        label_en="oceans en",
+        label_it="oceans it",
+        label_rm="oceans rm",
+    ).save()
+
+    call_command("export_thesauri", stdout=StringIO())
+
+    result = extract_put_object(session)
+    assert len(result) == 6
+    for upload in result:
+        body = dumps(upload["Body"])
+        assert "parent_a" in body
+        assert "oceans" not in body
 
 
 @patch("export.management.commands.export_thesauri.Session")

@@ -28,7 +28,7 @@ from distribution.models import (
     ExternalWMTSDistribution,
 )
 from organization.models import Organization
-from thesaurus.models import ECH0166_THESAURUS_ID, ROOT_CONCEPT_ID
+from thesaurus.models import ECH0166_THESAURUS_ID, EXPORT_EXCLUDED_CONCEPT_IDS, ROOT_CONCEPT_ID
 from thesaurus.models import Concept as ConceptModel
 from thesaurus.models import Thesaurus as ThesaurusModel
 
@@ -788,7 +788,12 @@ class Concept(BaseModel):
         return cls(
             concept_id=concept.concept_id,
             label=getattr(concept, f"label_{lang}"),
-            children=[cls.from_concept(child, lang) for child in concept.children.all()],  # ty: ignore[unresolved-attribute]
+            children=[
+                cls.from_concept(child, lang)
+                for child in concept.children.exclude(  # ty: ignore[unresolved-attribute]
+                    concept_id__in=EXPORT_EXCLUDED_CONCEPT_IDS
+                )
+            ],
         )
 
 
@@ -801,7 +806,7 @@ class Thesaurus(BaseModel):
         roots = ConceptModel.objects.filter(
             thesaurus=thesaurus,
             parent__concept_id=ROOT_CONCEPT_ID,
-        )
+        ).exclude(concept_id__in=EXPORT_EXCLUDED_CONCEPT_IDS)
         return cls(
             thesaurus_id=thesaurus.thesaurus_id,
             concepts=[Concept.from_concept(c, lang) for c in roots],
