@@ -7,7 +7,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from iso639 import Lang
-from lxml import etree  # ty:ignore[unresolved-import]
+from lxml import etree  # ty:ignore[import-not-found]
 from requests import get
 
 from django.conf import settings
