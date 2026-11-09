@@ -93,6 +93,7 @@ def test_generation_index_and_detection():
     # The alias itself and unrelated/untimestamped indices are not generations.
     assert not _is_generation_of("swissgeo-catalog", "swissgeo-catalog")
     assert not _is_generation_of("swissgeo-catalog-backup", "swissgeo-catalog")
+    assert not _is_generation_of("swissgeo-catalog-backup-20260722153000", "swissgeo-catalog")
     assert not _is_generation_of("geoadmin-services-20260722153000", "swissgeo-catalog")
 
 

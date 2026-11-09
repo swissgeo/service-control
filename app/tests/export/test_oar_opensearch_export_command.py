@@ -12,8 +12,14 @@ The command has two output modes:
 """
 
 import json
+import os
+import uuid
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
+
+from opensearchpy import OpenSearch, RequestError, helpers
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -22,8 +28,14 @@ import pytest
 
 from dataservice.models import WMSDataservice
 from dataset.models import Dataset, DatasetToDataset, DatasetToUnit
-from distribution.models import ExternalWMSDistribution
-from export.management.commands.oar_opensearch_export import Command, _is_generation_of
+from distribution.models import ExternalGeoadminFeaturesDistribution, ExternalWMSDistribution
+from export.export_models import LANGS
+from export.management.commands.oar_opensearch_export import (
+    TYPE_TO_INDEX,
+    Command,
+    _is_generation_of,
+    load_index_definition,
+)
 from organization.models import Organization
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 
@@ -1500,3 +1512,163 @@ def test_build_documents_dataset_with_depublished_dataset(db):
     docs = cmd.build_documents("datasets")
     assert len(docs) == 1
     assert docs[0]["id"] == "ch.bafu.karibu"
+
+
+def _make_documents_with_every_field(unit: Any, dump_dir: Path) -> dict[str, list[dict]]:
+    """Dump documents between them using every optional field, keyed by alias."""
+    dataservice = _make_dataservice()
+    dataset = _make_dataset()
+    DatasetToUnit(dataset=dataset, unit=unit, role=DatasetToUnit.Role.OWNER).save()
+    dataset.attribution = unit.organization.attribution_set.create(
+        attribution_id="ch.bafu", abbreviation_de="BAFU", name_de="Bundesamt für Umwelt"
+    )
+    dataset.preferred_distribution = _make_distribution(dataset, dataservice)
+    dataset.save()
+    ExternalGeoadminFeaturesDistribution(
+        sgid="dst_moose-features",
+        distribution_id="ch.bafu.moose:features",
+        dataset=dataset,
+        title_de="Features",
+        title_fr="Features",
+        title_it="Features",
+        title_rm="Features",
+        title_en="Features",
+        layer_id="ch.bafu.moose",
+        queryable=True,
+        renderable=True,
+    ).save()
+    _make_aggregate_part_datasets()
+
+    call_command("oar_opensearch_export", dump=str(dump_dir), verbosity=0)
+
+    return {
+        alias: [json.loads(path.read_text()) for path in sorted((dump_dir / alias).glob("*.json"))]
+        for alias in TYPE_TO_INDEX.values()
+    }
+
+
+def _unmapped_fields(document: dict, mapped: dict, path: str = "") -> Iterator[str]:
+    """Yield the fields of `document` that the mapping properties `mapped` do not define."""
+    for name, value in document.items():
+        if name not in mapped:
+            yield f"{path}{name}"
+        elif isinstance(value, dict) and "properties" in mapped[name]:
+            yield from _unmapped_fields(value, mapped[name]["properties"], f"{path}{name}.")
+
+
+def _document_fields(document: dict, path: str = "") -> Iterator[str]:
+    for name, value in document.items():
+        yield f"{path}{name}"
+        if isinstance(value, dict):
+            yield from _document_fields(value, f"{path}{name}.")
+
+
+def _mapped_leaf_fields(mapped: dict, path: str = "") -> Iterator[tuple[str, dict]]:
+    for name, definition in mapped.items():
+        if "properties" in definition:
+            yield from _mapped_leaf_fields(definition["properties"], f"{path}{name}.")
+        else:
+            yield f"{path}{name}", definition
+
+
+@patch("organization.models.Client")
+def test_documents_and_mappings_cover_each_other(cognito, unit, tmp_path):
+    """Every dumped field is mapped, so a strict index accepts it, and no mapped field is stale."""
+    documents = _make_documents_with_every_field(unit, tmp_path)
+
+    for alias, docs in documents.items():
+        assert docs, alias
+        mapped = load_index_definition(alias)["mappings"]["properties"]
+
+        for doc in docs:
+            assert not list(_unmapped_fields(doc, mapped)), f"{alias}: {doc['id']}"
+
+        written = {field for doc in docs for field in _document_fields(doc)}
+        leaves = dict(_mapped_leaf_fields(mapped))
+        copy_targets = {
+            definition["copy_to"] for definition in leaves.values() if "copy_to" in definition
+        }
+        # Only datasets currently have a geometry, the other records leave it out while None.
+        unused = {
+            field
+            for field in set(leaves) - written - copy_targets
+            if not field.endswith(".geometry")
+        }
+        assert not unused, alias
+
+
+@pytest.fixture
+def opensearch() -> OpenSearch:
+    """A client for a real cluster; CI has none, so these tests are opt-in."""
+    url = os.environ.get("OPENSEARCH_TEST_URL")
+    if not url:
+        pytest.skip("OPENSEARCH_TEST_URL is not set")
+    return OpenSearch(url, verify_certs=False)
+
+
+@pytest.fixture
+def scratch_indices(opensearch: OpenSearch) -> Iterator[str]:
+    """A unique name prefix for test indices, all of which are removed afterwards."""
+    prefix = f"test-oar-{uuid.uuid4().hex}"
+    yield prefix
+    opensearch.indices.delete(index=f"{prefix}-*")
+
+
+@patch("organization.models.Client")
+def test_dumped_documents_are_searchable(cognito, unit, tmp_path, opensearch, scratch_indices):
+    """Regression test for mapping paths: the real documents must match on their real fields."""
+    documents = _make_documents_with_every_field(unit, tmp_path)
+    searchable_field = {
+        "geoadmin-services": "title",
+        "swissgeo-catalog": "title",
+        "swissgeo-distributions": "title",
+        "swissgeo-organizations": "name",
+    }
+
+    for alias, docs in documents.items():
+        index = f"{scratch_indices}-{alias}"
+        opensearch.indices.create(index=index, body=load_index_definition(alias))
+        # raise_on_error is the default: a document a strict mapping rejects fails the test.
+        helpers.bulk(
+            opensearch,
+            ({"_index": index, "_id": doc["id"], "_source": doc} for doc in docs),
+            refresh=True,
+        )
+        assert opensearch.count(index=index)["count"] == len(docs)
+
+        if alias not in searchable_field:
+            continue
+        for doc in docs:
+            for lang in LANGS:
+                field = f"{lang}.properties.{searchable_field[alias]}"
+                value = doc[lang]["properties"][searchable_field[alias]]
+                hits = opensearch.search(
+                    index=index, body={"query": {"match": {field: value}}, "size": len(docs)}
+                )["hits"]["hits"]
+                assert doc["id"] in [hit["_id"] for hit in hits], f"{alias}: {field}"
+
+
+@pytest.mark.parametrize(
+    "document",
+    [
+        pytest.param({"id": "a", "stray": "x"}, id="root"),
+        pytest.param({"id": "a", "de": {"stray": "x"}}, id="language"),
+        pytest.param({"id": "a", "de": {"properties": {"titel": "x"}}}, id="properties"),
+    ],
+)
+def test_strict_mapping_rejects_unknown_fields(document, opensearch, scratch_indices):
+    index = f"{scratch_indices}-catalog"
+    opensearch.indices.create(index=index, body=load_index_definition("swissgeo-catalog"))
+
+    with pytest.raises(RequestError, match="strict_dynamic_mapping_exception"):
+        opensearch.index(index=index, body=document)
+
+
+@patch(f"{MODULE}.Command.get_client")
+def test_export_has_no_debug_output(get_client, db, capsys):
+    get_client.return_value = _mock_client()
+
+    with patch(f"{MODULE}.helpers.bulk", return_value=(0, [])):
+        call_command("oar_opensearch_export", types=["services"], verbosity=2)
+
+    assert "parsed args" not in capsys.readouterr().out

@@ -1,11 +1,17 @@
 {
   "mappings": {
+    "dynamic": "strict",
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
       "de": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
               "type": {"type": "keyword", "index": false}
@@ -14,8 +20,13 @@
         }
       },
       "fr": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
               "type": {"type": "keyword", "index": false}
@@ -24,8 +35,13 @@
         }
       },
       "it": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
               "type": {"type": "keyword", "index": false}
@@ -34,8 +50,13 @@
         }
       },
       "rm": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
               "type": {"type": "keyword", "index": false}
@@ -44,8 +65,13 @@
         }
       },
       "en": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
               "type": {"type": "keyword", "index": false}
