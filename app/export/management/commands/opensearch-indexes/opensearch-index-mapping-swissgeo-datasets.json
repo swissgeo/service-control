@@ -4,7 +4,7 @@
       "*.properties.title^3",
       "*.properties.shortTitle^3",
       "*.properties.description",
-      "*.properties.additionalSearchText",
+      "*.properties.additionalSearchText^2",
       "*.properties.owner.name^2",
       "*.properties.owner.abbreviation^20"
     ],
