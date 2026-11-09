@@ -7,7 +7,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from iso639 import Lang
-from lxml import etree  # ty:ignore[unresolved-import]
+from lxml import etree  # ty:ignore[import-not-found]
 from requests import get
 
 from django.conf import settings
@@ -38,6 +38,7 @@ from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 from utils.identifier import (
+    dataservice_sgid_from_dataservice_id,
     dataset_sgid_from_dataset_id,
     distribution_sgid_from_dataset_sgid,
     organization_sgid_from_abbreviation,
@@ -774,6 +775,10 @@ class Command(CustomBaseCommand):
                 "title_en": service["topic_title"],
                 "title_fr": services["fr"][key]["topic_title"],
                 "title_it": services["it"][key]["topic_title"],
+                "title_short_de": service["topic_title"],
+                "title_short_en": service["topic_title"],
+                "title_short_fr": services["fr"][key]["topic_title"],
+                "title_short_it": services["it"][key]["topic_title"],
                 "description_de": service["abstract"],
                 "description_en": service["abstract"],
                 "description_fr": services["fr"][key]["abstract"],
@@ -1475,10 +1480,12 @@ class Command(CustomBaseCommand):
             title_en="Availability",
             title_fr="Disponibilité",
             title_it="Disponibilità",
+            title_rm="Disponibilitad",
             description_de="Kantonalen Verfügbarkeit der Daten.",
             description_en="Availability of data at cantonal level.",
             description_fr="Disponibilité des données au niveau cantonal.",
             description_it="Disponibilità dei dati a livello cantonale.",
+            description_rm="Disponibladad da datas sin plaun chantunal.",
             wms_layer_name_de="availability",
             wms_layer_name_fr="availability",
             wms_layer_name_it="availability",
@@ -1526,6 +1533,7 @@ class Command(CustomBaseCommand):
                 "creating a new one"
             )
             dataservice = WMSDataservice(
+                sgid=dataservice_sgid_from_dataservice_id(dataservice_id),
                 dataservice_id=dataservice_id,
                 data_source=Dataservice.DataSource.GEODIENSTE,
                 data_source_ids=[data_source_id],
@@ -1683,6 +1691,9 @@ class Command(CustomBaseCommand):
         dataservice, created = OGCAPIStacDataservice.objects.update_or_create(
             dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE,
             defaults={
+                "sgid": dataservice_sgid_from_dataservice_id(
+                    settings.STAC_DATASERVICE_ID_GEODIENSTE
+                ),
                 "title": "STAC API Geodienste",
                 "landing_page_url": f"{parts.scheme}://{parts.netloc}/stac",
                 "documentation_url_de": None,

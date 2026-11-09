@@ -142,18 +142,19 @@ class Command(CustomBaseCommand):
         item: dict[str, Any],
         mappings: PrefixLookupTable,
         geopolitical_entity: GeopoliticalEntity | None = None,
-    ) -> tuple[str | None, str, int, int]:
+    ) -> tuple[str | None, str, int, int, set[str]]:
         """Import a single organization from a dynamoDB item.
 
-        Returns the provider_id, the state of the import (created, updated, unchanged, failed) and
-        the number of created and updated attributions.
+        Returns the provider_id, the state of the import (created, updated, unchanged, failed),
+        the number of created and updated attributions, as well as the attribution ids of all
+        processed attributions.
         """
         try:
             import_org = OrganizationImport.from_dynamodb_item(item)
             self.print(f"Parsed organization: {import_org.provider_id} - {import_org.name_de}")
         except ParsingError as e:
             self.print_error(f"Failed to parse item: {item}. Error: {e}")
-            return None, "failed", 0, 0
+            return None, "failed", 0, 0, set()
 
         provider_id = import_org.provider_id
         Organization.objects.remove_data_source_id(provider_id)
@@ -202,34 +203,38 @@ class Command(CustomBaseCommand):
         org.add_data_source_id(provider_id)
         org.save()
 
-        created, updated = self.import_attributions(org, import_org.attributions)
+        created, updated, processed_attributions = self.import_attributions(
+            org, import_org.attributions
+        )
 
-        return provider_id, state, created, updated
+        return provider_id, state, created, updated, processed_attributions
 
     def import_attributions(
         self, org: Organization, attributions: list[AttributionImport]
-    ) -> tuple[int, int]:
+    ) -> tuple[int, int, set[str]]:
         """Import all attribution dynamoDB items to the given organization.
 
-        Returns the number of created and updated attributions
+        Returns the number of created and updated attributions, as well as the attribution ids
+        of all processed attributions.
         """
 
         created, updated = 0, 0
+        processed = set()
         for _attribution in attributions:
-            # For now we only create or update Attributions and do not delete any existing ones as
-            # they might be referenced by datasets.
+            attribution_id = _attribution.attribution_id
+            processed.add(attribution_id)
+            Attribution.objects.remove_data_source_id(attribution_id)
+
             try:
                 attribution = Attribution.objects.get(
-                    attribution_id=_attribution.attribution_id,
+                    attribution_id=attribution_id,
                     data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
                     organization=org,
                 )
-                self.print(
-                    f"Attribution with attribution_id {_attribution.attribution_id} already exists"
-                )
+                self.print(f"Attribution with attribution_id {attribution_id} already exists")
             except Attribution.DoesNotExist:
                 self.print(
-                    f"Attribution with attribution_id {_attribution.attribution_id} does"
+                    f"Attribution with attribution_id {attribution_id} does"
                     " not exist yet, creating a new one"
                 )
                 _attr_dump = _attribution.model_dump(by_alias=True)
@@ -279,10 +284,10 @@ class Command(CustomBaseCommand):
                 if changed:
                     self.print(f"Updating Attribution {attribution}")
                     updated += 1
-            attribution.add_data_source_id(_attribution.attribution_id)
+            attribution.add_data_source_id(attribution_id)
             attribution.save()
 
-        return created, updated
+        return created, updated, processed
 
     def import_organizations(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         """Import organizations from the harvest table.
@@ -313,6 +318,8 @@ class Command(CustomBaseCommand):
             "organizations.obsolete": 0,
             "attributions.created": 0,
             "attributions.updated": 0,
+            "attributions.removed": 0,
+            "attributions.obsolete": 0,
         }
 
         self.print_success("Importing organizations")
@@ -323,6 +330,7 @@ class Command(CustomBaseCommand):
         paginator = dynamodb_client.get_paginator("scan")
 
         processed = set()
+        processed_attributions = set()
 
         mappings = OrganizationMapping.table()
 
@@ -336,11 +344,12 @@ class Command(CustomBaseCommand):
         for page in paginator.paginate(TableName=f"harvest-providers-{options['target_env']}"):
             for item in page["Items"]:
                 log_metrics["organizations.total"] += 1
-                provider_id, state, created, updated = self.import_organization(
+                provider_id, state, created, updated, attributions = self.import_organization(
                     item, mappings, geopolitical_entity
                 )
                 if provider_id:
                     processed.add(provider_id)
+                    processed_attributions.update(attributions)
                 match state:
                     case "created" | "updated" | "failed":
                         log_metrics[f"organizations.{state}"] += 1
@@ -350,6 +359,10 @@ class Command(CustomBaseCommand):
         removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
         log_metrics["organizations.removed"] = removed_count
         log_metrics["organizations.obsolete"] = obsolete_count
+
+        removed_count, obsolete_count = self.cleanup_attributions(processed_attributions, **options)
+        log_metrics["attributions.removed"] = removed_count
+        log_metrics["attributions.obsolete"] = obsolete_count
 
         self.print_success(f"Organization import completed. Metrics: {log_metrics}")
 
@@ -386,6 +399,43 @@ class Command(CustomBaseCommand):
                     Organization.objects.filter(organization_id=organization_id).delete()
             else:
                 self.print_warning(f"Obsolete organizations found: {', '.join(obsolete)}")
+        return len(removed), len(obsolete)
+
+    def cleanup_attributions(self, processed: set[str], **options: Any) -> tuple[int, int]:
+        """Cleanup attributionss
+
+        - Check for provider IDs referenced in the attributionss but not present anymore in the
+          harvest table; optionally clean them
+        - Check for obsolete attributions, i.e. attributionss created by this command but with no
+          provider ID reference; optionally delete them
+
+        """
+        existing = Attribution.objects.existing_data_source_ids(
+            Attribution.DataSource.BOD_CONTACT_ORGANIZATION
+        )
+        if removed := existing - processed:
+            if options["clean"]:
+                for attribution_id in removed:
+                    self.print_warning(
+                        f"Removing obsolete data_source_id (attribution) {attribution_id}"
+                    )
+                    Attribution.objects.remove_data_source_id(attribution_id)
+            else:
+                self.print_warning(
+                    f"Removed data_source_ids (attribution) found: {', '.join(removed)}"
+                )
+
+        obsolete = Attribution.objects.filter(
+            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+            data_source_ids=[],
+        ).values_list("attribution_id", flat=True)
+        if obsolete:
+            if options["clean"]:
+                for attribution_id in obsolete:
+                    self.print_warning(f"Removing obsolete attribution {attribution_id}")
+                    Attribution.objects.filter(attribution_id=attribution_id).delete()
+            else:
+                self.print_warning(f"Obsolete attributions found: {', '.join(obsolete)}")
         return len(removed), len(obsolete)
 
     # ##########################################################################

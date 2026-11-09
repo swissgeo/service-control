@@ -3,7 +3,9 @@
     "model": "dataservice.dataservice",
     "fields": {
       "polymorphic_ctype": ["dataservice", "wmtsdataservice"],
+      "sgid": "srv_wmts-geoadminch",
       "dataservice_id": "wmts-geoadminch",
+      "data_source": "fixture",
       "title": "WMTS geo.admin.ch",
       "openapi_spec_url": null,
       "documentation_url_de": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -18,7 +20,9 @@
     "model": "dataservice.dataservice",
     "fields": {
       "polymorphic_ctype": ["dataservice", "wmsdataservice"],
+      "sgid": "srv_wms-geoadminch",
       "dataservice_id": "wms-geoadminch",
+      "data_source": "fixture",
       "title": "WMS geo.admin.ch",
       "openapi_spec_url": null,
       "documentation_url_de": "https://docs.geo.admin.ch/visualize-data/wms.html#web-map-service-wms",
@@ -33,7 +37,9 @@
     "model": "dataservice.dataservice",
     "fields": {
       "polymorphic_ctype": ["dataservice", "ogcapistacdataservice"],
+      "sgid": "srv_stac-api-landingpage",
       "dataservice_id": "stac-api-landingpage",
+      "data_source": "fixture",
       "title": "STAC API Landingpage",
       "openapi_spec_url": "https://sys-data.int.bgdi.ch/api/stac/static/spec/v1/openapi.yaml",
       "documentation_url_de": "https://sys-data.int.bgdi.ch/api/stac/static/spec/v1/api.html",
@@ -48,7 +54,9 @@
     "model": "dataservice.dataservice",
     "fields": {
       "polymorphic_ctype": ["dataservice", "geoadminfeaturesdataservice"],
+      "sgid": "srv_api3features-geoadminch",
       "dataservice_id": "api3features-geoadminch",
+      "data_source": "fixture",
       "title": "api3features-geoadminch",
       "openapi_spec_url": null,
       "documentation_url_de": "https://docs.geo.admin.ch/explore-data/get-layer-metadata.html",

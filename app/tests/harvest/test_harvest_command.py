@@ -705,6 +705,98 @@ def test_command_cleans_organizations(client, dynamodb, db):
         acronym_en="FOEN",
         acronym_it="UFAM",
         acronym_rm="UFAM",
+        attributions=[],
+    )
+
+    dynamodb.get_paginator().paginate.return_value = [{"Items": [org_in.as_dynamodb_item()]}]
+
+    # only report
+    out = StringIO()
+    call_command("import_harvest_tables", organizations=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removed data_source_ids (provider) found: ch.unused" in out
+    assert "Obsolete organizations found: ch.bafu-copy" in out
+
+    assert Organization.objects.count() == 3
+
+    # clean
+    out = StringIO()
+    call_command("import_harvest_tables", organizations=True, clean=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    assert "Removing obsolete data_source_id (provider) ch.unused" in out
+    assert "Removing obsolete organization ch.bafu-copy" in out
+    assert "Removing obsolete organization ch.unused" in out
+
+    assert Organization.objects.count() == 1
+    assert Organization.objects.filter(organization_id="ch.bafu").first()
+
+
+@patch("organization.models.Client")
+def test_command_cleans_attributions(client, dynamodb, db):
+    organization = Organization(
+        sgid="org_bafu",
+        organization_id="ch.bafu",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
+        data_source_ids=["ch.bafu"],
+    )
+    organization.save()
+    Attribution(
+        organization=organization,
+        attribution_id="ch.bafu",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+        data_source_ids=["ch.bafu"],
+    ).save()
+    Attribution(
+        organization=organization,
+        attribution_id="ch.removed",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+        data_source_ids=["ch.removed"],
+    ).save()
+    Attribution(
+        organization=organization,
+        attribution_id="ch.obsolete",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        abbreviation_de="BAFU",
+        abbreviation_fr="OFEV",
+        abbreviation_en="FOEN",
+        data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+        data_source_ids=[],
+    ).save()
+
+    org_in = OrganizationImport(
+        provider_id="ch.bafu",
+        name_de="Bundesamt für Umwelt",
+        name_fr="Office fédéral de l'environnement",
+        name_en="Federal Office for the Environment",
+        name_it="Ufficio federale dell'ambiente",
+        name_rm="Uffizi federal per l'ambient",
+        acronym_de="BAFU",
+        acronym_fr="OFEV",
+        acronym_en="FOEN",
+        acronym_it="UFAM",
+        acronym_rm="UFAM",
         attributions=[
             AttributionImport(
                 attribution_id="ch.bafu",
@@ -736,22 +828,22 @@ def test_command_cleans_organizations(client, dynamodb, db):
     call_command("import_harvest_tables", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (provider) found: ch.unused" in out
-    assert "Obsolete organizations found: ch.bafu-copy" in out
+    assert "Removed data_source_ids (attribution) found: ch.removed" in out
+    assert "Obsolete attributions found: ch.obsolete" in out
 
-    assert Organization.objects.count() == 3
+    assert Attribution.objects.count() == 3
 
     # clean
     out = StringIO()
     call_command("import_harvest_tables", organizations=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (provider) ch.unused" in out
-    assert "Removing obsolete organization ch.bafu-copy" in out
-    assert "Removing obsolete organization ch.unused" in out
+    assert "Removing obsolete data_source_id (attribution) ch.removed" in out
+    assert "Removing obsolete attribution ch.obsolete" in out
+    assert "Removing obsolete attribution ch.removed" in out
 
-    assert Organization.objects.count() == 1
-    assert Organization.objects.filter(organization_id="ch.bafu").first()
+    assert Attribution.objects.count() == 1
+    assert Attribution.objects.filter(attribution_id="ch.bafu").first()
 
 
 # --------------------------------------------------------------------------------------------------

@@ -94,20 +94,23 @@ def fixture_admin_objects(organization, unit):
             name_en="Name",
         ),
         "dataservice_wmsdataservice": WMSDataservice.objects.create(
-            title="WMS", capabilities_url="https://example.com/wms"
+            sgid="srv_wms", title="WMS", capabilities_url="https://example.com/wms"
         ),
         "dataservice_wmtsdataservice": WMTSDataservice.objects.create(
-            title="WMTS", capabilities_url="https://example.com/wmts", variable_epsg_list=[2056]
+            sgid="srv_wmts",
+            title="WMTS",
+            capabilities_url="https://example.com/wmts",
+            variable_epsg_list=[2056],
         ),
-        "dataservice_wfsdataservice": WFSDataservice.objects.create(title="WFS"),
+        "dataservice_wfsdataservice": WFSDataservice.objects.create(sgid="srv_wfs", title="WFS"),
         "dataservice_ogcapifeaturesdataservice": OGCAPIFeaturesDataservice.objects.create(
-            title="OGC API Features"
+            sgid="srv_ogc-api-features", title="OGC API Features"
         ),
         "dataservice_ogcapistacdataservice": OGCAPIStacDataservice.objects.create(
-            title="STAC", landing_page_url="https://example.com/stac"
+            sgid="srv_stac", title="STAC", landing_page_url="https://example.com/stac"
         ),
         "dataservice_geoadminfeaturesdataservice": GeoadminFeaturesDataservice.objects.create(
-            title="Geoadmin Features"
+            sgid="srv_geoadmin-features", title="Geoadmin Features"
         ),
         "thesaurus_thesaurus": thesaurus,
         "thesaurus_concept": Concept.objects.create(
