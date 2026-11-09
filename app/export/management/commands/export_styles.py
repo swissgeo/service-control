@@ -12,7 +12,6 @@ from django.conf import settings
 from django.core.management.base import CommandParser
 
 from distribution.models import (
-    Distribution,
     ExternalGeoJSONDistribution,
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
@@ -143,13 +142,13 @@ class Command(CustomBaseCommand):
         # }
         nr_objs = 0
         for distribution in ExternalWMTSDistribution.objects.all():
-            if distribution.opacity >= 1.0:
+            if not distribution.style_url:
                 continue
-            key = self.style_key(distribution)
+            key = distribution.style_url.strip("/")
             style = MaplibreStyle(
                 layers=[
                     MaplibreRasterLayer(
-                        id=f"{distribution.distribution_id}",
+                        id=f"{distribution.sgid}",
                         source="wmts.geo.admin.ch",
                         typ="raster",
                         paint=PaintConfig(raster_opacity=distribution.opacity),
@@ -158,7 +157,7 @@ class Command(CustomBaseCommand):
             )
             self.print(
                 f" - {'[DRY RUN]: ' if options['dry_run'] else ''}"
-                f"Uploading style for {distribution.distribution_id} to {key}"
+                f"Uploading style for {distribution.sgid} to {key}"
             )
             if not options["dry_run"]:
                 self.do_upload(style.model_dump(exclude_none=True, by_alias=True), key)
@@ -172,9 +171,9 @@ class Command(CustomBaseCommand):
         # WMS Distributions can have an opacity different from 1.0 or a gutter > 0
         nr_objs = 0
         for distribution in ExternalWMSDistribution.objects.all():
-            if not (distribution.opacity < Decimal("1.0") or distribution.gutter > 0):
+            if not distribution.style_url:
                 continue
-            key = self.style_key(distribution)
+            key = distribution.style_url.strip("/")
             paintconfig = PaintConfig()
             if distribution.opacity < Decimal("1.0"):
                 paintconfig.raster_opacity = float(distribution.opacity)
@@ -183,7 +182,7 @@ class Command(CustomBaseCommand):
             style = MaplibreStyle(
                 layers=[
                     MaplibreRasterLayer(
-                        id=f"{distribution.distribution_id}",
+                        id=f"{distribution.sgid}",
                         source="wms.geo.admin.ch",
                         typ="raster",
                         paint=paintconfig,
@@ -192,7 +191,7 @@ class Command(CustomBaseCommand):
             )
             self.print(
                 f" - {'[DRY RUN]: ' if options['dry_run'] else ''}"
-                f"Uploading style for {distribution.distribution_id} to {key}"
+                f"Uploading style for {distribution.sgid} to {key}"
             )
             if not options["dry_run"]:
                 self.do_upload(style.model_dump(exclude_none=True, by_alias=True), key)
@@ -224,14 +223,6 @@ class Command(CustomBaseCommand):
 
             nr_objs += 1
         return nr_objs
-
-    # ##########################################################################
-    def style_key(self, distribution: Distribution) -> str:
-        """Build the default S3 key for a distribution's style file."""
-        # Key format: api/oas/v0/{distribution_id}/{distribution_id}.style.json
-        # FIX: We should use distribution identifiers without colons in the URL
-        # once this has been changed, we can remove the replace() call
-        return f"{KEY_PREFIX}/{distribution.distribution_id}.style.json".replace(":", ".")
 
     # ##########################################################################
     def do_upload(self, snippet: dict[str, Any], key: str) -> None:
