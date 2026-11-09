@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import ClassVar
 
+import pghistory
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
@@ -25,6 +26,7 @@ class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
     pass
 
 
+@pghistory.track()
 class Distribution(DataSourceIdModelMixin, PolymorphicModel):
     """Abstract Base Distribution model."""
 
