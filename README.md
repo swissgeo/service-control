@@ -26,6 +26,8 @@
   - [Importing eCH-0166 concepts from geocat.ch](#importing-ech-0166-concepts-from-geocatch)
 - [Exporting To OpenSearch](#exporting-to-opensearch)
   - [Atomic Replacement Without Downtime](#atomic-replacement-without-downtime)
+  - [Index Structure](#index-structure)
+  - [Managing Indices](#managing-indices)
   - [Inspecting The Documents With --dump](#inspecting-the-documents-with---dump)
   - [Running Against A Cluster](#running-against-a-cluster)
   - [Options](#options)
@@ -236,19 +238,22 @@ app/manage.py app/manage.py import_geocat --ech0166
 ## Exporting To OpenSearch
 
 The `oar_opensearch_export` command builds OGC API Records documents from the database
-(dataservices, datasets and distributions) and indexes them into OpenSearch:
+and indexes them into OpenSearch:
 
 ```bash
 uv run app/manage.py oar_opensearch_export
 ```
 
-Every run processes all three record types, each written to its own index:
+Every run processes all record types (or those given with `--types`), each written to its own
+index:
 
 | Record type     | OpenSearch index         | Source model   |
 | --------------- | ------------------------ | -------------- |
 | `services`      | `geoadmin-services`      | `Dataservice`  |
 | `datasets`      | `swissgeo-catalog`       | `Dataset`      |
 | `distributions` | `swissgeo-distributions` | `Distribution` |
+| `organizations` | `swissgeo-organizations` | `Organization` |
+| `thesauri`      | `swissgeo-thesauri`      | `Thesaurus`    |
 
 With no flags the command always does the full run: it creates the indices and imports the
 documents. Pass `--dump` to build the documents without touching OpenSearch at all (see below).
@@ -256,18 +261,108 @@ documents. Pass `--dump` to build the documents without touching OpenSearch at a
 ### Atomic Replacement Without Downtime
 
 A full run replaces the whole collection atomically, so searches never see an empty or
-half-filled index. The three names above are *aliases*, not indices. Each run:
+half-filled index. The names above are *aliases*, not indices. Each run:
 
 1. creates new timestamped indices (`swissgeo-catalog-20260722153000`);
 2. indexes all documents into them, while readers keep using the previous generation;
 3. refreshes the new indices so their documents are actually searchable;
-4. repoints all three aliases in a **single** `_aliases` request, which OpenSearch applies as
+4. repoints all aliases in a **single** `_aliases` request, which OpenSearch applies as
    one atomic cluster-state update;
 5. deletes superseded indices, keeping the last `--keep-generations` (default 2) for rollback.
 
 Because all aliases move in one request, the cross-index links between datasets, distributions
 and services never point at a stale generation. If any document fails to index, the command
 aborts *before* the swap, so a broken export can never reach the aliases.
+
+### Index Structure
+
+The index definitions live in
+[`opensearch-indexes/`](app/export/management/commands/opensearch-indexes): one
+`opensearch-index-mapping-<name>.json` per index, and `opensearch-index-analysis.json` with the
+analyzers, which is merged into every index as `settings.analysis`. Change analyzers only there.
+
+Each document holds one complete record per language, next to the shared `id` and `type`:
+
+```json
+{"id": "ch.bafu.moose", "type": "Feature", "de": {"record": "..."}, "fr": {}, "it": {}, "rm": {}, "en": {}}
+```
+
+This makes a single request return or search any language without a join or an index per language.
+The record of a language is returned as it is from `_source`, and German fields use a dedicated
+analyzer (compound splitting) that the other languages do not. `service-oa-records` picks the
+subtree from the request language, and reads its queryables from `de.properties` of the mapping, so
+**all language subtrees must map the same fields**.
+
+The mappings are `dynamic: "strict"`, at the root and on each language object (nested objects
+inherit it). The possible settings differ in what happens to a field missing from the mapping:
+
+| `dynamic` | Unknown field                        | Consequence                                                                     |
+| --------- | ------------------------------------ | ------------------------------------------------------------------------------- |
+| `true`    | added to the mapping and indexed     | A typo or stray field silently becomes part of the schema, with a guessed type  |
+| `false`   | kept in `_source`, but never indexed | A typo or misplaced field is silently not searchable: no error, just no results |
+| `"strict"`| the document is rejected             | The export aborts before the alias swap and the error names the field           |
+
+Because of that, **every field a document can contain has to be in the mapping**:
+
+- Fields to search, filter or sort on get a real type. Text fields use the `folding` analyzer, or
+  `german_decompound`/`german_search` for `de`. Sortable ones add a `sort` keyword subfield.
+- Fields that are only returned are `{"enabled": false}`: they stay in `_source`, but OpenSearch
+  does not parse them, so they accept any JSON, cost no index space, and `service-oa-records` does
+  not advertise them as queryables. This covers the record envelope (`links`, `linkTemplates`,
+  `geometry`) and properties such as `contacts`.
+
+To add a field to a record, add it to the export model and to all five language subtrees of the
+mapping in the same change. Otherwise the next export fails, leaving the aliases as they are.
+`test_documents_and_mappings_cover_each_other` catches this earlier, in both directions, as long as
+its fixtures use the new field.
+
+The tests against a real cluster, including one that searches the dumped documents on their mapped
+paths, only run when `OPENSEARCH_TEST_URL` is set, for example:
+
+```bash
+OPENSEARCH_TEST_URL=http://localhost:9200 uv run pytest app/tests/export
+```
+
+### Managing Indices
+
+`oar_opensearch_indexes` inspects and changes what is in the cluster. All subcommands take the
+connection options below.
+
+```bash
+# The managed generations with the aliases on them; --all for every index in the cluster
+uv run app/manage.py oar_opensearch_indexes list
+```
+
+**Rolling back a bad export** points aliases back at an older generation in one atomic request.
+Without `--to`, an alias moves to the generation before the current one, and running it again goes
+further back. To keep the links between the record types consistent, roll back all aliases together:
+
+```bash
+uv run app/manage.py oar_opensearch_indexes rollback geoadmin-services swissgeo-catalog \
+    swissgeo-distributions swissgeo-organizations swissgeo-thesauri --dry-run
+uv run app/manage.py oar_opensearch_indexes rollback swissgeo-catalog \
+    --to swissgeo-catalog-20260722153000
+```
+
+Check the document counts it reports: a failed export leaves its generation behind until a later
+run prunes it, and it looks like any other generation. Empty generations are refused, but a partly
+filled one can only be spotted from its count; use `--to` to skip it. A rollback only lasts until
+the next export, so suspend the `opensearch-export` CronJob if the cause is not fixed yet.
+
+**Deleting** is refused, before anything is deleted, for wildcard patterns without
+`--allow-wildcard` and for indices still behind an alias without `--force`. `--dry-run` shows the
+matches and what would be refused:
+
+```bash
+uv run app/manage.py oar_opensearch_indexes delete 'swissgeo-catalog-2026*' --dry-run
+uv run app/manage.py oar_opensearch_indexes delete 'swissgeo-catalog-2026*' --allow-wildcard
+```
+
+**Renaming** clones the index under the new name, moves its aliases and deletes the original:
+
+```bash
+uv run app/manage.py oar_opensearch_indexes rename swissgeo-catalog-20260722153000 my-backup
+```
 
 ### Inspecting The Documents With --dump
 

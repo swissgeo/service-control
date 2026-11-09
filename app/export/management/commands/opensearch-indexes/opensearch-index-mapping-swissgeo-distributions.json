@@ -1,65 +1,22 @@
 {
-  "settings": {
-    "analysis": {
-      "filter": {
-        "german_decompound": {
-          "type": "dictionary_decompounder",
-          "//": "Curated geodata vocabulary: split German compounds so a query for a part ('wander') matches the whole ('Wanderwege'). Short/ambiguous stems ('ort', 'tier', 'satz', 'berg') are deliberately left out -- they match inside unrelated words ('gePORTal', 'dokumenTIERt', 'gegenSATZ').",
-          "word_list": [
-            "abbau", "alpen", "anlage", "arbeit", "bahn", "bedeckung", "beitrag", "bereich",
-            "bestand", "betrieb", "bevölkerung", "bezirk", "boden", "brücke", "daten", "dienst",
-            "dosis", "druck", "eignung", "einheit", "einzel", "eisenbahn", "energie", "fahr",
-            "fluss", "fläche", "gebiet", "gebäude", "gefahr", "gemeinde", "gewässer", "grenze",
-            "grün", "haupt", "höhe", "industrie", "information", "kanton", "karte", "klasse",
-            "konzentration", "kraft", "landschaft", "leistung", "leitung", "luft", "messung",
-            "messwert", "modell", "natur", "netz", "nutzung", "objekt", "perimeter", "pflanze",
-            "plan", "quelle", "raum", "region", "schicht", "schutz", "siedlung", "stadt",
-            "standort", "station", "statistik", "strahlung", "strasse", "strom", "stufe",
-            "stunde", "system", "temperatur", "tunnel", "umwelt", "verbreitung", "verkehr",
-            "vermessung", "verordnung", "verwaltung", "vorkommen", "wald", "wander", "wasser",
-            "weg", "wirtschaft", "zone"
-          ],
-          "min_word_size": 6,
-          "min_subword_size": 4,
-          "max_subword_size": 22,
-          "only_longest_match": true
-        }
-      },
-      "normalizer": {
-        "sort_normalizer": {
-          "//": "Sort-only. A raw keyword sorts by code point, which puts every uppercase title before every lowercase one and 'Zürich' after 'Zwingen'. 'lowercase' + 'asciifolding' gives the case- and umlaut-insensitive order German expects (ä sorts as a). Deliberately NOT 'german_normalization', which also folds ß->ss and strips a trailing -e: right for matching, wrong for display order.",
-          "type": "custom",
-          "filter": ["lowercase", "asciifolding"]
-        }
-      },
-      "analyzer": {
-        "german_decompound": {
-          "//": "Index-time. 'lowercase' MUST come first: dictionary_decompounder is case-sensitive, so 'Wanderwege' would otherwise never match the lowercase word list. 'german_normalization' and 'asciifolding' MUST come after the decompounder: they fold ä/ö/ü/ß, and running them first would stop 'fläche' in the word list from matching. 'asciifolding' MUST come after 'german_normalization' so 'ue'->'u' still applies; it adds the accents german_normalization ignores (é/è/ê/à/ç), so 'arret' matches 'Arrêt'.",
-          "tokenizer": "standard",
-          "filter": ["lowercase", "german_decompound", "german_normalization", "asciifolding"]
-        },
-        "german_search": {
-          "//": "Search-time. Deliberately does NOT decompound: splitting the query too makes 'wanderkarte' match 'Wanderwege' (shared 'wander' subword). Splitting only at index time keeps that false positive out.",
-          "tokenizer": "standard",
-          "filter": ["lowercase", "german_normalization", "asciifolding"]
-        },
-        "folding": {
-          "//": "Default for all non-German text fields: case- and accent-insensitive matching, so 'arret' finds 'Arrêt' and 'zurich' finds 'Zürich'. Used at index and search time (no separate search_analyzer).",
-          "tokenizer": "standard",
-          "filter": ["lowercase", "asciifolding"]
-        }
-      }
-    }
-  },
   "mappings": {
+    "dynamic": "strict",
     "properties": {
       "id": {"type": "keyword"},
       "type": {"type": "keyword", "index": false},
       "de": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
+              "metaInformation": {"enabled": false},
+              "queryable": {"enabled": false},
+              "renderable": {"enabled": false},
               "type": {"type": "keyword", "index": false},
               "dataset": {"type": "keyword"},
               "protocol": {"type": "keyword"},
@@ -80,10 +37,18 @@
         }
       },
       "fr": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
+              "metaInformation": {"enabled": false},
+              "queryable": {"enabled": false},
+              "renderable": {"enabled": false},
               "type": {"type": "keyword", "index": false},
               "dataset": {"type": "keyword"},
               "protocol": {"type": "keyword"},
@@ -99,10 +64,18 @@
         }
       },
       "it": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
+              "metaInformation": {"enabled": false},
+              "queryable": {"enabled": false},
+              "renderable": {"enabled": false},
               "type": {"type": "keyword", "index": false},
               "dataset": {"type": "keyword"},
               "protocol": {"type": "keyword"},
@@ -118,10 +91,18 @@
         }
       },
       "rm": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
+              "metaInformation": {"enabled": false},
+              "queryable": {"enabled": false},
+              "renderable": {"enabled": false},
               "type": {"type": "keyword", "index": false},
               "dataset": {"type": "keyword"},
               "protocol": {"type": "keyword"},
@@ -137,10 +118,18 @@
         }
       },
       "en": {
-        "dynamic": false,
+        "dynamic": "strict",
         "properties": {
+          "id": {"type": "keyword", "index": false},
+          "type": {"type": "keyword", "index": false},
+          "links": {"enabled": false},
+          "linkTemplates": {"enabled": false},
+          "geometry": {"enabled": false},
           "properties": {
             "properties": {
+              "metaInformation": {"enabled": false},
+              "queryable": {"enabled": false},
+              "renderable": {"enabled": false},
               "type": {"type": "keyword", "index": false},
               "dataset": {"type": "keyword"},
               "protocol": {"type": "keyword"},
