@@ -53,6 +53,8 @@ INDEX_MAPPING_FILES = {
     ORGANIZATIONS_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-organizations.json",
     THESAURI_INDEX: _INDEXES_DIR / "opensearch-index-mapping-swissgeo-thesauri.json",
 }
+# The `settings.analysis` block shared by every index.
+INDEX_ANALYSIS_FILE = _INDEXES_DIR / "opensearch-index-analysis.json"
 
 # Selectable record types -> target index.
 TYPE_TO_INDEX = {
@@ -71,6 +73,14 @@ LANG_CODES = list(LANGS.keys())
 KEEP_GENERATIONS = 2
 
 
+def load_index_definition(alias: str) -> dict:
+    """Build the `indices.create` body of `alias`: its mapping file plus the shared analysis."""
+    definition = json.loads(INDEX_MAPPING_FILES[alias].read_text(encoding="utf-8"))
+    analysis = json.loads(INDEX_ANALYSIS_FILE.read_text(encoding="utf-8"))
+    definition.setdefault("settings", {})["analysis"] = analysis
+    return definition
+
+
 def _generation_index(alias: str, timestamp: datetime) -> str:
     """Build the concrete index name for a new generation of `alias`."""
     # Timestamp suffix appended to an alias to build a concrete index name, e.g.
@@ -81,8 +91,7 @@ def _generation_index(alias: str, timestamp: datetime) -> str:
 
 def _is_generation_of(index: str, alias: str) -> bool:
     """Whether `index` is a timestamped generation of `alias` created by this command."""
-    generation_regex = re.compile(r"-\d{14}$")
-    return index.startswith(f"{alias}-") and bool(generation_regex.search(index))
+    return re.fullmatch(rf"{re.escape(alias)}-\d{{14}}", index) is not None
 
 
 def _alias_exists(client: Any, alias: str) -> bool:
@@ -154,8 +163,6 @@ class Command(CustomBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: ARG002
         dump = options["dump"]
 
-        self.print(f"Debug: parsed args = {json.dumps(options, default=str)}")
-
         # Use all defined types if no --types has been given
         types = options["types"] or TYPE_TO_INDEX.keys()
         if invalid_types := set(types) - (supported := set(TYPE_TO_INDEX)):
@@ -201,9 +208,7 @@ class Command(CustomBaseCommand):
         for alias, index in targets.items():
             self.print_success(f"Creating index '{index}'")
             # The mapping files are keyed by alias, not by the timestamped generation name.
-            client.indices.create(
-                index=index, body=json.loads(INDEX_MAPPING_FILES[alias].read_text())
-            )
+            client.indices.create(index=index, body=load_index_definition(alias))
 
     def import_documents(self, client: Any, index: str, document_type: str, options: dict) -> None:
         """Build the documents of type `document_type` and index them into `index`.
