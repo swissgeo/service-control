@@ -41,7 +41,7 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         "data_source",
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
-    list_display = ("distribution_id", "proto", "title_de", "dataset", "data_source")
+    list_display = ("sgid", "distribution_id", "proto", "title_de", "dataset", "data_source")
     readonly_fields = ("sgid", "created_at", "updated_at", "oar_preview")
 
     search_fields = (
