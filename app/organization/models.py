@@ -2,6 +2,8 @@ import logging
 from collections.abc import Iterable
 from typing import Any, ClassVar
 
+import pghistory
+
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import RegexValidator
 from django.db import models
@@ -28,6 +30,7 @@ class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
     pass
 
 
+@pghistory.track()
 class Organization(DataSourceIdModelMixin, models.Model):
     _context = "Organization model"
 
@@ -185,6 +188,7 @@ class UnitManager(models.Manager):
         return super().get_queryset().select_related("organization")
 
 
+@pghistory.track()
 class Unit(models.Model):
     _context = "Organization Unit model"
 
@@ -292,6 +296,7 @@ class ContactManager(DataSourceIdManagerMixin, models.Manager):
         return super().get_queryset().select_related("organization")
 
 
+@pghistory.track()
 class Contact(DataSourceIdModelMixin, models.Model):
     """Contact point of an organization.
 
@@ -407,6 +412,7 @@ class AttributionManager(DataSourceIdManagerMixin, models.Manager):
     pass
 
 
+@pghistory.track()
 class Attribution(DataSourceIdModelMixin, models.Model):
     _context = "Attribution model"
 

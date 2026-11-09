@@ -49,8 +49,11 @@ CORS_ALLOW_HEADERS = list(default_headers) + env.list("CORS_ALLOW_HEADERS", defa
 
 # Application definition
 INSTALLED_APPS = [
+    "pgtrigger",
+    "pghistory",
     "oauth2_proxy",
     "polymorphic",
+    "pghistory.admin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

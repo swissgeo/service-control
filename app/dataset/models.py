@@ -1,5 +1,7 @@
 import logging
 
+import pghistory
+
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import RegexValidator
 from django.db import models
@@ -20,6 +22,7 @@ class DatasetManager(DataSourceIdManagerMixin, models.Manager):
     pass
 
 
+@pghistory.track()
 class Dataset(DataSourceIdModelMixin, models.Model):
     """Dataset model."""
 
@@ -230,6 +233,7 @@ class DatasetToDatasetManager(models.Manager):
         return super().get_queryset().select_related("subject", "object")
 
 
+@pghistory.track()
 class DatasetToDataset(models.Model):
     """Each dataset can be associated with another dataset in different roles.
 
@@ -265,6 +269,7 @@ class DatasetToUnitManager(models.Manager):
         return super().get_queryset().select_related("dataset", "unit")
 
 
+@pghistory.track()
 class DatasetToUnit(models.Model):
     """Each dataset can be associated with organizational units in different roles."""
 
@@ -294,6 +299,7 @@ class DatasetToContactManager(models.Manager):
         return super().get_queryset().select_related("dataset", "contact")
 
 
+@pghistory.track()
 class DatasetToContact(models.Model):
     """A dataset can have different contacts with specific roles.
 
