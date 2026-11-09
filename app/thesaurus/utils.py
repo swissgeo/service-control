@@ -4,7 +4,7 @@ from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, SKOS
 from requests import get
 
-from thesaurus.models import ROOT_CONCEPT_ID, Thesaurus
+from thesaurus.models import EXPORT_EXCLUDED_CONCEPT_IDS, ROOT_CONCEPT_ID, Thesaurus
 from utils.language import LanguageCode
 
 TIMEOUT = 30
@@ -94,7 +94,9 @@ def thesaurus_to_skos_jsonld(thesaurus: Thesaurus) -> str:
     graph.add((scheme_uri, RDF.type, SKOS.ConceptScheme))
     graph.add((scheme_uri, DCTERMS.identifier, Literal(thesaurus.thesaurus_id)))
 
-    concepts = thesaurus.concept_set.select_related("parent").exclude(concept_id=ROOT_CONCEPT_ID)  # ty: ignore[unresolved-attribute]
+    concepts = thesaurus.concept_set.select_related("parent").exclude(  # ty: ignore[unresolved-attribute]
+        concept_id__in={ROOT_CONCEPT_ID, *EXPORT_EXCLUDED_CONCEPT_IDS}
+    )
 
     for concept in concepts:
         uri = URIRef(

@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 ROOT_CONCEPT_ID = "root"
 ECH0166_THESAURUS_ID = "ech0166"
+# Concepts that are part of the thesaurus, but aren't exported because they have no layers
+EXPORT_EXCLUDED_CONCEPT_IDS = {"oceans"}
 
 
 class ThesaurusManager(models.Manager):
