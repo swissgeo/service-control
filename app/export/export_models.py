@@ -373,7 +373,7 @@ class OARDistribution(OARRecord):
             record.links.append(
                 OARRecordLink.from_record_id(
                     collection_id=settings.OAR_SERVICES_COLLECTION_ID,
-                    record_id=dist.dataservice.dataservice_id,  # ty:ignore[unresolved-attribute]
+                    record_id=dist.dataservice.sgid,  # ty:ignore[unresolved-attribute]
                     rel="dataservice",
                 )
             )
