@@ -3,7 +3,14 @@ from pydantic import ValidationError
 import pytest
 
 from dataset.models import Dataset, DatasetToContact
-from export.export_models import Contact, OARDataset, RelativeLink, UnvalidatedLink
+from distribution.models import ExternalGeoJSONDistribution
+from export.export_models import (
+    Contact,
+    OARDataset,
+    OARDistribution,
+    RelativeLink,
+    UnvalidatedLink,
+)
 
 
 def _legacy_contact(**overrides) -> dict:
@@ -216,3 +223,62 @@ def test_internal_link_accepts_valid_hrefs(href):
 def test_internal_link_rejects_invalid_hrefs(href):
     with pytest.raises(ValidationError):
         RelativeLink(href=href)
+
+
+LEGEND_BASE_URL = "https://api3.geo.admin.ch/static/images/legends/ch.bfe.shared-mobility"
+
+
+def _geojson_distribution(**legends) -> ExternalGeoJSONDistribution:
+    dataset = Dataset(
+        sgid="dat_shared-mobility",
+        dataset_id="ch.bfe.shared-mobility",
+        title_de="Titel DE",
+        geocat_id="abcd",
+    )
+    dataset.save()
+    distribution = ExternalGeoJSONDistribution(
+        sgid="dst_shared-mobility-123",
+        distribution_id="ch.bfe.shared-mobility:geojson",
+        dataset=dataset,
+        title_de="GeoJSON DE",
+        geojson_url_de="https://data.geo.admin.ch/ch.bfe.shared-mobility/shared-mobility_de.json",
+        geojson_url_fr="https://data.geo.admin.ch/ch.bfe.shared-mobility/shared-mobility_fr.json",
+        **legends,
+    )
+    distribution.save()
+    return distribution
+
+
+def _legend_links(record: OARDistribution) -> list[dict]:
+    return [
+        link.model_dump(exclude_none=True, by_alias=True)
+        for link in record.links
+        if link.rel == "legend"
+    ]
+
+
+def test_from_distribution_exports_geojson_legend_link(db):
+    distribution = _geojson_distribution(
+        geojson_legend_de=f"{LEGEND_BASE_URL}_de.png",
+        geojson_legend_fr=f"{LEGEND_BASE_URL}_fr.png",
+    )
+
+    for lang in ("de", "fr"):
+        record = OARDistribution.from_distribution(distribution, lang=lang)
+        assert _legend_links(record) == [
+            {
+                "href": f"{LEGEND_BASE_URL}_{lang}.png",
+                "rel": "legend",
+                "title": "Legend of the GeoJSON layer",
+                "type": "image/png",
+            }
+        ]
+
+
+def test_from_distribution_skips_missing_geojson_legend_link(db):
+    distribution = _geojson_distribution(geojson_legend_de=f"{LEGEND_BASE_URL}_de.png")
+
+    # No legend stored for these languages, so no legend link is exported.
+    for lang in ("fr", "it", "en", "rm"):
+        record = OARDistribution.from_distribution(distribution, lang=lang)
+        assert _legend_links(record) == []

@@ -37,6 +37,7 @@ from harvest.models import (
 )
 from legal.models import GeopoliticalEntity
 from organization.models import Attribution, Contact, Organization, Unit
+from schemas import SUPPORTED_LANGS
 from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from utils.command import CustomBaseCommand
 from utils.identifier import (
@@ -974,6 +975,8 @@ class Command(CustomBaseCommand):
         if not style_exists:
             self.print_warning(f"No style found for layer_id {ljs.layer_id}")
 
+        values.update(self.get_geojson_legends(ljs.layer_id))
+
         updated = False
         for attribute, value in values.items():
             if getattr(dist, attribute) != value:
@@ -984,6 +987,17 @@ class Command(CustomBaseCommand):
             dist.save()
 
         return dist, created, updated
+
+    def get_geojson_legends(self, layer_id: str) -> dict[str, str | None]:
+        """Return the legend URL per language, or None if no legend exists for that language."""
+        legends: dict[str, str | None] = {}
+        geojson_legend_url_template = (
+            "https://api3.geo.admin.ch/static/images/legends/{layer_id}_{lang}.png"
+        )
+        for lang in SUPPORTED_LANGS:
+            url = geojson_legend_url_template.format(layer_id=layer_id, lang=lang)
+            legends[f"geojson_legend_{lang}"] = url
+        return legends
 
     def import_api3features_distribution(
         self,

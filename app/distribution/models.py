@@ -322,6 +322,21 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
         blank=True,
         help_text=_(_context, "Optional URL to a style file for the GeoJSON layer."),
     )
+    geojson_legend_de = models.URLField(
+        _(_context, "Legend URL (DE)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_fr = models.URLField(
+        _(_context, "Legend URL (FR)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_it = models.URLField(
+        _(_context, "Legend URL (IT)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_en = models.URLField(
+        _(_context, "Legend URL (EN)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_rm = models.URLField(
+        _(_context, "Legend URL (RM)"), max_length=2048, null=True, blank=True
+    )
 
     class Meta:
         verbose_name = _(_context, "External GeoJSON Distributions")

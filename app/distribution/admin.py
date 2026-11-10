@@ -214,6 +214,11 @@ class ExternalGeoJSONDistributionAdmin(DistributionChildAdmin):
             "geojson_url_it",
             "geojson_url_rm",
             "style_url",
+            "geojson_legend_de",
+            "geojson_legend_fr",
+            "geojson_legend_en",
+            "geojson_legend_it",
+            "geojson_legend_rm",
         )
     )
     search_fields = (
