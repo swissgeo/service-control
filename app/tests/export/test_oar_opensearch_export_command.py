@@ -916,7 +916,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
@@ -951,7 +951,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
@@ -986,7 +986,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
@@ -1021,7 +1021,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
@@ -1056,7 +1056,7 @@ def test_dump_distribution_document(db, tmp_path):
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
