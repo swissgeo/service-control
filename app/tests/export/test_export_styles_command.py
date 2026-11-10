@@ -7,12 +7,15 @@ from unittest.mock import patch
 from django.apps import apps
 from django.core.management import call_command
 
+import pytest
+
 from dataset.models import Dataset
 from distribution.models import (
     ExternalGeoJSONDistribution,
     ExternalWMSDistribution,
     ExternalWMTSDistribution,
 )
+from export.export_models import OARDistribution
 
 
 def extract_put_object(session):
@@ -55,17 +58,17 @@ def test_command_exports_wms_styles(session, db):
     call_command("export_styles", wms=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "api/oas/v0/styles/ch.bafu.moose.wms.style.json" in out
+    assert "api/oas/v0/styles/sty_moose-123" in out
 
     result = extract_put_object(session)
     assert result == [
         {
             "Bucket": "oa-styles-static-dev-swissgeo",
-            "Key": "api/oas/v0/styles/ch.bafu.moose.wms.style.json",
+            "Key": "api/oas/v0/styles/sty_moose-123",
             "Body": {
                 "layers": [
                     {
-                        "id": "ch.bafu.moose:wms",
+                        "id": "dst_moose-123",
                         "source": "wms.geo.admin.ch",
                         "type": "raster",
                         "paint": {"raster-opacity": 0.5, "raster-gutter": 1},
@@ -93,7 +96,7 @@ def test_command_exports_wmts_styles(session, db):
 
     ExternalWMTSDistribution(
         sgid="dst_moose-123",
-        distribution_id="ch.bafu.moose:wmts",
+        distribution_id="dst_moose-123",
         dataset=dataset,
         opacity=0.5,
     ).save()
@@ -102,17 +105,17 @@ def test_command_exports_wmts_styles(session, db):
     call_command("export_styles", wmts=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "api/oas/v0/styles/ch.bafu.moose.wmts.style.json" in out
+    assert "api/oas/v0/styles/sty_moose-123" in out
 
     result = extract_put_object(session)
     assert result == [
         {
             "Bucket": "oa-styles-static-dev-swissgeo",
-            "Key": "api/oas/v0/styles/ch.bafu.moose.wmts.style.json",
+            "Key": "api/oas/v0/styles/sty_moose-123",
             "Body": {
                 "layers": [
                     {
-                        "id": "ch.bafu.moose:wmts",
+                        "id": "dst_moose-123",
                         "source": "wmts.geo.admin.ch",
                         "type": "raster",
                         "paint": {"raster-opacity": 0.5},
@@ -196,7 +199,7 @@ def test_command_exports_styles_dry(session, db):
     call_command("export_styles", wms=True, dry_run=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "api/oas/v0/styles/ch.bafu.moose.wms.style.json" in out
+    assert "api/oas/v0/styles/sty_moose-123" in out
     assert "DRY RUN" in out
 
     result = extract_put_object(session)
@@ -249,3 +252,61 @@ def test_command_cleans_styles(session, db):
         {"Bucket": "oa-styles-static-dev-swissgeo", "Delete": {"Objects": [{"Key": "a"}]}},
         {"Bucket": "oa-styles-static-dev-swissgeo", "Delete": {"Objects": [{"Key": "b"}]}},
     ]
+
+
+@pytest.mark.parametrize(
+    ("distribution_cls", "distribution_kwargs", "export_flag"),
+    [
+        (
+            ExternalWMSDistribution,
+            {"distribution_id": "ch.bafu.moose:wms", "opacity": 0.5, "gutter": 1},
+            "wms",
+        ),
+        (
+            ExternalWMTSDistribution,
+            {"distribution_id": "ch.bafu.moose:wmts", "opacity": 0.5},
+            "wmts",
+        ),
+        (
+            ExternalGeoJSONDistribution,
+            {
+                "distribution_id": "ch.bafu.moose:geojson",
+                "geojson_url_de": "https://data.geo.admin.ch/ch.bafu.moose.geojson",
+                "style_url": "/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json",
+            },
+            "geojson",
+        ),
+    ],
+    ids=["wms", "wmts", "geojson"],
+)
+@patch("export.management.commands.export_styles.Session")
+def test_exported_style_key_matches_distribution_style_link(
+    session, db, distribution_cls, distribution_kwargs, export_flag
+):
+    """The style uploaded by `export_styles` must be reachable via the `styledBy` link of the
+    exported OAR distribution record."""
+    dataset = Dataset(
+        sgid="dat_moose",
+        dataset_id="ch.bafu.moose",
+        title_de="Rote Liste Moose (Gefährdung der Moose in der Schweiz)",
+        title_fr="Liste rouge mousses",
+        title_en="Red list bryophytes",
+        description_de="missing",
+        description_fr="missing",
+        description_en="missing",
+    )
+    dataset.save()
+
+    distribution = distribution_cls(sgid="dst_moose-123", dataset=dataset, **distribution_kwargs)
+    distribution.save()
+
+    record = OARDistribution.from_distribution(distribution, "de")
+    style_links = [link.href for link in record.links if link.rel == "styledBy"]
+    assert len(style_links) == 1
+
+    call_command("export_styles", **{export_flag: True}, verbosity=0, stdout=StringIO())
+
+    result = extract_put_object(session)
+    assert len(result) == 1
+    # Links are relative to the host, S3 keys have no leading slash
+    assert f"/{result[0]['Key']}" == style_links[0]

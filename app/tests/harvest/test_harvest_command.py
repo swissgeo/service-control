@@ -1767,6 +1767,43 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.geojson_url_rm is None
 
 
+def test_command_imports_geojson_legends(dynamodb, db):
+    legend_url = "https://api3.geo.admin.ch/static/images/legends/ch.bfe.shared-mobility_{}.png"
+
+    call_command("loaddata", "app/fixtures/dataservice.json", stdout=StringIO())
+
+    dataset = Dataset(
+        sgid="dat_shared-mobility",
+        dataset_id="ch.bfe.shared-mobility",
+        title_de="T DE",
+        geocat_id="c",
+        data_source=Dataset.DataSource.BOD_DATASET,
+        data_source_ids=["ch.bfe.shared-mobility"],
+    )
+    dataset.save()
+
+    layer = LayersJSImport(
+        layer_id="ch.bfe.shared-mobility",
+        layertype="geojson",
+        geojson_url_de="https://data.geo.admin.ch/ch.bfe.shared-mobility/shared-mobility_de.json",
+    )
+    dynamodb.get_paginator().paginate.return_value = [{"Items": [layer.as_dynamodb_item()]}]
+
+    # =========================
+    # Create: only DE and FR legends exist
+    # =========================
+    out = StringIO()
+    call_command("import_harvest_tables", distributions=True, verbosity=2, stdout=out)
+    out = out.getvalue()
+
+    dist = ExternalGeoJSONDistribution.objects.get(distribution_id="ch.bfe.shared-mobility:geojson")
+    assert dist.geojson_legend_de == legend_url.format("de")
+    assert dist.geojson_legend_fr == legend_url.format("fr")
+    assert dist.geojson_legend_it == legend_url.format("it")
+    assert dist.geojson_legend_en == legend_url.format("en")
+    assert dist.geojson_legend_rm == legend_url.format("rm")
+
+
 def test_command_cleans_distributions(dynamodb, db):
     out = StringIO()
     call_command("loaddata", "app/fixtures/dataservice.json", stdout=out)

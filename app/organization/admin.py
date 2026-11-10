@@ -55,7 +55,7 @@ class OrganizationAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Mode
         ("Metadata", {"classes": ("collapse",), "fields": ("created", "updated")}),
     )
 
-    list_display = ("organization_id", "abbreviation_en", "name_en", "data_source")
+    list_display = ("sgid", "organization_id", "abbreviation_en", "name_en", "data_source")
     list_filter = ("data_source",)
     readonly_fields = ("sgid", "created", "updated")
     search_fields = (

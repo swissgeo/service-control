@@ -288,12 +288,12 @@ def test_dump_writes_one_file_per_document(db, tmp_path):
     call_command("oar_opensearch_export", dump=str(tmp_path), verbosity=0)
 
     # One file per document, in the per-index sub-directories.
-    assert (tmp_path / "geoadmin-services" / "wmts-geoadminch.json").is_file()
-    assert (tmp_path / "swissgeo-catalog" / "ch.bafu.moose.json").is_file()
+    assert (tmp_path / "geoadmin-services" / "srv_wmts-geoadminch.json").is_file()
+    assert (tmp_path / "swissgeo-catalog" / "dat_moose.json").is_file()
     # Every distribution of the dataset gets a document of its own.
     assert sorted(p.name for p in (tmp_path / "swissgeo-distributions").iterdir()) == [
-        "ch.bafu.moose:wms.json",
-        "ch.bafu.moose:wmts.json",
+        "dst_moose-123.json",
+        "dst_moose-234.json",
     ]
 
 
@@ -302,9 +302,9 @@ def test_dump_service_document(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["services"], dump=str(tmp_path), verbosity=0)
 
-    assert _read_dump(tmp_path, "geoadmin-services", "wmts-geoadminch") == {
+    assert _read_dump(tmp_path, "geoadmin-services", "srv_wmts-geoadminch") == {
         "de": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -328,7 +328,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "fr": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -352,7 +352,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "it": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -376,7 +376,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "rm": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -400,7 +400,7 @@ def test_dump_service_document(db, tmp_path):
             },
         },
         "en": {
-            "id": "wmts-geoadminch",
+            "id": "srv_wmts-geoadminch",
             "links": [
                 {
                     "href": "https://docs.geo.admin.ch/visualize-data/wmts.html",
@@ -423,7 +423,7 @@ def test_dump_service_document(db, tmp_path):
                 "protocol": "ogc:wms",
             },
         },
-        "id": "wmts-geoadminch",
+        "id": "srv_wmts-geoadminch",
         "type": "Feature",
     }
 
@@ -433,12 +433,12 @@ def test_dump_dataset_document(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
-    assert _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose") == {
+    assert _read_dump(tmp_path, "swissgeo-catalog", "dat_moose") == {
         "de": {
-            "id": "ch.bafu.moose",
+            "id": "dat_moose",
             "links": [
                 {
-                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "href": "/collections/swissgeo-distributions/items?dataset=dat_moose",
                     "rel": "distributions",
                     "title": "Distributions",
                 },
@@ -508,10 +508,10 @@ def test_dump_dataset_document(db, tmp_path):
             },
         },
         "fr": {
-            "id": "ch.bafu.moose",
+            "id": "dat_moose",
             "links": [
                 {
-                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "href": "/collections/swissgeo-distributions/items?dataset=dat_moose",
                     "rel": "distributions",
                     "title": "Distributions",
                 },
@@ -580,10 +580,10 @@ def test_dump_dataset_document(db, tmp_path):
             },
         },
         "it": {
-            "id": "ch.bafu.moose",
+            "id": "dat_moose",
             "links": [
                 {
-                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "href": "/collections/swissgeo-distributions/items?dataset=dat_moose",
                     "rel": "distributions",
                     "title": "Distributions",
                 },
@@ -651,10 +651,10 @@ def test_dump_dataset_document(db, tmp_path):
             },
         },
         "rm": {
-            "id": "ch.bafu.moose",
+            "id": "dat_moose",
             "links": [
                 {
-                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "href": "/collections/swissgeo-distributions/items?dataset=dat_moose",
                     "rel": "distributions",
                     "title": "Distributions",
                 },
@@ -722,10 +722,10 @@ def test_dump_dataset_document(db, tmp_path):
             },
         },
         "en": {
-            "id": "ch.bafu.moose",
+            "id": "dat_moose",
             "links": [
                 {
-                    "href": "/collections/swissgeo-distributions/items?dataset=ch.bafu.moose",
+                    "href": "/collections/swissgeo-distributions/items?dataset=dat_moose",
                     "rel": "distributions",
                     "title": "Distributions",
                 },
@@ -787,7 +787,7 @@ def test_dump_dataset_document(db, tmp_path):
                 "type": "Dataset",
             },
         },
-        "id": "ch.bafu.moose",
+        "id": "dat_moose",
         "type": "Feature",
     }
 
@@ -798,8 +798,8 @@ def test_dump_dataset_skips_part_datasets(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
-    assert (tmp_path / "swissgeo-catalog" / "ch.kgk.av.json").exists()
-    assert not (tmp_path / "swissgeo-catalog" / "ch.geodienste-lu.av.json").exists()
+    assert (tmp_path / "swissgeo-catalog" / "dat_av-kgk.json").exists()
+    assert not (tmp_path / "swissgeo-catalog" / "dat_av-lu.json").exists()
 
 
 def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
@@ -808,7 +808,7 @@ def test_dump_dataset_contains_extra_aggregate_fields(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
-    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.kgk.av")
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "dat_av-kgk")
     assert dataset_doc["de"]["properties"]["aggregated"] is True
     assert {
         "href": "https://geodienste.ch/services/av?locale=de#info_cantons",
@@ -824,19 +824,19 @@ def test_dump_dataset_contains_localized_owner(unit, tmp_path):
 
     call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
-    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "dat_moose")
     assert dataset_doc["de"]["properties"]["owner"] == {
-        "id": "ch.bafu",
+        "id": "org_bafu",
         "name": "Bundesamt für Umwelt",
         "abbreviation": "BAFU",
     }
     assert dataset_doc["fr"]["properties"]["owner"] == {
-        "id": "ch.bafu",
+        "id": "org_bafu",
         "name": "Office fédéral de l'environnement",
         "abbreviation": "OFEV",
     }
     assert dataset_doc["en"]["properties"]["owner"] == {
-        "id": "ch.bafu",
+        "id": "org_bafu",
         "name": "Federal Office for the Environment",
         "abbreviation": "FOEN",
     }
@@ -847,7 +847,7 @@ def test_dump_dataset_without_owner_has_no_owner(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
-    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "dat_moose")
     assert "owner" not in dataset_doc["de"]["properties"]
 
 
@@ -876,7 +876,7 @@ def test_dump_dataset_contains_localized_attribution(cognito, db, tmp_path):
 
     call_command("oar_opensearch_export", types=["datasets"], dump=str(tmp_path), verbosity=0)
 
-    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "ch.bafu.moose")
+    dataset_doc = _read_dump(tmp_path, "swissgeo-catalog", "dat_moose")
     for lang, abbreviation, name in [
         ("de", "BAFU", "Bundesamt für Umwelt"),
         ("fr", "OFEV", "Office fédéral de l'environnement"),
@@ -906,25 +906,25 @@ def test_dump_distribution_document(db, tmp_path):
 
     call_command("oar_opensearch_export", types=["distributions"], dump=str(tmp_path), verbosity=0)
 
-    assert _read_dump(tmp_path, "swissgeo-distributions", "ch.bafu.moose:wms") == {
+    assert _read_dump(tmp_path, "swissgeo-distributions", "dst_moose-123") == {
         "de": {
-            "id": "ch.bafu.moose:wms",
+            "id": "dst_moose-123",
             "links": [
                 {
-                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "href": "/collections/swissgeo-catalog/items/dat_moose",
                     "rel": "dataset",
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
-                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "href": "/collections/swissgeo-distributions/items/dst_moose-123",
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -938,28 +938,28 @@ def test_dump_distribution_document(db, tmp_path):
                 "description": "Description (DE)",
                 "protocol": "ogc:wms",
                 "metaInformation": False,
-                "dataset": "ch.bafu.moose",
+                "dataset": "dat_moose",
                 "externalIds": ["ch.bafu.moose"],
             },
         },
         "fr": {
-            "id": "ch.bafu.moose:wms",
+            "id": "dst_moose-123",
             "links": [
                 {
-                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "href": "/collections/swissgeo-catalog/items/dat_moose",
                     "rel": "dataset",
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
-                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "href": "/collections/swissgeo-distributions/items/dst_moose-123",
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -973,28 +973,28 @@ def test_dump_distribution_document(db, tmp_path):
                 "description": "Description (FR)",
                 "protocol": "ogc:wms",
                 "metaInformation": False,
-                "dataset": "ch.bafu.moose",
+                "dataset": "dat_moose",
                 "externalIds": ["ch.bafu.moose"],
             },
         },
         "it": {
-            "id": "ch.bafu.moose:wms",
+            "id": "dst_moose-123",
             "links": [
                 {
-                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "href": "/collections/swissgeo-catalog/items/dat_moose",
                     "rel": "dataset",
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
-                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "href": "/collections/swissgeo-distributions/items/dst_moose-123",
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -1008,28 +1008,28 @@ def test_dump_distribution_document(db, tmp_path):
                 "description": "Description (IT)",
                 "protocol": "ogc:wms",
                 "metaInformation": False,
-                "dataset": "ch.bafu.moose",
+                "dataset": "dat_moose",
                 "externalIds": ["ch.bafu.moose"],
             },
         },
         "rm": {
-            "id": "ch.bafu.moose:wms",
+            "id": "dst_moose-123",
             "links": [
                 {
-                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "href": "/collections/swissgeo-catalog/items/dat_moose",
                     "rel": "dataset",
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
-                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "href": "/collections/swissgeo-distributions/items/dst_moose-123",
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -1043,28 +1043,28 @@ def test_dump_distribution_document(db, tmp_path):
                 "description": "Description (RM)",
                 "protocol": "ogc:wms",
                 "metaInformation": False,
-                "dataset": "ch.bafu.moose",
+                "dataset": "dat_moose",
                 "externalIds": ["ch.bafu.moose"],
             },
         },
         "en": {
-            "id": "ch.bafu.moose:wms",
+            "id": "dst_moose-123",
             "links": [
                 {
-                    "href": "/collections/swissgeo-catalog/items/ch.bafu.moose",
+                    "href": "/collections/swissgeo-catalog/items/dat_moose",
                     "rel": "dataset",
                     "title": "Dataset Record",
                 },
                 {
-                    "href": "/collections/geoadmin-services/items/wmts-geoadminch",
+                    "href": "/collections/geoadmin-services/items/srv_wmts-geoadminch",
                     "rel": "dataservice",
                 },
                 {
-                    "href": "/collections/swissgeo-distributions/items/ch.bafu.moose:wms",
+                    "href": "/collections/swissgeo-distributions/items/dst_moose-123",
                     "rel": "featureinfo",
                 },
                 {
-                    "href": "/api/oas/v0/styles/ch.bafu.moose:wms:style",
+                    "href": "/api/oas/v0/styles/sty_moose-123",
                     "rel": "styledBy",
                     "title": "Style informations for WM(T)S Layer (Maplibre Style Spec)",
                     "type": "application/json",
@@ -1078,11 +1078,11 @@ def test_dump_distribution_document(db, tmp_path):
                 "description": "Description (EN)",
                 "protocol": "ogc:wms",
                 "metaInformation": False,
-                "dataset": "ch.bafu.moose",
+                "dataset": "dat_moose",
                 "externalIds": ["ch.bafu.moose"],
             },
         },
-        "id": "ch.bafu.moose:wms",
+        "id": "dst_moose-123",
         "type": "Feature",
     }
 
@@ -1093,9 +1093,9 @@ def test_dump_organization_document(cogntio, db, tmp_path):
 
     call_command("oar_opensearch_export", types=["organizations"], dump=str(tmp_path), verbosity=0)
 
-    assert _read_dump(tmp_path, "swissgeo-organizations", "ch.bafu") == {
+    assert _read_dump(tmp_path, "swissgeo-organizations", "org_bafu") == {
         "de": {
-            "id": "ch.bafu",
+            "id": "org_bafu",
             "links": [],
             "linkTemplates": [],
             "type": "Feature",
@@ -1106,7 +1106,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             },
         },
         "fr": {
-            "id": "ch.bafu",
+            "id": "org_bafu",
             "links": [],
             "linkTemplates": [],
             "type": "Feature",
@@ -1117,7 +1117,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             },
         },
         "it": {
-            "id": "ch.bafu",
+            "id": "org_bafu",
             "links": [],
             "linkTemplates": [],
             "type": "Feature",
@@ -1128,7 +1128,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             },
         },
         "rm": {
-            "id": "ch.bafu",
+            "id": "org_bafu",
             "links": [],
             "linkTemplates": [],
             "type": "Feature",
@@ -1139,7 +1139,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
             },
         },
         "en": {
-            "id": "ch.bafu",
+            "id": "org_bafu",
             "links": [],
             "linkTemplates": [],
             "type": "Feature",
@@ -1149,7 +1149,7 @@ def test_dump_organization_document(cogntio, db, tmp_path):
                 "abbreviation": "FOEN",
             },
         },
-        "id": "ch.bafu",
+        "id": "org_bafu",
         "type": "Feature",
     }
 
@@ -1163,7 +1163,7 @@ def test_dump_organization_skips_geodienste_organizations(cognito, db, tmp_path)
 
     call_command("oar_opensearch_export", types=["organizations"], dump=str(tmp_path), verbosity=0)
 
-    assert not (tmp_path / "swissgeo-organizations" / "ch.bafu.json").exists()
+    assert not (tmp_path / "swissgeo-organizations" / "org_bafu.json").exists()
 
 
 @patch("organization.models.Client")
@@ -1173,7 +1173,7 @@ def test_dump_organization_includes_geodienste_aggregate_organizations(cognito, 
 
     call_command("oar_opensearch_export", types=["organizations"], dump=str(tmp_path), verbosity=0)
 
-    assert (tmp_path / "swissgeo-organizations" / "ch.kgk.json").exists()
+    assert (tmp_path / "swissgeo-organizations" / "org_kgk.json").exists()
 
 
 def test_dump_thesaurus_document(db, tmp_path):
@@ -1352,14 +1352,14 @@ def test_export_creates_generation_indices_and_bulk_indexes(cognito, get_client,
     service_actions = indexed["geoadmin-services"]
     assert len(service_actions) == 1
     action = service_actions[0]
-    assert action["_id"] == "wmts-geoadminch"
-    assert action["_source"]["id"] == "wmts-geoadminch"
+    assert action["_id"] == "srv_wmts-geoadminch"
+    assert action["_source"]["id"] == "srv_wmts-geoadminch"
     assert action["_source"]["de"]["properties"]["title"] == "WMTS geo.admin.ch"
 
     # The dataset, distribution and organization documents reach their respective generations.
-    assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["ch.bafu.moose"]
+    assert [a["_id"] for a in indexed["swissgeo-catalog"]] == ["dat_moose"]
     # Distributions are indexed individually, keyed by distribution id.
-    assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["ch.bafu.moose:wms"]
+    assert [a["_id"] for a in indexed["swissgeo-distributions"]] == ["dst_moose-123"]
     assert [a["_id"] for a in indexed["swissgeo-thesauri"]] == ["ech0166"]
 
 
@@ -1499,4 +1499,4 @@ def test_build_documents_dataset_with_depublished_dataset(db):
     cmd.options = {"verbosity": 0}
     docs = cmd.build_documents("datasets")
     assert len(docs) == 1
-    assert docs[0]["id"] == "ch.bafu.karibu"
+    assert docs[0]["id"] == "dat_karibu"

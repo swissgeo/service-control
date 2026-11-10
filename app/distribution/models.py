@@ -5,6 +5,7 @@ from typing import ClassVar
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
@@ -138,6 +139,10 @@ class ExternalDistribution(Distribution):
         verbose_name_plural = _(_context, "External Distributions")
 
 
+def form_style_url(sgid: str) -> str:
+    return f"{settings.OAS_PATH_PREFIX}/sty_{sgid.removeprefix('dst_')}"
+
+
 class ExternalWMSDistribution(ExternalDistribution):
     """Distribution model for external WMS distributions."""
 
@@ -185,6 +190,15 @@ class ExternalWMSDistribution(ExternalDistribution):
     @property
     def protocol(self) -> str:
         return "ogc:wms"
+
+    @property
+    def style_url(self) -> str | None:
+        # Note: currently a style is always created for a WMS/WMTS distribution
+        # even if it contains default values. Check with Frontend if they can handle
+        # the case when a style exists only in case of non-default values.
+        # if self.opacity < Decimal("1.0") or self.gutter > 0:
+        return form_style_url(self.sgid)
+        # return None
 
     def external_record_id(self, lang: str) -> str:
         default = self.wms_layer_name_de
@@ -234,6 +248,15 @@ class ExternalWMTSDistribution(ExternalDistribution):
     @property
     def protocol(self) -> str:
         return "ogc:wmts"
+
+    @property
+    def style_url(self) -> str | None:
+        # Note: currently a style is always created for a WMS/WMTS distribution
+        # even if it contains default values. Check with Frontend if they can handle
+        # the case when a style exists only in case of non-default values.
+        # if self.opacity < Decimal("1.0"):
+        return form_style_url(self.sgid)
+        # return None
 
     def external_record_id(self, lang: str) -> str:
         default = self.wmts_layer_name_de
@@ -298,6 +321,21 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
         null=True,
         blank=True,
         help_text=_(_context, "Optional URL to a style file for the GeoJSON layer."),
+    )
+    geojson_legend_de = models.URLField(
+        _(_context, "Legend URL (DE)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_fr = models.URLField(
+        _(_context, "Legend URL (FR)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_it = models.URLField(
+        _(_context, "Legend URL (IT)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_en = models.URLField(
+        _(_context, "Legend URL (EN)"), max_length=2048, null=True, blank=True
+    )
+    geojson_legend_rm = models.URLField(
+        _(_context, "Legend URL (RM)"), max_length=2048, null=True, blank=True
     )
 
     class Meta:

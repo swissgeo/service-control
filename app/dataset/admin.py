@@ -1,11 +1,12 @@
 from typing import Any
 
+from django.conf import settings
 from django.contrib import admin, messages
 from django.db.models import OuterRef, QuerySet, StringAgg, Subquery, Value
 from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import format_html_join
+from django.utils.html import format_html, format_html_join
 
 from organization.models import Organization
 from utils.admin import HarvestWarningMixin, HideFieldsetsOnAddMixin
@@ -79,7 +80,14 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
 
     list_display = ("sgid", "dataset_id", "title_de", "owner", "data_source", "status")
     list_filter = ("data_source", PublishedNonPublished, OwnerOrganizationFilter)
-    readonly_fields = ("sgid", "owner_organization", "created_at", "updated_at", "dataset_list")
+    readonly_fields = (
+        "sgid",
+        "owner_organization",
+        "created_at",
+        "updated_at",
+        "dataset_list",
+        "oar_preview",
+    )
     search_fields = ("sgid", "dataset_id", "title_de", "title_short_de")
     filter_horizontal = ("concepts",)
     inlines = (
@@ -89,7 +97,7 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
     )
     actions = ("set_status_draft", "set_status_published")
     save_on_top = True
-    hidden_fieldsets_on_add = ("Relations", "Metadata")
+    hidden_fieldsets_on_add = ("Relations", "Metadata", "Export")
     fieldsets = (
         (
             "Identification",
@@ -101,6 +109,12 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
                     ("data_source", "data_source_ids"),
                     "geocat_id",
                 ),
+            },
+        ),
+        (
+            "Export",
+            {
+                "fields": ("oar_preview",),
             },
         ),
         (
@@ -232,6 +246,17 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
                 (reverse("admin:organization_organization_change", args=[org.pk]), org.name_en)
                 for org in organizations
             ),
+        )
+
+    @admin.display(description="Link to OAR Record from last export")
+    def oar_preview(self, obj: Dataset) -> str:
+        host = (
+            f"{settings.APP_ENV}.sgdi.tech" if settings.APP_ENV in ("dev", "int") else "swissgeo.ch"
+        )
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>',
+            f"https://services.{host}/api/oar/rc1/collections/swissgeo-catalog/items/{obj.sgid}",
+            f"Preview Dataset '{obj.sgid}' in OAR API",
         )
 
     @admin.display(description="Reverse Dataset Relations")
