@@ -1,11 +1,9 @@
 import json
-from http import HTTPStatus
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import environ
 from boto3 import Session
-from requests import RequestException, head
 
 from django.apps import apps
 from django.conf import settings
@@ -998,17 +996,7 @@ class Command(CustomBaseCommand):
         )
         for lang in SUPPORTED_LANGS:
             url = geojson_legend_url_template.format(layer_id=layer_id, lang=lang)
-            legends[f"geojson_legend_{lang}"] = None
-            try:
-                response = head(url, timeout=5, allow_redirects=True)
-            except RequestException as e:
-                self.print_warning(f"Failed to check legend {url}: {e}")
-                continue
-            if response.status_code == HTTPStatus.OK:
-                legends[f"geojson_legend_{lang}"] = url
-                self.print(f"Found legend {url} for layer_id {layer_id}")
-            else:
-                self.print_warning(f"No legend found for layer_id {layer_id} ({lang})")
+            legends[f"geojson_legend_{lang}"] = url
         return legends
 
     def import_api3features_distribution(
