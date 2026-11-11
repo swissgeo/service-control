@@ -303,7 +303,7 @@ class Command(CustomBaseCommand):
 
     def cleanup_objects(
         self,
-        cls: type[Dataset],
+        cls: type[Dataset | Dataservice],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -348,7 +348,7 @@ class Command(CustomBaseCommand):
     # FIXME: remove
     def cleanup_objects_old(
         self,
-        cls: type[Dataservice | Distribution | Contact | Organization],
+        cls: type[Distribution | Contact | Organization],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -1427,7 +1427,7 @@ class Command(CustomBaseCommand):
         (
             metrics["dataservices.removed"],
             metrics["dataservices.obsoleted"],
-        ) = self.cleanup_objects_old(Dataservice, processed, clean)
+        ) = self.cleanup_objects(Dataservice, processed, clean)
 
         (
             metrics["distributions.removed"],
@@ -1462,7 +1462,7 @@ class Command(CustomBaseCommand):
         )
         dataservice, created, updated = self.import_wms_data_service(
             dataservice_id=f"wms-geodienste-{dataservice_name}",
-            data_source_id=base_topic,
+            external_id=base_topic,
             languages=languages,
             default_language="de",
             capabilities_url=capabilities_url,
@@ -1506,7 +1506,7 @@ class Command(CustomBaseCommand):
         # Availability dataservice and distribution
         dataservice_availability, created, updated = self.import_wms_data_service(
             dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
-            data_source_id=base_topic,
+            external_id=base_topic,
             languages=["de", "fr", "it", "en"],
             default_language="de",
             capabilities_url=self.get_availability_wms_address(capabilities_url),
@@ -1561,7 +1561,7 @@ class Command(CustomBaseCommand):
         return ds_created, ds_updated, dist_created, dist_updated
 
     def import_wms_data_service(
-        self, dataservice_id: str, data_source_id: str, **kwargs
+        self, dataservice_id: str, external_id: str, **kwargs
     ) -> tuple[WMSDataservice, int, int]:
         """Ensures that the WMS dataservice with the given ID exists and that it has the given
         attributes.
@@ -1581,7 +1581,7 @@ class Command(CustomBaseCommand):
                 sgid=dataservice_sgid_from_dataservice_id(dataservice_id),
                 dataservice_id=dataservice_id,
                 data_source=Dataservice.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Dataservice.DataSource.GEODIENSTE, "id": external_id}],
                 **kwargs,
             )
             dataservice.save()

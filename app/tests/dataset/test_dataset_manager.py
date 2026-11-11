@@ -1,7 +1,6 @@
 from dataset.models import Dataset
 
 
-# @patch("dataset.models.Client")
 def test_external_ids(db):
     attributes = {
         "title_de": "title__de",

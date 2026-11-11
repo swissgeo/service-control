@@ -3151,7 +3151,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-fixpunkte")
     assert dataservice_data.sgid == "srv_wms-geodienste-fixpunkte"
-    assert dataservice_data.data_source == "geodienste"
+    assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_data.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert dataservice_data.default_language == "de"
     assert dataservice_data.languages == ["de", "fr", "it", "en"]
     assert dataservice_data.title == "WMS geodienste.ch fixpunkte"
@@ -3164,7 +3167,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         dataservice_id="wms-geodienste-fixpunkte-availability"
     )
     assert dataservice_availability.sgid == "srv_wms-geodienste-fixpunkte-availability"
-    assert dataservice_availability.data_source == "geodienste"
+    assert dataservice_availability.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_availability.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert dataservice_availability.default_language == "de"
     assert dataservice_availability.languages == ["de", "fr", "it", "en"]
     assert dataservice_availability.title == "WMS geodienste.ch fixpunkte (availability)"
@@ -3660,13 +3666,13 @@ def test_command_cleans_distributions(mock, client, db):
         sgid="srv_obsolete",
         dataservice_id="obsolete",
         data_source=Dataservice.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
     ).save()
     WMSDataservice(
         sgid="srv_removed",
         dataservice_id="removed",
         data_source=Dataservice.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Dataservice.DataSource.GEODIENSTE, "id": "removed"}],
     ).save()
 
     ExternalWMSDistribution(
@@ -3750,7 +3756,7 @@ def test_command_cleans_distributions(mock, client, db):
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (dataservice) found: removed" in out
+    assert "Dataservices with removed external IDs found: removed" in out
     assert "Obsolete dataservices found: obsolete" in out
     assert "Removed data_source_ids (distribution) found: removed" in out
     assert "Obsolete distributions found: obsolete" in out
@@ -3765,7 +3771,7 @@ def test_command_cleans_distributions(mock, client, db):
     call_command("import_geodienste", distributions=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (dataservice) removed" in out
+    assert "Removing obsolete external ID removed from dataservices" in out
     assert "Removing obsolete dataservice obsolete" in out
     assert "Removing obsolete dataservice removed" in out
     assert "Removing obsolete data_source_id (distribution) removed" in out

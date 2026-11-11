@@ -68,7 +68,7 @@ def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ..
                 "fields": (
                     ("sgid", "dataservice_id"),
                     "title",
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                 ),
             },
         ),

@@ -12,7 +12,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +27,12 @@ else:
     MixinBase = object
 
 
-class DataserviceManager(DataSourceIdManagerMixin, PolymorphicManager):
+class DataserviceManager(ExternalIdsManagerMixin, PolymorphicManager):
     def get_by_natural_key(self, dataservice_id: str) -> models.Model:
         return self.get(dataservice_id=dataservice_id)
 
 
-class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
+class Dataservice(ExternalIdsModelMixin, PolymorphicModel):
     """Dataservice model."""
 
     sgid = models.CharField(
@@ -41,7 +41,7 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         validators=[RegexValidator(DATASERVICE_SGID_REGEX)],
     )
 
-    # srv
+    # FIXME: remove me!
     dataservice_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     class DataSource(models.TextChoices):
@@ -55,12 +55,12 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     title = models.CharField(_(_context, "Title"), max_length=128)
