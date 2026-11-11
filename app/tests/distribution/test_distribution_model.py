@@ -44,3 +44,15 @@ def test_distribution_sgid_constraint(dataset, sgid, valid):
     else:
         with pytest.raises(IntegrityError):
             Distribution(dataset=dataset, sgid=sgid).save()
+
+
+def test_add_external_id():
+    dataservice = Distribution()
+    dataservice.add_external_id(Distribution.DataSource.GEODIENSTE, "b")
+    dataservice.add_external_id(Distribution.DataSource.BOD_LAYERS_JS, "a")
+    dataservice.add_external_id(Distribution.DataSource.BOD_LAYERS_JS, "a")
+
+    assert dataservice.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "a"},
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "b"},
+    ]

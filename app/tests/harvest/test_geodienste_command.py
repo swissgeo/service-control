@@ -3180,7 +3180,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     )
 
     distribution_data = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.fixpunkte:wms")
-    assert distribution_data.data_source == "geodienste"
+    assert distribution_data.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_data.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert distribution_data.title_de == "Title DE"
     assert distribution_data.title_en == "Title EN"
     assert distribution_data.title_fr == "Title FR"
@@ -3201,7 +3204,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte-availability:wms"
     )
-    assert distribution_availability.data_source == "geodienste"
+    assert distribution_availability.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_availability.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert distribution_availability.title_de == "Verfügbarkeit"
     assert distribution_availability.title_en == "Availability"
     assert distribution_availability.title_fr == "Disponibilité"
@@ -3236,7 +3242,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     distribution_stac = ExternalStacDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte:stac"
     )
-    assert distribution_stac.data_source == "geodienste"
+    assert distribution_stac.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_stac.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert distribution_stac.title_de == "STAC Download Collection"
     assert distribution_stac.title_en == "STAC Download Collection"
     assert distribution_stac.title_fr == "STAC Download Collection"
@@ -3410,7 +3419,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-thermische_netze")
     assert dataservice_data.sgid == "srv_wms-geodienste-thermische-netze"
-    assert dataservice_data.data_source == "geodienste"
+    assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_data.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert dataservice_data.default_language == "de"
     assert dataservice_data.languages == ["de", "fr", "it", "en"]
     assert dataservice_data.title == "WMS geodienste.ch thermische_netze"
@@ -3423,7 +3435,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
         dataservice_id="wms-geodienste-thermische_netze-availability"
     )
     assert dataservice_availability.sgid == "srv_wms-geodienste-thermische-netze-availability"
-    assert dataservice_availability.data_source == "geodienste"
+    assert dataservice_availability.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_availability.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert dataservice_availability.default_language == "de"
     assert dataservice_availability.languages == ["de", "fr", "it", "en"]
     assert dataservice_availability.title == "WMS geodienste.ch thermische_netze (availability)"
@@ -3435,7 +3450,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     distribution_data = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze:wms"
     )
-    assert distribution_data.data_source == "geodienste"
+    assert distribution_data.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_data.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert distribution_data.title_de == "Title DE"
     assert distribution_data.title_en == "Title EN"
     assert distribution_data.title_fr == "Title FR"
@@ -3456,7 +3474,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze-availability:wms"
     )
-    assert distribution_availability.data_source == "geodienste"
+    assert distribution_availability.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_availability.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert distribution_availability.title_de == "Verfügbarkeit"
     assert distribution_availability.title_en == "Availability"
     assert distribution_availability.title_fr == "Disponibilité"
@@ -3491,7 +3512,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     distribution_stac = ExternalStacDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze:stac"
     )
-    assert distribution_stac.data_source == "geodienste"
+    assert distribution_stac.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_stac.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert distribution_stac.title_de == "STAC Download Collection"
     assert distribution_stac.title_en == "STAC Download Collection"
     assert distribution_stac.title_fr == "STAC Download Collection"
@@ -3679,7 +3703,7 @@ def test_command_cleans_distributions(mock, client, db):
         sgid="dst_obsolete-123",
         distribution_id="obsolete",
         data_source=Distribution.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
         wms_layer_name_de="daten",
         dataset=dataset,
     ).save()
@@ -3687,7 +3711,7 @@ def test_command_cleans_distributions(mock, client, db):
         sgid="dst_removed-123",
         distribution_id="removed",
         data_source=Distribution.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": "removed"}],
         wms_layer_name_de="daten",
         dataset=dataset,
     ).save()
@@ -3758,7 +3782,7 @@ def test_command_cleans_distributions(mock, client, db):
 
     assert "Dataservices with removed external IDs found: removed" in out
     assert "Obsolete dataservices found: obsolete" in out
-    assert "Removed data_source_ids (distribution) found: removed" in out
+    assert "Distributions with removed external IDs found: removed" in out
     assert "Obsolete distributions found: obsolete" in out
 
     assert Dataservice.objects.count() == 5
@@ -3774,7 +3798,7 @@ def test_command_cleans_distributions(mock, client, db):
     assert "Removing obsolete external ID removed from dataservices" in out
     assert "Removing obsolete dataservice obsolete" in out
     assert "Removing obsolete dataservice removed" in out
-    assert "Removing obsolete data_source_id (distribution) removed" in out
+    assert "Removing obsolete external ID removed from distributions" in out
     assert "Removing obsolete distribution obsolete" in out
     assert "Removing obsolete distribution removed" in out
 
