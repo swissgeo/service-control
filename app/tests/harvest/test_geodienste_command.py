@@ -102,7 +102,7 @@ def test_command_creates_aggregate_organization(mock, client, db):
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["KGK"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     att = org.attribution_set.get()
@@ -156,7 +156,7 @@ def test_command_aggregate_organization_federal_political_entity_not_existing(mo
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["KGK"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}]
     assert org.geopolitical_entity is None
 
 
@@ -177,7 +177,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org.save()
 
@@ -240,7 +240,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["KGK"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     att.refresh_from_db()
@@ -285,7 +285,7 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
     )
     org.save()
 
@@ -384,7 +384,7 @@ def test_command_creates_cantonal_organization(mock, client, db):
     assert org.abbreviation_it == "LU"
     assert org.abbreviation_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["LU"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
@@ -411,7 +411,7 @@ def test_command_updates_cantonal_organization(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}],
     )
     org.save()
 
@@ -449,7 +449,7 @@ def test_command_updates_cantonal_organization(mock, client, db):
     assert org.abbreviation_it == "LU"
     assert org.abbreviation_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["LU"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
@@ -484,7 +484,7 @@ def test_command_creates_broker_organization(mock, client, db):
     assert org.abbreviation_it == "BFE"
     assert org.abbreviation_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["BFE"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "BFE"}]
     assert org.geopolitical_entity is None
 
 
@@ -505,7 +505,7 @@ def test_command_updates_broker_organization(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["BFE"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "BFE"}],
     )
     org.save()
 
@@ -532,7 +532,7 @@ def test_command_updates_broker_organization(mock, client, db):
     assert org.abbreviation_it == "BFE"
     assert org.abbreviation_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["BFE"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "BFE"}]
     assert org.geopolitical_entity is None
 
     out = StringIO()
@@ -584,7 +584,7 @@ def test_command_uses_organization_mapping(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}],
     )
     org_1.save()
     org_2 = Organization(
@@ -601,7 +601,7 @@ def test_command_uses_organization_mapping(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}],
     )
     org_2.save()
 
@@ -627,10 +627,10 @@ def test_command_uses_organization_mapping(mock, client, db):
     org_1.refresh_from_db()
     assert org_1.organization_id == "ch.geodienste-lu-new"
     assert org_1.name_de == "x"
-    assert org_1.data_source_ids == ["LU"]
+    assert org_1.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
 
     org_2.refresh_from_db()
-    assert org_2.data_source_ids == []
+    assert org_2.external_ids == []
 
     # ---------
     # Update
@@ -658,7 +658,7 @@ def test_command_uses_organization_mapping(mock, client, db):
     assert org_1.abbreviation_it == "LU"
     assert org_1.abbreviation_rm == "LU"
     assert org_1.data_source == Organization.DataSource.GEODIENSTE
-    assert org_1.data_source_ids == ["LU"]
+    assert org_1.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
 
 
 @patch("organization.models.Client")
@@ -674,7 +674,7 @@ def test_command_cleans_organizations(mock, client, db):
         abbreviation_fr="obsolete",
         abbreviation_en="obsolete",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
     ).save()
     Organization(
         sgid="org_removed",
@@ -686,7 +686,7 @@ def test_command_cleans_organizations(mock, client, db):
         abbreviation_fr="removed",
         abbreviation_en="removed",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "removed"}],
     ).save()
 
     mock.side_effect = api_response(
@@ -700,7 +700,7 @@ def test_command_cleans_organizations(mock, client, db):
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (organization) found: removed" in out
+    assert "Organizations with removed external IDs found: removed" in out
     assert "Obsolete organizations found: obsolete" in out
 
     assert Organization.objects.filter(organization_id="obsolete").first()
@@ -713,7 +713,7 @@ def test_command_cleans_organizations(mock, client, db):
     call_command("import_geodienste", organizations=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (organization) removed" in out
+    assert "Removing obsolete external ID removed from organizations" in out
     assert "Removing obsolete organization obsolete" in out
     assert "Removing obsolete organization removed" in out
 
@@ -779,7 +779,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org.save()
 
@@ -855,7 +855,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org.save()
 
@@ -939,7 +939,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
     )
     org.save()
 
@@ -2125,7 +2125,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org_aggregate.save()
 
@@ -2479,7 +2479,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org_aggregate.save()
     contact_aggregate = Contact(

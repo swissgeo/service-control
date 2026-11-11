@@ -33,7 +33,7 @@ class OrganizationAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Mode
             {
                 "fields": (
                     ("sgid", "organization_id"),
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                     "geopolitical_entity",
                 ),
             },

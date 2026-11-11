@@ -157,7 +157,9 @@ def test_command_creates_organizations(client, dynamodb, db):
     assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
     assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    assert org_out.data_source_ids == ["ch.bafu"]
+    assert org_out.external_ids == [
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+    ]
     assert org_out.geopolitical_entity == geopolitical_entity
 
 
@@ -222,7 +224,9 @@ def test_command_federal_geopolitical_entity_not_existing(client, dynamodb, db):
     assert org_out.abbreviation_it == "UFAM"
     assert org_out.abbreviation_rm == "UFAM"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    assert org_out.data_source_ids == ["ch.bafu"]
+    assert org_out.external_ids == [
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+    ]
     assert org_out.geopolitical_entity is None
 
 
@@ -242,7 +246,7 @@ def test_command_updates_organizations(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=[],
+        external_ids=[],
     )
     org.save()
     org.attribution_set.create(
@@ -352,7 +356,9 @@ def test_command_updates_organizations(client, dynamodb, db):
     assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
     assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_out.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    assert org_out.data_source_ids == ["ch.bafu"]
+    assert org_out.external_ids == [
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+    ]
     assert org_out.geopolitical_entity == geopolitical_entity
 
 
@@ -372,7 +378,9 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+        ],
     )
     org_1.save()
     org_1.attribution_set.create(
@@ -409,7 +417,9 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+        ],
     )
     org_2.save()
 
@@ -493,10 +503,12 @@ def test_command_uses_one_to_one_organization_mapping(client, dynamodb, db):
     assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
     assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org_1.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    assert org_1.data_source_ids == ["ch.bafu"]
+    assert org_1.external_ids == [
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+    ]
 
     org_2.refresh_from_db()
-    assert org_2.data_source_ids == []
+    assert org_2.external_ids == []
 
 
 @patch("organization.models.Client")
@@ -515,7 +527,7 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=[],
+        external_ids=[],
     )
     org.save()
 
@@ -639,7 +651,10 @@ def test_command_uses_one_to_many_organization_mapping(client, dynamodb, db):
     assert attribution.url_it == "https://bafu.admin.ch/it/home.html"
     assert attribution.url_rm == "https://bafu.admin.ch/rm/home.html"
     assert org.data_source == Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    assert org.data_source_ids == ["ch.bafu1", "ch.bafu2"]
+    assert org.external_ids == [
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu1"},
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu2"},
+    ]
 
 
 @patch("organization.models.Client")
@@ -658,7 +673,9 @@ def test_command_cleans_organizations(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.unused"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.unused"}
+        ],
     ).save()
     Organization(
         sgid="org_bafu",
@@ -674,7 +691,9 @@ def test_command_cleans_organizations(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+        ],
     ).save()
     Organization(
         sgid="org_bafu-copy",
@@ -690,7 +709,9 @@ def test_command_cleans_organizations(client, dynamodb, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+        ],
     ).save()
 
     org_in = OrganizationImport(
@@ -715,7 +736,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
     call_command("import_harvest_tables", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (provider) found: ch.unused" in out
+    assert "Organizations with removed external IDs found: ch.unused" in out
     assert "Obsolete organizations found: ch.bafu-copy" in out
 
     assert Organization.objects.count() == 3
@@ -725,7 +746,7 @@ def test_command_cleans_organizations(client, dynamodb, db):
     call_command("import_harvest_tables", organizations=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (provider) ch.unused" in out
+    assert "Removing obsolete external ID ch.unused from organizations" in out
     assert "Removing obsolete organization ch.bafu-copy" in out
     assert "Removing obsolete organization ch.unused" in out
 
@@ -745,7 +766,9 @@ def test_command_cleans_attributions(client, dynamodb, db):
         abbreviation_fr="OFEV",
         abbreviation_en="FOEN",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["ch.bafu"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "ch.bafu"}
+        ],
     )
     organization.save()
     Attribution(

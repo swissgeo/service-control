@@ -303,7 +303,7 @@ class Command(CustomBaseCommand):
 
     def cleanup_objects(
         self,
-        cls: type[Dataset | Dataservice | Distribution],
+        cls: type[Dataset | Dataservice | Distribution | Organization],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -348,7 +348,7 @@ class Command(CustomBaseCommand):
     # FIXME: remove
     def cleanup_objects_old(
         self,
-        cls: type[Contact | Organization],
+        cls: type[Contact],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -488,7 +488,7 @@ class Command(CustomBaseCommand):
         (
             metrics["organizations.removed"],
             metrics["organizations.obsoleted"],
-        ) = self.cleanup_objects_old(Organization, processed, clean)
+        ) = self.cleanup_objects(Organization, processed, clean)
 
         self.print_success(f"Organization import completed. Metrics: {metrics}")
 
@@ -507,7 +507,7 @@ class Command(CustomBaseCommand):
 
         created, updated = False, False
 
-        Organization.objects.remove_data_source_id(provider_id)
+        Organization.objects.remove_external_id(Organization.DataSource.GEODIENSTE, provider_id)
 
         organization_id = self.organization_id(provider_id)
         org, mapping = mappings.match(provider_id)
@@ -532,7 +532,9 @@ class Command(CustomBaseCommand):
                     sgid=sgid,
                     organization_id=organization_id,
                     data_source=Organization.DataSource.GEODIENSTE,
-                    data_source_ids=[provider_id],
+                    external_ids=[
+                        {"source": Organization.DataSource.GEODIENSTE, "id": provider_id}
+                    ],
                     geopolitical_entity=geopolitical_entity,
                     **attributes,
                 )
@@ -553,7 +555,7 @@ class Command(CustomBaseCommand):
                 org.save()
                 self.print(f"Organization {org} updated")
 
-        org.add_data_source_id(provider_id)
+        org.add_external_id(Organization.DataSource.GEODIENSTE, provider_id)
         org.save()
 
         return org, 1 if created else 0, 1 if updated else 0
@@ -600,7 +602,7 @@ class Command(CustomBaseCommand):
         attribution.add_data_source_id(provider_id)
         attribution.save()
 
-        return 0, 1
+        return 0, 1 if updated else 0
 
     # ##########################################################################
     def import_contacts(self, services: dict, clean: bool) -> None:

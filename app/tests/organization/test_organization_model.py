@@ -332,12 +332,15 @@ def test_delete_deletes_related_records(
     assert ssm_client.return_value.put_parameter.called
 
 
-def test_add_data_source_id(organization):
-    organization.add_data_source_id("b")
-    organization.add_data_source_id("a")
-    organization.add_data_source_id("a")
+def test_add_external_id(organization):
+    organization.add_external_id(Organization.DataSource.GEODIENSTE, "b")
+    organization.add_external_id(Organization.DataSource.BOD_CONTACT_ORGANIZATION, "a")
+    organization.add_external_id(Organization.DataSource.BOD_CONTACT_ORGANIZATION, "a")
 
-    assert organization.data_source_ids == ["a", "b"]
+    assert organization.external_ids == [
+        {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "a"},
+        {"source": Organization.DataSource.GEODIENSTE, "id": "b"},
+    ]
 
 
 @patch("organization.models.Client")
