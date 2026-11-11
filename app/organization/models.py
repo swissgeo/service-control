@@ -15,7 +15,12 @@ from config.authorization import VPRole
 from legal.models import GeopoliticalEntity
 from user.models import MachineUser
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import (
+    DataSourceIdManagerMixin,
+    DataSourceIdModelMixin,
+    ExternalIdsManagerMixin,
+    ExternalIdsModelMixin,
+)
 from verified_permissions.utils.client import Client as VPClient
 
 logger = logging.getLogger(__name__)
@@ -24,11 +29,11 @@ logger = logging.getLogger(__name__)
 ORGANIZATION_SGID_REGEX = r"^org_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
-class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
+class OrganizationManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Organization(DataSourceIdModelMixin, models.Model):
+class Organization(ExternalIdsModelMixin, models.Model):
     _context = "Organization model"
 
     sgid = models.CharField(
@@ -37,6 +42,7 @@ class Organization(DataSourceIdModelMixin, models.Model):
         validators=[RegexValidator(ORGANIZATION_SGID_REGEX)],
     )
 
+    # FIXME: remove me!
     organization_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
@@ -58,12 +64,12 @@ class Organization(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     geopolitical_entity = models.ForeignKey(
