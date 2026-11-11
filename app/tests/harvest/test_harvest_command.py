@@ -906,7 +906,9 @@ def test_command_creates_dataset(dynamodb, db):
     assert ds_out.description_rm == "Description (RM)"
     assert ds_out.geocat_id == "abcd"
     assert ds_out.data_source == Dataset.DataSource.BOD_DATASET
-    assert ds_out.data_source_ids == ["ch.bafu.moose"]
+    assert ds_out.external_ids == [
+        {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}
+    ]
     assert ds_out.status == Dataset.Status.PUBLISHED
 
 
@@ -931,7 +933,7 @@ def test_command_updates_dataset(dynamodb, db):
         description_rm="x",
         geocat_id="x",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=[],
+        external_ids=[],
         status=Dataset.Status.DRAFT,
     ).save()
 
@@ -989,7 +991,9 @@ def test_command_updates_dataset(dynamodb, db):
     assert ds_out.description_rm == "Description (RM)"
     assert ds_out.geocat_id == "abcd"
     assert ds_out.data_source == Dataset.DataSource.BOD_DATASET
-    assert ds_out.data_source_ids == ["ch.bafu.moose"]
+    assert ds_out.external_ids == [
+        {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}
+    ]
     assert ds_out.status == Dataset.Status.DRAFT
 
 
@@ -1009,7 +1013,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
         description_rm="x",
         geocat_id="x1",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
     )
     ds_1.save()
     ds_2 = Dataset(
@@ -1027,7 +1031,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
         description_rm="x",
         geocat_id="x2",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
     )
     ds_2.save()
 
@@ -1071,7 +1075,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     out = out.getvalue()
 
     ds_1.refresh_from_db()
-    assert ds_1.data_source_ids == []
+    assert ds_1.external_ids == []
 
     # -------------------------------
     # Update flag not yet set
@@ -1087,7 +1091,7 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     assert "Obsolete datasets found: ch.bafu.moose, ch.bafu.moose2" in out
 
     ds_1.refresh_from_db()
-    assert ds_1.data_source_ids == ["ch.bafu.moose"]
+    assert ds_1.external_ids == [{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}]
     assert ds_1.title_de == "x"
 
     # -------------------------------
@@ -1121,10 +1125,10 @@ def test_command_uses_one_to_one_dataset_mapping(dynamodb, db):
     assert ds_1.description_rm == "Description (RM)"
     assert ds_1.geocat_id == "abcd"
     assert ds_1.data_source == Dataset.DataSource.BOD_DATASET
-    assert ds_1.data_source_ids == ["ch.bafu.moose"]
+    assert ds_1.external_ids == [{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}]
 
     ds_2.refresh_from_db()
-    assert ds_2.data_source_ids == []
+    assert ds_2.external_ids == []
 
 
 def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
@@ -1143,7 +1147,7 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
         description_rm="x",
         geocat_id="x",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=[],
+        external_ids=[],
     )
     ds.save()
 
@@ -1222,7 +1226,10 @@ def test_command_uses_one_to_many_dataset_mapping(dynamodb, db):
     assert ds.description_rm == "Description (RM)"
     assert ds.geocat_id == "abcd"
     assert ds.data_source == Dataset.DataSource.BOD_DATASET
-    assert ds.data_source_ids == ["ch.bafu.moose1", "ch.bafu.moose2"]
+    assert ds.external_ids == [
+        {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose1"},
+        {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose2"},
+    ]
 
 
 def test_command_cleans_datasets(dynamodb, db):
@@ -1241,7 +1248,7 @@ def test_command_cleans_datasets(dynamodb, db):
         description_rm="x",
         geocat_id="x",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.unused"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.unused"}],
     ).save()
     Dataset(
         sgid="dat_moose",
@@ -1258,7 +1265,7 @@ def test_command_cleans_datasets(dynamodb, db):
         description_rm="x",
         geocat_id="y",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
     ).save()
     Dataset(
         sgid="dat_moose-copy",
@@ -1275,7 +1282,7 @@ def test_command_cleans_datasets(dynamodb, db):
         description_rm="x",
         geocat_id="z",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
     ).save()
 
     ds_in = DatasetImport(
@@ -1307,7 +1314,7 @@ def test_command_cleans_datasets(dynamodb, db):
     call_command("import_harvest_tables", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_id (dataset) found: ch.bafu.unused" in out
+    assert "Datasets with removed external IDs found: ch.bafu.unused" in out
     assert "Obsolete datasets found: ch.bafu.moose-copy" in out
 
     assert Dataset.objects.count() == 3
@@ -1317,7 +1324,7 @@ def test_command_cleans_datasets(dynamodb, db):
     call_command("import_harvest_tables", datasets=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (dataset) ch.bafu.unused" in out
+    assert "Removing obsolete external ID ch.bafu.unused from datasets" in out
     assert "Removing obsolete dataset ch.bafu.moose-copy" in out
     assert "Removing obsolete dataset ch.bafu.unused" in out
 
@@ -1361,7 +1368,7 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
         description_rm="x",
         geocat_id="y",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
     )
     ds.save()
 
@@ -1399,7 +1406,7 @@ def test_command_matches_existing_dataset_provider(client, dynamodb, db):
     ds.refresh_from_db()
     assert ds.dataset_id == "ch.bafu.moose"
     assert ds.data_source == Dataset.DataSource.BOD_DATASET
-    assert ds.data_source_ids == ["ch.bafu.moose"]
+    assert ds.external_ids == [{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}]
     assert {
         ds_unit.role: (ds_unit.unit.organization.organization_id, ds_unit.unit.unit_id)
         for ds_unit in ds.dataset_units.all()
@@ -1445,7 +1452,7 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
         description_rm="x",
         geocat_id="y",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
     )
     ds.save()
 
@@ -1487,7 +1494,7 @@ def test_command_uses_dataset_unit_mapping(client, dynamodb, db):
     ds.refresh_from_db()
     assert ds.dataset_id == "ch.bafu.moose"
     assert ds.data_source == Dataset.DataSource.BOD_DATASET
-    assert ds.data_source_ids == ["ch.bafu.moose"]
+    assert ds.external_ids == [{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}]
     assert {
         ds_unit.role: (ds_unit.unit.organization.organization_id, ds_unit.unit.unit_id)
         for ds_unit in ds.dataset_units.all()
@@ -1522,7 +1529,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         dataset_id="ch.bafu.moose",
         geocat_id="a",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bafu.moose"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bafu.moose"}],
         **attributes,
     )
     ds_wmts.save()
@@ -1532,7 +1539,9 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="b",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bazl.luftfahrthindernis"],
+        external_ids=[
+            {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bazl.luftfahrthindernis"}
+        ],
         **attributes,
     )
     ds_wms.save()
@@ -1542,7 +1551,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         dataset_id="ch.bfe.shared-mobility",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bfe.shared-mobility"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bfe.shared-mobility"}],
         **attributes,
     )
     ds_geojson.save()
@@ -1778,7 +1787,7 @@ def test_command_imports_geojson_legends(dynamodb, db):
         title_de="T DE",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bfe.shared-mobility"],
+        external_ids=[{"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bfe.shared-mobility"}],
     )
     dataset.save()
 
@@ -1815,7 +1824,9 @@ def test_command_cleans_distributions(dynamodb, db):
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bazl.luftfahrthindernis"],
+        external_ids=[
+            {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bazl.luftfahrthindernis"}
+        ],
         title_de="x",
         title_fr="x",
         title_en="x",
@@ -1879,7 +1890,9 @@ def test_command_uses_distribution_mapping(dynamodb, db):
         dataset_id="ch.bazl.luftfahrthindernis",
         geocat_id="c",
         data_source=Dataset.DataSource.BOD_DATASET,
-        data_source_ids=["ch.bazl.luftfahrthindernis"],
+        external_ids=[
+            {"source": Dataset.DataSource.BOD_DATASET, "id": "ch.bazl.luftfahrthindernis"}
+        ],
         title_de="x",
         title_fr="x",
         title_en="x",

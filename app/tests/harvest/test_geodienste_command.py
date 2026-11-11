@@ -1347,7 +1347,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     aggregate = Dataset.objects.get(dataset_id="ch.kgk.av")
     assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
-    assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.av"}]
     assert aggregate.sgid == "dat_av"
     assert aggregate.description_de == "Abstract DE"
     assert aggregate.description_en == "Abstract DE"
@@ -1419,7 +1419,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
     assert part.data_source == Dataset.DataSource.GEODIENSTE
-    assert part.data_source_ids == ["LU.av"]
+    assert part.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "LU.av"}]
     assert part.sgid == "dat_av-lu"
     assert part.description_de == "Abstract DE"
     assert part.description_en == "Abstract DE"
@@ -1571,7 +1571,9 @@ def test_command_creates_broker_dataset(mock, client, db):  # noqa: PLR0915
 
     dataset = Dataset.objects.get(dataset_id="ch.bfe.thermische_netze")
     assert dataset.data_source == Dataset.DataSource.GEODIENSTE
-    assert dataset.data_source_ids == ["BFE.thermische_netze"]
+    assert dataset.external_ids == [
+        {"source": Dataset.DataSource.GEODIENSTE, "id": "BFE.thermische_netze"}
+    ]
     assert dataset.description_de == "Abstract DE"
     assert dataset.description_en == "Abstract DE"
     assert dataset.description_fr == "Abstract FR"
@@ -1650,7 +1652,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
         sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=["KGK.av"],
+        external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.av"}],
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
@@ -1670,7 +1672,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
         sgid="dat_av-lu",
         dataset_id="ch.geodienste-lu.av",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=["LU.av"],
+        external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": "LU.av"}],
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="",
@@ -1751,7 +1753,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
 
     aggregate.refresh_from_db()
     assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
-    assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.av"}]
     assert aggregate.description_de == "Abstract DE"
     assert aggregate.description_en == "Abstract DE"
     assert aggregate.description_fr == "Abstract FR"
@@ -1767,7 +1769,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
 
     part.refresh_from_db()
     assert part.data_source == Dataset.DataSource.GEODIENSTE
-    assert part.data_source_ids == ["LU.av"]
+    assert part.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "LU.av"}]
     assert part.dataset_id == "ch.geodienste-lu.av"
     assert part.description_de == "Abstract DE"
     assert part.description_en == "Abstract DE"
@@ -1801,7 +1803,7 @@ def test_command_uses_dataset_mapping(mock, db):
         sgid="dat_av-kgk-cgc",
         dataset_id="ch.kgk-cgc.av",
         data_source=Dataset.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
         description_de="x",
         description_en="x",
         description_fr="x",
@@ -1820,7 +1822,7 @@ def test_command_uses_dataset_mapping(mock, db):
         sgid="dat_av-rawi",
         dataset_id="ch.rawi.av",
         data_source=Dataset.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
         description_de="x",
         description_en="x",
         description_fr="x",
@@ -1929,12 +1931,12 @@ def test_command_uses_dataset_mapping(mock, db):
 
     aggregate.refresh_from_db()
     assert aggregate.data_source == Dataset.DataSource.USER_INPUT
-    assert aggregate.data_source_ids == []
+    assert aggregate.external_ids == []
     assert aggregate.title_de == "Title DE"
 
     part.refresh_from_db()
     assert part.data_source == Dataset.DataSource.USER_INPUT
-    assert part.data_source_ids == []
+    assert part.external_ids == []
     assert part.title_de == "Title DE"
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
@@ -1946,7 +1948,7 @@ def test_command_cleans_datasets(mock, db):
         sgid="dat_obsolete",
         dataset_id="obsolete",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
         description_de="Obsolete",
         description_en="Obsolete",
         description_fr="Obsolete",
@@ -1958,7 +1960,7 @@ def test_command_cleans_datasets(mock, db):
         sgid="dat_removed",
         dataset_id="removed",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=["KGK.removed"],
+        external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.removed"}],
         description_de="Removed",
         description_en="Removed",
         description_fr="Removed",
@@ -2021,7 +2023,7 @@ def test_command_cleans_datasets(mock, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (dataset) found: KGK.removed" in out
+    assert "Datasets with removed external IDs found: KGK.removed" in out
     assert "Obsolete datasets found: obsolete" in out
 
     assert Dataset.objects.count() == 4
@@ -2033,7 +2035,7 @@ def test_command_cleans_datasets(mock, db):
     call_command("import_geodienste", datasets=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (dataset) KGK.removed" in out
+    assert "Removing obsolete external ID KGK.removed from datasets" in out
     assert "Removing obsolete dataset obsolete" in out
     assert "Removing obsolete dataset removed" in out
 

@@ -156,12 +156,15 @@ def test_dataset_concepts(dataset):
     assert Concept.objects.count() > 0
 
 
-def test_add_data_source_id(dataset):
-    dataset.add_data_source_id("b")
-    dataset.add_data_source_id("a")
-    dataset.add_data_source_id("a")
+def test_add_external_id(dataset):
+    dataset.add_external_id(Dataset.DataSource.GEODIENSTE, "b")
+    dataset.add_external_id(Dataset.DataSource.BOD_DATASET, "a")
+    dataset.add_external_id(Dataset.DataSource.BOD_DATASET, "a")
 
-    assert dataset.data_source_ids == ["a", "b"]
+    assert dataset.external_ids == [
+        {"source": Dataset.DataSource.BOD_DATASET, "id": "a"},
+        {"source": Dataset.DataSource.GEODIENSTE, "id": "b"},
+    ]
 
 
 @pytest.mark.parametrize(

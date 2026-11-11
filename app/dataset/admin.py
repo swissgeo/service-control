@@ -106,7 +106,7 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
                     ("sgid", "dataset_id"),
                     "owner_organization",
                     "status",
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                     "geocat_id",
                 ),
             },

@@ -303,7 +303,52 @@ class Command(CustomBaseCommand):
 
     def cleanup_objects(
         self,
-        cls: type[Dataset | Dataservice | Distribution | Contact | Organization],
+        cls: type[Dataset],
+        processed: set[str],
+        clean: bool,
+    ) -> tuple[int, int]:
+        """Cleanup objects
+
+        - Check for external IDs referenced in the database but not present anymore in the
+          geodienste.ch Services Information API; optionally clean them
+        - Check for obsolete objects, i.e. objects created by this command but with no external ID
+          reference; optionally delete them
+
+        """
+
+        existing = cls.objects.existing_external_ids(cls.DataSource.GEODIENSTE)
+        name = cls.__name__.lower()
+
+        if removed := existing - processed:
+            if clean:
+                for external_id in removed:
+                    self.print_warning(f"Removing obsolete external ID {external_id} from {name}s ")
+                    cls.objects.remove_external_id(cls.DataSource.GEODIENSTE, external_id)
+            else:
+                ids = sorted(str(r) for r in removed)
+                self.print_warning(
+                    f"{name.capitalize()}s with removed external IDs found: {', '.join(ids)}"
+                )
+
+        obsolete = cls.objects.filter(
+            data_source=cls.DataSource.GEODIENSTE,
+            external_ids=[],
+        )
+        if obsolete.count():
+            if clean:
+                for obj in obsolete:
+                    self.print_warning(f"Removing obsolete {name} {obj}")
+                    obj.delete()
+            else:
+                ids = sorted(str(obj) for obj in obsolete)
+                self.print_warning(f"Obsolete {name}s found: {', '.join(ids)}")
+
+        return len(removed), len(obsolete)
+
+    # FIXME: remove
+    def cleanup_objects_old(
+        self,
+        cls: type[Dataservice | Distribution | Contact | Organization],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -443,7 +488,7 @@ class Command(CustomBaseCommand):
         (
             metrics["organizations.removed"],
             metrics["organizations.obsoleted"],
-        ) = self.cleanup_objects(Organization, processed, clean)
+        ) = self.cleanup_objects_old(Organization, processed, clean)
 
         self.print_success(f"Organization import completed. Metrics: {metrics}")
 
@@ -630,7 +675,7 @@ class Command(CustomBaseCommand):
         (
             metrics["contacts.removed"],
             metrics["contacts.obsoleted"],
-        ) = self.cleanup_objects(Contact, processed, clean)
+        ) = self.cleanup_objects_old(Contact, processed, clean)
 
         self.print_success(f"Contact import completed. Metrics: {metrics}")
 
@@ -793,12 +838,12 @@ class Command(CustomBaseCommand):
             aggregate_provider_id = self.provider_id()
             base_topic = service["base_topic"]
             if service["broker"]:
-                data_source_id = f"{provider_id}.{base_topic}"
-                processed.add(data_source_id)
+                external_id = f"{provider_id}.{base_topic}"
+                processed.add(external_id)
                 extra: dict = {**common, "legacy_contacts": legacy_aggregate_contacts}
                 broker, created, updated = self.import_dataset(
                     self.dataset_id(service, aggregate=False),
-                    data_source_id,
+                    external_id,
                     dataset_mappings,
                     geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
                     **extra,
@@ -849,8 +894,8 @@ class Command(CustomBaseCommand):
             aggregate_dataset_id = self.dataset_id(service, aggregate=True)
             aggregate = aggregated.get(aggregate_dataset_id)
             if not aggregate:
-                data_source_id = f"{aggregate_provider_id}.{base_topic}"
-                processed.add(data_source_id)
+                external_id = f"{aggregate_provider_id}.{base_topic}"
+                processed.add(external_id)
                 extra: dict = {
                     **common,
                     "legacy_contacts": legacy_aggregate_contacts,
@@ -860,7 +905,7 @@ class Command(CustomBaseCommand):
                 }
                 aggregate, created, updated = self.import_dataset(
                     aggregate_dataset_id,
-                    data_source_id,
+                    external_id,
                     dataset_mappings,
                     geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
                     **extra,
@@ -912,11 +957,11 @@ class Command(CustomBaseCommand):
                 metrics["dataset_contacts.removed"] += removed
 
             # Dataset: Part
-            data_source_id = f"{provider_id}.{base_topic}"
-            processed.add(data_source_id)
+            external_id = f"{provider_id}.{base_topic}"
+            processed.add(external_id)
             part, created, updated = self.import_dataset(
                 self.dataset_id(service, aggregate=False),
-                data_source_id,
+                external_id,
                 dataset_mappings,
                 **common,
             )
@@ -946,7 +991,7 @@ class Command(CustomBaseCommand):
             # Contact: Owner of Part
             created, removed = self.import_dataset_contact(
                 part,
-                data_source_id,
+                external_id,
                 DatasetToContact.Role.OWNER,
                 contact_mappings.get(DatasetToContact.Role.OWNER),
             )
@@ -973,7 +1018,7 @@ class Command(CustomBaseCommand):
     def import_dataset(
         self,
         dataset_id: str,
-        data_source_id: str,
+        external_id: str,
         dataset_mappings: PrefixLookupTable,
         **kwargs: dict,
     ) -> tuple[Dataset, int, int]:
@@ -999,7 +1044,7 @@ class Command(CustomBaseCommand):
                 dataset = Dataset(
                     sgid=dataset_sgid_from_dataset_id(dataset_id, Dataset.DataSource.GEODIENSTE),
                     dataset_id=dataset_id,
-                    data_source_ids=[data_source_id],
+                    external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": external_id}],
                     data_source=Dataset.DataSource.GEODIENSTE,
                     **kwargs,
                 )
@@ -1382,12 +1427,12 @@ class Command(CustomBaseCommand):
         (
             metrics["dataservices.removed"],
             metrics["dataservices.obsoleted"],
-        ) = self.cleanup_objects(Dataservice, processed, clean)
+        ) = self.cleanup_objects_old(Dataservice, processed, clean)
 
         (
             metrics["distributions.removed"],
             metrics["distributions.obsoleted"],
-        ) = self.cleanup_objects(Distribution, processed, clean)
+        ) = self.cleanup_objects_old(Distribution, processed, clean)
 
         self.print_success(f"Distribution import completed. Metrics: {metrics}")
 
