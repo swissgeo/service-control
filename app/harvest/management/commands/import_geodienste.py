@@ -303,7 +303,7 @@ class Command(CustomBaseCommand):
 
     def cleanup_objects(
         self,
-        cls: type[Dataset | Dataservice],
+        cls: type[Dataset | Dataservice | Distribution],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -348,7 +348,7 @@ class Command(CustomBaseCommand):
     # FIXME: remove
     def cleanup_objects_old(
         self,
-        cls: type[Distribution | Contact | Organization],
+        cls: type[Contact | Organization],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -1432,7 +1432,7 @@ class Command(CustomBaseCommand):
         (
             metrics["distributions.removed"],
             metrics["distributions.obsoleted"],
-        ) = self.cleanup_objects_old(Distribution, processed, clean)
+        ) = self.cleanup_objects(Distribution, processed, clean)
 
         self.print_success(f"Distribution import completed. Metrics: {metrics}")
 
@@ -1484,7 +1484,7 @@ class Command(CustomBaseCommand):
         distribution, created, updated = self.import_wms_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id,
-            data_source_id=base_topic,
+            external_id=base_topic,
             dataset=dataset,
             dataservice=dataservice,
             wms_layer_name_de=layer_names["de"],
@@ -1518,7 +1518,7 @@ class Command(CustomBaseCommand):
         _, created, updated = self.import_wms_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", "-availability:wms"),
-            data_source_id=base_topic,
+            external_id=base_topic,
             dataset=dataset,
             dataservice=dataservice_availability,
             title_de="Verfügbarkeit",
@@ -1545,7 +1545,7 @@ class Command(CustomBaseCommand):
         created, updated = self.import_stac_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", ":stac"),
-            data_source_id=base_topic,
+            external_id=base_topic,
             wms_url=capabilities_url,
             dataset=dataset,
             stac_collection_id=base_topic,
@@ -1600,7 +1600,7 @@ class Command(CustomBaseCommand):
         return dataservice, 0, 0
 
     def import_wms_distribution(
-        self, distribution_sgid: str, distribution_id: str, data_source_id: str, **kwargs
+        self, distribution_sgid: str, distribution_id: str, external_id: str, **kwargs
     ) -> tuple[ExternalWMSDistribution, int, int]:
         """Ensures that the external WMS distribution with the given ID exists and that it has the
         given attributes.
@@ -1622,7 +1622,7 @@ class Command(CustomBaseCommand):
                 sgid=distribution_sgid,
                 distribution_id=distribution_id,
                 data_source=Distribution.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": external_id}],
                 **kwargs,
             )
             distribution.save()
@@ -1719,7 +1719,7 @@ class Command(CustomBaseCommand):
         self,
         distribution_sgid: str,
         distribution_id: str,
-        data_source_id: str,
+        external_id: str,
         wms_url: str,
         **kwargs,
     ) -> tuple[int, int]:
@@ -1762,7 +1762,7 @@ class Command(CustomBaseCommand):
                 sgid=distribution_sgid,
                 distribution_id=distribution_id,
                 data_source=Distribution.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": external_id}],
                 dataservice=dataservice,
                 **kwargs,
             )

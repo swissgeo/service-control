@@ -6,13 +6,12 @@ from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +21,11 @@ _context = "Distribution Model"
 DISTRIBUTION_SGID_REGEX = r"^dst_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
-class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
+class DistributionManager(ExternalIdsManagerMixin, PolymorphicManager):
     pass
 
 
-class Distribution(DataSourceIdModelMixin, PolymorphicModel):
+class Distribution(ExternalIdsModelMixin, PolymorphicModel):
     """Abstract Base Distribution model."""
 
     sgid = models.CharField(
@@ -35,6 +34,7 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
         validators=[RegexValidator(DISTRIBUTION_SGID_REGEX)],
     )
 
+    # FIXME: remove me!
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
@@ -79,12 +79,12 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
     data_source = models.CharField(
         _(_context, "Data Source"), choices=DataSource.choices, max_length=255
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     created_at = models.DateTimeField(
