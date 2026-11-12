@@ -280,8 +280,8 @@ API_PATH_PREFIX = env.str("API_PATH_PREFIX", default="api/")
 # root domain
 DJANGO_ADMIN_LOGOUT_REDIRECT_URL = env.str("DJANGO_ADMIN_LOGOUT_REDIRECT_URL", default="")
 
-# geodienste.ch STAC Dataservice ID, created during import_geodienste management command
-STAC_DATASERVICE_ID_GEODIENSTE = "stac-geodienste"
+# geodienste.ch STAC sgid, created during import_geodienste management command
+STAC_DATASERVICE_SGID_GEODIENSTE = "srv_stac-geodienste"
 
 # OAR collection names
 OAR_SERVICES_COLLECTION_ID = env.str("OAR_SERVICES_COLLECTION_ID", "geoadmin-services")

@@ -38,9 +38,9 @@ from thesaurus.models import ECH0166_THESAURUS_ID, Concept, Thesaurus
 from thesaurus.utils import ThesaurusLookup
 from utils.command import CustomBaseCommand
 from utils.identifier import (
-    dataservice_sgid_from_dataservice_id,
     dataset_sgid_from_dataset_id,
     distribution_sgid_from_dataset_sgid,
+    normalize,
     organization_sgid_from_abbreviation,
 )
 
@@ -1418,7 +1418,7 @@ class Command(CustomBaseCommand):
             "/deu", "/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
         )
         dataservice, created, updated = self.import_wms_data_service(
-            dataservice_id=f"wms-geodienste-{dataservice_name}",
+            sgid=f"srv_wms-geodienste-{normalize(dataservice_name)}",
             external_id=base_topic,
             languages=languages,
             default_language="de",
@@ -1462,7 +1462,7 @@ class Command(CustomBaseCommand):
 
         # Availability dataservice and distribution
         dataservice_availability, created, updated = self.import_wms_data_service(
-            dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
+            sgid=f"srv_wms-geodienste-{normalize(dataservice_name)}-availability",
             external_id=base_topic,
             languages=["de", "fr", "it", "en"],
             default_language="de",
@@ -1518,7 +1518,7 @@ class Command(CustomBaseCommand):
         return ds_created, ds_updated, dist_created, dist_updated
 
     def import_wms_data_service(
-        self, dataservice_id: str, external_id: str, **kwargs
+        self, sgid: str, external_id: str, **kwargs
     ) -> tuple[WMSDataservice, int, int]:
         """Ensures that the WMS dataservice with the given ID exists and that it has the given
         attributes.
@@ -1526,17 +1526,13 @@ class Command(CustomBaseCommand):
         Returns a tuple with the dataservice and the number of created and updated dataservices.
 
         """
-        dataservice = WMSDataservice.objects.filter(dataservice_id=dataservice_id).first()
+        dataservice = WMSDataservice.objects.filter(sgid=sgid).first()
         if dataservice:
-            self.print(f"Dataservice with dataservice_id {dataservice_id} already exists")
+            self.print(f"Dataservice {sgid} already exists")
         else:
-            self.print(
-                f"Dataservice with dataservice_id {dataservice_id} does not exist yet, "
-                "creating a new one"
-            )
+            self.print(f"Dataservice {sgid} does not exist yet, creating a new one")
             dataservice = WMSDataservice(
-                sgid=dataservice_sgid_from_dataservice_id(dataservice_id),
-                dataservice_id=dataservice_id,
+                sgid=sgid,
                 data_source=Dataservice.DataSource.GEODIENSTE,
                 external_ids=[{"source": Dataservice.DataSource.GEODIENSTE, "id": external_id}],
                 **kwargs,
@@ -1550,7 +1546,7 @@ class Command(CustomBaseCommand):
                 updated = True
                 setattr(dataservice, key, value)
         if updated:
-            self.print(f"Dataservice with dataservice_id {dataservice_id} changed")
+            self.print(f"Dataservice {sgid} changed")
             dataservice.save()
             return dataservice, 0, 1
 
@@ -1691,11 +1687,8 @@ class Command(CustomBaseCommand):
 
         parts = urlsplit(wms_url)
         dataservice, created = OGCAPIStacDataservice.objects.update_or_create(
-            dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE,
+            sgid=settings.STAC_DATASERVICE_SGID_GEODIENSTE,
             defaults={
-                "sgid": dataservice_sgid_from_dataservice_id(
-                    settings.STAC_DATASERVICE_ID_GEODIENSTE
-                ),
                 "title": "STAC API Geodienste",
                 "landing_page_url": f"{parts.scheme}://{parts.netloc}/stac",
                 "documentation_url_de": None,
@@ -1703,7 +1696,7 @@ class Command(CustomBaseCommand):
             },
         )
         if created:
-            self.print(f"Dataservice {dataservice.dataservice_id} not found, created")
+            self.print(f"Dataservice {dataservice} not found, created")
 
         distribution = ExternalStacDistribution.objects.filter(
             distribution_id=distribution_id

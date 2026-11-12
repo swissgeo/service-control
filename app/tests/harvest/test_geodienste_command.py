@@ -3159,15 +3159,14 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte does not exist yet" in out
-    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability does not" in out
+    assert "Dataservice srv_wms-geodienste-fixpunkte does not exist yet" in out
+    assert "Dataservice srv_wms-geodienste-fixpunkte-availability does not" in out
     assert "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist yet" in out
     assert "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms does not" in out
     assert "ch.kgk.fixpunkte:wms as preferred distribution for dataset ch.kgk.fixpunkte" in out
-    assert "Dataservice stac-geodienste not found, created" in out
+    assert "Dataservice srv_stac-geodienste not found, created" in out
 
-    dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-fixpunkte")
-    assert dataservice_data.sgid == "srv_wms-geodienste-fixpunkte"
+    dataservice_data = Dataservice.objects.get(sgid="srv_wms-geodienste-fixpunkte")
     assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
     assert dataservice_data.external_ids == [
         {"source": Dataservice.DataSource.GEODIENSTE, "id": "fixpunkte"}
@@ -3181,9 +3180,8 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     )
 
     dataservice_availability = Dataservice.objects.get(
-        dataservice_id="wms-geodienste-fixpunkte-availability"
+        sgid="srv_wms-geodienste-fixpunkte-availability"
     )
-    assert dataservice_availability.sgid == "srv_wms-geodienste-fixpunkte-availability"
     assert dataservice_availability.data_source == Dataservice.DataSource.GEODIENSTE
     assert dataservice_availability.external_ids == [
         {"source": Dataservice.DataSource.GEODIENSTE, "id": "fixpunkte"}
@@ -3245,10 +3243,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_availability.dataset == dataset
     assert distribution_availability.sgid.startswith("dst_fixpunkte-")
 
-    dataservice_stac = Dataservice.objects.get(
-        dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
-    )
-    assert dataservice_stac.sgid == "srv_stac-geodienste"
+    dataservice_stac = Dataservice.objects.get(sgid=settings.STAC_DATASERVICE_SGID_GEODIENSTE)
     assert dataservice_stac.title == "STAC API Geodienste"
     assert (
         dataservice_stac.documentation_url_en
@@ -3275,7 +3270,7 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_stac.description_rm is None
     assert distribution_stac.stac_collection_id == "fixpunkte"
     assert distribution_stac.meta_information is False
-    assert distribution_stac.dataservice.dataservice_id == "stac-geodienste"
+    assert distribution_stac.dataservice.sgid == settings.STAC_DATASERVICE_SGID_GEODIENSTE
     assert distribution_stac.dataset == dataset
     assert distribution_stac.sgid.startswith("dst_fixpunkte-")
 
@@ -3301,12 +3296,9 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte already exists" in out
-    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte changed" in out
-    assert (
-        "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability already exists"
-        in out
-    )
+    assert "Dataservice srv_wms-geodienste-fixpunkte already exists" in out
+    assert "Dataservice srv_wms-geodienste-fixpunkte changed" in out
+    assert "Dataservice srv_wms-geodienste-fixpunkte-availability already exists" in out
     assert "Distribution with distribution_id ch.kgk.fixpunkte:wms already exists" in out
     assert "Distribution with distribution_id ch.kgk.fixpunkte:wms changed" in out
     assert (
@@ -3334,12 +3326,9 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte already exists" in out
-    assert "Dataservice with dataservice_id wms-geodienste-fixpunkte changed" not in out
-    assert (
-        "Dataservice with dataservice_id wms-geodienste-fixpunkte-availability already exists"
-        in out
-    )
+    assert "Dataservice srv_wms-geodienste-fixpunkte already exists" in out
+    assert "Dataservice srv_wms-geodienste-fixpunkte changed" not in out
+    assert "Dataservice srv_wms-geodienste-fixpunkte-availability already exists" in out
     assert "Distribution with distribution_id ch.kgk.fixpunkte:wms already exists" in out
     assert "Distribution with distribution_id ch.kgk.fixpunkte:wms changed" not in out
     assert (
@@ -3423,9 +3412,9 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "dataservice_id wms-geodienste-thermische_netze does not exist yet" in out
-    assert "dataservice_id wms-geodienste-thermische_netze-availability does not exist yet" in out
-    assert "Dataservice stac-geodienste not found, created" in out
+    assert "srv_wms-geodienste-thermische-netze does not exist yet" in out
+    assert "srv_wms-geodienste-thermische-netze-availability does not exist yet" in out
+    assert "Dataservice srv_stac-geodienste not found, created" in out
     assert "distribution_id ch.bfe.thermische_netze:wms does not exist yet" in out
     assert "distribution_id ch.bfe.thermische_netze-availability:wms does not exist yet" in out
     assert "distribution_id ch.bfe.thermische_netze:stac does not exist yet" in out
@@ -3434,8 +3423,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
         in out
     )
 
-    dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-thermische_netze")
-    assert dataservice_data.sgid == "srv_wms-geodienste-thermische-netze"
+    dataservice_data = Dataservice.objects.get(sgid="srv_wms-geodienste-thermische-netze")
     assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
     assert dataservice_data.external_ids == [
         {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
@@ -3449,9 +3437,8 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     )
 
     dataservice_availability = Dataservice.objects.get(
-        dataservice_id="wms-geodienste-thermische_netze-availability"
+        sgid="srv_wms-geodienste-thermische-netze-availability"
     )
-    assert dataservice_availability.sgid == "srv_wms-geodienste-thermische-netze-availability"
     assert dataservice_availability.data_source == Dataservice.DataSource.GEODIENSTE
     assert dataservice_availability.external_ids == [
         {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
@@ -3515,10 +3502,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     assert distribution_availability.dataset == dataset
     assert distribution_availability.sgid.startswith("dst_thermische-netze-")
 
-    dataservice_stac = Dataservice.objects.get(
-        dataservice_id=settings.STAC_DATASERVICE_ID_GEODIENSTE
-    )
-    assert dataservice_stac.sgid == "srv_stac-geodienste"
+    dataservice_stac = Dataservice.objects.get(sgid=settings.STAC_DATASERVICE_SGID_GEODIENSTE)
     assert dataservice_stac.title == "STAC API Geodienste"
     assert (
         dataservice_stac.documentation_url_en
@@ -3545,7 +3529,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     assert distribution_stac.description_rm is None
     assert distribution_stac.stac_collection_id == "thermische_netze"
     assert distribution_stac.meta_information is False
-    assert distribution_stac.dataservice.dataservice_id == "stac-geodienste"
+    assert distribution_stac.dataservice.sgid == settings.STAC_DATASERVICE_SGID_GEODIENSTE
     assert distribution_stac.dataset == dataset
     assert distribution_stac.sgid.startswith("dst_thermische-netze-")
 
@@ -3705,13 +3689,11 @@ def test_command_cleans_distributions(mock, client, db):
 
     WMSDataservice(
         sgid="srv_obsolete",
-        dataservice_id="obsolete",
         data_source=Dataservice.DataSource.GEODIENSTE,
         external_ids=[],
     ).save()
     WMSDataservice(
         sgid="srv_removed",
-        dataservice_id="removed",
         data_source=Dataservice.DataSource.GEODIENSTE,
         external_ids=[{"source": Dataservice.DataSource.GEODIENSTE, "id": "removed"}],
     ).save()
@@ -3798,7 +3780,7 @@ def test_command_cleans_distributions(mock, client, db):
     out = out.getvalue()
 
     assert "Dataservices with removed external IDs found: removed" in out
-    assert "Obsolete dataservices found: obsolete" in out
+    assert "Obsolete dataservices found: srv_obsolete" in out
     assert "Distributions with removed external IDs found: removed" in out
     assert "Obsolete distributions found: obsolete" in out
 
@@ -3813,8 +3795,8 @@ def test_command_cleans_distributions(mock, client, db):
     out = out.getvalue()
 
     assert "Removing obsolete external ID removed from dataservices" in out
-    assert "Removing obsolete dataservice obsolete" in out
-    assert "Removing obsolete dataservice removed" in out
+    assert "Removing obsolete dataservice srv_obsolete" in out
+    assert "Removing obsolete dataservice srv_removed" in out
     assert "Removing obsolete external ID removed from distributions" in out
     assert "Removing obsolete distribution obsolete" in out
     assert "Removing obsolete distribution removed" in out

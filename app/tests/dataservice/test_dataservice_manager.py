@@ -4,7 +4,6 @@ from dataservice.models import Dataservice
 def test_external_ids(db):
     Dataservice(
         sgid="srv_a",
-        dataservice_id="a",
         data_source=Dataservice.DataSource.FIXTURE,
         external_ids=[
             {"source": Dataservice.DataSource.FIXTURE, "id": "1"},
@@ -13,7 +12,6 @@ def test_external_ids(db):
     ).save()
     Dataservice(
         sgid="srv_b",
-        dataservice_id="b",
         data_source=Dataservice.DataSource.FIXTURE,
         external_ids=[
             {"source": Dataservice.DataSource.FIXTURE, "id": "2"},
@@ -22,7 +20,6 @@ def test_external_ids(db):
     ).save()
     Dataservice(
         sgid="srv_c",
-        dataservice_id="c",
         data_source=Dataservice.DataSource.GEODIENSTE,
         external_ids=[
             {"source": Dataservice.DataSource.FIXTURE, "id": "5"},
