@@ -138,6 +138,52 @@ class Command(CustomBaseCommand):
             self.import_contacts(*args, **options)
 
     # ##########################################################################
+    def cleanup_objects(
+        self,
+        cls: type[Dataset | Organization | Attribution],
+        data_source: str,
+        processed: set[str],
+        clean: bool,
+    ) -> tuple[int, int]:
+        """Cleanup objects
+
+        - Check for external IDs referenced in the database but not present anymore in the harvest
+          table; optionally clean them
+        - Check for obsolete objects, i.e. objects created by this command but with no external ID
+          reference; optionally delete them
+
+        """
+
+        existing = cls.objects.existing_external_ids(data_source)
+        name = cls.__name__.lower()
+
+        if removed := existing - processed:
+            if clean:
+                for external_id in removed:
+                    self.print_warning(f"Removing obsolete external ID {external_id} from {name}s ")
+                    cls.objects.remove_external_id(data_source, external_id)
+            else:
+                ids = sorted(str(r) for r in removed)
+                self.print_warning(
+                    f"{name.capitalize()}s with removed external IDs found: {', '.join(ids)}"
+                )
+
+        obsolete = cls.objects.filter(
+            data_source=data_source,
+            external_ids=[],
+        )
+        if obsolete.count():
+            if clean:
+                for obj in obsolete:
+                    self.print_warning(f"Removing obsolete {name} {obj}")
+                    obj.delete()
+            else:
+                ids = sorted(str(obj) for obj in obsolete)
+                self.print_warning(f"Obsolete {name}s found: {', '.join(ids)}")
+
+        return len(removed), len(obsolete)
+
+    # ##########################################################################
     def import_organization(
         self,
         item: dict[str, Any],
@@ -158,7 +204,9 @@ class Command(CustomBaseCommand):
             return None, "failed", 0, 0, set()
 
         provider_id = import_org.provider_id
-        Organization.objects.remove_data_source_id(provider_id)
+        Organization.objects.remove_external_id(
+            Organization.DataSource.BOD_CONTACT_ORGANIZATION, provider_id
+        )
 
         state = "unchanged"
         update = True
@@ -201,7 +249,7 @@ class Command(CustomBaseCommand):
                 state = "updated"
                 org.geopolitical_entity = geopolitical_entity
 
-        org.add_data_source_id(provider_id)
+        org.add_external_id(Organization.DataSource.BOD_CONTACT_ORGANIZATION, provider_id)
         org.save()
 
         created, updated, processed_attributions = self.import_attributions(
@@ -224,7 +272,9 @@ class Command(CustomBaseCommand):
         for _attribution in attributions:
             attribution_id = _attribution.attribution_id
             processed.add(attribution_id)
-            Attribution.objects.remove_data_source_id(attribution_id)
+            Attribution.objects.remove_external_id(
+                Attribution.DataSource.BOD_CONTACT_ORGANIZATION, attribution_id
+            )
 
             try:
                 attribution = Attribution.objects.get(
@@ -285,7 +335,9 @@ class Command(CustomBaseCommand):
                 if changed:
                     self.print(f"Updating Attribution {attribution}")
                     updated += 1
-            attribution.add_data_source_id(attribution_id)
+            attribution.add_external_id(
+                Attribution.DataSource.BOD_CONTACT_ORGANIZATION, attribution_id
+            )
             attribution.save()
 
         return created, updated, processed
@@ -357,87 +409,25 @@ class Command(CustomBaseCommand):
                 log_metrics["attributions.created"] += created
                 log_metrics["attributions.updated"] += updated
 
-        removed_count, obsolete_count = self.cleanup_organizations(processed, **options)
+        removed_count, obsolete_count = self.cleanup_objects(
+            Organization,
+            Organization.DataSource.BOD_CONTACT_ORGANIZATION,
+            processed,
+            options["clean"],
+        )
         log_metrics["organizations.removed"] = removed_count
         log_metrics["organizations.obsolete"] = obsolete_count
 
-        removed_count, obsolete_count = self.cleanup_attributions(processed_attributions, **options)
+        removed_count, obsolete_count = self.cleanup_objects(
+            Attribution,
+            Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+            processed_attributions,
+            options["clean"],
+        )
         log_metrics["attributions.removed"] = removed_count
         log_metrics["attributions.obsolete"] = obsolete_count
 
         self.print_success(f"Organization import completed. Metrics: {log_metrics}")
-
-    def cleanup_organizations(self, processed: set[str], **options: Any) -> tuple[int, int]:
-        """Cleanup organizations
-
-        - Check for provider IDs referenced in the organizations but not present anymore in the
-          harvest table; optionally clean them
-        - Check for obsolete organization, i.e. organizations created by this command but with no
-          provider ID reference; optionally delete them
-
-        """
-        existing = Organization.objects.existing_data_source_ids(
-            Organization.DataSource.BOD_CONTACT_ORGANIZATION
-        )
-        if removed := existing - processed:
-            if options["clean"]:
-                for provider_id in removed:
-                    self.print_warning(f"Removing obsolete data_source_id (provider) {provider_id}")
-                    Organization.objects.remove_data_source_id(provider_id)
-            else:
-                self.print_warning(
-                    f"Removed data_source_ids (provider) found: {', '.join(removed)}"
-                )
-
-        obsolete = Organization.objects.filter(
-            data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-            data_source_ids=[],
-        ).values_list("organization_id", flat=True)
-        if obsolete:
-            if options["clean"]:
-                for organization_id in obsolete:
-                    self.print_warning(f"Removing obsolete organization {organization_id}")
-                    Organization.objects.filter(organization_id=organization_id).delete()
-            else:
-                self.print_warning(f"Obsolete organizations found: {', '.join(obsolete)}")
-        return len(removed), len(obsolete)
-
-    def cleanup_attributions(self, processed: set[str], **options: Any) -> tuple[int, int]:
-        """Cleanup attributionss
-
-        - Check for provider IDs referenced in the attributionss but not present anymore in the
-          harvest table; optionally clean them
-        - Check for obsolete attributions, i.e. attributionss created by this command but with no
-          provider ID reference; optionally delete them
-
-        """
-        existing = Attribution.objects.existing_data_source_ids(
-            Attribution.DataSource.BOD_CONTACT_ORGANIZATION
-        )
-        if removed := existing - processed:
-            if options["clean"]:
-                for attribution_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id (attribution) {attribution_id}"
-                    )
-                    Attribution.objects.remove_data_source_id(attribution_id)
-            else:
-                self.print_warning(
-                    f"Removed data_source_ids (attribution) found: {', '.join(removed)}"
-                )
-
-        obsolete = Attribution.objects.filter(
-            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
-            data_source_ids=[],
-        ).values_list("attribution_id", flat=True)
-        if obsolete:
-            if options["clean"]:
-                for attribution_id in obsolete:
-                    self.print_warning(f"Removing obsolete attribution {attribution_id}")
-                    Attribution.objects.filter(attribution_id=attribution_id).delete()
-            else:
-                self.print_warning(f"Obsolete attributions found: {', '.join(obsolete)}")
-        return len(removed), len(obsolete)
 
     # ##########################################################################
     def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0915,PLR0912
@@ -494,7 +484,7 @@ class Command(CustomBaseCommand):
 
                 dataset_id = import_ds.dataset_id
                 processed.add(dataset_id)
-                Dataset.objects.remove_data_source_id(dataset_id)
+                Dataset.objects.remove_external_id(Dataset.DataSource.BOD_DATASET, dataset_id)
 
                 # Create dataset
                 update = True
@@ -589,7 +579,7 @@ class Command(CustomBaseCommand):
                         attribution = None
                     ds.attribution = attribution
 
-                ds.add_data_source_id(dataset_id)
+                ds.add_external_id(Dataset.DataSource.BOD_DATASET, dataset_id)
                 ds.save()
 
                 # Link unit
@@ -618,39 +608,10 @@ class Command(CustomBaseCommand):
         (
             log_metrics["datasets.removed"],
             log_metrics["datasets.obsolete"],
-        ) = self.cleanup_datasets(processed, **options)
+        ) = self.cleanup_objects(
+            Dataset, Dataset.DataSource.BOD_DATASET, processed, options["clean"]
+        )
         self.print_success(f"Dataset import completed. Metrics: {log_metrics}")
-
-    def cleanup_datasets(self, processed: set[str], **options: Any) -> tuple[int, int]:
-        """Cleanup datasets
-
-        - Check for provider IDs referenced in the organizations but not present anymore in the
-          harvest table; optionally clean them
-        - Check for obsolete organization, i.e. organizations created by this command but with no
-          provider ID reference; optionally delete them
-
-        """
-        existing = Dataset.objects.existing_data_source_ids(Dataset.DataSource.BOD_DATASET)
-        if removed := existing - processed:
-            if options["clean"]:
-                for dataset_id in removed:
-                    self.print_warning(f"Removing obsolete data_source_id (dataset) {dataset_id}")
-                    Dataset.objects.remove_data_source_id(dataset_id)
-            else:
-                self.print_warning(f"Removed data_source_id (dataset) found: {', '.join(removed)}")
-
-        obsolete = Dataset.objects.filter(
-            data_source=Dataset.DataSource.BOD_DATASET,
-            data_source_ids=[],
-        ).values_list("dataset_id", flat=True)
-        if obsolete:
-            if options["clean"]:
-                for dataset_id in obsolete:
-                    self.print_warning(f"Removing obsolete dataset {dataset_id}")
-                    Dataset.objects.filter(dataset_id=dataset_id).delete()
-            else:
-                self.print_warning(f"Obsolete datasets found: {', '.join(sorted(obsolete))}")
-        return len(removed), len(obsolete)
 
     # ##########################################################################
     def import_distributions(self, *args: Any, **options: Any) -> None:  # noqa: ARG002, C901, PLR0912, PLR0915

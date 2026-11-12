@@ -15,7 +15,7 @@ from config.authorization import VPRole
 from legal.models import GeopoliticalEntity
 from user.models import MachineUser
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 from verified_permissions.utils.client import Client as VPClient
 
 logger = logging.getLogger(__name__)
@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 ORGANIZATION_SGID_REGEX = r"^org_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
-class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
+class OrganizationManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Organization(DataSourceIdModelMixin, models.Model):
+class Organization(ExternalIdsModelMixin, models.Model):
     _context = "Organization model"
 
     sgid = models.CharField(
@@ -37,6 +37,7 @@ class Organization(DataSourceIdModelMixin, models.Model):
         validators=[RegexValidator(ORGANIZATION_SGID_REGEX)],
     )
 
+    # FIXME: remove me!
     organization_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
@@ -58,12 +59,12 @@ class Organization(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     geopolitical_entity = models.ForeignKey(
@@ -287,12 +288,12 @@ class Unit(models.Model):
         return result
 
 
-class ContactManager(DataSourceIdManagerMixin, models.Manager):
+class ContactManager(ExternalIdsManagerMixin, models.Manager):
     def get_queryset(self) -> QuerySet[Contact]:
         return super().get_queryset().select_related("organization")
 
 
-class Contact(DataSourceIdModelMixin, models.Model):
+class Contact(ExternalIdsModelMixin, models.Model):
     """Contact point of an organization.
 
     See eCH-0271 CI_Contact.
@@ -314,12 +315,12 @@ class Contact(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     organization = models.ForeignKey(
@@ -403,11 +404,11 @@ class Contact(DataSourceIdModelMixin, models.Model):
         return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"
 
 
-class AttributionManager(DataSourceIdManagerMixin, models.Manager):
+class AttributionManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Attribution(DataSourceIdModelMixin, models.Model):
+class Attribution(ExternalIdsModelMixin, models.Model):
     _context = "Attribution model"
 
     class DataSource(models.TextChoices):
@@ -424,14 +425,15 @@ class Attribution(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
+    # FIXME: remove me!
     attribution_id = CustomSlugField(
         _(_context, "External ID"), max_length=100, unique=True, db_index=True
     )
