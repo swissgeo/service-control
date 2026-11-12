@@ -176,7 +176,7 @@ class ContactAdmin(HideFieldsetsOnAddMixin, admin.ModelAdmin):
     fieldsets = (
         (
             "Identification",
-            {"fields": ("organization", ("data_source", "data_source_ids"))},
+            {"fields": ("organization", ("data_source", "external_ids"))},
         ),
         ("Names", {"fields": ("name_de", "name_fr", "name_en", "name_it", "name_rm")}),
         (

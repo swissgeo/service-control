@@ -303,7 +303,7 @@ class Command(CustomBaseCommand):
 
     def cleanup_objects(
         self,
-        cls: type[Dataset | Dataservice | Distribution | Organization],
+        cls: type[Dataset | Dataservice | Distribution | Organization | Contact],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
@@ -333,51 +333,6 @@ class Command(CustomBaseCommand):
         obsolete = cls.objects.filter(
             data_source=cls.DataSource.GEODIENSTE,
             external_ids=[],
-        )
-        if obsolete.count():
-            if clean:
-                for obj in obsolete:
-                    self.print_warning(f"Removing obsolete {name} {obj}")
-                    obj.delete()
-            else:
-                ids = sorted(str(obj) for obj in obsolete)
-                self.print_warning(f"Obsolete {name}s found: {', '.join(ids)}")
-
-        return len(removed), len(obsolete)
-
-    # FIXME: remove
-    def cleanup_objects_old(
-        self,
-        cls: type[Contact],
-        processed: set[str],
-        clean: bool,
-    ) -> tuple[int, int]:
-        """Cleanup organizations
-
-        - Check for data source IDs referenced in the organizations but not present anymore in the
-          geodienste Services Information API; optionally clean them
-        - Check for obsolete organizations, i.e. organizations created by this command but with no
-          data source ID reference; optionally delete them
-
-        """
-
-        existing = cls.objects.existing_data_source_ids(cls.DataSource.GEODIENSTE)
-        name = cls.__name__.lower()
-
-        if removed := existing - processed:
-            if clean:
-                for data_source_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id ({name}) {data_source_id}"
-                    )
-                    cls.objects.remove_data_source_id(data_source_id)
-            else:
-                ids = sorted(str(r) for r in removed)
-                self.print_warning(f"Removed data_source_ids ({name}) found: {', '.join(ids)}")
-
-        obsolete = cls.objects.filter(
-            data_source=cls.DataSource.GEODIENSTE,
-            data_source_ids=[],
         )
         if obsolete.count():
             if clean:
@@ -633,16 +588,16 @@ class Command(CustomBaseCommand):
 
         # Aggregate
         provider_id = self.provider_id()
-        data_source_id = provider_id
+        external_id = provider_id
         created, updated = self.import_contact(
             provider_id=provider_id,
-            data_source_id=provider_id,
+            external_id=provider_id,
             attributes=AGGREGATE_PROVIDER_CONTACT,
             mappings=mappings,
         )
         metrics["contacts.created"] += created
         metrics["contacts.updated"] += updated
-        processed.add(data_source_id)
+        processed.add(external_id)
 
         # Cantonal and broker
         for service in services["de"].values():
@@ -650,39 +605,39 @@ class Command(CustomBaseCommand):
 
             # canton-wide contact
             if legacy_contact := (service["contact_geo"] or "").strip():
-                data_source_id = provider_id
+                external_id = provider_id
                 created, updated = self.import_contact(
                     provider_id=provider_id,
-                    data_source_id=provider_id,
+                    external_id=provider_id,
                     attributes={"legacy_contact": legacy_contact},
                     mappings=mappings,
                 )
                 metrics["contacts.created"] += created
                 metrics["contacts.updated"] += updated
-                processed.add(data_source_id)
+                processed.add(external_id)
 
             # specialist contact
             if legacy_contact := (service["contact_specialist_department"] or "").strip():
-                data_source_id = f"{provider_id}.{service['base_topic']}"
+                external_id = f"{provider_id}.{service['base_topic']}"
                 created, updated = self.import_contact(
                     provider_id=provider_id,
-                    data_source_id=data_source_id,
+                    external_id=external_id,
                     attributes={"legacy_contact": legacy_contact},
                     mappings=mappings,
                 )
                 metrics["contacts.created"] += created
                 metrics["contacts.updated"] += updated
-                processed.add(data_source_id)
+                processed.add(external_id)
 
         (
             metrics["contacts.removed"],
             metrics["contacts.obsoleted"],
-        ) = self.cleanup_objects_old(Contact, processed, clean)
+        ) = self.cleanup_objects(Contact, processed, clean)
 
         self.print_success(f"Contact import completed. Metrics: {metrics}")
 
     def import_contact(
-        self, provider_id: str, data_source_id: str, attributes: dict, mappings: PrefixLookupTable
+        self, provider_id: str, external_id: str, attributes: dict, mappings: PrefixLookupTable
     ) -> tuple[int, int]:
         """Create a contact with the given values if not yet existing, or update if necessary.
 
@@ -705,19 +660,19 @@ class Command(CustomBaseCommand):
             return 0, 0
 
         contact = Contact.objects.filter(
-            data_source=Contact.DataSource.GEODIENSTE, data_source_ids__contains=[data_source_id]
+            data_source=Contact.DataSource.GEODIENSTE, external_ids__contains=[{"id": external_id}]
         ).first()
         if contact:
-            self.print(f"Contact {data_source_id} for organization {organization} already exists")
+            self.print(f"Contact {external_id} for organization {organization} already exists")
         else:
             self.print(
-                f"Contact {data_source_id} for organization {organization} does not"
+                f"Contact {external_id} for organization {organization} does not"
                 " exist yet, creating a new one"
             )
             Contact(
                 organization=organization,
                 data_source=Contact.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": external_id}],
                 **attributes,
             ).save()
             return 1, 0
@@ -730,7 +685,7 @@ class Command(CustomBaseCommand):
                     updated = True
         if updated:
             contact.save()
-            self.print(f"Contact {data_source_id} for organization {organization} updated")
+            self.print(f"Contact {external_id} for organization {organization} updated")
 
         return 0, 1 if updated else 0
 
@@ -1148,7 +1103,7 @@ class Command(CustomBaseCommand):
     def import_dataset_contact(
         self,
         dataset: Dataset,
-        data_source_id: str,
+        external_id: str,
         role: DatasetToContact.Role,
         contact_mappings: PrefixLookupTable | None,
     ) -> tuple[int, int]:
@@ -1167,7 +1122,7 @@ class Command(CustomBaseCommand):
                 f"Contact mapping found for dataset_id {dataset_id} and role {role}: {contact}"
             )
         else:
-            contact = Contact.objects.filter(data_source_ids__contains=[data_source_id]).first()
+            contact = Contact.objects.filter(external_ids__contains=[{"id": external_id}]).first()
             if not contact:
                 return 0, 0
 

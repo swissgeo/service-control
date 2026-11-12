@@ -791,7 +791,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
 
     contact = org.contact_set.get()
     assert contact.data_source == Contact.DataSource.GEODIENSTE
-    assert contact.data_source_ids == ["KGK"]
+    assert contact.external_ids == [{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}]
     assert contact.name_de == "Geschäftsstelle KGK-CGC"
     assert contact.name_fr == "Centre opérationnel KGK-CGC"
     assert contact.name_en == ""
@@ -862,7 +862,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
     contact = Contact(
         organization=org,
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     contact.save()
 
@@ -875,7 +875,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
 
     contact.refresh_from_db()
     assert contact.data_source == Contact.DataSource.GEODIENSTE
-    assert contact.data_source_ids == ["KGK"]
+    assert contact.external_ids == [{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}]
     assert contact.name_de == "Geschäftsstelle KGK-CGC"
     assert contact.name_fr == "Centre opérationnel KGK-CGC"
     assert contact.name_en == ""
@@ -960,7 +960,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
 
     contact = org.contact_set.get()
     assert contact.data_source == Contact.DataSource.GEODIENSTE
-    assert contact.data_source_ids == ["KGK"]
+    assert contact.external_ids == [{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}]
     assert contact.name_de == "Geschäftsstelle KGK-CGC"
     assert contact.name_fr == "Centre opérationnel KGK-CGC"
     assert contact.name_en == ""
@@ -1043,14 +1043,14 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     Contact(
         organization=org,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
         legacy_contact="obsolete",
         name_en="obsolete",
     ).save()
     Contact(
         organization=org,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "removed"}],
         legacy_contact="removed",
         name_en="removed",
     ).save()
@@ -1100,20 +1100,23 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     assert "Contact LU for organization ch.geodienste-lu already exists" in out
     assert "Organization with organization_id ch.missing does not exist, skipping" in out
 
-    assert "Removed data_source_ids (contact) found: removed" in out
+    assert "Contacts with removed external IDs found: removed" in out
     assert "Obsolete contacts found: ch.geodienste-lu (obsolete)" in out
 
     assert Contact.objects.count() == 6
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
     } == {
         ((), "obsolete"),
-        (("removed",), "removed"),
+        (((Contact.DataSource.GEODIENSTE, "removed"),), "removed"),
         ((), "geocat"),
-        (("LU",), "Foo"),
-        (("LU.av",), "Bar"),
-        (("LU.gefahrenkarten",), "Baz"),
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foo"),
+        (((Contact.DataSource.GEODIENSTE, "LU.av"),), "Bar"),
+        (((Contact.DataSource.GEODIENSTE, "LU.gefahrenkarten"),), "Baz"),
     }
 
     # --------------
@@ -1141,20 +1144,23 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     assert "Contact LU for organization ch.geodienste-lu updated" in out
     assert "Contact LU.av for organization ch.geodienste-lu already exists" in out
     assert "Contact LU.av for organization ch.geodienste-lu updated" in out
-    assert "Removed data_source_ids (contact) found: LU.gefahrenkarten, removed" in out
+    assert "Contacts with removed external IDs found: LU.gefahrenkarten, removed" in out
     assert "Obsolete contacts found: ch.geodienste-lu (obsolete)" in out
 
     assert Contact.objects.count() == 6
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
     } == {
         ((), "obsolete"),
-        (("removed",), "removed"),
+        (((Contact.DataSource.GEODIENSTE, "removed"),), "removed"),
         ((), "geocat"),
-        (("LU",), "Foobar"),
-        (("LU.av",), "Quux"),
-        (("LU.gefahrenkarten",), "Baz"),
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foobar"),
+        (((Contact.DataSource.GEODIENSTE, "LU.av"),), "Quux"),
+        (((Contact.DataSource.GEODIENSTE, "LU.gefahrenkarten"),), "Baz"),
     }
 
     # --------------
@@ -1167,17 +1173,23 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
 
     assert "Contact LU for organization ch.geodienste-lu already exists" in out
     assert "Contact LU.av for organization ch.geodienste-lu already exists" in out
-    assert "Removing obsolete data_source_id (contact) removed" in out
-    assert "Removing obsolete data_source_id (contact) LU.gefahrenkarten" in out
+    assert "Removing obsolete external ID removed from contacts " in out
+    assert "Removing obsolete external ID LU.gefahrenkarten from contacts" in out
     assert "Removing obsolete contact ch.geodienste-lu (obsolete)" in out
     assert "Removing obsolete contact ch.geodienste-lu (removed)" in out
     assert "Removing obsolete contact ch.geodienste-lu (None)" in out
 
-    assert Contact.objects.count() == 3
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
-    } == {((), "geocat"), (("LU",), "Foobar"), (("LU.av",), "Quux")}
+    } == {
+        ((), "geocat"),
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foobar"),
+        (((Contact.DataSource.GEODIENSTE, "LU.av"),), "Quux"),
+    }
 
 
 @patch("organization.models.Client")
@@ -1227,9 +1239,14 @@ def test_command_organization_mapping_for_contact(mock, client, db):
 
     assert Contact.objects.count() == 1
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
-    } == {(("LU",), "Foo")}
+    } == {
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foo"),
+    }
 
 
 # --------------------------------------------------------------------------------------------------
@@ -2485,7 +2502,7 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     contact_aggregate = Contact(
         organization=org_aggregate,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}],
         name_en="kgk",
     )
     contact_aggregate.save()
@@ -2509,14 +2526,14 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     contact_part_org = Contact(
         organization=org_part,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "LU"}],
         name_en="LU",
     )
     contact_part_org.save()
     contact_part_specialist = Contact(
         organization=org_part,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["LU.av"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "LU.av"}],
         name_en="LU.av",
     )
     contact_part_specialist.save()
@@ -2601,13 +2618,13 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     # ------
     # Update
     # ------
-    contact_aggregate.data_source_ids = []
+    contact_aggregate.external_ids = []
     contact_aggregate.save()
 
     contact_aggregate_new = Contact(
         organization=org_aggregate,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}],
         name_en="kgk_new",
     )
     contact_aggregate_new.save()

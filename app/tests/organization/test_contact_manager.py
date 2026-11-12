@@ -1,47 +1,55 @@
 from organization.models import Contact
 
 
-def test_data_source_ids(organization, db):
+def test_external_ids(organization, db):
     Contact(
         name_de="a",
         data_source=Contact.DataSource.GEOCAT,
-        data_source_ids=["1", "2"],
+        external_ids=[
+            {"source": Contact.DataSource.GEOCAT, "id": "1"},
+            {"source": Contact.DataSource.GEOCAT, "id": "2"},
+        ],
         organization=organization,
     ).save()
     Contact(
         name_de="b",
         data_source=Contact.DataSource.GEOCAT,
-        data_source_ids=["2", "3"],
+        external_ids=[
+            {"source": Contact.DataSource.GEOCAT, "id": "2"},
+            {"source": Contact.DataSource.GEOCAT, "id": "3"},
+        ],
         organization=organization,
     ).save()
     Contact(
         name_de="c",
-        data_source=Contact.DataSource.USER_INPUT,
-        data_source_ids=["1", "2", "3", "4"],
+        data_source=Contact.DataSource.GEODIENSTE,
+        external_ids=[
+            {"source": Contact.DataSource.GEOCAT, "id": "5"},
+            {"source": Contact.DataSource.GEODIENSTE, "id": "1"},
+            {"source": Contact.DataSource.GEODIENSTE, "id": "2"},
+            {"source": Contact.DataSource.GEODIENSTE, "id": "3"},
+            {"source": Contact.DataSource.GEODIENSTE, "id": "4"},
+        ],
         organization=organization,
     ).save()
 
-    # test existing_data_source_ids
-    assert Contact.objects.existing_data_source_ids(Contact.DataSource.GEOCAT) == {
-        "1",
-        "2",
-        "3",
-    }
+    # test existing_external_ids
+    assert Contact.objects.existing_external_ids(Contact.DataSource.GEOCAT) == {"1", "2", "3", "5"}
 
-    assert Contact.objects.existing_data_source_ids(Contact.DataSource.USER_INPUT) == {
+    assert Contact.objects.existing_external_ids(Contact.DataSource.GEODIENSTE) == {
         "1",
         "2",
         "3",
         "4",
     }
 
-    # test remove_data_source_id
-    Contact.objects.remove_data_source_id("2")
+    # test remove_external_id
+    Contact.objects.remove_external_id(Contact.DataSource.GEODIENSTE, "2")
 
-    # test existing_data_source_ids
-    assert Contact.objects.existing_data_source_ids(Contact.DataSource.GEOCAT) == {"1", "3"}
+    # test existing_external_ids
+    assert Contact.objects.existing_external_ids(Contact.DataSource.GEOCAT) == {"1", "2", "3", "5"}
 
-    assert Contact.objects.existing_data_source_ids(Contact.DataSource.USER_INPUT) == {
+    assert Contact.objects.existing_external_ids(Contact.DataSource.GEODIENSTE) == {
         "1",
         "3",
         "4",
