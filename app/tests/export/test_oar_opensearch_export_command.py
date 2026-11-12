@@ -39,7 +39,6 @@ def _make_thesaurus() -> Thesaurus:
 def _make_dataservice() -> WMSDataservice:
     dataservice = WMSDataservice(
         sgid="srv_wmts-geoadminch",
-        dataservice_id="wmts-geoadminch",
         title="WMTS geo.admin.ch",
         documentation_url_de="https://docs.geo.admin.ch/visualize-data/wmts.html",
         languages=["de", "fr", "en", "it", "rm"],

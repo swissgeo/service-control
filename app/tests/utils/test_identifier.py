@@ -2,7 +2,6 @@ import pytest
 
 from utils.identifier import (
     ALPHABET,
-    dataservice_sgid_from_dataservice_id,
     dataset_sgid_from_dataset_id,
     distribution_sgid_from_dataset_sgid,
     nanoid,
@@ -94,11 +93,3 @@ def test_distribution_sgid_from_dataset_sgid():
 
 def test_organization_sgid_from_abbreviation():
     assert organization_sgid_from_abbreviation("BAFU") == "org_bafu"
-
-
-def test_dataservice_sgid_from_dataservice_id():
-    assert dataservice_sgid_from_dataservice_id("wms-geoadminch") == "srv_wms-geoadminch"
-    assert (
-        dataservice_sgid_from_dataservice_id("wms-geodienste-themische_netze")
-        == "srv_wms-geodienste-themische-netze"
-    )

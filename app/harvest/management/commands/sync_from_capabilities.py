@@ -105,10 +105,10 @@ class Command(CustomBaseCommand):
         }
         success = True
         for service in OGCAPIStacDataservice.objects.all():
-            if service.dataservice_id == settings.STAC_DATASERVICE_ID_GEODIENSTE:
+            if service.sgid == settings.STAC_DATASERVICE_SGID_GEODIENSTE:
                 continue
 
-            self.print(f"Syncing dataservice '{service.dataservice_id}' from capabilities...")
+            self.print(f"Syncing dataservice '{service}' from capabilities...")
             try:
                 processed, added, updated, obsolete = self.sync_stac_from_capabilities(
                     service,
@@ -118,14 +118,10 @@ class Command(CustomBaseCommand):
                 metrics["distributions.updated"] += updated
                 metrics["distributions.obsolete"] += obsolete if not self.options["clean"] else 0
                 metrics["distributions.removed"] += obsolete if self.options["clean"] else 0
-                self.print_success(
-                    f"Finished syncing dataservice '{service.dataservice_id}' from capabilities."
-                )
+                self.print_success(f"Finished syncing dataservice '{service}' from capabilities.")
             except Exception as e:  # noqa: BLE001
                 success = False
-                self.print_error(
-                    f"Error syncing dataservice '{service.dataservice_id}' from capabilities: {e}"
-                )
+                self.print_error(f"Error syncing dataservice '{service}' from capabilities: {e}")
 
         if success:
             self.print_success(f"Sync from STAC completed. Metrics: {metrics}")
@@ -183,7 +179,7 @@ class Command(CustomBaseCommand):
                     "Distribution for collection_id %s already exists, "
                     "skipping creation for dataservice %s.",
                     collection_id,
-                    dataservice.dataservice_id,
+                    dataservice.sgid,
                 )
             except ExternalStacDistribution.DoesNotExist:
                 if not dataset:
@@ -216,7 +212,7 @@ class Command(CustomBaseCommand):
                 added += 1
                 self.print(
                     f"Added distribution for collection_id {collection_id} to "
-                    f"dataset {dataset.dataset_id} from dataservice {dataservice.dataservice_id}."
+                    f"dataset {dataset.dataset_id} from dataservice {dataservice}."
                 )
             else:
                 # Use the dataset from the mapping if available
@@ -227,7 +223,7 @@ class Command(CustomBaseCommand):
                     self.print(
                         f"Updated distribution for collection_id {collection_id} to "
                         f"dataset {dataset.dataset_id} from "
-                        f"dataservice {dataservice.dataservice_id}."
+                        f"dataservice {dataservice}."
                     )
 
                 # If the distribution is linked to the orphanage dataset, we check if there's
@@ -241,7 +237,7 @@ class Command(CustomBaseCommand):
                         self.print(
                             f"Updated distribution for collection_id {collection_id} to "
                             f"dataset {dataset.dataset_id} from "
-                            f"dataservice {dataservice.dataservice_id}."
+                            f"dataservice {dataservice}."
                         )
 
         obsolete = (

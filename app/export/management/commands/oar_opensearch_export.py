@@ -351,7 +351,7 @@ class Command(CustomBaseCommand):
         documents: list[dict] = []
         if document_type == "services":
             for service in Dataservice.objects.all():
-                self.print(f" - {service.dataservice_id}")
+                self.print(f" - {service.sgid}")
                 documents.append(self.build_service_doc(service))
         elif document_type == "datasets":
             for dataset in Dataset.objects.filter(status=Dataset.Status.PUBLISHED).exclude(

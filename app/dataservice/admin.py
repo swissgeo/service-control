@@ -36,10 +36,10 @@ class DataserviceAdmin(PolymorphicParentModelAdmin):
         GeoadminFeaturesDataservice,
     ]
 
-    list_display = ("sgid", "dataservice_id", "title")
-    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id", "oar_preview")
+    list_display = ("sgid", "title")
+    readonly_fields = ("sgid", "created_at", "updated_at", "oar_preview")
     list_filter = (PolymorphicChildModelFilter, "data_source")
-    search_fields = ("sgid", "dataservice_id", "title")
+    search_fields = ("sgid", "title")
 
     @admin.display(description="Link to OAR Record from last export")
     def oar_preview(self, obj: Dataservice) -> str:
@@ -66,7 +66,7 @@ def dataservice_fieldsets(service_fields: tuple[Any, ...] = ()) -> tuple[Any, ..
             {
                 "description": "The external ID is generated from the title when creating.",
                 "fields": (
-                    ("sgid", "dataservice_id"),
+                    "sgid",
                     "title",
                     ("data_source", "external_ids"),
                 ),
@@ -100,8 +100,8 @@ class DataserviceChildAdmin(
 ):
     """Common admin view for all concrete dataservice types."""
 
-    list_display = ("sgid", "dataservice_id", "title", "service_type")
-    readonly_fields = ("sgid", "created_at", "updated_at", "dataservice_id", "oar_preview")
+    list_display = ("sgid", "title", "service_type")
+    readonly_fields = ("sgid", "created_at", "updated_at", "oar_preview")
     save_on_top = True
     fieldsets = dataservice_fieldsets()
 

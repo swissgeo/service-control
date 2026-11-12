@@ -68,8 +68,3 @@ def organization_sgid_from_abbreviation(abbreviation_de: str, cantonal_org: bool
     if cantonal_org:
         return f"org_geodienste-{normalize(abbreviation_de)}"
     return f"org_{normalize(abbreviation_de)}"
-
-
-def dataservice_sgid_from_dataservice_id(dataservice_id: str) -> str:
-    body = normalize(dataservice_id)
-    return f"srv_{body}"
