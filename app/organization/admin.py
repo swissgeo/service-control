@@ -257,7 +257,7 @@ class AttributionAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Model
                 "fields": (
                     "attribution_id",
                     "organization",
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                 ),
             },
         ),

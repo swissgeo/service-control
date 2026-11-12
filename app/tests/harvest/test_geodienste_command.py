@@ -200,7 +200,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
         url_it="x",
         url_rm="x",
         data_source=Attribution.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Attribution.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     att.save()
 
