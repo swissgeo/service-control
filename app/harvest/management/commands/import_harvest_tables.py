@@ -140,7 +140,7 @@ class Command(CustomBaseCommand):
     # ##########################################################################
     def cleanup_objects(
         self,
-        cls: type[Dataset | Organization],
+        cls: type[Dataset | Organization | Attribution],
         data_source: str,
         processed: set[str],
         clean: bool,
@@ -272,7 +272,9 @@ class Command(CustomBaseCommand):
         for _attribution in attributions:
             attribution_id = _attribution.attribution_id
             processed.add(attribution_id)
-            Attribution.objects.remove_data_source_id(attribution_id)
+            Attribution.objects.remove_external_id(
+                Attribution.DataSource.BOD_CONTACT_ORGANIZATION, attribution_id
+            )
 
             try:
                 attribution = Attribution.objects.get(
@@ -333,7 +335,9 @@ class Command(CustomBaseCommand):
                 if changed:
                     self.print(f"Updating Attribution {attribution}")
                     updated += 1
-            attribution.add_data_source_id(attribution_id)
+            attribution.add_external_id(
+                Attribution.DataSource.BOD_CONTACT_ORGANIZATION, attribution_id
+            )
             attribution.save()
 
         return created, updated, processed
@@ -414,48 +418,16 @@ class Command(CustomBaseCommand):
         log_metrics["organizations.removed"] = removed_count
         log_metrics["organizations.obsolete"] = obsolete_count
 
-        removed_count, obsolete_count = self.cleanup_attributions(processed_attributions, **options)
+        removed_count, obsolete_count = self.cleanup_objects(
+            Attribution,
+            Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
+            processed_attributions,
+            options["clean"],
+        )
         log_metrics["attributions.removed"] = removed_count
         log_metrics["attributions.obsolete"] = obsolete_count
 
         self.print_success(f"Organization import completed. Metrics: {log_metrics}")
-
-    def cleanup_attributions(self, processed: set[str], **options: Any) -> tuple[int, int]:
-        """Cleanup attributionss
-
-        - Check for provider IDs referenced in the attributionss but not present anymore in the
-          harvest table; optionally clean them
-        - Check for obsolete attributions, i.e. attributionss created by this command but with no
-          provider ID reference; optionally delete them
-
-        """
-        existing = Attribution.objects.existing_data_source_ids(
-            Attribution.DataSource.BOD_CONTACT_ORGANIZATION
-        )
-        if removed := existing - processed:
-            if options["clean"]:
-                for attribution_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id (attribution) {attribution_id}"
-                    )
-                    Attribution.objects.remove_data_source_id(attribution_id)
-            else:
-                self.print_warning(
-                    f"Removed data_source_ids (attribution) found: {', '.join(removed)}"
-                )
-
-        obsolete = Attribution.objects.filter(
-            data_source=Attribution.DataSource.BOD_CONTACT_ORGANIZATION,
-            data_source_ids=[],
-        ).values_list("attribution_id", flat=True)
-        if obsolete:
-            if options["clean"]:
-                for attribution_id in obsolete:
-                    self.print_warning(f"Removing obsolete attribution {attribution_id}")
-                    Attribution.objects.filter(attribution_id=attribution_id).delete()
-            else:
-                self.print_warning(f"Obsolete attributions found: {', '.join(obsolete)}")
-        return len(removed), len(obsolete)
 
     # ##########################################################################
     def import_datasets(self, *args: Any, **options: Any) -> None:  # noqa: ARG002,C901,PLR0915,PLR0912

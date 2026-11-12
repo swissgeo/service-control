@@ -15,7 +15,7 @@ def populate_external_ids(apps, schema_editor):
     for organization in Organization.objects.all().iterator():
         organization.external_ids = [
             {
-                "source": "bod-dataset"
+                "source": "bod-contact-organization"
                 if data_source_id.lower() == data_source_id
                 else "geodienste",
                 "id": data_source_id,

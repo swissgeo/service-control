@@ -523,7 +523,7 @@ class Command(CustomBaseCommand):
         Returns the number of created and updated attributions.
         """
 
-        Attribution.objects.remove_data_source_id(provider_id)
+        Attribution.objects.remove_external_id(Attribution.DataSource.GEODIENSTE, provider_id)
 
         attribution_id = self.attribution_id(provider_id)
         attribution = Attribution.objects.filter(
@@ -538,7 +538,7 @@ class Command(CustomBaseCommand):
             attribution = Attribution(
                 attribution_id=attribution_id,
                 data_source=Attribution.DataSource.GEODIENSTE,
-                data_source_ids=[provider_id],
+                external_ids=[{"source": Attribution.DataSource.GEODIENSTE, "id": provider_id}],
                 organization=organization,
                 **attributes,
             )
@@ -554,7 +554,7 @@ class Command(CustomBaseCommand):
         if updated:
             attribution.save()
             self.print(f"Attribution {attribution} updated")
-        attribution.add_data_source_id(provider_id)
+        attribution.add_external_id(Attribution.DataSource.GEODIENSTE, provider_id)
         attribution.save()
 
         return 0, 1 if updated else 0

@@ -5,8 +5,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.meteoschweiz.messwerte-pollen-erle-1h",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.meteoschweiz.messwerte-pollen-erle-1h"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.meteoschweiz.messwerte-pollen-erle-1h"}
       ],
       "title_de": "from_fixture Messwerte Erle, mittlere stündliche Pollenkonzentration",
       "title_fr": "from_fixture Valeurs mesurées Aune, concentration pollinique moyenne horaire",
@@ -85,8 +85,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.bafu.hydroweb-messstationen_temperatur",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.bafu.hydroweb-messstationen_temperatur"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.bafu.hydroweb-messstationen_temperatur"}
       ],
       "title_de": "from_fixture Wassertemperatur der Flüsse",
       "title_fr": "from_fixture Température des cours d'eau",
@@ -165,8 +165,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.astra.hauptstrassennetz",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.astra.hauptstrassennetz"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.astra.hauptstrassennetz"}
       ],
       "title_de": "from_fixture Hauptstrassennetz der Schweiz (MinVV)",
       "title_fr": "from_fixture Réseau des routes principales suisses (OUMin)",
@@ -245,8 +245,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.swisstopo.swissnames3d",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.swisstopo.swissnames3d"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.swisstopo.swissnames3d"}
       ],
       "title_de": "from_fixture swissNAMES3D Geografische Namen der Landesvermessung",
       "title_fr": "from_fixture swissNAMES3D Noms géographiques de la mensuration nationale",
@@ -378,8 +378,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.are.alpenkonvention",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.are.alpenkonvention"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.are.alpenkonvention"}
       ],
       "title_de": "from_fixture Alpenkonvention",
       "title_fr": "from_fixture Convention des Alpes",
@@ -490,8 +490,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.are.agglomerationsverkehr",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.are.agglomerationsverkehr"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.are.agglomerationsverkehr"}
       ],
       "title_de": "from_fixture Beitragsberechtigte Städte und Agglomerationen",
       "title_fr": "from_fixture Villes et agglomérations ayant droit aux contributions",
@@ -570,8 +570,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.swisstopo.geologie-dosisleistung-terrestrisch"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.swisstopo.geologie-dosisleistung-terrestrisch"}
       ],
       "title_de": "from_fixture Terrestrische Strahlung",
       "title_fr": "from_fixture Radiation terrestre",
@@ -682,8 +682,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.swisstopo.geologie-hartsteinvorkommen"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.swisstopo.geologie-hartsteinvorkommen"}
       ],
       "title_de": "from_fixture Hartstein: Mächtigkeit und Qualität der geologischen Vorkommen",
       "title_fr": "from_fixture Roches dures: Épaisseur et qualité des gisements géologiques",
@@ -815,8 +815,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.blw.bodeneignung-wasserdurchlaessigkeit"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.blw.bodeneignung-wasserdurchlaessigkeit"}
       ],
       "title_de": "from_fixture Digitale Bodeneignungskarte der Schweiz - Wasserdurchlässigkeit",
       "title_fr": "from_fixture Carte digitale des aptitudes des sols de la Suisse - Perméabilité",
@@ -948,8 +948,8 @@
     "fields": {
       "dataset_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte",
       "data_source": "bod-dataset",
-      "data_source_ids": [
-        "ch.swisstopo.vec25-einzelobjekte"
+      "external_ids": [
+        {"source": "bod-dataset", "id": "ch.swisstopo.vec25-einzelobjekte"}
       ],
       "title_de": "from_fixture VECTOR25 Einzelobjekte",
       "title_fr": "from_fixture VECTOR25 Objets isolés",

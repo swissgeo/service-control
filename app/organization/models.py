@@ -15,12 +15,7 @@ from config.authorization import VPRole
 from legal.models import GeopoliticalEntity
 from user.models import MachineUser
 from utils.fields import CustomSlugField
-from utils.model import (
-    DataSourceIdManagerMixin,
-    DataSourceIdModelMixin,
-    ExternalIdsManagerMixin,
-    ExternalIdsModelMixin,
-)
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 from verified_permissions.utils.client import Client as VPClient
 
 logger = logging.getLogger(__name__)
@@ -409,11 +404,11 @@ class Contact(ExternalIdsModelMixin, models.Model):
         return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"
 
 
-class AttributionManager(DataSourceIdManagerMixin, models.Manager):
+class AttributionManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Attribution(DataSourceIdModelMixin, models.Model):
+class Attribution(ExternalIdsModelMixin, models.Model):
     _context = "Attribution model"
 
     class DataSource(models.TextChoices):
@@ -430,14 +425,15 @@ class Attribution(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
+    # FIXME: remove me!
     attribution_id = CustomSlugField(
         _(_context, "External ID"), max_length=100, unique=True, db_index=True
     )
