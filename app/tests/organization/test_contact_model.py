@@ -125,3 +125,15 @@ def test_delete_deletes_records(organization):
     actual.delete()
 
     assert not Contact.objects.first()
+
+
+def test_add_external_id():
+    contact = Contact()
+    contact.add_external_id(Contact.DataSource.GEODIENSTE, "b")
+    contact.add_external_id(Contact.DataSource.GEOCAT, "a")
+    contact.add_external_id(Contact.DataSource.GEOCAT, "a")
+
+    assert contact.external_ids == [
+        {"source": Contact.DataSource.GEOCAT, "id": "a"},
+        {"source": Contact.DataSource.GEODIENSTE, "id": "b"},
+    ]

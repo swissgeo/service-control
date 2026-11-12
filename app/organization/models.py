@@ -293,12 +293,12 @@ class Unit(models.Model):
         return result
 
 
-class ContactManager(DataSourceIdManagerMixin, models.Manager):
+class ContactManager(ExternalIdsManagerMixin, models.Manager):
     def get_queryset(self) -> QuerySet[Contact]:
         return super().get_queryset().select_related("organization")
 
 
-class Contact(DataSourceIdModelMixin, models.Model):
+class Contact(ExternalIdsModelMixin, models.Model):
     """Contact point of an organization.
 
     See eCH-0271 CI_Contact.
@@ -320,12 +320,12 @@ class Contact(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     organization = models.ForeignKey(
