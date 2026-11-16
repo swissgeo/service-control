@@ -194,6 +194,21 @@ To import from
 - INT, use `swisstopo-swissgeo` profile and `--target-env int`
 - DEV, use `swisstopo-swissgeo-dev` profile and `--target-env dev`
 
+### Attribute Name Test Fixtures
+
+For testing, `app/fixtures/attribute_names.json` contains an organization, an attribution, a
+dataset, dataservices and distributions (one per type) whose attribute values are set to the
+attribute names (e.g. `geocat_id` = `"geocat_id"`). Localized texts contain descriptive content in
+the respective language instead (e.g. `title_short_de` = `"Deutscher Kurztitel"`). Load them with:
+
+```bash
+app/manage.py loaddata app/fixtures/dataservice.json  # or dataservice_<env>.json
+app/manage.py loaddata app/fixtures/attribute_names.json
+```
+
+These fixtures are meant for local, DEV and INT only, never load them on PROD. Loading them
+repeatedly is safe, the records are matched by their sgid.
+
 ### Importing from geodienste.ch
 
 To import geodienste data from the API, run:

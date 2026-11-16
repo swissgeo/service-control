@@ -28,8 +28,8 @@ else:
 
 
 class DataserviceManager(DataSourceIdManagerMixin, PolymorphicManager):
-    def get_by_natural_key(self, dataservice_id: str) -> models.Model:
-        return self.get(dataservice_id=dataservice_id)
+    def get_by_natural_key(self, sgid: str) -> models.Model:
+        return self.get(sgid=sgid)
 
 
 class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
@@ -128,7 +128,7 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         super().save(*args, **kwargs)
 
     def natural_key(self) -> tuple:
-        return (self.dataservice_id,)
+        return (self.sgid,)
 
     @property
     def service_type(self) -> str:

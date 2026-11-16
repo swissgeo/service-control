@@ -17,7 +17,8 @@ DATASET_SGID_REGEX = r"^dat_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
 class DatasetManager(DataSourceIdManagerMixin, models.Manager):
-    pass
+    def get_by_natural_key(self, sgid: str) -> Dataset:
+        return self.get(sgid=sgid)
 
 
 class Dataset(DataSourceIdModelMixin, models.Model):
@@ -201,6 +202,9 @@ class Dataset(DataSourceIdModelMixin, models.Model):
 
     def __str__(self) -> str:
         return self.dataset_id
+
+    def natural_key(self) -> tuple:
+        return (self.sgid,)
 
     def related_datasets(
         self, role: DatasetToDataset.Role, reverse: bool = False

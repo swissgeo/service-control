@@ -23,7 +23,8 @@ DISTRIBUTION_SGID_REGEX = r"^dst_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
 class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
-    pass
+    def get_by_natural_key(self, sgid: str) -> models.Model:
+        return self.get(sgid=sgid)
 
 
 class Distribution(DataSourceIdModelMixin, PolymorphicModel):
@@ -112,6 +113,9 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
 
     def __str__(self) -> str:
         return self.distribution_id
+
+    def natural_key(self) -> tuple:
+        return (self.sgid,)
 
     @property
     @abstractmethod

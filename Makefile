@@ -89,6 +89,7 @@ seed-local-testdata: start-local-services start-local-db ## Seed local organizat
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/mapping.json
 	# dataset and distribution reference each other, so they must load in one transaction
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataset.json app/fixtures/distribution.json
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/attribute_names.json
 
 
 .PHONY: reset-local-testdata
@@ -99,6 +100,7 @@ reset-local-testdata: start-local-services start-local-db ## Reset local users/o
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/mapping.json
 	# dataset and distribution reference each other, so they must load in one transaction
 	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/dataset.json app/fixtures/distribution.json
+	$(PYTHON) $(DJANGO_MANAGER) loaddata app/fixtures/attribute_names.json
 
 .PHONY: format
 format: ## Call ruff format to make sure your code is easier to read and respects some conventions.
