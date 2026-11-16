@@ -106,7 +106,7 @@
     "fields": {
       "distribution_ptr": 3,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.astra.hauptstrassennetz",
       "wmts_layer_name_fr": null,
@@ -147,7 +147,7 @@
     "fields": {
       "distribution_ptr": 4,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.astra.hauptstrassennetz",
       "wms_layer_name_fr": null,
@@ -189,7 +189,7 @@
     "fields": {
       "distribution_ptr": 5,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.astra.hauptstrassennetz",
       "queryable": false,
@@ -227,7 +227,7 @@
     "fields": {
       "distribution_ptr": 6,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.swissnames3d",
       "queryable": false,
@@ -265,7 +265,7 @@
     "fields": {
       "distribution_ptr": 7,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.are.alpenkonvention",
       "wmts_layer_name_fr": null,
@@ -306,7 +306,7 @@
     "fields": {
       "distribution_ptr": 8,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.are.alpenkonvention",
       "wms_layer_name_fr": null,
@@ -348,7 +348,7 @@
     "fields": {
       "distribution_ptr": 9,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.are.alpenkonvention",
       "queryable": false,
@@ -386,7 +386,7 @@
     "fields": {
       "distribution_ptr": 10,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.are.agglomerationsverkehr",
       "wmts_layer_name_fr": null,
@@ -427,7 +427,7 @@
     "fields": {
       "distribution_ptr": 11,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.are.agglomerationsverkehr",
       "wms_layer_name_fr": null,
@@ -469,7 +469,7 @@
     "fields": {
       "distribution_ptr": 12,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.are.agglomerationsverkehr",
       "queryable": false,
@@ -507,7 +507,7 @@
     "fields": {
       "distribution_ptr": 13,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "wmts_layer_name_fr": null,
@@ -548,7 +548,7 @@
     "fields": {
       "distribution_ptr": 14,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "wms_layer_name_fr": null,
@@ -590,7 +590,7 @@
     "fields": {
       "distribution_ptr": 15,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "queryable": false,
@@ -628,7 +628,7 @@
     "fields": {
       "distribution_ptr": 16,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
       "wmts_layer_name_fr": null,
@@ -669,7 +669,7 @@
     "fields": {
       "distribution_ptr": 17,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
       "wms_layer_name_fr": null,
@@ -711,7 +711,7 @@
     "fields": {
       "distribution_ptr": 18,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.geologie-hartsteinvorkommen",
       "queryable": false,
@@ -749,7 +749,7 @@
     "fields": {
       "distribution_ptr": 19,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "wmts_layer_name_fr": null,
@@ -790,7 +790,7 @@
     "fields": {
       "distribution_ptr": 20,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "wms_layer_name_fr": null,
@@ -832,7 +832,7 @@
     "fields": {
       "distribution_ptr": 21,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "queryable": true,
@@ -870,7 +870,7 @@
     "fields": {
       "distribution_ptr": 22,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
       "wmts_layer_name_fr": null,
@@ -911,7 +911,7 @@
     "fields": {
       "distribution_ptr": 23,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
       "wms_layer_name_fr": null,
@@ -953,7 +953,7 @@
     "fields": {
       "distribution_ptr": 24,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.vec25-einzelobjekte",
       "queryable": false,
@@ -991,7 +991,7 @@
     "fields": {
       "distribution_ptr": 25,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
       "wmts_layer_name_de": "ch.swisstopo.swissnames3d",
       "wmts_layer_name_fr": null,
@@ -1032,7 +1032,7 @@
     "fields": {
       "distribution_ptr": 26,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
       "wms_layer_name_de": "ch.swisstopo.swissnames3d",
       "wms_layer_name_fr": null,
@@ -1074,7 +1074,7 @@
     "fields": {
       "distribution_ptr": 27,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.are.agglomerationsverkehr"
     }
@@ -1110,7 +1110,7 @@
     "fields": {
       "distribution_ptr": 28,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.are.alpenkonvention"
     }
@@ -1146,7 +1146,7 @@
     "fields": {
       "distribution_ptr": 29,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.astra.hauptstrassennetz"
     }
@@ -1182,7 +1182,7 @@
     "fields": {
       "distribution_ptr": 30,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.swisstopo.swissnames3d"
     }

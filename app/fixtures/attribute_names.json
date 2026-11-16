@@ -1,0 +1,563 @@
+[
+  {
+    "model": "organization.organization",
+    "fields": {
+      "sgid": "org_sgid",
+      "organization_id": "organization_id",
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "geopolitical_entity": null,
+      "created": "2026-11-16T00:00:00Z",
+      "updated": "2026-11-16T00:00:00Z",
+      "name_de": "Deutscher Name der Organisation",
+      "name_fr": "Nom français de l'organisation",
+      "name_en": "English organization name",
+      "name_it": "Nome italiano dell'organizzazione",
+      "name_rm": "Num rumantsch da l'organisaziun",
+      "abbreviation_de": "Deutsche Abkürzung",
+      "abbreviation_fr": "Abréviation française",
+      "abbreviation_en": "English abbreviation",
+      "abbreviation_it": "Abbreviazione italiana",
+      "abbreviation_rm": "Abreviaziun rumantscha",
+      "vp_org_admin_policy_id": null
+    }
+  },
+  {
+    "model": "organization.attribution",
+    "fields": {
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "attribution_id": "attribution_id",
+      "created": "2026-11-16T00:00:00Z",
+      "updated": "2026-11-16T00:00:00Z",
+      "abbreviation_de": "Deutsche Abkürzung",
+      "abbreviation_fr": "Abréviation française",
+      "abbreviation_en": "English abbreviation",
+      "abbreviation_it": "Abbreviazione italiana",
+      "abbreviation_rm": "Abreviaziun rumantscha",
+      "name_de": "Deutscher Name der Attribution",
+      "name_fr": "Nom français de l'attribution",
+      "name_en": "English attribution name",
+      "name_it": "Nome italiano dell'attribuzione",
+      "name_rm": "Num rumantsch da l'attribuziun",
+      "url_de": "https://example.com/url_de",
+      "url_fr": "https://example.com/url_fr",
+      "url_en": "https://example.com/url_en",
+      "url_it": "https://example.com/url_it",
+      "url_rm": "https://example.com/url_rm",
+      "organization": [
+        "org_sgid"
+      ]
+    }
+  },
+  {
+    "model": "dataset.dataset",
+    "fields": {
+      "sgid": "dat_sgid",
+      "dataset_id": "dataset_id",
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "status": "published",
+      "title_de": "Deutscher Titel",
+      "title_fr": "Titre français",
+      "title_en": "English title",
+      "title_it": "Titolo italiano",
+      "title_rm": "Titel rumantsch",
+      "title_short_de": "Deutscher Kurztitel",
+      "title_short_fr": "Titre court français",
+      "title_short_en": "English short title",
+      "title_short_it": "Titolo breve italiano",
+      "title_short_rm": "Titel curt rumantsch",
+      "description_de": "Deutsche Beschreibung",
+      "description_fr": "Description française",
+      "description_en": "English description",
+      "description_it": "Descrizione italiana",
+      "description_rm": "Descripziun rumantscha",
+      "additional_search_text_de": [
+        "Deutscher Suchbegriff"
+      ],
+      "additional_search_text_fr": [
+        "Terme de recherche français"
+      ],
+      "additional_search_text_en": [
+        "English search term"
+      ],
+      "additional_search_text_it": [
+        "Termine di ricerca italiano"
+      ],
+      "additional_search_text_rm": [
+        "Term da tschertga rumantsch"
+      ],
+      "geocat_id": "geocat_id",
+      "preferred_distribution": [
+        "dst_sgid-wms"
+      ],
+      "attribution": [
+        "attribution_id"
+      ],
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z",
+      "legacy_contacts": [
+        {
+          "org_name": "org_name",
+          "org_name_de": "Deutscher Name der Organisation",
+          "org_name_fr": "Nom français de l'organisation",
+          "org_name_en": "English organization name",
+          "org_name_it": "Nome italiano dell'organizzazione",
+          "org_name_rm": "Num rumantsch da l'organisaziun",
+          "position_name_de": "Deutsche Funktionsbezeichnung",
+          "position_name_fr": "Fonction en français",
+          "position_name_en": "English position name",
+          "position_name_it": "Funzione in italiano",
+          "position_name_rm": "Funcziun en rumantsch",
+          "contact_voice": "contact_voice",
+          "contact_facsimile": "contact_facsimile",
+          "contact_sms": "contact_sms",
+          "contact_delivery_point": "contact_delivery_point",
+          "contact_city": "contact_city",
+          "contact_administrative_area": "contact_administrative_area",
+          "contact_postal_code": "contact_postal_code",
+          "contact_country": "contact_country",
+          "role": "role",
+          "contact_electronic_mail_addresses": [
+            "contact_electronic_mail_addresses@example.com"
+          ],
+          "online_resources": [
+            {
+              "url": "https://example.com/url",
+              "url_de": "https://example.com/url_de",
+              "url_fr": "https://example.com/url_fr",
+              "url_en": "https://example.com/url_en",
+              "url_it": "https://example.com/url_it",
+              "url_rm": "https://example.com/url_rm",
+              "name_de": "Deutscher Linktitel",
+              "name_fr": "Titre du lien en français",
+              "name_en": "English link title",
+              "name_it": "Titolo del link in italiano",
+              "name_rm": "Titel da la colliaziun en rumantsch"
+            }
+          ]
+        }
+      ],
+      "legacy_part_info_url_de": "https://example.com/legacy_part_info_url_de",
+      "legacy_part_info_url_fr": "https://example.com/legacy_part_info_url_fr",
+      "legacy_part_info_url_it": "https://example.com/legacy_part_info_url_it"
+    }
+  },
+  {
+    "model": "dataservice.dataservice",
+    "fields": {
+      "polymorphic_ctype": [
+        "dataservice",
+        "wmsdataservice"
+      ],
+      "sgid": "srv_sgid-wms",
+      "dataservice_id": "dataservice_id.wms",
+      "data_source": "fixture",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "title": "title",
+      "openapi_spec_url": "https://example.com/openapi_spec_url",
+      "documentation_url_de": "https://example.com/documentation_url_de",
+      "documentation_url_fr": "https://example.com/documentation_url_fr",
+      "documentation_url_en": "https://example.com/documentation_url_en",
+      "documentation_url_it": "https://example.com/documentation_url_it",
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "dataservice.wmsdataservice",
+    "fields": {
+      "dataservice_ptr": [
+        "srv_sgid-wms"
+      ],
+      "languages": [
+        "de",
+        "fr",
+        "en",
+        "it"
+      ],
+      "default_language": "de",
+      "capabilities_url": "https://example.com/capabilities_url"
+    }
+  },
+  {
+    "model": "dataservice.dataservice",
+    "fields": {
+      "polymorphic_ctype": [
+        "dataservice",
+        "wmtsdataservice"
+      ],
+      "sgid": "srv_sgid-wmts",
+      "dataservice_id": "dataservice_id.wmts",
+      "data_source": "fixture",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "title": "title",
+      "openapi_spec_url": "https://example.com/openapi_spec_url",
+      "documentation_url_de": "https://example.com/documentation_url_de",
+      "documentation_url_fr": "https://example.com/documentation_url_fr",
+      "documentation_url_en": "https://example.com/documentation_url_en",
+      "documentation_url_it": "https://example.com/documentation_url_it",
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "dataservice.wmtsdataservice",
+    "fields": {
+      "dataservice_ptr": [
+        "srv_sgid-wmts"
+      ],
+      "variable_epsg_list": [
+        2056
+      ],
+      "languages": [
+        "de",
+        "fr",
+        "en",
+        "it"
+      ],
+      "default_language": "de",
+      "capabilities_url": "https://example.com/capabilities_url"
+    }
+  },
+  {
+    "model": "dataservice.dataservice",
+    "fields": {
+      "polymorphic_ctype": [
+        "dataservice",
+        "wfsdataservice"
+      ],
+      "sgid": "srv_sgid-wfs",
+      "dataservice_id": "dataservice_id.wfs",
+      "data_source": "fixture",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "title": "title",
+      "openapi_spec_url": "https://example.com/openapi_spec_url",
+      "documentation_url_de": "https://example.com/documentation_url_de",
+      "documentation_url_fr": "https://example.com/documentation_url_fr",
+      "documentation_url_en": "https://example.com/documentation_url_en",
+      "documentation_url_it": "https://example.com/documentation_url_it",
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "dataservice.wfsdataservice",
+    "fields": {
+      "dataservice_ptr": [
+        "srv_sgid-wfs"
+      ]
+    }
+  },
+  {
+    "model": "dataservice.dataservice",
+    "fields": {
+      "polymorphic_ctype": [
+        "dataservice",
+        "ogcapifeaturesdataservice"
+      ],
+      "sgid": "srv_sgid-ogcapifeatures",
+      "dataservice_id": "dataservice_id.ogcapifeatures",
+      "data_source": "fixture",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "title": "title",
+      "openapi_spec_url": "https://example.com/openapi_spec_url",
+      "documentation_url_de": "https://example.com/documentation_url_de",
+      "documentation_url_fr": "https://example.com/documentation_url_fr",
+      "documentation_url_en": "https://example.com/documentation_url_en",
+      "documentation_url_it": "https://example.com/documentation_url_it",
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "dataservice.ogcapifeaturesdataservice",
+    "fields": {
+      "dataservice_ptr": [
+        "srv_sgid-ogcapifeatures"
+      ]
+    }
+  },
+  {
+    "model": "dataservice.dataservice",
+    "fields": {
+      "polymorphic_ctype": [
+        "dataservice",
+        "geoadminfeaturesdataservice"
+      ],
+      "sgid": "srv_sgid-geoadminfeatures",
+      "dataservice_id": "dataservice_id.geoadminfeatures",
+      "data_source": "fixture",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "title": "title",
+      "openapi_spec_url": "https://example.com/openapi_spec_url",
+      "documentation_url_de": "https://example.com/documentation_url_de",
+      "documentation_url_fr": "https://example.com/documentation_url_fr",
+      "documentation_url_en": "https://example.com/documentation_url_en",
+      "documentation_url_it": "https://example.com/documentation_url_it",
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "dataservice.geoadminfeaturesdataservice",
+    "fields": {
+      "dataservice_ptr": [
+        "srv_sgid-geoadminfeatures"
+      ],
+      "landing_page_url": "https://example.com/landing_page_url"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmsdistribution"
+      ],
+      "sgid": "dst_sgid-wms",
+      "distribution_id": "distribution_id.wms",
+      "dataset": [
+        "dat_sgid"
+      ],
+      "title_de": "Deutscher Titel der Distribution (WMS)",
+      "title_fr": "Titre français de la distribution (WMS)",
+      "title_en": "English distribution title (WMS)",
+      "title_it": "Titolo italiano della distribuzione (WMS)",
+      "title_rm": "Titel rumantsch da la distribuziun (WMS)",
+      "description_de": "Deutsche Beschreibung der Distribution (WMS)",
+      "description_fr": "Description française de la distribution (WMS)",
+      "description_en": "English distribution description (WMS)",
+      "description_it": "Descrizione italiana della distribuzione (WMS)",
+      "description_rm": "Descripziun rumantscha da la distribuziun (WMS)",
+      "meta_information": false,
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmsdistribution",
+    "fields": {
+      "distribution_ptr": [
+        "dst_sgid-wms"
+      ],
+      "dataservice": [
+        "srv_sgid-wms"
+      ],
+      "wms_layer_name_de": "wms_layer_name_de",
+      "wms_layer_name_fr": "wms_layer_name_fr",
+      "wms_layer_name_en": "wms_layer_name_en",
+      "wms_layer_name_it": "wms_layer_name_it",
+      "wms_layer_name_rm": "wms_layer_name_rm",
+      "opacity": "1.00",
+      "gutter": 0
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalwmtsdistribution"
+      ],
+      "sgid": "dst_sgid-wmts",
+      "distribution_id": "distribution_id.wmts",
+      "dataset": [
+        "dat_sgid"
+      ],
+      "title_de": "Deutscher Titel der Distribution (WMTS)",
+      "title_fr": "Titre français de la distribution (WMTS)",
+      "title_en": "English distribution title (WMTS)",
+      "title_it": "Titolo italiano della distribuzione (WMTS)",
+      "title_rm": "Titel rumantsch da la distribuziun (WMTS)",
+      "description_de": "Deutsche Beschreibung der Distribution (WMTS)",
+      "description_fr": "Description française de la distribution (WMTS)",
+      "description_en": "English distribution description (WMTS)",
+      "description_it": "Descrizione italiana della distribuzione (WMTS)",
+      "description_rm": "Descripziun rumantscha da la distribuziun (WMTS)",
+      "meta_information": false,
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "distribution.externalwmtsdistribution",
+    "fields": {
+      "distribution_ptr": [
+        "dst_sgid-wmts"
+      ],
+      "dataservice": [
+        "srv_sgid-wmts"
+      ],
+      "wmts_layer_name_de": "wmts_layer_name_de",
+      "wmts_layer_name_fr": "wmts_layer_name_fr",
+      "wmts_layer_name_en": "wmts_layer_name_en",
+      "wmts_layer_name_it": "wmts_layer_name_it",
+      "wmts_layer_name_rm": "wmts_layer_name_rm",
+      "opacity": "1.00"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalstacdistribution"
+      ],
+      "sgid": "dst_sgid-stac",
+      "distribution_id": "distribution_id.stac",
+      "dataset": [
+        "dat_sgid"
+      ],
+      "title_de": "Deutscher Titel der Distribution (STAC)",
+      "title_fr": "Titre français de la distribution (STAC)",
+      "title_en": "English distribution title (STAC)",
+      "title_it": "Titolo italiano della distribuzione (STAC)",
+      "title_rm": "Titel rumantsch da la distribuziun (STAC)",
+      "description_de": "Deutsche Beschreibung der Distribution (STAC)",
+      "description_fr": "Description française de la distribution (STAC)",
+      "description_en": "English distribution description (STAC)",
+      "description_it": "Descrizione italiana della distribuzione (STAC)",
+      "description_rm": "Descripziun rumantscha da la distribuziun (STAC)",
+      "meta_information": false,
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "distribution.externalstacdistribution",
+    "fields": {
+      "distribution_ptr": [
+        "dst_sgid-stac"
+      ],
+      "dataservice": [
+        "srv_stac-api-landingpage"
+      ],
+      "stac_collection_id": "stac_collection_id"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeojsondistribution"
+      ],
+      "sgid": "dst_sgid-geojson",
+      "distribution_id": "distribution_id.geojson",
+      "dataset": [
+        "dat_sgid"
+      ],
+      "title_de": "Deutscher Titel der Distribution (GeoJSON)",
+      "title_fr": "Titre français de la distribution (GeoJSON)",
+      "title_en": "English distribution title (GeoJSON)",
+      "title_it": "Titolo italiano della distribuzione (GeoJSON)",
+      "title_rm": "Titel rumantsch da la distribuziun (GeoJSON)",
+      "description_de": "Deutsche Beschreibung der Distribution (GeoJSON)",
+      "description_fr": "Description française de la distribution (GeoJSON)",
+      "description_en": "English distribution description (GeoJSON)",
+      "description_it": "Descrizione italiana della distribuzione (GeoJSON)",
+      "description_rm": "Descripziun rumantscha da la distribuziun (GeoJSON)",
+      "meta_information": false,
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeojsondistribution",
+    "fields": {
+      "distribution_ptr": [
+        "dst_sgid-geojson"
+      ],
+      "geojson_url_de": "https://example.com/geojson_url_de",
+      "geojson_url_fr": "https://example.com/geojson_url_fr",
+      "geojson_url_it": "https://example.com/geojson_url_it",
+      "geojson_url_en": "https://example.com/geojson_url_en",
+      "geojson_url_rm": "https://example.com/geojson_url_rm",
+      "style_url": null,
+      "geojson_legend_de": "https://example.com/geojson_legend_de",
+      "geojson_legend_fr": "https://example.com/geojson_legend_fr",
+      "geojson_legend_it": "https://example.com/geojson_legend_it",
+      "geojson_legend_en": "https://example.com/geojson_legend_en",
+      "geojson_legend_rm": "https://example.com/geojson_legend_rm"
+    }
+  },
+  {
+    "model": "distribution.distribution",
+    "fields": {
+      "polymorphic_ctype": [
+        "distribution",
+        "externalgeoadminfeaturesdistribution"
+      ],
+      "sgid": "dst_sgid-geoadminfeatures",
+      "distribution_id": "distribution_id.geoadminfeatures",
+      "dataset": [
+        "dat_sgid"
+      ],
+      "title_de": "Deutscher Titel der Distribution (Geoadmin Features)",
+      "title_fr": "Titre français de la distribution (Geoadmin Features)",
+      "title_en": "English distribution title (Geoadmin Features)",
+      "title_it": "Titolo italiano della distribuzione (Geoadmin Features)",
+      "title_rm": "Titel rumantsch da la distribuziun (Geoadmin Features)",
+      "description_de": "Deutsche Beschreibung der Distribution (Geoadmin Features)",
+      "description_fr": "Description française de la distribution (Geoadmin Features)",
+      "description_en": "English distribution description (Geoadmin Features)",
+      "description_it": "Descrizione italiana della distribuzione (Geoadmin Features)",
+      "description_rm": "Descripziun rumantscha da la distribuziun (Geoadmin Features)",
+      "meta_information": false,
+      "data_source": "user-input",
+      "data_source_ids": [
+        "data_source_ids"
+      ],
+      "created_at": "2026-11-16T00:00:00Z",
+      "updated_at": "2026-11-16T00:00:00Z"
+    }
+  },
+  {
+    "model": "distribution.externalgeoadminfeaturesdistribution",
+    "fields": {
+      "distribution_ptr": [
+        "dst_sgid-geoadminfeatures"
+      ],
+      "dataservice": [
+        "srv_sgid-geoadminfeatures"
+      ],
+      "layer_id": "layer_id",
+      "queryable": true,
+      "renderable": true
+    }
+  }
+]

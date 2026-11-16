@@ -25,7 +25,8 @@ ORGANIZATION_SGID_REGEX = r"^org_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
 class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
-    pass
+    def get_by_natural_key(self, sgid: str) -> Organization:
+        return self.get(sgid=sgid)
 
 
 class Organization(DataSourceIdModelMixin, models.Model):
@@ -178,6 +179,9 @@ class Organization(DataSourceIdModelMixin, models.Model):
         vp_client.delete_policy(self.vp_org_admin_policy_id)
 
         return result
+
+    def natural_key(self) -> tuple:
+        return (self.sgid,)
 
 
 class UnitManager(models.Manager):
@@ -404,7 +408,8 @@ class Contact(DataSourceIdModelMixin, models.Model):
 
 
 class AttributionManager(DataSourceIdManagerMixin, models.Manager):
-    pass
+    def get_by_natural_key(self, attribution_id: str) -> Attribution:
+        return self.get(attribution_id=attribution_id)
 
 
 class Attribution(DataSourceIdModelMixin, models.Model):
@@ -487,3 +492,6 @@ class Attribution(DataSourceIdModelMixin, models.Model):
 
     def __str__(self) -> str:
         return str(self.attribution_id)
+
+    def natural_key(self) -> tuple:
+        return (self.attribution_id,)
