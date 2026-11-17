@@ -73,7 +73,7 @@ def test_command_creates_stac_distributions_in_orphaned(stac, db):
 
     assert (
         "Added distribution for collection_id ch.bafu.moose to dataset ORPHANAGE from "
-        "dataservice stac-api-landingpage." in out
+        "dataservice srv_stac-api-landingpage." in out
     )
 
     dataset = Dataset.objects.filter(dataset_id="ORPHANAGE").first()
@@ -124,7 +124,7 @@ def test_command_creates_stac_distributions(stac, db):
 
     assert (
         "Added distribution for collection_id ch.bafu.moose to dataset ch.bafu.moose from "
-        "dataservice stac-api-landingpage." in out
+        "dataservice srv_stac-api-landingpage." in out
     )
 
     dist = dataset.distribution_set.first()
@@ -156,7 +156,7 @@ def test_command_updates_distribution_dataset(stac, db):
 
     assert (
         "Added distribution for collection_id ch.bafu.moose to dataset ORPHANAGE from "
-        "dataservice stac-api-landingpage." in out
+        "dataservice srv_stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()
@@ -186,7 +186,7 @@ def test_command_updates_distribution_dataset(stac, db):
 
     assert (
         "Updated distribution for collection_id ch.bafu.moose to dataset "
-        "ch.bafu.moose from dataservice stac-api-landingpage." in out
+        "ch.bafu.moose from dataservice srv_stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()
@@ -284,7 +284,7 @@ def test_command_uses_dataset_mapping_for_distribution(stac, db):
     assert "Mapping found for collection_id ch.bafu.moose-stac: ch.bafu.moose" in out
     assert (
         "Added distribution for collection_id ch.bafu.moose-stac to dataset ch.bafu.moose from "
-        "dataservice stac-api-landingpage." in out
+        "dataservice srv_stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()
@@ -340,7 +340,7 @@ def test_command_updates_distribution_dataset_from_mapping(stac, db):
 
     assert (
         "Added distribution for collection_id ch.bafu.moose-stac to dataset ch.bafu.moose-stac "
-        "from dataservice stac-api-landingpage." in out
+        "from dataservice srv_stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()
@@ -394,7 +394,7 @@ def test_command_updates_distribution_dataset_from_mapping(stac, db):
     assert "Mapping found for collection_id ch.bafu.moose-stac: ch.bafu.moose" in out
     assert (
         "Updated distribution for collection_id ch.bafu.moose-stac to dataset "
-        "ch.bafu.moose from dataservice stac-api-landingpage." in out
+        "ch.bafu.moose from dataservice srv_stac-api-landingpage." in out
     )
 
     dist = ExternalStacDistribution.objects.first()

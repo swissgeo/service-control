@@ -644,7 +644,7 @@ class Command(CustomBaseCommand):
 
         # Try to fetch the Geoadmin WMTS dataservice, which is needed to create WMTS distributions.
         try:
-            wmts_dataservice = WMTSDataservice.objects.get(dataservice_id="wmts-geoadminch")
+            wmts_dataservice = WMTSDataservice.objects.get(sgid="srv_wmts-geoadminch")
         except WMTSDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin WMTS Dataservice found, try to load fixtures first "
@@ -653,7 +653,7 @@ class Command(CustomBaseCommand):
             return
 
         try:
-            wms_dataservice = WMSDataservice.objects.get(dataservice_id="wms-geoadminch")
+            wms_dataservice = WMSDataservice.objects.get(sgid="srv_wms-geoadminch")
         except WMSDataservice.DoesNotExist:
             self.print_error(
                 "No Geoadmin WMS Dataservice found, try to load fixtures first "
@@ -663,7 +663,7 @@ class Command(CustomBaseCommand):
 
         try:
             geoadminfeature_dataservice = GeoadminFeaturesDataservice.objects.get(
-                dataservice_id="api3features-geoadminch"
+                sgid="srv_api3features-geoadminch"
             )
         except GeoadminFeaturesDataservice.DoesNotExist:
             self.print_error(

@@ -4,7 +4,6 @@
     "fields": {
       "polymorphic_ctype": ["dataservice", "wmtsdataservice"],
       "sgid": "srv_wmts-geoadminch",
-      "dataservice_id": "wmts-geoadminch",
       "data_source": "fixture",
       "title": "WMTS geo.admin.ch",
       "openapi_spec_url": null,
@@ -21,7 +20,6 @@
     "fields": {
       "polymorphic_ctype": ["dataservice", "wmsdataservice"],
       "sgid": "srv_wms-geoadminch",
-      "dataservice_id": "wms-geoadminch",
       "data_source": "fixture",
       "title": "WMS geo.admin.ch",
       "openapi_spec_url": null,
@@ -38,7 +36,6 @@
     "fields": {
       "polymorphic_ctype": ["dataservice", "ogcapistacdataservice"],
       "sgid": "srv_stac-api-landingpage",
-      "dataservice_id": "stac-api-landingpage",
       "data_source": "fixture",
       "title": "STAC API Landingpage",
       "openapi_spec_url": "https://sys-data.dev.bgdi.ch/api/stac/static/spec/v1/openapi.yaml",
@@ -55,7 +52,6 @@
     "fields": {
       "polymorphic_ctype": ["dataservice", "geoadminfeaturesdataservice"],
       "sgid": "srv_api3features-geoadminch",
-      "dataservice_id": "api3features-geoadminch",
       "data_source": "fixture",
       "title": "api3features-geoadminch",
       "openapi_spec_url": null,
@@ -70,7 +66,7 @@
   {
     "model": "dataservice.wmsdataservice",
     "fields": {
-      "dataservice_ptr": ["wms-geoadminch"],
+      "dataservice_ptr": ["srv_wms-geoadminch"],
       "languages": "[\"de\", \"fr\", \"en\", \"it\"]",
       "default_language": "de",
       "capabilities_url": "https://sys-wms.dev.bgdi.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0&FORMAT=text/xml&lang={lang}"
@@ -79,7 +75,7 @@
   {
     "model": "dataservice.wmtsdataservice",
     "fields": {
-      "dataservice_ptr": ["wmts-geoadminch"],
+      "dataservice_ptr": ["srv_wmts-geoadminch"],
       "variable_epsg_list": "[\"2056\", \"21781\", \"4326\"]",
       "languages": "[\"de\", \"fr\", \"en\", \"it\"]",
       "default_language": "de",
@@ -89,14 +85,14 @@
   {
     "model": "dataservice.ogcapistacdataservice",
     "fields": {
-      "dataservice_ptr": ["stac-api-landingpage"],
+      "dataservice_ptr": ["srv_stac-api-landingpage"],
       "landing_page_url": "https://sys-data.dev.bgdi.ch/api/stac/v1/"
     }
   },
   {
     "model": "dataservice.geoadminfeaturesdataservice",
     "fields": {
-      "dataservice_ptr": ["api3features-geoadminch"],
+      "dataservice_ptr": ["srv_api3features-geoadminch"],
       "landing_page_url": "https://sys-api3.dev.bgdi.ch/rest/services/ech/MapServer"
     }
   }
