@@ -89,7 +89,7 @@ def distribution_fieldsets(service_fields: tuple[Any, ...]) -> tuple[Any, ...]:
                 "fields": (
                     ("sgid", "distribution_id"),
                     "dataset",
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                 ),
             },
         ),

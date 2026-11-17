@@ -102,7 +102,7 @@ def test_command_creates_aggregate_organization(mock, client, db):
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["KGK"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     att = org.attribution_set.get()
@@ -156,7 +156,7 @@ def test_command_aggregate_organization_federal_political_entity_not_existing(mo
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["KGK"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}]
     assert org.geopolitical_entity is None
 
 
@@ -177,7 +177,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org.save()
 
@@ -200,7 +200,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
         url_it="x",
         url_rm="x",
         data_source=Attribution.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Attribution.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     att.save()
 
@@ -240,7 +240,7 @@ def test_command_updates_aggregate_organization(mock, client, db):
     assert org.abbreviation_it == "CGC"
     assert org.abbreviation_rm == "CGC"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["KGK"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     att.refresh_from_db()
@@ -285,7 +285,7 @@ def test_command_uses_aggregate_organization_mapping(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
     )
     org.save()
 
@@ -384,7 +384,7 @@ def test_command_creates_cantonal_organization(mock, client, db):
     assert org.abbreviation_it == "LU"
     assert org.abbreviation_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["LU"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
@@ -411,7 +411,7 @@ def test_command_updates_cantonal_organization(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}],
     )
     org.save()
 
@@ -449,7 +449,7 @@ def test_command_updates_cantonal_organization(mock, client, db):
     assert org.abbreviation_it == "LU"
     assert org.abbreviation_rm == "LU"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["LU"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
     assert org.geopolitical_entity == geopolitical_entity
 
     out = StringIO()
@@ -484,7 +484,7 @@ def test_command_creates_broker_organization(mock, client, db):
     assert org.abbreviation_it == "BFE"
     assert org.abbreviation_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["BFE"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "BFE"}]
     assert org.geopolitical_entity is None
 
 
@@ -505,7 +505,7 @@ def test_command_updates_broker_organization(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["BFE"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "BFE"}],
     )
     org.save()
 
@@ -532,7 +532,7 @@ def test_command_updates_broker_organization(mock, client, db):
     assert org.abbreviation_it == "BFE"
     assert org.abbreviation_rm == "BFE"
     assert org.data_source == Organization.DataSource.GEODIENSTE
-    assert org.data_source_ids == ["BFE"]
+    assert org.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "BFE"}]
     assert org.geopolitical_entity is None
 
     out = StringIO()
@@ -584,7 +584,7 @@ def test_command_uses_organization_mapping(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}],
     )
     org_1.save()
     org_2 = Organization(
@@ -601,7 +601,7 @@ def test_command_uses_organization_mapping(mock, client, db):
         abbreviation_it="x",
         abbreviation_rm="x",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}],
     )
     org_2.save()
 
@@ -627,10 +627,10 @@ def test_command_uses_organization_mapping(mock, client, db):
     org_1.refresh_from_db()
     assert org_1.organization_id == "ch.geodienste-lu-new"
     assert org_1.name_de == "x"
-    assert org_1.data_source_ids == ["LU"]
+    assert org_1.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
 
     org_2.refresh_from_db()
-    assert org_2.data_source_ids == []
+    assert org_2.external_ids == []
 
     # ---------
     # Update
@@ -658,7 +658,7 @@ def test_command_uses_organization_mapping(mock, client, db):
     assert org_1.abbreviation_it == "LU"
     assert org_1.abbreviation_rm == "LU"
     assert org_1.data_source == Organization.DataSource.GEODIENSTE
-    assert org_1.data_source_ids == ["LU"]
+    assert org_1.external_ids == [{"source": Organization.DataSource.GEODIENSTE, "id": "LU"}]
 
 
 @patch("organization.models.Client")
@@ -674,7 +674,7 @@ def test_command_cleans_organizations(mock, client, db):
         abbreviation_fr="obsolete",
         abbreviation_en="obsolete",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
     ).save()
     Organization(
         sgid="org_removed",
@@ -686,7 +686,7 @@ def test_command_cleans_organizations(mock, client, db):
         abbreviation_fr="removed",
         abbreviation_en="removed",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "removed"}],
     ).save()
 
     mock.side_effect = api_response(
@@ -700,7 +700,7 @@ def test_command_cleans_organizations(mock, client, db):
     call_command("import_geodienste", organizations=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (organization) found: removed" in out
+    assert "Organizations with removed external IDs found: removed" in out
     assert "Obsolete organizations found: obsolete" in out
 
     assert Organization.objects.filter(organization_id="obsolete").first()
@@ -713,7 +713,7 @@ def test_command_cleans_organizations(mock, client, db):
     call_command("import_geodienste", organizations=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (organization) removed" in out
+    assert "Removing obsolete external ID removed from organizations" in out
     assert "Removing obsolete organization obsolete" in out
     assert "Removing obsolete organization removed" in out
 
@@ -779,7 +779,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org.save()
 
@@ -791,7 +791,7 @@ def test_command_creates_aggregate_contact(mock, client, db):
 
     contact = org.contact_set.get()
     assert contact.data_source == Contact.DataSource.GEODIENSTE
-    assert contact.data_source_ids == ["KGK"]
+    assert contact.external_ids == [{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}]
     assert contact.name_de == "Geschäftsstelle KGK-CGC"
     assert contact.name_fr == "Centre opérationnel KGK-CGC"
     assert contact.name_en == ""
@@ -855,14 +855,14 @@ def test_command_updates_aggregate_contact(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org.save()
 
     contact = Contact(
         organization=org,
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     contact.save()
 
@@ -875,7 +875,7 @@ def test_command_updates_aggregate_contact(mock, client, db):
 
     contact.refresh_from_db()
     assert contact.data_source == Contact.DataSource.GEODIENSTE
-    assert contact.data_source_ids == ["KGK"]
+    assert contact.external_ids == [{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}]
     assert contact.name_de == "Geschäftsstelle KGK-CGC"
     assert contact.name_fr == "Centre opérationnel KGK-CGC"
     assert contact.name_en == ""
@@ -939,7 +939,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
     )
     org.save()
 
@@ -960,7 +960,7 @@ def test_command_uses_aggregate_contact_mapping(mock, client, db):
 
     contact = org.contact_set.get()
     assert contact.data_source == Contact.DataSource.GEODIENSTE
-    assert contact.data_source_ids == ["KGK"]
+    assert contact.external_ids == [{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}]
     assert contact.name_de == "Geschäftsstelle KGK-CGC"
     assert contact.name_fr == "Centre opérationnel KGK-CGC"
     assert contact.name_en == ""
@@ -1043,14 +1043,14 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     Contact(
         organization=org,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
         legacy_contact="obsolete",
         name_en="obsolete",
     ).save()
     Contact(
         organization=org,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "removed"}],
         legacy_contact="removed",
         name_en="removed",
     ).save()
@@ -1100,20 +1100,23 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     assert "Contact LU for organization ch.geodienste-lu already exists" in out
     assert "Organization with organization_id ch.missing does not exist, skipping" in out
 
-    assert "Removed data_source_ids (contact) found: removed" in out
+    assert "Contacts with removed external IDs found: removed" in out
     assert "Obsolete contacts found: ch.geodienste-lu (obsolete)" in out
 
     assert Contact.objects.count() == 6
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
     } == {
         ((), "obsolete"),
-        (("removed",), "removed"),
+        (((Contact.DataSource.GEODIENSTE, "removed"),), "removed"),
         ((), "geocat"),
-        (("LU",), "Foo"),
-        (("LU.av",), "Bar"),
-        (("LU.gefahrenkarten",), "Baz"),
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foo"),
+        (((Contact.DataSource.GEODIENSTE, "LU.av"),), "Bar"),
+        (((Contact.DataSource.GEODIENSTE, "LU.gefahrenkarten"),), "Baz"),
     }
 
     # --------------
@@ -1141,20 +1144,23 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
     assert "Contact LU for organization ch.geodienste-lu updated" in out
     assert "Contact LU.av for organization ch.geodienste-lu already exists" in out
     assert "Contact LU.av for organization ch.geodienste-lu updated" in out
-    assert "Removed data_source_ids (contact) found: LU.gefahrenkarten, removed" in out
+    assert "Contacts with removed external IDs found: LU.gefahrenkarten, removed" in out
     assert "Obsolete contacts found: ch.geodienste-lu (obsolete)" in out
 
     assert Contact.objects.count() == 6
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
     } == {
         ((), "obsolete"),
-        (("removed",), "removed"),
+        (((Contact.DataSource.GEODIENSTE, "removed"),), "removed"),
         ((), "geocat"),
-        (("LU",), "Foobar"),
-        (("LU.av",), "Quux"),
-        (("LU.gefahrenkarten",), "Baz"),
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foobar"),
+        (((Contact.DataSource.GEODIENSTE, "LU.av"),), "Quux"),
+        (((Contact.DataSource.GEODIENSTE, "LU.gefahrenkarten"),), "Baz"),
     }
 
     # --------------
@@ -1167,17 +1173,23 @@ def test_command_creates_updates_cleans_contact(mock, client, db):
 
     assert "Contact LU for organization ch.geodienste-lu already exists" in out
     assert "Contact LU.av for organization ch.geodienste-lu already exists" in out
-    assert "Removing obsolete data_source_id (contact) removed" in out
-    assert "Removing obsolete data_source_id (contact) LU.gefahrenkarten" in out
+    assert "Removing obsolete external ID removed from contacts " in out
+    assert "Removing obsolete external ID LU.gefahrenkarten from contacts" in out
     assert "Removing obsolete contact ch.geodienste-lu (obsolete)" in out
     assert "Removing obsolete contact ch.geodienste-lu (removed)" in out
     assert "Removing obsolete contact ch.geodienste-lu (None)" in out
 
-    assert Contact.objects.count() == 3
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
-    } == {((), "geocat"), (("LU",), "Foobar"), (("LU.av",), "Quux")}
+    } == {
+        ((), "geocat"),
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foobar"),
+        (((Contact.DataSource.GEODIENSTE, "LU.av"),), "Quux"),
+    }
 
 
 @patch("organization.models.Client")
@@ -1227,9 +1239,14 @@ def test_command_organization_mapping_for_contact(mock, client, db):
 
     assert Contact.objects.count() == 1
     assert {
-        (tuple(contact.data_source_ids), contact.legacy_contact)
+        (
+            tuple((ext["source"], ext["id"]) for ext in contact.external_ids),
+            contact.legacy_contact,
+        )
         for contact in org.contact_set.all()
-    } == {(("LU",), "Foo")}
+    } == {
+        (((Contact.DataSource.GEODIENSTE, "LU"),), "Foo"),
+    }
 
 
 # --------------------------------------------------------------------------------------------------
@@ -1347,7 +1364,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     aggregate = Dataset.objects.get(dataset_id="ch.kgk.av")
     assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
-    assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.av"}]
     assert aggregate.sgid == "dat_av"
     assert aggregate.description_de == "Abstract DE"
     assert aggregate.description_en == "Abstract DE"
@@ -1419,7 +1436,7 @@ def test_command_creates_datasets(mock, client, db):  # noqa: PLR0915
 
     part = Dataset.objects.get(dataset_id="ch.geodienste-lu.av")
     assert part.data_source == Dataset.DataSource.GEODIENSTE
-    assert part.data_source_ids == ["LU.av"]
+    assert part.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "LU.av"}]
     assert part.sgid == "dat_av-lu"
     assert part.description_de == "Abstract DE"
     assert part.description_en == "Abstract DE"
@@ -1571,7 +1588,9 @@ def test_command_creates_broker_dataset(mock, client, db):  # noqa: PLR0915
 
     dataset = Dataset.objects.get(dataset_id="ch.bfe.thermische_netze")
     assert dataset.data_source == Dataset.DataSource.GEODIENSTE
-    assert dataset.data_source_ids == ["BFE.thermische_netze"]
+    assert dataset.external_ids == [
+        {"source": Dataset.DataSource.GEODIENSTE, "id": "BFE.thermische_netze"}
+    ]
     assert dataset.description_de == "Abstract DE"
     assert dataset.description_en == "Abstract DE"
     assert dataset.description_fr == "Abstract FR"
@@ -1650,7 +1669,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
         sgid="dat_av-kgk",
         dataset_id="ch.kgk.av",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=["KGK.av"],
+        external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.av"}],
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="Abstract FR",
@@ -1670,7 +1689,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
         sgid="dat_av-lu",
         dataset_id="ch.geodienste-lu.av",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=["LU.av"],
+        external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": "LU.av"}],
         description_de="Abstract DE",
         description_en="Abstract EN",
         description_fr="",
@@ -1751,7 +1770,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
 
     aggregate.refresh_from_db()
     assert aggregate.data_source == Dataset.DataSource.GEODIENSTE
-    assert aggregate.data_source_ids == ["KGK.av"]
+    assert aggregate.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.av"}]
     assert aggregate.description_de == "Abstract DE"
     assert aggregate.description_en == "Abstract DE"
     assert aggregate.description_fr == "Abstract FR"
@@ -1767,7 +1786,7 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
 
     part.refresh_from_db()
     assert part.data_source == Dataset.DataSource.GEODIENSTE
-    assert part.data_source_ids == ["LU.av"]
+    assert part.external_ids == [{"source": Dataset.DataSource.GEODIENSTE, "id": "LU.av"}]
     assert part.dataset_id == "ch.geodienste-lu.av"
     assert part.description_de == "Abstract DE"
     assert part.description_en == "Abstract DE"
@@ -1801,7 +1820,7 @@ def test_command_uses_dataset_mapping(mock, db):
         sgid="dat_av-kgk-cgc",
         dataset_id="ch.kgk-cgc.av",
         data_source=Dataset.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
         description_de="x",
         description_en="x",
         description_fr="x",
@@ -1820,7 +1839,7 @@ def test_command_uses_dataset_mapping(mock, db):
         sgid="dat_av-rawi",
         dataset_id="ch.rawi.av",
         data_source=Dataset.DataSource.USER_INPUT,
-        data_source_ids=[],
+        external_ids=[],
         description_de="x",
         description_en="x",
         description_fr="x",
@@ -1929,12 +1948,12 @@ def test_command_uses_dataset_mapping(mock, db):
 
     aggregate.refresh_from_db()
     assert aggregate.data_source == Dataset.DataSource.USER_INPUT
-    assert aggregate.data_source_ids == []
+    assert aggregate.external_ids == []
     assert aggregate.title_de == "Title DE"
 
     part.refresh_from_db()
     assert part.data_source == Dataset.DataSource.USER_INPUT
-    assert part.data_source_ids == []
+    assert part.external_ids == []
     assert part.title_de == "Title DE"
 
     assert aggregate.related_datasets(DatasetToDataset.Role.PART).first() == part
@@ -1946,7 +1965,7 @@ def test_command_cleans_datasets(mock, db):
         sgid="dat_obsolete",
         dataset_id="obsolete",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
         description_de="Obsolete",
         description_en="Obsolete",
         description_fr="Obsolete",
@@ -1958,7 +1977,7 @@ def test_command_cleans_datasets(mock, db):
         sgid="dat_removed",
         dataset_id="removed",
         data_source=Dataset.DataSource.GEODIENSTE,
-        data_source_ids=["KGK.removed"],
+        external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": "KGK.removed"}],
         description_de="Removed",
         description_en="Removed",
         description_fr="Removed",
@@ -2021,7 +2040,7 @@ def test_command_cleans_datasets(mock, db):
     call_command("import_geodienste", datasets=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (dataset) found: KGK.removed" in out
+    assert "Datasets with removed external IDs found: KGK.removed" in out
     assert "Obsolete datasets found: obsolete" in out
 
     assert Dataset.objects.count() == 4
@@ -2033,7 +2052,7 @@ def test_command_cleans_datasets(mock, db):
     call_command("import_geodienste", datasets=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (dataset) KGK.removed" in out
+    assert "Removing obsolete external ID KGK.removed from datasets" in out
     assert "Removing obsolete dataset obsolete" in out
     assert "Removing obsolete dataset removed" in out
 
@@ -2123,7 +2142,7 @@ def test_command_creates_removes_dataset_unit(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org_aggregate.save()
 
@@ -2477,13 +2496,13 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
         abbreviation_it="CGC",
         abbreviation_rm="CGC",
         data_source=Organization.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Organization.DataSource.GEODIENSTE, "id": "KGK"}],
     )
     org_aggregate.save()
     contact_aggregate = Contact(
         organization=org_aggregate,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}],
         name_en="kgk",
     )
     contact_aggregate.save()
@@ -2507,14 +2526,14 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     contact_part_org = Contact(
         organization=org_part,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["LU"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "LU"}],
         name_en="LU",
     )
     contact_part_org.save()
     contact_part_specialist = Contact(
         organization=org_part,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["LU.av"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "LU.av"}],
         name_en="LU.av",
     )
     contact_part_specialist.save()
@@ -2599,13 +2618,13 @@ def test_command_creates_updates_cleans_dataset_contacts(mock, client, db):
     # ------
     # Update
     # ------
-    contact_aggregate.data_source_ids = []
+    contact_aggregate.external_ids = []
     contact_aggregate.save()
 
     contact_aggregate_new = Contact(
         organization=org_aggregate,
         data_source=Contact.DataSource.GEODIENSTE,
-        data_source_ids=["KGK"],
+        external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": "KGK"}],
         name_en="kgk_new",
     )
     contact_aggregate_new.save()
@@ -3149,7 +3168,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-fixpunkte")
     assert dataservice_data.sgid == "srv_wms-geodienste-fixpunkte"
-    assert dataservice_data.data_source == "geodienste"
+    assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_data.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert dataservice_data.default_language == "de"
     assert dataservice_data.languages == ["de", "fr", "it", "en"]
     assert dataservice_data.title == "WMS geodienste.ch fixpunkte"
@@ -3162,7 +3184,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         dataservice_id="wms-geodienste-fixpunkte-availability"
     )
     assert dataservice_availability.sgid == "srv_wms-geodienste-fixpunkte-availability"
-    assert dataservice_availability.data_source == "geodienste"
+    assert dataservice_availability.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_availability.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert dataservice_availability.default_language == "de"
     assert dataservice_availability.languages == ["de", "fr", "it", "en"]
     assert dataservice_availability.title == "WMS geodienste.ch fixpunkte (availability)"
@@ -3172,7 +3197,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     )
 
     distribution_data = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.fixpunkte:wms")
-    assert distribution_data.data_source == "geodienste"
+    assert distribution_data.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_data.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert distribution_data.title_de == "Title DE"
     assert distribution_data.title_en == "Title EN"
     assert distribution_data.title_fr == "Title FR"
@@ -3193,7 +3221,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte-availability:wms"
     )
-    assert distribution_availability.data_source == "geodienste"
+    assert distribution_availability.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_availability.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert distribution_availability.title_de == "Verfügbarkeit"
     assert distribution_availability.title_en == "Availability"
     assert distribution_availability.title_fr == "Disponibilité"
@@ -3228,7 +3259,10 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     distribution_stac = ExternalStacDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte:stac"
     )
-    assert distribution_stac.data_source == "geodienste"
+    assert distribution_stac.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_stac.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
     assert distribution_stac.title_de == "STAC Download Collection"
     assert distribution_stac.title_en == "STAC Download Collection"
     assert distribution_stac.title_fr == "STAC Download Collection"
@@ -3402,7 +3436,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
 
     dataservice_data = Dataservice.objects.get(dataservice_id="wms-geodienste-thermische_netze")
     assert dataservice_data.sgid == "srv_wms-geodienste-thermische-netze"
-    assert dataservice_data.data_source == "geodienste"
+    assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_data.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert dataservice_data.default_language == "de"
     assert dataservice_data.languages == ["de", "fr", "it", "en"]
     assert dataservice_data.title == "WMS geodienste.ch thermische_netze"
@@ -3415,7 +3452,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
         dataservice_id="wms-geodienste-thermische_netze-availability"
     )
     assert dataservice_availability.sgid == "srv_wms-geodienste-thermische-netze-availability"
-    assert dataservice_availability.data_source == "geodienste"
+    assert dataservice_availability.data_source == Dataservice.DataSource.GEODIENSTE
+    assert dataservice_availability.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert dataservice_availability.default_language == "de"
     assert dataservice_availability.languages == ["de", "fr", "it", "en"]
     assert dataservice_availability.title == "WMS geodienste.ch thermische_netze (availability)"
@@ -3427,7 +3467,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     distribution_data = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze:wms"
     )
-    assert distribution_data.data_source == "geodienste"
+    assert distribution_data.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_data.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert distribution_data.title_de == "Title DE"
     assert distribution_data.title_en == "Title EN"
     assert distribution_data.title_fr == "Title FR"
@@ -3448,7 +3491,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze-availability:wms"
     )
-    assert distribution_availability.data_source == "geodienste"
+    assert distribution_availability.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_availability.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert distribution_availability.title_de == "Verfügbarkeit"
     assert distribution_availability.title_en == "Availability"
     assert distribution_availability.title_fr == "Disponibilité"
@@ -3483,7 +3529,10 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     distribution_stac = ExternalStacDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze:stac"
     )
-    assert distribution_stac.data_source == "geodienste"
+    assert distribution_stac.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_stac.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
     assert distribution_stac.title_de == "STAC Download Collection"
     assert distribution_stac.title_en == "STAC Download Collection"
     assert distribution_stac.title_fr == "STAC Download Collection"
@@ -3658,20 +3707,20 @@ def test_command_cleans_distributions(mock, client, db):
         sgid="srv_obsolete",
         dataservice_id="obsolete",
         data_source=Dataservice.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
     ).save()
     WMSDataservice(
         sgid="srv_removed",
         dataservice_id="removed",
         data_source=Dataservice.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Dataservice.DataSource.GEODIENSTE, "id": "removed"}],
     ).save()
 
     ExternalWMSDistribution(
         sgid="dst_obsolete-123",
         distribution_id="obsolete",
         data_source=Distribution.DataSource.GEODIENSTE,
-        data_source_ids=[],
+        external_ids=[],
         wms_layer_name_de="daten",
         dataset=dataset,
     ).save()
@@ -3679,7 +3728,7 @@ def test_command_cleans_distributions(mock, client, db):
         sgid="dst_removed-123",
         distribution_id="removed",
         data_source=Distribution.DataSource.GEODIENSTE,
-        data_source_ids=["removed"],
+        external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": "removed"}],
         wms_layer_name_de="daten",
         dataset=dataset,
     ).save()
@@ -3748,9 +3797,9 @@ def test_command_cleans_distributions(mock, client, db):
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removed data_source_ids (dataservice) found: removed" in out
+    assert "Dataservices with removed external IDs found: removed" in out
     assert "Obsolete dataservices found: obsolete" in out
-    assert "Removed data_source_ids (distribution) found: removed" in out
+    assert "Distributions with removed external IDs found: removed" in out
     assert "Obsolete distributions found: obsolete" in out
 
     assert Dataservice.objects.count() == 5
@@ -3763,10 +3812,10 @@ def test_command_cleans_distributions(mock, client, db):
     call_command("import_geodienste", distributions=True, clean=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Removing obsolete data_source_id (dataservice) removed" in out
+    assert "Removing obsolete external ID removed from dataservices" in out
     assert "Removing obsolete dataservice obsolete" in out
     assert "Removing obsolete dataservice removed" in out
-    assert "Removing obsolete data_source_id (distribution) removed" in out
+    assert "Removing obsolete external ID removed from distributions" in out
     assert "Removing obsolete distribution obsolete" in out
     assert "Removing obsolete distribution removed" in out
 

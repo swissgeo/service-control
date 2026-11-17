@@ -303,36 +303,36 @@ class Command(CustomBaseCommand):
 
     def cleanup_objects(
         self,
-        cls: type[Dataset | Dataservice | Distribution | Contact | Organization],
+        cls: type[Dataset | Dataservice | Distribution | Organization | Contact],
         processed: set[str],
         clean: bool,
     ) -> tuple[int, int]:
-        """Cleanup organizations
+        """Cleanup objects
 
-        - Check for data source IDs referenced in the organizations but not present anymore in the
-          geodienste Services Information API; optionally clean them
-        - Check for obsolete organizations, i.e. organizations created by this command but with no
-          data source ID reference; optionally delete them
+        - Check for external IDs referenced in the database but not present anymore in the
+          geodienste.ch Services Information API; optionally clean them
+        - Check for obsolete objects, i.e. objects created by this command but with no external ID
+          reference; optionally delete them
 
         """
 
-        existing = cls.objects.existing_data_source_ids(cls.DataSource.GEODIENSTE)
+        existing = cls.objects.existing_external_ids(cls.DataSource.GEODIENSTE)
         name = cls.__name__.lower()
 
         if removed := existing - processed:
             if clean:
-                for data_source_id in removed:
-                    self.print_warning(
-                        f"Removing obsolete data_source_id ({name}) {data_source_id}"
-                    )
-                    cls.objects.remove_data_source_id(data_source_id)
+                for external_id in removed:
+                    self.print_warning(f"Removing obsolete external ID {external_id} from {name}s ")
+                    cls.objects.remove_external_id(cls.DataSource.GEODIENSTE, external_id)
             else:
                 ids = sorted(str(r) for r in removed)
-                self.print_warning(f"Removed data_source_ids ({name}) found: {', '.join(ids)}")
+                self.print_warning(
+                    f"{name.capitalize()}s with removed external IDs found: {', '.join(ids)}"
+                )
 
         obsolete = cls.objects.filter(
             data_source=cls.DataSource.GEODIENSTE,
-            data_source_ids=[],
+            external_ids=[],
         )
         if obsolete.count():
             if clean:
@@ -462,7 +462,7 @@ class Command(CustomBaseCommand):
 
         created, updated = False, False
 
-        Organization.objects.remove_data_source_id(provider_id)
+        Organization.objects.remove_external_id(Organization.DataSource.GEODIENSTE, provider_id)
 
         organization_id = self.organization_id(provider_id)
         org, mapping = mappings.match(provider_id)
@@ -487,7 +487,9 @@ class Command(CustomBaseCommand):
                     sgid=sgid,
                     organization_id=organization_id,
                     data_source=Organization.DataSource.GEODIENSTE,
-                    data_source_ids=[provider_id],
+                    external_ids=[
+                        {"source": Organization.DataSource.GEODIENSTE, "id": provider_id}
+                    ],
                     geopolitical_entity=geopolitical_entity,
                     **attributes,
                 )
@@ -508,7 +510,7 @@ class Command(CustomBaseCommand):
                 org.save()
                 self.print(f"Organization {org} updated")
 
-        org.add_data_source_id(provider_id)
+        org.add_external_id(Organization.DataSource.GEODIENSTE, provider_id)
         org.save()
 
         return org, 1 if created else 0, 1 if updated else 0
@@ -521,7 +523,7 @@ class Command(CustomBaseCommand):
         Returns the number of created and updated attributions.
         """
 
-        Attribution.objects.remove_data_source_id(provider_id)
+        Attribution.objects.remove_external_id(Attribution.DataSource.GEODIENSTE, provider_id)
 
         attribution_id = self.attribution_id(provider_id)
         attribution = Attribution.objects.filter(
@@ -536,7 +538,7 @@ class Command(CustomBaseCommand):
             attribution = Attribution(
                 attribution_id=attribution_id,
                 data_source=Attribution.DataSource.GEODIENSTE,
-                data_source_ids=[provider_id],
+                external_ids=[{"source": Attribution.DataSource.GEODIENSTE, "id": provider_id}],
                 organization=organization,
                 **attributes,
             )
@@ -552,10 +554,10 @@ class Command(CustomBaseCommand):
         if updated:
             attribution.save()
             self.print(f"Attribution {attribution} updated")
-        attribution.add_data_source_id(provider_id)
+        attribution.add_external_id(Attribution.DataSource.GEODIENSTE, provider_id)
         attribution.save()
 
-        return 0, 1
+        return 0, 1 if updated else 0
 
     # ##########################################################################
     def import_contacts(self, services: dict, clean: bool) -> None:
@@ -586,16 +588,16 @@ class Command(CustomBaseCommand):
 
         # Aggregate
         provider_id = self.provider_id()
-        data_source_id = provider_id
+        external_id = provider_id
         created, updated = self.import_contact(
             provider_id=provider_id,
-            data_source_id=provider_id,
+            external_id=provider_id,
             attributes=AGGREGATE_PROVIDER_CONTACT,
             mappings=mappings,
         )
         metrics["contacts.created"] += created
         metrics["contacts.updated"] += updated
-        processed.add(data_source_id)
+        processed.add(external_id)
 
         # Cantonal and broker
         for service in services["de"].values():
@@ -603,29 +605,29 @@ class Command(CustomBaseCommand):
 
             # canton-wide contact
             if legacy_contact := (service["contact_geo"] or "").strip():
-                data_source_id = provider_id
+                external_id = provider_id
                 created, updated = self.import_contact(
                     provider_id=provider_id,
-                    data_source_id=provider_id,
+                    external_id=provider_id,
                     attributes={"legacy_contact": legacy_contact},
                     mappings=mappings,
                 )
                 metrics["contacts.created"] += created
                 metrics["contacts.updated"] += updated
-                processed.add(data_source_id)
+                processed.add(external_id)
 
             # specialist contact
             if legacy_contact := (service["contact_specialist_department"] or "").strip():
-                data_source_id = f"{provider_id}.{service['base_topic']}"
+                external_id = f"{provider_id}.{service['base_topic']}"
                 created, updated = self.import_contact(
                     provider_id=provider_id,
-                    data_source_id=data_source_id,
+                    external_id=external_id,
                     attributes={"legacy_contact": legacy_contact},
                     mappings=mappings,
                 )
                 metrics["contacts.created"] += created
                 metrics["contacts.updated"] += updated
-                processed.add(data_source_id)
+                processed.add(external_id)
 
         (
             metrics["contacts.removed"],
@@ -635,7 +637,7 @@ class Command(CustomBaseCommand):
         self.print_success(f"Contact import completed. Metrics: {metrics}")
 
     def import_contact(
-        self, provider_id: str, data_source_id: str, attributes: dict, mappings: PrefixLookupTable
+        self, provider_id: str, external_id: str, attributes: dict, mappings: PrefixLookupTable
     ) -> tuple[int, int]:
         """Create a contact with the given values if not yet existing, or update if necessary.
 
@@ -658,19 +660,19 @@ class Command(CustomBaseCommand):
             return 0, 0
 
         contact = Contact.objects.filter(
-            data_source=Contact.DataSource.GEODIENSTE, data_source_ids__contains=[data_source_id]
+            data_source=Contact.DataSource.GEODIENSTE, external_ids__contains=[{"id": external_id}]
         ).first()
         if contact:
-            self.print(f"Contact {data_source_id} for organization {organization} already exists")
+            self.print(f"Contact {external_id} for organization {organization} already exists")
         else:
             self.print(
-                f"Contact {data_source_id} for organization {organization} does not"
+                f"Contact {external_id} for organization {organization} does not"
                 " exist yet, creating a new one"
             )
             Contact(
                 organization=organization,
                 data_source=Contact.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Contact.DataSource.GEODIENSTE, "id": external_id}],
                 **attributes,
             ).save()
             return 1, 0
@@ -683,7 +685,7 @@ class Command(CustomBaseCommand):
                     updated = True
         if updated:
             contact.save()
-            self.print(f"Contact {data_source_id} for organization {organization} updated")
+            self.print(f"Contact {external_id} for organization {organization} updated")
 
         return 0, 1 if updated else 0
 
@@ -793,12 +795,12 @@ class Command(CustomBaseCommand):
             aggregate_provider_id = self.provider_id()
             base_topic = service["base_topic"]
             if service["broker"]:
-                data_source_id = f"{provider_id}.{base_topic}"
-                processed.add(data_source_id)
+                external_id = f"{provider_id}.{base_topic}"
+                processed.add(external_id)
                 extra: dict = {**common, "legacy_contacts": legacy_aggregate_contacts}
                 broker, created, updated = self.import_dataset(
                     self.dataset_id(service, aggregate=False),
-                    data_source_id,
+                    external_id,
                     dataset_mappings,
                     geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
                     **extra,
@@ -849,8 +851,8 @@ class Command(CustomBaseCommand):
             aggregate_dataset_id = self.dataset_id(service, aggregate=True)
             aggregate = aggregated.get(aggregate_dataset_id)
             if not aggregate:
-                data_source_id = f"{aggregate_provider_id}.{base_topic}"
-                processed.add(data_source_id)
+                external_id = f"{aggregate_provider_id}.{base_topic}"
+                processed.add(external_id)
                 extra: dict = {
                     **common,
                     "legacy_contacts": legacy_aggregate_contacts,
@@ -860,7 +862,7 @@ class Command(CustomBaseCommand):
                 }
                 aggregate, created, updated = self.import_dataset(
                     aggregate_dataset_id,
-                    data_source_id,
+                    external_id,
                     dataset_mappings,
                     geocat_id=service["meta_data"].get("dataset_url", "").split("/")[-1],
                     **extra,
@@ -912,11 +914,11 @@ class Command(CustomBaseCommand):
                 metrics["dataset_contacts.removed"] += removed
 
             # Dataset: Part
-            data_source_id = f"{provider_id}.{base_topic}"
-            processed.add(data_source_id)
+            external_id = f"{provider_id}.{base_topic}"
+            processed.add(external_id)
             part, created, updated = self.import_dataset(
                 self.dataset_id(service, aggregate=False),
-                data_source_id,
+                external_id,
                 dataset_mappings,
                 **common,
             )
@@ -946,7 +948,7 @@ class Command(CustomBaseCommand):
             # Contact: Owner of Part
             created, removed = self.import_dataset_contact(
                 part,
-                data_source_id,
+                external_id,
                 DatasetToContact.Role.OWNER,
                 contact_mappings.get(DatasetToContact.Role.OWNER),
             )
@@ -973,7 +975,7 @@ class Command(CustomBaseCommand):
     def import_dataset(
         self,
         dataset_id: str,
-        data_source_id: str,
+        external_id: str,
         dataset_mappings: PrefixLookupTable,
         **kwargs: dict,
     ) -> tuple[Dataset, int, int]:
@@ -999,7 +1001,7 @@ class Command(CustomBaseCommand):
                 dataset = Dataset(
                     sgid=dataset_sgid_from_dataset_id(dataset_id, Dataset.DataSource.GEODIENSTE),
                     dataset_id=dataset_id,
-                    data_source_ids=[data_source_id],
+                    external_ids=[{"source": Dataset.DataSource.GEODIENSTE, "id": external_id}],
                     data_source=Dataset.DataSource.GEODIENSTE,
                     **kwargs,
                 )
@@ -1101,7 +1103,7 @@ class Command(CustomBaseCommand):
     def import_dataset_contact(
         self,
         dataset: Dataset,
-        data_source_id: str,
+        external_id: str,
         role: DatasetToContact.Role,
         contact_mappings: PrefixLookupTable | None,
     ) -> tuple[int, int]:
@@ -1120,7 +1122,7 @@ class Command(CustomBaseCommand):
                 f"Contact mapping found for dataset_id {dataset_id} and role {role}: {contact}"
             )
         else:
-            contact = Contact.objects.filter(data_source_ids__contains=[data_source_id]).first()
+            contact = Contact.objects.filter(external_ids__contains=[{"id": external_id}]).first()
             if not contact:
                 return 0, 0
 
@@ -1417,7 +1419,7 @@ class Command(CustomBaseCommand):
         )
         dataservice, created, updated = self.import_wms_data_service(
             dataservice_id=f"wms-geodienste-{dataservice_name}",
-            data_source_id=base_topic,
+            external_id=base_topic,
             languages=languages,
             default_language="de",
             capabilities_url=capabilities_url,
@@ -1439,7 +1441,7 @@ class Command(CustomBaseCommand):
         distribution, created, updated = self.import_wms_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id,
-            data_source_id=base_topic,
+            external_id=base_topic,
             dataset=dataset,
             dataservice=dataservice,
             wms_layer_name_de=layer_names["de"],
@@ -1461,7 +1463,7 @@ class Command(CustomBaseCommand):
         # Availability dataservice and distribution
         dataservice_availability, created, updated = self.import_wms_data_service(
             dataservice_id=f"wms-geodienste-{dataservice_name}-availability",
-            data_source_id=base_topic,
+            external_id=base_topic,
             languages=["de", "fr", "it", "en"],
             default_language="de",
             capabilities_url=self.get_availability_wms_address(capabilities_url),
@@ -1473,7 +1475,7 @@ class Command(CustomBaseCommand):
         _, created, updated = self.import_wms_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", "-availability:wms"),
-            data_source_id=base_topic,
+            external_id=base_topic,
             dataset=dataset,
             dataservice=dataservice_availability,
             title_de="Verfügbarkeit",
@@ -1500,7 +1502,7 @@ class Command(CustomBaseCommand):
         created, updated = self.import_stac_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", ":stac"),
-            data_source_id=base_topic,
+            external_id=base_topic,
             wms_url=capabilities_url,
             dataset=dataset,
             stac_collection_id=base_topic,
@@ -1516,7 +1518,7 @@ class Command(CustomBaseCommand):
         return ds_created, ds_updated, dist_created, dist_updated
 
     def import_wms_data_service(
-        self, dataservice_id: str, data_source_id: str, **kwargs
+        self, dataservice_id: str, external_id: str, **kwargs
     ) -> tuple[WMSDataservice, int, int]:
         """Ensures that the WMS dataservice with the given ID exists and that it has the given
         attributes.
@@ -1536,7 +1538,7 @@ class Command(CustomBaseCommand):
                 sgid=dataservice_sgid_from_dataservice_id(dataservice_id),
                 dataservice_id=dataservice_id,
                 data_source=Dataservice.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Dataservice.DataSource.GEODIENSTE, "id": external_id}],
                 **kwargs,
             )
             dataservice.save()
@@ -1555,7 +1557,7 @@ class Command(CustomBaseCommand):
         return dataservice, 0, 0
 
     def import_wms_distribution(
-        self, distribution_sgid: str, distribution_id: str, data_source_id: str, **kwargs
+        self, distribution_sgid: str, distribution_id: str, external_id: str, **kwargs
     ) -> tuple[ExternalWMSDistribution, int, int]:
         """Ensures that the external WMS distribution with the given ID exists and that it has the
         given attributes.
@@ -1577,7 +1579,7 @@ class Command(CustomBaseCommand):
                 sgid=distribution_sgid,
                 distribution_id=distribution_id,
                 data_source=Distribution.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": external_id}],
                 **kwargs,
             )
             distribution.save()
@@ -1674,7 +1676,7 @@ class Command(CustomBaseCommand):
         self,
         distribution_sgid: str,
         distribution_id: str,
-        data_source_id: str,
+        external_id: str,
         wms_url: str,
         **kwargs,
     ) -> tuple[int, int]:
@@ -1717,7 +1719,7 @@ class Command(CustomBaseCommand):
                 sgid=distribution_sgid,
                 distribution_id=distribution_id,
                 data_source=Distribution.DataSource.GEODIENSTE,
-                data_source_ids=[data_source_id],
+                external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": external_id}],
                 dataservice=dataservice,
                 **kwargs,
             )
