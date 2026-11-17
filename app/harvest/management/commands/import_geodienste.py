@@ -1290,7 +1290,7 @@ class Command(CustomBaseCommand):
             elif "en" not in translations:
                 self.print_warning(f"Concept {term} has no English translation")
             else:
-                concept = thesaurus.concept_set.filter(concept_id=concept_id).first()  # ty:ignore[unresolved-attribute]
+                concept = thesaurus.concept_set.filter(concept_id=concept_id).first()  # ty:ignore[missing-attribute]
                 if not concept:
                     self.print(
                         f"Adding concept {concept_id} / {translations} to thesaurus {thesaurus}"

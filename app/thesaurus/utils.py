@@ -94,7 +94,7 @@ def thesaurus_to_skos_jsonld(thesaurus: Thesaurus) -> str:
     graph.add((scheme_uri, RDF.type, SKOS.ConceptScheme))
     graph.add((scheme_uri, DCTERMS.identifier, Literal(thesaurus.thesaurus_id)))
 
-    concepts = thesaurus.concept_set.select_related("parent").exclude(  # ty: ignore[unresolved-attribute]
+    concepts = thesaurus.concept_set.select_related("parent").exclude(  # ty: ignore[missing-attribute]
         concept_id__in={ROOT_CONCEPT_ID, *EXPORT_EXCLUDED_CONCEPT_IDS}
     )
 
