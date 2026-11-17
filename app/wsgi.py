@@ -72,7 +72,7 @@ class StandaloneApplication(BaseApplication):
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
-    def load(self) -> WSGIHandler:  # ty: ignore[invalid-method-override]
+    def load(self) -> WSGIHandler:  # ty: ignore[incompatible-method-override]
         return self.application
 
 

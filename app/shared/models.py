@@ -169,4 +169,4 @@ class LinkTemplateVariable(models.Model):
     # you need to specify the dependencies of the natural key.
     # In this case, LinkTemplateVariable depends on LinkTemplate because of
     # the foreign key relationship.
-    natural_key.dependencies = ["shared.linktemplate"]  # noqa: RUF012, RUF100  # ty:ignore[unresolved-attribute]
+    natural_key.dependencies = ["shared.linktemplate"]  # noqa: RUF012, RUF100  # ty:ignore[missing-attribute]

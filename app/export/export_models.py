@@ -41,7 +41,7 @@ def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distributi
     its own feature info source and a WMTS distribution falls back to a WMS sibling; other
     distribution types only get the GeoadminFeatures candidate.
     """
-    geoadmin_features = dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+    geoadmin_features = dataset.distribution_set.instance_of(  # ty:ignore[missing-attribute]
         ExternalGeoadminFeaturesDistribution
     ).first()
     if geoadmin_features:
@@ -49,7 +49,7 @@ def featureinfo_distribution(dataset: Dataset, dist: Distribution) -> Distributi
     if isinstance(dist, ExternalWMSDistribution):
         return dist
     if isinstance(dist, ExternalWMTSDistribution):
-        return dataset.distribution_set.instance_of(  # ty:ignore[unresolved-attribute]
+        return dataset.distribution_set.instance_of(  # ty:ignore[missing-attribute]
             ExternalWMSDistribution
         ).first()
     return None
@@ -382,7 +382,7 @@ class OARDistribution(OARRecord):
             record.links.append(
                 OARRecordLink.from_record_id(
                     collection_id=settings.OAR_SERVICES_COLLECTION_ID,
-                    record_id=dist.dataservice.sgid,  # ty:ignore[unresolved-attribute]
+                    record_id=dist.dataservice.sgid,  # ty:ignore[missing-attribute]
                     rel="dataservice",
                 )
             )
@@ -724,7 +724,7 @@ class MaplibreRasterLayer(MaplibreLayer):
     See https://maplibre.org/maplibre-style-spec/layers/#layer-properties.
     """
 
-    typ: Literal["raster"] = Field(default="raster", serialization_alias="type")  # ty: ignore[invalid-mutable-override]
+    typ: Literal["raster"] = Field(default="raster", serialization_alias="type")  # ty: ignore[incompatible-mutable-override]
 
 
 class OARThesaurus(OARRecord):
@@ -778,7 +778,7 @@ class Concept(BaseModel):
             label=getattr(concept, f"label_{lang}"),
             children=[
                 cls.from_concept(child, lang)
-                for child in concept.children.exclude(  # ty: ignore[unresolved-attribute]
+                for child in concept.children.exclude(  # ty: ignore[missing-attribute]
                     concept_id__in=EXPORT_EXCLUDED_CONCEPT_IDS
                 )
             ],

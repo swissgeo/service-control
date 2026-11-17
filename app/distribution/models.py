@@ -98,7 +98,7 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
         help_text=_(_context, "Date and time when the distribution was last updated"),
     )
 
-    objects: ClassVar[DistributionManager] = DistributionManager()  # ty: ignore[invalid-mutable-override]
+    objects: ClassVar[DistributionManager] = DistributionManager()  # ty: ignore[incompatible-mutable-override]
 
     class Meta:
         verbose_name = _("Distribution", "Distributions")

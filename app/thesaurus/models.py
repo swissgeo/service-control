@@ -112,4 +112,4 @@ class Concept(models.Model):
     def natural_key(self) -> tuple:
         return (self.thesaurus.thesaurus_id, self.concept_id)
 
-    natural_key.dependencies = ["thesaurus.thesaurus"]  # ty: ignore[unresolved-attribute]  # noqa: RUF012
+    natural_key.dependencies = ["thesaurus.thesaurus"]  # ty: ignore[missing-attribute]  # noqa: RUF012
