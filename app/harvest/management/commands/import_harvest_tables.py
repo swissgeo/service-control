@@ -904,6 +904,7 @@ class Command(CustomBaseCommand):
 
         values = {
             "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+            "layer_id": ljs.layer_id,
             "title_de": dataset.title_de,
             "title_fr": dataset.title_fr,
             "title_it": dataset.title_it,

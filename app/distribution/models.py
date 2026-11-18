@@ -301,6 +301,9 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
     types.
     """
 
+    layer_id = models.CharField(
+        _(_context, "GeoJSON Layer ID"), null=True, blank=True, max_length=255
+    )
     geojson_url_de = models.URLField(_(_context, "GeoJSON URL (DE)"), max_length=2048)
     geojson_url_fr = models.URLField(
         _(_context, "GeoJSON URL (FR)"), max_length=2048, null=True, blank=True
@@ -346,17 +349,7 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
         return "geojson"
 
     def external_record_id(self, lang: str) -> str:
-        # TODO: This is probably not correct. In case of Swisstopo distributions with URLs like
-        # https://data.geo.admin.ch/ch.bfe.shared-mobility/ch.bfe.shared-mobility_de.json
-        # and style URS likes
-        # https://api3.geo.admin.ch/static/vectorStyles/ch.bfe.shared-mobility.json
-        # the external ID should probably be "ch.bfe.shared-mobility".
-        # This is no problem ATM, as this is never used in case of GeoJSON distributions (see also
-        # comment above regarding distributions and the one in in export_models regarding exporting
-        # distributions). But it might be better, to switch for example to a template mechanism
-        # like in the dataservices.
-        default = self.geojson_url_de
-        return getattr(self, f"geojson_url_{lang}", default) or default
+        return self.layer_id
 
 
 class ExternalGeoadminFeaturesDistribution(ExternalDistribution):
