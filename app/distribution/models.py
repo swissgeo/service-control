@@ -34,7 +34,6 @@ class Distribution(ExternalIdsModelMixin, PolymorphicModel):
         validators=[RegexValidator(DISTRIBUTION_SGID_REGEX)],
     )
 
-    # FIXME: remove me!
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)

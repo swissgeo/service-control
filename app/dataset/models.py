@@ -31,7 +31,6 @@ class Dataset(ExternalIdsModelMixin, models.Model):
         validators=[RegexValidator(DATASET_SGID_REGEX)],
     )
 
-    # FIXME: remove me!
     dataset_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     class DataSource(models.TextChoices):
