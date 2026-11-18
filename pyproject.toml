@@ -85,7 +85,7 @@ ignore = [
     "FBT002", # Ignore boolean-default-value-positional-argument
     "PTH123", # Ignore builtin-open
     "TD",     # Ignore flake8-todos
-    "FIX",    # Ignore fixme comments
+    "FIX002", # Ignore fixme comments
     "ERA001", # TODO remove this for production, ignore commented code
     "COM812", # flak8-commas missing-trailing-comma is ignored to avoid conflict with formatter which enforces trailing commas
     "DJ001",  # Ignore nullable strings

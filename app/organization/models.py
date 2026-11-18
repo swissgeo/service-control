@@ -37,7 +37,6 @@ class Organization(ExternalIdsModelMixin, models.Model):
         validators=[RegexValidator(ORGANIZATION_SGID_REGEX)],
     )
 
-    # FIXME: remove me!
     organization_id = CustomSlugField(
         _(_context, "External ID"),
         max_length=100,
@@ -77,7 +76,6 @@ class Organization(ExternalIdsModelMixin, models.Model):
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
 
-    # FIXME: rename to title
     name_de = models.CharField(_(_context, "Name (German)"))
     name_fr = models.CharField(_(_context, "Name (French)"))
     name_en = models.CharField(_(_context, "Name (English)"))
@@ -433,7 +431,6 @@ class Attribution(ExternalIdsModelMixin, models.Model):
         help_text=_(_context, "List of external IDs with their source"),
     )
 
-    # FIXME: remove me!
     attribution_id = CustomSlugField(
         _(_context, "External ID"), max_length=100, unique=True, db_index=True
     )
