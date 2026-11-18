@@ -46,6 +46,7 @@ def test_command_creates_default_orphaned_dataset(db):
     dataset = Dataset.objects.filter(dataset_id="ORPHANAGE").first()
     assert dataset
     assert dataset.sgid == "dat_orphanage"
+    assert dataset.geocat_id is None
 
 
 def test_command_creates_orphaned_dataset(db):
@@ -57,6 +58,7 @@ def test_command_creates_orphaned_dataset(db):
     dataset = Dataset.objects.filter(dataset_id="ods").first()
     assert dataset
     assert dataset.sgid == "dat_ods"
+    assert dataset.geocat_id is None
 
 
 def test_command_creates_stac_distributions_in_orphaned(stac, db):

@@ -86,7 +86,6 @@ class Command(CustomBaseCommand):
             description_de="#Missing",
             description_fr="#Missing",
             description_en="#Missing",
-            geocat_id="#Missing",
         )
         self.print_success(f"Added orphanage dataset '{self.options['orphanage_dataset']}'")
 
