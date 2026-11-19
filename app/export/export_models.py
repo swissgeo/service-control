@@ -207,6 +207,7 @@ class OARDataset(OARRecord):
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
             "preferredDistributionId": (  # TODO: needs further clarification
+                # FIXME:
                 ds.preferred_distribution.sgid if ds.preferred_distribution else None
             ),
             "concepts": [

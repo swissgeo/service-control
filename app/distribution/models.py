@@ -6,6 +6,7 @@ from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
@@ -35,6 +36,14 @@ class Distribution(ExternalIdsModelMixin, PolymorphicModel):
     )
 
     distribution_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
+
+    supported_languages = ArrayField(
+        models.CharField(max_length=2),
+        default=list,
+        blank=True,
+        verbose_name=_(_context, "Supported Languages"),
+        help_text=_(_context, "List of supported languages (2 letter ISO 639-1)"),
+    )
 
     dataset = models.ForeignKey("dataset.Dataset", on_delete=models.CASCADE)
     title_de = models.CharField(_(_context, "Title (German)"), max_length=255)
@@ -148,19 +157,7 @@ class ExternalWMSDistribution(ExternalDistribution):
     dataservice = models.ForeignKey(
         "dataservice.WMSDataservice", on_delete=models.SET_NULL, null=True
     )
-    wms_layer_name_de = models.CharField(_(_context, "WMS Layer Name (default/DE)"), max_length=255)
-    wms_layer_name_fr = models.CharField(
-        _(_context, "WMS Layer Name (FR)"), max_length=255, null=True, blank=True
-    )
-    wms_layer_name_en = models.CharField(
-        _(_context, "WMS Layer Name (EN)"), max_length=255, null=True, blank=True
-    )
-    wms_layer_name_it = models.CharField(
-        _(_context, "WMS Layer Name (IT)"), max_length=255, null=True, blank=True
-    )
-    wms_layer_name_rm = models.CharField(
-        _(_context, "WMS Layer Name (RM)"), max_length=255, null=True, blank=True
-    )
+    wms_layer_name = models.CharField(_(_context, "WMS Layer Name"), max_length=255)
     opacity = models.DecimalField(
         _(_context, "Opacity"),
         default=1.0,
@@ -179,7 +176,7 @@ class ExternalWMSDistribution(ExternalDistribution):
     class Meta:
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
-                fields=["dataservice", "wms_layer_name_de"],
+                fields=["dataservice", "wms_layer_name"],
                 name="unique_wms_layer_name_per_dataservice",
             ),
         ]
@@ -200,8 +197,7 @@ class ExternalWMSDistribution(ExternalDistribution):
         # return None
 
     def external_record_id(self, lang: str) -> str:
-        default = self.wms_layer_name_de
-        return getattr(self, f"wms_layer_name_{lang}", default) or default
+        return self.wms_layer_name
 
 
 class ExternalWMTSDistribution(ExternalDistribution):
@@ -210,21 +206,8 @@ class ExternalWMTSDistribution(ExternalDistribution):
     dataservice = models.ForeignKey(
         "dataservice.WMTSDataservice", on_delete=models.SET_NULL, null=True
     )
-    wmts_layer_name_de = models.CharField(
-        _(_context, "WMTS Layer Name (default/DE)"), max_length=255
-    )
-    wmts_layer_name_fr = models.CharField(
-        _(_context, "WMTS Layer Name (FR)"), max_length=255, null=True, blank=True
-    )
-    wmts_layer_name_en = models.CharField(
-        _(_context, "WMTS Layer Name (EN)"), max_length=255, null=True, blank=True
-    )
-    wmts_layer_name_it = models.CharField(
-        _(_context, "WMTS Layer Name (IT)"), max_length=255, null=True, blank=True
-    )
-    wmts_layer_name_rm = models.CharField(
-        _(_context, "WMTS Layer Name (RM)"), max_length=255, null=True, blank=True
-    )
+
+    wmts_layer_name = models.CharField(_(_context, "WMTS Layer Name"), max_length=255)
     opacity = models.DecimalField(
         _(_context, "Opacity"),
         default=1.0,
@@ -237,7 +220,7 @@ class ExternalWMTSDistribution(ExternalDistribution):
     class Meta:
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
-                fields=["dataservice", "wmts_layer_name_de"],
+                fields=["dataservice", "wmts_layer_name"],
                 name="unique_wmts_layer_name_per_dataservice",
             ),
         ]
@@ -258,8 +241,7 @@ class ExternalWMTSDistribution(ExternalDistribution):
         # return None
 
     def external_record_id(self, lang: str) -> str:
-        default = self.wmts_layer_name_de
-        return getattr(self, f"wmts_layer_name_{lang}", default) or default
+        return self.wmts_layer_name
 
 
 class ExternalStacDistribution(ExternalDistribution):

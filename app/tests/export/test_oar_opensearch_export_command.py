@@ -182,7 +182,8 @@ def _make_distribution(
         description_rm="Description (RM)",
         description_en="Description (EN)",
         dataservice=dataservice,
-        wms_layer_name_de=wms_layer_name,
+        wms_layer_name=wms_layer_name,
+        supported_languages=["de", "fr", "en", "it", "rm"],
         opacity=1.0,
         gutter=0,
     )

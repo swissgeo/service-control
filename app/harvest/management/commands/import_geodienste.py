@@ -1429,6 +1429,7 @@ class Command(CustomBaseCommand):
         ds_updated += updated
 
         # Data distribution
+        preferred_distribution = None
         layer_names = {
             "de": config_de["layers"][0]["name"],
             "fr": config_fr["layers"][0]["name"],
@@ -1438,26 +1439,35 @@ class Command(CustomBaseCommand):
         titles_and_descriptions = self.get_wms_layer_title_and_description(
             capabilities_url, layer_names, dataset
         )
-        distribution, created, updated = self.import_wms_distribution(
-            distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
-            distribution_id=distribution_id,
-            external_id=base_topic,
-            dataset=dataset,
-            dataservice=dataservice,
-            wms_layer_name_de=layer_names["de"],
-            wms_layer_name_fr=layer_names["fr"],
-            wms_layer_name_it=layer_names["it"],
-            wms_layer_name_en=layer_names["en"],
-            wms_layer_name_rm=None,
-            opacity=Decimal(str(config_de["layers"][0]["opacity"])),
-            **titles_and_descriptions,
-        )
-        dist_created += created
-        dist_updated += updated
+        for language in languages:
+            supported_languages = [language]
+            if language == "de":
+                supported_languages.append("rm")
+                if "it" not in languages:
+                    supported_languages.append("it")
+                if "en" not in languages:
+                    supported_languages.append("en")
+            distribution_id_postfix = "" if language == "de" else f"-{language}"
+            distribution, created, updated = self.import_wms_distribution(
+                distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
+                distribution_id=f"{distribution_id}{distribution_id_postfix}",
+                external_id=base_topic,
+                dataset=dataset,
+                dataservice=dataservice,
+                wms_layer_name=layer_names[language],
+                supported_languages=supported_languages,
+                opacity=Decimal(str(config_de["layers"][0]["opacity"])),
+                **titles_and_descriptions,
+            )
+            preferred_distribution = distribution if language == "de" else preferred_distribution
+            dist_created += created
+            dist_updated += updated
 
-        if dataset.preferred_distribution != distribution:
-            self.print(f"Setting {distribution} as preferred distribution for dataset {dataset}")
-            dataset.preferred_distribution = distribution
+        if dataset.preferred_distribution != preferred_distribution:
+            self.print(
+                f"Setting {preferred_distribution} as preferred distribution for dataset {dataset}"
+            )
+            dataset.preferred_distribution = preferred_distribution
             dataset.save()
 
         # Availability dataservice and distribution
@@ -1488,11 +1498,8 @@ class Command(CustomBaseCommand):
             description_fr="Disponibilité des données au niveau cantonal.",
             description_it="Disponibilità dei dati a livello cantonale.",
             description_rm="Disponibladad da datas sin plaun chantunal.",
-            wms_layer_name_de="availability",
-            wms_layer_name_fr="availability",
-            wms_layer_name_it="availability",
-            wms_layer_name_en="availability",
-            wms_layer_name_rm=None,
+            wms_layer_name="availability",
+            supported_languages=["de", "fr", "en", "it", "rm"],
             meta_information=True,
         )
         dist_created += created
@@ -1506,6 +1513,7 @@ class Command(CustomBaseCommand):
             wms_url=capabilities_url,
             dataset=dataset,
             stac_collection_id=base_topic,
+            supported_languages=["de", "fr", "en", "it", "rm"],
             title_de="STAC Download Collection",
             title_fr="STAC Download Collection",
             title_it="STAC Download Collection",

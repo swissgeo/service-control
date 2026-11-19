@@ -149,11 +149,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.astra.hauptstrassennetz",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.astra.hauptstrassennetz",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -308,11 +305,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.are.alpenkonvention",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.are.alpenkonvention",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -429,11 +423,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.are.agglomerationsverkehr",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.are.agglomerationsverkehr",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.50",
       "gutter": 0
     }
@@ -550,11 +541,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -671,11 +659,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.geologie-hartsteinvorkommen",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -792,11 +777,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -913,11 +895,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.vec25-einzelobjekte",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "1.00",
       "gutter": 0
     }
@@ -1034,11 +1013,8 @@
       "dataservice": [
         "wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.swissnames3d",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.swissnames3d",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "1.00",
       "gutter": 0
     }

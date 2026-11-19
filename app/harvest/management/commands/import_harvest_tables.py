@@ -805,8 +805,11 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMTSDistribution.objects.get_or_create(
             distribution_id=wmts_distribution_id,
             dataset=dataset,
-            wmts_layer_name_de=ljs.layer_id,
-            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
+            wmts_layer_name=ljs.layer_id,
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
+            },
         )
 
         values = {
@@ -849,8 +852,11 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMSDistribution.objects.get_or_create(
             distribution_id=wms_distribution_id,
             dataset=dataset,
-            wms_layer_name_de=ljs.layer_id,
-            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
+            wms_layer_name=ljs.layer_id,
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
+            },
         )
 
         values = {
@@ -899,6 +905,7 @@ class Command(CustomBaseCommand):
             defaults={
                 "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
                 "geojson_url_de": ljs.geojson_url_de,
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
             },
         )
 
@@ -975,7 +982,10 @@ class Command(CustomBaseCommand):
             distribution_id=geoadminfeature_distribution_id,
             dataset=dataset,
             layer_id=ljs.layer_id,
-            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
+            },
         )
 
         values = {
