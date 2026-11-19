@@ -41,7 +41,15 @@ class DistributionAdmin(PolymorphicParentModelAdmin):
         "data_source",
         ("dataset", admin.RelatedOnlyFieldListFilter),
     )
-    list_display = ("sgid", "distribution_id", "proto", "title_de", "dataset", "data_source")
+    list_display = (
+        "sgid",
+        "distribution_id",
+        "proto",
+        "title_de",
+        "supported_languages",
+        "dataset",
+        "data_source",
+    )
     readonly_fields = ("sgid", "created_at", "updated_at", "oar_preview")
 
     search_fields = (
@@ -157,11 +165,7 @@ class ExternalWMTSDistributionAdmin(DistributionChildAdmin):
     fieldsets = distribution_fieldsets(
         (
             "dataservice",
-            "wmts_layer_name_de",
-            "wmts_layer_name_fr",
-            "wmts_layer_name_en",
-            "wmts_layer_name_it",
-            "wmts_layer_name_rm",
+            ("wmts_layer_name", "supported_languages"),
             "opacity",
         )
     )
@@ -174,11 +178,7 @@ class ExternalWMSDistributionAdmin(DistributionChildAdmin):
     fieldsets = distribution_fieldsets(
         (
             "dataservice",
-            "wms_layer_name_de",
-            "wms_layer_name_fr",
-            "wms_layer_name_en",
-            "wms_layer_name_it",
-            "wms_layer_name_rm",
+            ("wms_layer_name", "supported_languages"),
             ("opacity", "gutter"),
         )
     )

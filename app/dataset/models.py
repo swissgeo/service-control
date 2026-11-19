@@ -129,12 +129,40 @@ class Dataset(ExternalIdsModelMixin, models.Model):
 
     geocat_id = models.CharField(_(_context, "Geocat ID"), max_length=100, null=True, blank=True)
 
-    preferred_distribution = models.ForeignKey(
+    preferred_distribution_de = models.ForeignKey(
+        "distribution.Distribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="preferred_de_for_datasets",
+    )
+    preferred_distribution_fr = models.ForeignKey(
+        "distribution.Distribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="preferred_fr_for_datasets",
+    )
+    preferred_distribution_en = models.ForeignKey(
         "distribution.Distribution",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="preferred_for_datasets",
+    )
+    preferred_distribution_it = models.ForeignKey(
+        "distribution.Distribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="preferred_it_for_datasets",
+    )
+    preferred_distribution_rm = models.ForeignKey(
+        "distribution.Distribution",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="preferred_rm_for_datasets",
     )
 
     concepts = models.ManyToManyField(Concept, related_name="datasets", blank=True)

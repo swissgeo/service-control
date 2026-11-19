@@ -732,7 +732,8 @@ class Command(CustomBaseCommand):
                     if updated:
                         log_metrics["distributions.updated.wmts"] += 1
                     # Set the preferred distribution to WMTS for WMTS layers
-                    dataset.preferred_distribution = dist
+                    for lang in SUPPORTED_LANGS:
+                        setattr(dataset, f"preferred_distribution_{lang}", dist)
                     dataset.save()
 
                 if ljs.layertype in ["wms", "wmts"]:
@@ -747,9 +748,10 @@ class Command(CustomBaseCommand):
 
                     # If the preferred distribution is not set yet, we set it to the WMS
                     # distribution
-                    if not dataset.preferred_distribution:
-                        dataset.preferred_distribution = dist
-                        dataset.save()
+                    for lang in SUPPORTED_LANGS:
+                        if not getattr(dataset, f"preferred_distribution_{lang}"):
+                            setattr(dataset, f"preferred_distribution_{lang}", dist)
+                    dataset.save()
 
                 if ljs.layertype == "geojson":
                     dist, created, updated = self.import_geojson_distribution(ljs, dataset)
@@ -762,9 +764,10 @@ class Command(CustomBaseCommand):
                     # If the preferred distribution is not set yet,
                     # we set it to the GeoJSON distribution. Currently,
                     # layers of type geojson only have a GeoJSON distribution.
-                    if not dataset.preferred_distribution:
-                        dataset.preferred_distribution = dist
-                        dataset.save()
+                    for lang in SUPPORTED_LANGS:
+                        if not getattr(dataset, f"preferred_distribution_{lang}"):
+                            setattr(dataset, f"preferred_distribution_{lang}", dist)
+                    dataset.save()
 
                 if ljs.tooltip or ljs.searchable:
                     # We also create a Geoadmin Features distribution for layers with tooltip=true
@@ -805,8 +808,11 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMTSDistribution.objects.get_or_create(
             distribution_id=wmts_distribution_id,
             dataset=dataset,
-            wmts_layer_name_de=ljs.layer_id,
-            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
+            wmts_layer_name=ljs.layer_id,
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
+            },
         )
 
         values = {
@@ -849,8 +855,11 @@ class Command(CustomBaseCommand):
         dist, created = ExternalWMSDistribution.objects.get_or_create(
             distribution_id=wms_distribution_id,
             dataset=dataset,
-            wms_layer_name_de=ljs.layer_id,
-            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
+            wms_layer_name=ljs.layer_id,
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
+            },
         )
 
         values = {
@@ -899,6 +908,7 @@ class Command(CustomBaseCommand):
             defaults={
                 "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
                 "geojson_url_de": ljs.geojson_url_de,
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
             },
         )
 
@@ -975,7 +985,10 @@ class Command(CustomBaseCommand):
             distribution_id=geoadminfeature_distribution_id,
             dataset=dataset,
             layer_id=ljs.layer_id,
-            defaults={"sgid": distribution_sgid_from_dataset_sgid(dataset.sgid)},
+            defaults={
+                "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "supported_languages": ["de", "fr", "en", "it", "rm"],
+            },
         )
 
         values = {

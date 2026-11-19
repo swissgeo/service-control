@@ -61,10 +61,10 @@ def fixture_admin_objects(organization, unit):
     return {
         "dataset_dataset": dataset,
         "distribution_externalwmsdistribution": ExternalWMSDistribution.objects.create(
-            sgid="dst_wms", distribution_id="dst.wms", wms_layer_name_de="wms", **common
+            sgid="dst_wms", distribution_id="dst.wms", wms_layer_name="wms", **common
         ),
         "distribution_externalwmtsdistribution": ExternalWMTSDistribution.objects.create(
-            sgid="dst_wmts", distribution_id="dst.wmts", wmts_layer_name_de="wmts", **common
+            sgid="dst_wmts", distribution_id="dst.wmts", wmts_layer_name="wmts", **common
         ),
         "distribution_externalstacdistribution": ExternalStacDistribution.objects.create(
             sgid="dst_stac", distribution_id="dst.stac", stac_collection_id="stac", **common
