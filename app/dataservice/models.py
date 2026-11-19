@@ -8,11 +8,9 @@ from polymorphic.models import PolymorphicModel
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import RegexValidator
 from django.db import models
-from django.template.defaultfilters import slugify
 from django.utils.translation import pgettext_lazy as _
 
-from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +25,12 @@ else:
     MixinBase = object
 
 
-class DataserviceManager(DataSourceIdManagerMixin, PolymorphicManager):
-    def get_by_natural_key(self, dataservice_id: str) -> models.Model:
-        return self.get(dataservice_id=dataservice_id)
+class DataserviceManager(ExternalIdsManagerMixin, PolymorphicManager):
+    def get_by_natural_key(self, sgid: str) -> models.Model:
+        return self.get(sgid=sgid)
 
 
-class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
+class Dataservice(ExternalIdsModelMixin, PolymorphicModel):
     """Dataservice model."""
 
     sgid = models.CharField(
@@ -40,9 +38,6 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         unique=True,
         validators=[RegexValidator(DATASERVICE_SGID_REGEX)],
     )
-
-    # srv
-    dataservice_id = CustomSlugField(_(_context, "External ID"), unique=True, max_length=100)
 
     class DataSource(models.TextChoices):
         USER_INPUT = "user-input", _("Dataservice DataSource", "User Input (Via Admin Interface)")
@@ -55,12 +50,12 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     title = models.CharField(_(_context, "Title"), max_length=128)
@@ -106,7 +101,7 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         help_text=_(_context, "Date and time when the dataservice was last updated"),
     )
 
-    objects: ClassVar[DataserviceManager] = DataserviceManager()  # ty: ignore[invalid-mutable-override]
+    objects: ClassVar[DataserviceManager] = DataserviceManager()  # ty: ignore[incompatible-mutable-override]
 
     class Meta:
         verbose_name = _("Dataservice Model", "Dataservice")
@@ -119,16 +114,10 @@ class Dataservice(DataSourceIdModelMixin, PolymorphicModel):
         )
 
     def __str__(self) -> str:
-        return self.dataservice_id
-
-    def save(self, *args, **kwargs) -> None:
-        if not self.dataservice_id:
-            self.dataservice_id = slugify(self.title)
-
-        super().save(*args, **kwargs)
+        return self.sgid
 
     def natural_key(self) -> tuple:
-        return (self.dataservice_id,)
+        return (self.sgid,)
 
     @property
     def service_type(self) -> str:

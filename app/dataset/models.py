@@ -8,7 +8,7 @@ from django.utils.translation import pgettext_lazy as _
 
 from thesaurus.models import Concept
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 DATASET_SGID_REGEX = r"^dat_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
-class DatasetManager(DataSourceIdManagerMixin, models.Manager):
+class DatasetManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Dataset(DataSourceIdModelMixin, models.Model):
+class Dataset(ExternalIdsModelMixin, models.Model):
     """Dataset model."""
 
     _context = "Dataset Model"
@@ -44,12 +44,12 @@ class Dataset(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     # Status to e.g. hide datasets from OA-Records

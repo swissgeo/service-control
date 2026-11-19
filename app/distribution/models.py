@@ -6,13 +6,12 @@ from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +21,11 @@ _context = "Distribution Model"
 DISTRIBUTION_SGID_REGEX = r"^dst_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
-class DistributionManager(DataSourceIdManagerMixin, PolymorphicManager):
+class DistributionManager(ExternalIdsManagerMixin, PolymorphicManager):
     pass
 
 
-class Distribution(DataSourceIdModelMixin, PolymorphicModel):
+class Distribution(ExternalIdsModelMixin, PolymorphicModel):
     """Abstract Base Distribution model."""
 
     sgid = models.CharField(
@@ -79,12 +78,12 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
     data_source = models.CharField(
         _(_context, "Data Source"), choices=DataSource.choices, max_length=255
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     created_at = models.DateTimeField(
@@ -98,7 +97,7 @@ class Distribution(DataSourceIdModelMixin, PolymorphicModel):
         help_text=_(_context, "Date and time when the distribution was last updated"),
     )
 
-    objects: ClassVar[DistributionManager] = DistributionManager()  # ty: ignore[invalid-mutable-override]
+    objects: ClassVar[DistributionManager] = DistributionManager()  # ty: ignore[incompatible-mutable-override]
 
     class Meta:
         verbose_name = _("Distribution", "Distributions")
@@ -302,6 +301,9 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
     types.
     """
 
+    layer_id = models.CharField(
+        _(_context, "GeoJSON Layer ID"), null=True, blank=True, max_length=255
+    )
     geojson_url_de = models.URLField(_(_context, "GeoJSON URL (DE)"), max_length=2048)
     geojson_url_fr = models.URLField(
         _(_context, "GeoJSON URL (FR)"), max_length=2048, null=True, blank=True
@@ -347,17 +349,7 @@ class ExternalGeoJSONDistribution(ExternalDistribution):
         return "geojson"
 
     def external_record_id(self, lang: str) -> str:
-        # TODO: This is probably not correct. In case of Swisstopo distributions with URLs like
-        # https://data.geo.admin.ch/ch.bfe.shared-mobility/ch.bfe.shared-mobility_de.json
-        # and style URS likes
-        # https://api3.geo.admin.ch/static/vectorStyles/ch.bfe.shared-mobility.json
-        # the external ID should probably be "ch.bfe.shared-mobility".
-        # This is no problem ATM, as this is never used in case of GeoJSON distributions (see also
-        # comment above regarding distributions and the one in in export_models regarding exporting
-        # distributions). But it might be better, to switch for example to a template mechanism
-        # like in the dataservices.
-        default = self.geojson_url_de
-        return getattr(self, f"geojson_url_{lang}", default) or default
+        return self.layer_id
 
 
 class ExternalGeoadminFeaturesDistribution(ExternalDistribution):

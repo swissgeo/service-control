@@ -50,3 +50,15 @@ def test_dataset_sgid_constraint(db, sgid, valid):
     else:
         with pytest.raises(IntegrityError):
             Dataservice(sgid=sgid).save()
+
+
+def test_add_external_id():
+    dataservice = Dataservice()
+    dataservice.add_external_id(Dataservice.DataSource.GEODIENSTE, "b")
+    dataservice.add_external_id(Dataservice.DataSource.FIXTURE, "a")
+    dataservice.add_external_id(Dataservice.DataSource.FIXTURE, "a")
+
+    assert dataservice.external_ids == [
+        {"source": Dataservice.DataSource.FIXTURE, "id": "a"},
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "b"},
+    ]

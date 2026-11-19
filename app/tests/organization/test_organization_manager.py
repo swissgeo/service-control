@@ -4,7 +4,7 @@ from organization.models import Organization
 
 
 @patch("organization.models.Client")
-def test_data_source_ids(client, db):
+def test_external_ids(client, db):
     attributes = {
         "name_de": "name_de",
         "name_fr": "name_fr",
@@ -17,45 +17,57 @@ def test_data_source_ids(client, db):
         sgid="org_a",
         organization_id="a",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["1", "2"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "1"},
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "2"},
+        ],
         **attributes,
     ).save()
     Organization(
         sgid="org_b",
         organization_id="b",
         data_source=Organization.DataSource.BOD_CONTACT_ORGANIZATION,
-        data_source_ids=["2", "3"],
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "2"},
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "3"},
+        ],
         **attributes,
     ).save()
     Organization(
         sgid="org_c",
         organization_id="c",
-        data_source=Organization.DataSource.USER_INPUT,
-        data_source_ids=["1", "2", "3", "4"],
+        data_source=Organization.DataSource.GEODIENSTE,
+        external_ids=[
+            {"source": Organization.DataSource.BOD_CONTACT_ORGANIZATION, "id": "5"},
+            {"source": Organization.DataSource.GEODIENSTE, "id": "1"},
+            {"source": Organization.DataSource.GEODIENSTE, "id": "2"},
+            {"source": Organization.DataSource.GEODIENSTE, "id": "3"},
+            {"source": Organization.DataSource.GEODIENSTE, "id": "4"},
+        ],
         **attributes,
     ).save()
 
-    # test existing_data_source_ids
-    assert Organization.objects.existing_data_source_ids(
+    # test existing_external_ids
+    assert Organization.objects.existing_external_ids(
         Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    ) == {"1", "2", "3"}
+    ) == {"1", "2", "3", "5"}
 
-    assert Organization.objects.existing_data_source_ids(Organization.DataSource.USER_INPUT) == {
+    assert Organization.objects.existing_external_ids(Organization.DataSource.GEODIENSTE) == {
         "1",
         "2",
         "3",
         "4",
     }
 
-    # test remove_data_source_id
-    Organization.objects.remove_data_source_id("2")
+    # test remove_external_id
+    Organization.objects.remove_external_id(Organization.DataSource.GEODIENSTE, "2")
 
-    # test existing_data_source_ids
-    assert Organization.objects.existing_data_source_ids(
+    # test existing_external_ids
+    assert Organization.objects.existing_external_ids(
         Organization.DataSource.BOD_CONTACT_ORGANIZATION
-    ) == {"1", "3"}
+    ) == {"1", "2", "3", "5"}
 
-    assert Organization.objects.existing_data_source_ids(Organization.DataSource.USER_INPUT) == {
+    assert Organization.objects.existing_external_ids(Organization.DataSource.GEODIENSTE) == {
         "1",
         "3",
         "4",

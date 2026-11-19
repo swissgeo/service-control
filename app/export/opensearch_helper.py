@@ -83,7 +83,7 @@ def build_client(command: CustomBaseCommand, options: dict) -> Any:  # pragma: n
     if use_aws:
         wait_for_credentials()  # ensures credentials are available below
         region = os.environ.get("AWS_DEFAULT_REGION", "eu-central-1")
-        credentials = boto3.Session().get_credentials().get_frozen_credentials()  # ty:ignore[unresolved-attribute]
+        credentials = boto3.Session().get_credentials().get_frozen_credentials()  # ty:ignore[missing-union-attribute]
         auth = AWS4Auth(
             credentials.access_key,
             credentials.secret_key,

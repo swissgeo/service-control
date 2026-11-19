@@ -33,7 +33,7 @@ class OrganizationAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Mode
             {
                 "fields": (
                     ("sgid", "organization_id"),
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                     "geopolitical_entity",
                 ),
             },
@@ -136,7 +136,7 @@ class UnitAdmin(HideFieldsetsOnAddMixin, admin.ModelAdmin):
 
     @admin.display(description="Number of Datasets")
     def number_of_datasets(self, obj: Contact) -> int:
-        return obj.number_of_datasets  # ty: ignore[unresolved-attribute]
+        return obj.number_of_datasets  # ty: ignore[missing-attribute]
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Unit]:
         qs = super().get_queryset(request)
@@ -153,7 +153,7 @@ class UnitAdmin(HideFieldsetsOnAddMixin, admin.ModelAdmin):
                     reverse("admin:dataset_dataset_change", args=[dataset.pk]),
                     str(dataset),
                 )
-                for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
+                for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[missing-attribute]
             ),
         )
 
@@ -176,7 +176,7 @@ class ContactAdmin(HideFieldsetsOnAddMixin, admin.ModelAdmin):
     fieldsets = (
         (
             "Identification",
-            {"fields": ("organization", ("data_source", "data_source_ids"))},
+            {"fields": ("organization", ("data_source", "external_ids"))},
         ),
         ("Names", {"fields": ("name_de", "name_fr", "name_en", "name_it", "name_rm")}),
         (
@@ -226,7 +226,7 @@ class ContactAdmin(HideFieldsetsOnAddMixin, admin.ModelAdmin):
 
     @admin.display(description="Number of Datasets")
     def number_of_datasets(self, obj: Contact) -> int:
-        return obj.number_of_datasets  # ty: ignore[unresolved-attribute]
+        return obj.number_of_datasets  # ty: ignore[missing-attribute]
 
     @admin.display(description="Datasets")
     def dataset_list(self, obj: Contact) -> str:
@@ -239,7 +239,7 @@ class ContactAdmin(HideFieldsetsOnAddMixin, admin.ModelAdmin):
                     reverse("admin:dataset_dataset_change", args=[dataset.pk]),
                     str(dataset),
                 )
-                for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
+                for dataset in obj.datasets.order_by("dataset_id").all()  # ty: ignore[missing-attribute]
             ),
         )
 
@@ -257,7 +257,7 @@ class AttributionAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Model
                 "fields": (
                     "attribution_id",
                     "organization",
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                 ),
             },
         ),
@@ -294,7 +294,7 @@ class AttributionAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Model
 
     @admin.display(description="Number of Datasets")
     def number_of_datasets(self, obj: Attribution) -> int:
-        return obj.number_of_datasets  # ty: ignore[unresolved-attribute]
+        return obj.number_of_datasets  # ty: ignore[missing-attribute]
 
     @admin.display(description="Datasets")
     def dataset_list(self, obj: Attribution) -> str:
@@ -307,6 +307,6 @@ class AttributionAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.Model
                     reverse("admin:dataset_dataset_change", args=[dataset.pk]),
                     str(dataset),
                 )
-                for dataset in obj.attribution_datasets.order_by("dataset_id").all()  # ty: ignore[unresolved-attribute]
+                for dataset in obj.attribution_datasets.order_by("dataset_id").all()  # ty: ignore[missing-attribute]
             ),
         )

@@ -106,7 +106,7 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
                     ("sgid", "dataset_id"),
                     "owner_organization",
                     "status",
-                    ("data_source", "data_source_ids"),
+                    ("data_source", "external_ids"),
                     "geocat_id",
                 ),
             },
@@ -225,7 +225,7 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
 
     @admin.display(description="Owner", ordering="owner_abbreviations")
     def owner(self, obj: Dataset) -> str | None:
-        return obj.owner_abbreviations  # ty: ignore[unresolved-attribute]
+        return obj.owner_abbreviations  # ty: ignore[missing-attribute]
 
     @admin.display(description="Owner Organization")
     def owner_organization(self, obj: Dataset) -> str:
@@ -269,7 +269,7 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
                     reverse("admin:dataset_dataset_change", args=[relation.object_id]),
                     str(relation),
                 )
-                for relation in obj.dataset_relations_as_subject.all()  # ty: ignore[unresolved-attribute]
+                for relation in obj.dataset_relations_as_subject.all()  # ty: ignore[missing-attribute]
             ),
         )
 

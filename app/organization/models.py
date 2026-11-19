@@ -15,7 +15,7 @@ from config.authorization import VPRole
 from legal.models import GeopoliticalEntity
 from user.models import MachineUser
 from utils.fields import CustomSlugField
-from utils.model import DataSourceIdManagerMixin, DataSourceIdModelMixin
+from utils.model import ExternalIdsManagerMixin, ExternalIdsModelMixin
 from verified_permissions.utils.client import Client as VPClient
 
 logger = logging.getLogger(__name__)
@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 ORGANIZATION_SGID_REGEX = r"^org_[a-z0-9]+(-[a-z0-9]+)*$"
 
 
-class OrganizationManager(DataSourceIdManagerMixin, models.Manager):
+class OrganizationManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Organization(DataSourceIdModelMixin, models.Model):
+class Organization(ExternalIdsModelMixin, models.Model):
     _context = "Organization model"
 
     sgid = models.CharField(
@@ -58,12 +58,12 @@ class Organization(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     geopolitical_entity = models.ForeignKey(
@@ -76,7 +76,6 @@ class Organization(DataSourceIdModelMixin, models.Model):
     created = models.DateTimeField(_(_context, "Created"), auto_now_add=True)
     updated = models.DateTimeField(_(_context, "Updated"), auto_now=True)
 
-    # FIXME: rename to title
     name_de = models.CharField(_(_context, "Name (German)"))
     name_fr = models.CharField(_(_context, "Name (French)"))
     name_en = models.CharField(_(_context, "Name (English)"))
@@ -165,7 +164,7 @@ class Organization(DataSourceIdModelMixin, models.Model):
         for machine_user in MachineUser.objects.filter(organization=self):
             machine_user.delete()
 
-        for unit in self.unit_set.all():  # ty: ignore[unresolved-attribute]
+        for unit in self.unit_set.all():  # ty: ignore[missing-attribute]
             unit.delete()
 
         result = super().delete(using=using, keep_parents=keep_parents)
@@ -287,12 +286,12 @@ class Unit(models.Model):
         return result
 
 
-class ContactManager(DataSourceIdManagerMixin, models.Manager):
+class ContactManager(ExternalIdsManagerMixin, models.Manager):
     def get_queryset(self) -> QuerySet[Contact]:
         return super().get_queryset().select_related("organization")
 
 
-class Contact(DataSourceIdModelMixin, models.Model):
+class Contact(ExternalIdsModelMixin, models.Model):
     """Contact point of an organization.
 
     See eCH-0271 CI_Contact.
@@ -314,12 +313,12 @@ class Contact(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     organization = models.ForeignKey(
@@ -403,11 +402,11 @@ class Contact(DataSourceIdModelMixin, models.Model):
         return f"{self.organization} ({self.name_en or self.name_de or self.name_fr})"
 
 
-class AttributionManager(DataSourceIdManagerMixin, models.Manager):
+class AttributionManager(ExternalIdsManagerMixin, models.Manager):
     pass
 
 
-class Attribution(DataSourceIdModelMixin, models.Model):
+class Attribution(ExternalIdsModelMixin, models.Model):
     _context = "Attribution model"
 
     class DataSource(models.TextChoices):
@@ -424,12 +423,12 @@ class Attribution(DataSourceIdModelMixin, models.Model):
         default=DataSource.USER_INPUT,
         max_length=255,
     )
-    data_source_ids = ArrayField(
-        models.CharField(max_length=100),
+
+    external_ids = models.JSONField(
         default=list,
         blank=True,
-        verbose_name=_(_context, "Original IDs"),
-        help_text=_(_context, "List of original external IDs"),
+        verbose_name=_(_context, "External IDs"),
+        help_text=_(_context, "List of external IDs with their source"),
     )
 
     attribution_id = CustomSlugField(

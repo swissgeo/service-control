@@ -3,7 +3,6 @@
 import django.contrib.postgres.fields
 import django.db.models.deletion
 import utils.fields
-import utils.model
 from django.db import migrations, models
 
 
@@ -106,6 +105,5 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            bases=(utils.model.DataSourceIdModelMixin, models.Model),
         ),
     ]

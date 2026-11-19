@@ -1,11 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
-class DataSourceIdManagerMixin:
-    """Shared manager methods for models that have a data_source_ids array field."""
+class ExternalIdsManagerMixin:
+    """Shared manager methods for models that have a external_ids JSON field."""
 
     if TYPE_CHECKING:
         from typing import Any  # noqa: PLC0415
@@ -15,32 +14,35 @@ class DataSourceIdManagerMixin:
 
         def filter(self, *args: Any, **kwargs: Any) -> PolymorphicQuerySet[_All, _Base]: ...
 
-    def remove_data_source_id(self, data_source_id: str) -> int:
-        """Remove the given data source ID from all records."""
+    def remove_external_id(self, data_source: str, external_id: str) -> None:
+        """Remove the given external ID from all records."""
 
-        return self.filter(data_source_ids__contains=[data_source_id]).update(
-            data_source_ids=models.Func(
-                models.F("data_source_ids"),
-                models.Value(data_source_id),
-                function="array_remove",
-            )
+        value = {"source": data_source, "id": external_id}
+        for obj in self.filter(external_ids__contains=[value]):
+            obj.external_ids = [entry for entry in obj.external_ids if entry != value]
+            obj.save(update_fields=["external_ids"])
+
+    def existing_external_ids(self, data_source: str) -> set[str]:
+        """Return all external IDs for records with the given data source."""
+
+        datasets = self.filter(external_ids__contains=[{"source": data_source}]).values_list(
+            "external_ids", flat=True
         )
-
-    def existing_data_source_ids(self, data_source: str) -> set[str]:
-        """Return all data source IDs for records with the given data source."""
-
-        return set(
-            self.filter(data_source=data_source)
-            .annotate(ids=models.Func("data_source_ids", function="unnest"))
-            .values_list("ids", flat=True)
-            .distinct()
-        )
+        return {
+            entry["id"]
+            for entries in datasets
+            for entry in entries
+            if entry["source"] == data_source
+        }
 
 
-class DataSourceIdModelMixin:
-    data_source_ids: ArrayField
+class ExternalIdsModelMixin:
+    external_ids: models.JSONField
 
-    def add_data_source_id(self, value: str) -> None:
-        values = set(self.data_source_ids)  # ty:ignore[invalid-argument-type]
-        values.add(value)
-        self.data_source_ids = sorted(values)
+    def add_external_id(self, data_source: str, external_id: str) -> None:
+        entry = {"source": data_source, "id": external_id}
+        entries = cast("list[dict[str, str]]", self.external_ids)
+        if entry not in entries:
+            entries.append(entry)
+        entries.sort(key=lambda e: (e["source"], e["id"]))
+        self.external_ids = entries
