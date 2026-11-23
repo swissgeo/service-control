@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 from typing import Any
 
-from lxml import etree  # ty:ignore[import-not-found]
+from lxml import etree  # ty:ignore[missing-module-member]
 from requests import get
 
 from django.core.management.base import CommandParser
