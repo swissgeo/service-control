@@ -175,7 +175,7 @@ addopts = [
 #==============================================================================
 # Coverage configuration
 [tool.coverage.run]
-omit = ["*/tests/*"]
+omit = ["*/tests/*", "*/migrations/*"]
 
 [tool.coverage.report]
 # ``exclude_also`` adds to coverage.py's built-in defaults (which include ``pragma: no cover``)
