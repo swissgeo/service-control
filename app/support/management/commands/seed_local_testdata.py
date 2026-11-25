@@ -12,6 +12,7 @@ from utils.command import CustomBaseCommand
 
 
 class OrganizationSeed(TypedDict):
+    sgid: str
     organization_id: str
     name_de: str
     name_fr: str
@@ -37,6 +38,7 @@ class UserSeed(TypedDict):
 
 ORGANIZATIONS: list[OrganizationSeed] = [
     {
+        "sgid": "org_bafu",
         "organization_id": "ch.bafu",
         "name_de": "Bundesamt für Umwelt",
         "name_fr": "Office fédéral de l'environnement",
@@ -50,6 +52,7 @@ ORGANIZATIONS: list[OrganizationSeed] = [
         "abbreviation_rm": "UFAM",
     },
     {
+        "sgid": "org_swisstopo",
         "organization_id": "ch.swisstopo",
         "name_de": "Bundesamt für Landestopografie swisstopo",
         "name_fr": "Office fédéral de topographie swisstopo",
@@ -212,6 +215,7 @@ class Command(CustomBaseCommand):
         organizations: dict[str, Organization] = {}
         for org_data in ORGANIZATIONS:
             organization, created = Organization.objects.update_or_create(
+                sgid=org_data["sgid"],
                 organization_id=org_data["organization_id"],
                 defaults={
                     "name_de": org_data["name_de"],

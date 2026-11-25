@@ -158,7 +158,17 @@ class DatasetAdmin(HarvestWarningMixin, HideFieldsetsOnAddMixin, admin.ModelAdmi
         ),
         (
             "Classification & attribution",
-            {"fields": ("concepts", "attribution", "preferred_distribution")},
+            {
+                "fields": (
+                    "concepts",
+                    "attribution",
+                    "preferred_distribution_de",
+                    "preferred_distribution_fr",
+                    "preferred_distribution_en",
+                    "preferred_distribution_it",
+                    "preferred_distribution_rm",
+                )
+            },
         ),
         (
             "Relations",

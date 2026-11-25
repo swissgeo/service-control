@@ -200,14 +200,17 @@ class OARDataset(OARRecord):
             if (contact := Contact.from_legacy(legacy_contact, lang))
         ]
 
+        preferred_distribution = (
+            getattr(ds, f"preferred_distribution_{lang}") or ds.preferred_distribution_de
+        )
         properties = {
             "contacts": contacts,
             "description": getattr(ds, f"description_{lang}", None),
             "additionalSearchText": ", ".join(getattr(ds, f"additional_search_text_{lang}", [])),
             "language": LANGS[lang],
             "languages": list(LANGS.values()),
-            "preferredDistributionId": (  # TODO: needs further clarification
-                ds.preferred_distribution.sgid if ds.preferred_distribution else None
+            "preferredDistributionId": (
+                preferred_distribution.sgid if preferred_distribution else None
             ),
             "concepts": [
                 concept.concept_id

@@ -1794,7 +1794,11 @@ def test_command_updates_datasets(mock, db):  # noqa: PLR0915
     assert part.description_it == "Abstract IT"
     assert part.description_rm is None
     assert part.geocat_id is None
-    assert part.preferred_distribution_id is None
+    assert part.preferred_distribution_de_id is None
+    assert part.preferred_distribution_fr_id is None
+    assert part.preferred_distribution_en_id is None
+    assert part.preferred_distribution_it_id is None
+    assert part.preferred_distribution_rm_id is None
     assert part.title_de == "Title DE"
     assert part.title_en == "Title DE"
     assert part.title_fr == "Title FR"
@@ -3159,12 +3163,18 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataservice srv_wms-geodienste-fixpunkte does not exist yet" in out
-    assert "Dataservice srv_wms-geodienste-fixpunkte-availability does not" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms does not exist yet" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms does not" in out
-    assert "ch.kgk.fixpunkte:wms as preferred distribution for dataset ch.kgk.fixpunkte" in out
-    assert "Dataservice srv_stac-geodienste not found, created" in out
+    assert "srv_wms-geodienste-fixpunkte does not exist yet" in out
+    assert "srv_wms-geodienste-fixpunkte-availability does not" in out
+    assert "ch.kgk.fixpunkte:wms does not exist yet" in out
+    assert "ch.kgk.fixpunkte:wms-fr does not exist yet" in out
+    assert "ch.kgk.fixpunkte:wms-it does not exist yet" in out
+    assert "ch.kgk.fixpunkte:wms-en does not exist yet" in out
+    assert "ch.kgk.fixpunkte-availability:wms does not" in out
+    assert "fixpunkte:wms as preferred de distribution for dataset ch.kgk.fixpunkte" in out
+    assert "fixpunkte:wms-fr as preferred fr distribution for dataset ch.kgk.fixpunkte" in out
+    assert "fixpunkte:wms-it as preferred it distribution for dataset ch.kgk.fixpunkte" in out
+    assert "fixpunkte:wms-en as preferred en distribution for dataset ch.kgk.fixpunkte" in out
+    assert "srv_stac-geodienste not found, created" in out
 
     dataservice_data = Dataservice.objects.get(sgid="srv_wms-geodienste-fixpunkte")
     assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
@@ -3194,27 +3204,89 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         == "https://geodienste.ch/db/availability/fixpunkte/portrayal/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
     )
 
-    distribution_data = ExternalWMSDistribution.objects.get(distribution_id="ch.kgk.fixpunkte:wms")
-    assert distribution_data.data_source == Distribution.DataSource.GEODIENSTE
-    assert distribution_data.external_ids == [
+    distribution_data_de = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.kgk.fixpunkte:wms"
+    )
+    assert distribution_data_de.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_data_de.external_ids == [
         {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
     ]
-    assert distribution_data.title_de == "Title DE"
-    assert distribution_data.title_en == "Title EN"
-    assert distribution_data.title_fr == "Title FR"
-    assert distribution_data.description_de == "Abstract DE"
-    assert distribution_data.description_en == "Abstract EN"
-    assert distribution_data.description_fr == "Abstract FR"
-    assert distribution_data.wms_layer_name_de == "daten"
-    assert distribution_data.wms_layer_name_fr == "donnees"
-    assert distribution_data.wms_layer_name_it == "dati"
-    assert distribution_data.wms_layer_name_en == "data"
-    assert distribution_data.wms_layer_name_rm is None
-    assert distribution_data.opacity == Decimal("0.90")
-    assert distribution_data.meta_information is False
-    assert distribution_data.dataservice == dataservice_data
-    assert distribution_data.dataset == dataset
-    assert distribution_data.sgid.startswith("dst_fixpunkte-")
+    assert distribution_data_de.title_de == "Title DE"
+    assert distribution_data_de.title_en == "Title EN"
+    assert distribution_data_de.title_fr == "Title FR"
+    assert distribution_data_de.description_de == "Abstract DE"
+    assert distribution_data_de.description_en == "Abstract EN"
+    assert distribution_data_de.description_fr == "Abstract FR"
+    assert distribution_data_de.wms_layer_name == "daten"
+    assert distribution_data_de.supported_languages == ["de", "rm"]
+    assert distribution_data_de.opacity == Decimal("0.90")
+    assert distribution_data_de.meta_information is False
+    assert distribution_data_de.dataservice == dataservice_data
+    assert distribution_data_de.dataset == dataset
+    assert distribution_data_de.sgid.startswith("dst_fixpunkte-")
+
+    distribution_data_fr = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.kgk.fixpunkte:wms-fr"
+    )
+    assert distribution_data_fr.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_data_fr.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
+    assert distribution_data_fr.title_de == "Title DE"
+    assert distribution_data_fr.title_en == "Title EN"
+    assert distribution_data_fr.title_fr == "Title FR"
+    assert distribution_data_fr.description_de == "Abstract DE"
+    assert distribution_data_fr.description_en == "Abstract EN"
+    assert distribution_data_fr.description_fr == "Abstract FR"
+    assert distribution_data_fr.wms_layer_name == "donnees"
+    assert distribution_data_fr.supported_languages == ["fr"]
+    assert distribution_data_fr.opacity == Decimal("0.90")
+    assert distribution_data_fr.meta_information is False
+    assert distribution_data_fr.dataservice == dataservice_data
+    assert distribution_data_fr.dataset == dataset
+    assert distribution_data_fr.sgid.startswith("dst_fixpunkte-")
+
+    distribution_data_it = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.kgk.fixpunkte:wms-it"
+    )
+    assert distribution_data_it.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_data_it.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
+    assert distribution_data_it.title_de == "Title DE"
+    assert distribution_data_it.title_en == "Title EN"
+    assert distribution_data_it.title_fr == "Title FR"
+    assert distribution_data_it.description_de == "Abstract DE"
+    assert distribution_data_it.description_en == "Abstract EN"
+    assert distribution_data_it.description_fr == "Abstract FR"
+    assert distribution_data_it.wms_layer_name == "dati"
+    assert distribution_data_it.supported_languages == ["it"]
+    assert distribution_data_it.opacity == Decimal("0.90")
+    assert distribution_data_it.meta_information is False
+    assert distribution_data_it.dataservice == dataservice_data
+    assert distribution_data_it.dataset == dataset
+    assert distribution_data_it.sgid.startswith("dst_fixpunkte-")
+
+    distribution_data_en = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.kgk.fixpunkte:wms-en"
+    )
+    assert distribution_data_en.data_source == Distribution.DataSource.GEODIENSTE
+    assert distribution_data_en.external_ids == [
+        {"source": Distribution.DataSource.GEODIENSTE, "id": "fixpunkte"}
+    ]
+    assert distribution_data_en.title_de == "Title DE"
+    assert distribution_data_en.title_en == "Title EN"
+    assert distribution_data_en.title_fr == "Title FR"
+    assert distribution_data_en.description_de == "Abstract DE"
+    assert distribution_data_en.description_en == "Abstract EN"
+    assert distribution_data_en.description_fr == "Abstract FR"
+    assert distribution_data_en.wms_layer_name == "data"
+    assert distribution_data_en.supported_languages == ["en"]
+    assert distribution_data_en.opacity == Decimal("0.90")
+    assert distribution_data_en.meta_information is False
+    assert distribution_data_en.dataservice == dataservice_data
+    assert distribution_data_en.dataset == dataset
+    assert distribution_data_en.sgid.startswith("dst_fixpunkte-")
 
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.kgk.fixpunkte-availability:wms"
@@ -3233,11 +3305,8 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         distribution_availability.description_fr == "Disponibilité des données au niveau cantonal."
     )
     assert distribution_availability.description_it == "Disponibilità dei dati a livello cantonale."
-    assert distribution_availability.wms_layer_name_de == "availability"
-    assert distribution_availability.wms_layer_name_fr == "availability"
-    assert distribution_availability.wms_layer_name_it == "availability"
-    assert distribution_availability.wms_layer_name_en == "availability"
-    assert distribution_availability.wms_layer_name_rm is None
+    assert distribution_availability.wms_layer_name == "availability"
+    assert distribution_availability.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert distribution_availability.meta_information is True
     assert distribution_availability.dataservice == dataservice_availability
     assert distribution_availability.dataset == dataset
@@ -3269,13 +3338,18 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     assert distribution_stac.description_it is None
     assert distribution_stac.description_rm is None
     assert distribution_stac.stac_collection_id == "fixpunkte"
+    assert distribution_stac.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert distribution_stac.meta_information is False
     assert distribution_stac.dataservice.sgid == settings.STAC_DATASERVICE_SGID_GEODIENSTE
     assert distribution_stac.dataset == dataset
     assert distribution_stac.sgid.startswith("dst_fixpunkte-")
 
     dataset.refresh_from_db()
-    assert dataset.preferred_distribution == distribution_data
+    assert dataset.preferred_distribution_de == distribution_data_de
+    assert dataset.preferred_distribution_fr == distribution_data_fr
+    assert dataset.preferred_distribution_en == distribution_data_en
+    assert dataset.preferred_distribution_it == distribution_data_it
+    assert dataset.preferred_distribution_rm == distribution_data_de
 
     # ------
     # Update
@@ -3285,9 +3359,8 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     dataservice_data.capabilities_url = "fixme"
     dataservice_data.save()
 
-    distribution_data.wms_layer_name_de = "fixme"
-    distribution_data.wms_layer_name_rm = "fixme"
-    distribution_data.save()
+    distribution_data_de.wms_layer_name = "fixme"
+    distribution_data_de.save()
 
     distribution_stac.stac_collection_id = "fixme"
     distribution_stac.save()
@@ -3296,16 +3369,17 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataservice srv_wms-geodienste-fixpunkte already exists" in out
-    assert "Dataservice srv_wms-geodienste-fixpunkte changed" in out
-    assert "Dataservice srv_wms-geodienste-fixpunkte-availability already exists" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms already exists" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms changed" in out
-    assert (
-        "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
-    )
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:stac already exists" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:stac changed" in out
+    assert "srv_wms-geodienste-fixpunkte already exists" in out
+    assert "srv_wms-geodienste-fixpunkte changed" in out
+    assert "srv_wms-geodienste-fixpunkte-availability already exists" in out
+    assert "ch.kgk.fixpunkte:wms already exists" in out
+    assert "ch.kgk.fixpunkte:wms changed" in out
+    assert "ch.kgk.fixpunkte:wms-fr already exists" in out
+    assert "ch.kgk.fixpunkte:wms-it already exists" in out
+    assert "ch.kgk.fixpunkte:wms-en already exists" in out
+    assert "distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
+    assert "distribution_id ch.kgk.fixpunkte:stac already exists" in out
+    assert "distribution_id ch.kgk.fixpunkte:stac changed" in out
 
     dataservice_data.refresh_from_db()
     assert dataservice_data.default_language == "de"
@@ -3315,9 +3389,8 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
         == "https://geodienste.ch/db/fixpunkte_0/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
     )
 
-    distribution_data.refresh_from_db()
-    assert distribution_data.wms_layer_name_de == "daten"
-    assert distribution_data.wms_layer_name_rm is None
+    distribution_data_de.refresh_from_db()
+    assert distribution_data_de.wms_layer_name == "daten"
 
     distribution_stac.refresh_from_db()
     assert distribution_stac.stac_collection_id == "fixpunkte"
@@ -3326,14 +3399,8 @@ def test_command_creates_updates_distributions(mock, client, db):  # noqa: PLR09
     call_command("import_geodienste", distributions=True, verbosity=2, stdout=out)
     out = out.getvalue()
 
-    assert "Dataservice srv_wms-geodienste-fixpunkte already exists" in out
-    assert "Dataservice srv_wms-geodienste-fixpunkte changed" not in out
-    assert "Dataservice srv_wms-geodienste-fixpunkte-availability already exists" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms already exists" in out
-    assert "Distribution with distribution_id ch.kgk.fixpunkte:wms changed" not in out
-    assert (
-        "Distribution with distribution_id ch.kgk.fixpunkte-availability:wms already exists" in out
-    )
+    assert "srv_wms-geodienste-fixpunkte changed" not in out
+    assert "ch.kgk.fixpunkte:wms changed" not in out
 
 
 @patch("organization.models.Client")
@@ -3414,14 +3481,17 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
 
     assert "srv_wms-geodienste-thermische-netze does not exist yet" in out
     assert "srv_wms-geodienste-thermische-netze-availability does not exist yet" in out
-    assert "Dataservice srv_stac-geodienste not found, created" in out
-    assert "distribution_id ch.bfe.thermische_netze:wms does not exist yet" in out
-    assert "distribution_id ch.bfe.thermische_netze-availability:wms does not exist yet" in out
-    assert "distribution_id ch.bfe.thermische_netze:stac does not exist yet" in out
-    assert (
-        "ch.bfe.thermische_netze:wms as preferred distribution for dataset ch.bfe.thermische_netze"
-        in out
-    )
+    assert "srv_stac-geodienste not found, created" in out
+    assert "ch.bfe.thermische_netze:wms does not exist yet" in out
+    assert "ch.bfe.thermische_netze:wms-fr does not exist yet" in out
+    assert "ch.bfe.thermische_netze:wms-it does not exist yet" in out
+    assert "ch.bfe.thermische_netze:wms-en does not exist yet" in out
+    assert "ch.bfe.thermische_netze-availability:wms does not exist yet" in out
+    assert "ch.bfe.thermische_netze:stac does not exist yet" in out
+    assert "thermische_netze:wms as preferred de distribution for dataset" in out
+    assert "thermische_netze:wms-fr as preferred fr distribution for dataset" in out
+    assert "thermische_netze:wms-it as preferred it distribution for dataset" in out
+    assert "thermische_netze:wms-en as preferred en distribution for dataset" in out
 
     dataservice_data = Dataservice.objects.get(sgid="srv_wms-geodienste-thermische-netze")
     assert dataservice_data.data_source == Dataservice.DataSource.GEODIENSTE
@@ -3451,29 +3521,89 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
         == "https://geodienste.ch/db/availability/thermische_netze/portrayal/{lang3}?SERVICE=WMS&REQUEST=GetCapabilities"
     )
 
-    distribution_data = ExternalWMSDistribution.objects.get(
+    distribution_data_de = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze:wms"
     )
-    assert distribution_data.data_source == Dataservice.DataSource.GEODIENSTE
-    assert distribution_data.external_ids == [
+    assert distribution_data_de.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_data_de.external_ids == [
         {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
     ]
-    assert distribution_data.title_de == "Title DE"
-    assert distribution_data.title_en == "Title EN"
-    assert distribution_data.title_fr == "Title FR"
-    assert distribution_data.description_de == "Abstract DE"
-    assert distribution_data.description_en == "Abstract EN"
-    assert distribution_data.description_fr == "Abstract FR"
-    assert distribution_data.wms_layer_name_de == "daten"
-    assert distribution_data.wms_layer_name_fr == "donnees"
-    assert distribution_data.wms_layer_name_it == "dati"
-    assert distribution_data.wms_layer_name_en == "data"
-    assert distribution_data.wms_layer_name_rm is None
-    assert distribution_data.opacity == Decimal("0.90")
-    assert distribution_data.meta_information is False
-    assert distribution_data.dataservice == dataservice_data
-    assert distribution_data.dataset == dataset
-    assert distribution_data.sgid.startswith("dst_thermische-netze-")
+    assert distribution_data_de.title_de == "Title DE"
+    assert distribution_data_de.title_en == "Title EN"
+    assert distribution_data_de.title_fr == "Title FR"
+    assert distribution_data_de.description_de == "Abstract DE"
+    assert distribution_data_de.description_en == "Abstract EN"
+    assert distribution_data_de.description_fr == "Abstract FR"
+    assert distribution_data_de.wms_layer_name == "daten"
+    assert distribution_data_de.supported_languages == ["de", "rm"]
+    assert distribution_data_de.opacity == Decimal("0.90")
+    assert distribution_data_de.meta_information is False
+    assert distribution_data_de.dataservice == dataservice_data
+    assert distribution_data_de.dataset == dataset
+    assert distribution_data_de.sgid.startswith("dst_thermische-netze-")
+
+    distribution_data_fr = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.bfe.thermische_netze:wms-fr"
+    )
+    assert distribution_data_fr.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_data_fr.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
+    assert distribution_data_fr.title_de == "Title DE"
+    assert distribution_data_fr.title_en == "Title EN"
+    assert distribution_data_fr.title_fr == "Title FR"
+    assert distribution_data_fr.description_de == "Abstract DE"
+    assert distribution_data_fr.description_en == "Abstract EN"
+    assert distribution_data_fr.description_fr == "Abstract FR"
+    assert distribution_data_fr.wms_layer_name == "donnees"
+    assert distribution_data_fr.supported_languages == ["fr"]
+    assert distribution_data_fr.opacity == Decimal("0.90")
+    assert distribution_data_fr.meta_information is False
+    assert distribution_data_fr.dataservice == dataservice_data
+    assert distribution_data_fr.dataset == dataset
+    assert distribution_data_fr.sgid.startswith("dst_thermische-netze-")
+
+    distribution_data_it = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.bfe.thermische_netze:wms-it"
+    )
+    assert distribution_data_it.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_data_it.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
+    assert distribution_data_it.title_de == "Title DE"
+    assert distribution_data_it.title_en == "Title EN"
+    assert distribution_data_it.title_fr == "Title FR"
+    assert distribution_data_it.description_de == "Abstract DE"
+    assert distribution_data_it.description_en == "Abstract EN"
+    assert distribution_data_it.description_fr == "Abstract FR"
+    assert distribution_data_it.wms_layer_name == "dati"
+    assert distribution_data_it.supported_languages == ["it"]
+    assert distribution_data_it.opacity == Decimal("0.90")
+    assert distribution_data_it.meta_information is False
+    assert distribution_data_it.dataservice == dataservice_data
+    assert distribution_data_it.dataset == dataset
+    assert distribution_data_it.sgid.startswith("dst_thermische-netze-")
+
+    distribution_data_en = ExternalWMSDistribution.objects.get(
+        distribution_id="ch.bfe.thermische_netze:wms-en"
+    )
+    assert distribution_data_en.data_source == Dataservice.DataSource.GEODIENSTE
+    assert distribution_data_en.external_ids == [
+        {"source": Dataservice.DataSource.GEODIENSTE, "id": "thermische_netze"}
+    ]
+    assert distribution_data_en.title_de == "Title DE"
+    assert distribution_data_en.title_en == "Title EN"
+    assert distribution_data_en.title_fr == "Title FR"
+    assert distribution_data_en.description_de == "Abstract DE"
+    assert distribution_data_en.description_en == "Abstract EN"
+    assert distribution_data_en.description_fr == "Abstract FR"
+    assert distribution_data_en.wms_layer_name == "data"
+    assert distribution_data_en.supported_languages == ["en"]
+    assert distribution_data_en.opacity == Decimal("0.90")
+    assert distribution_data_en.meta_information is False
+    assert distribution_data_en.dataservice == dataservice_data
+    assert distribution_data_en.dataset == dataset
+    assert distribution_data_en.sgid.startswith("dst_thermische-netze-")
 
     distribution_availability = ExternalWMSDistribution.objects.get(
         distribution_id="ch.bfe.thermische_netze-availability:wms"
@@ -3492,11 +3622,7 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
         distribution_availability.description_fr == "Disponibilité des données au niveau cantonal."
     )
     assert distribution_availability.description_it == "Disponibilità dei dati a livello cantonale."
-    assert distribution_availability.wms_layer_name_de == "availability"
-    assert distribution_availability.wms_layer_name_fr == "availability"
-    assert distribution_availability.wms_layer_name_it == "availability"
-    assert distribution_availability.wms_layer_name_en == "availability"
-    assert distribution_availability.wms_layer_name_rm is None
+    assert distribution_availability.wms_layer_name == "availability"
     assert distribution_availability.meta_information is True
     assert distribution_availability.dataservice == dataservice_availability
     assert distribution_availability.dataset == dataset
@@ -3534,7 +3660,11 @@ def test_command_creates_broker_distributions(mock, client, db):  # noqa: PLR091
     assert distribution_stac.sgid.startswith("dst_thermische-netze-")
 
     dataset.refresh_from_db()
-    assert dataset.preferred_distribution == distribution_data
+    assert dataset.preferred_distribution_de == distribution_data_de
+    assert dataset.preferred_distribution_fr == distribution_data_fr
+    assert dataset.preferred_distribution_en == distribution_data_en
+    assert dataset.preferred_distribution_it == distribution_data_it
+    assert dataset.preferred_distribution_rm == distribution_data_de
 
 
 @patch("organization.models.Client")
@@ -3703,7 +3833,7 @@ def test_command_cleans_distributions(mock, client, db):
         distribution_id="obsolete",
         data_source=Distribution.DataSource.GEODIENSTE,
         external_ids=[],
-        wms_layer_name_de="daten",
+        wms_layer_name="daten",
         dataset=dataset,
     ).save()
     ExternalWMSDistribution(
@@ -3711,7 +3841,7 @@ def test_command_cleans_distributions(mock, client, db):
         distribution_id="removed",
         data_source=Distribution.DataSource.GEODIENSTE,
         external_ids=[{"source": Distribution.DataSource.GEODIENSTE, "id": "removed"}],
-        wms_layer_name_de="daten",
+        wms_layer_name="daten",
         dataset=dataset,
     ).save()
 
@@ -3785,7 +3915,7 @@ def test_command_cleans_distributions(mock, client, db):
     assert "Obsolete distributions found: obsolete" in out
 
     assert Dataservice.objects.count() == 5
-    assert Distribution.objects.count() == 5
+    assert Distribution.objects.count() == 8
 
     # --------
     # Clean
@@ -3802,7 +3932,7 @@ def test_command_cleans_distributions(mock, client, db):
     assert "Removing obsolete distribution removed" in out
 
     assert Dataservice.objects.count() == 3
-    assert Distribution.objects.count() == 3
+    assert Distribution.objects.count() == 6
 
 
 @patch("organization.models.Client")
@@ -3894,7 +4024,7 @@ def test_command_uses_dataset_mapping_for_distributions(mock, client, db):
     out = out.getvalue()
 
     assert "Dataset mapping found for dataset_id ch.kgk.av: ch.kgk-cgc.av" in out
-    assert "Setting ch.kgk.av:wms as preferred distribution for dataset ch.kgk-cgc.av" in out
+    assert "Setting ch.kgk.av:wms as preferred de distribution for dataset ch.kgk-cgc.av" in out
 
     dataset.refresh_from_db()
-    assert dataset.preferred_distribution.distribution_id == "ch.kgk.av:wms"
+    assert dataset.preferred_distribution_de.distribution_id == "ch.kgk.av:wms"

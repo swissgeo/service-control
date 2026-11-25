@@ -7,6 +7,7 @@
         "distribution",
         "externalgeojsondistribution"
       ],
+      "sgid": "dst_from-fixture-messwerte-1111",
       "distribution_id": "from_fixture.ch.meteoschweiz.messwerte-pollen-erle-1h:geojson",
       "dataset": 1,
       "title_de": "from_fixture Messwerte Erle, mittlere stündliche Pollenkonzentration",
@@ -45,6 +46,7 @@
         "distribution",
         "externalgeojsondistribution"
       ],
+      "sgid": "dst_from-fixture-hydroweb-1111",
       "distribution_id": "from_fixture.ch.bafu.hydroweb-messstationen_temperatur:geojson",
       "dataset": 2,
       "title_de": "from_fixture Wassertemperatur der Flüsse",
@@ -83,6 +85,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-hauptstrassennetz-1111",
       "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:wmts",
       "dataset": 3,
       "title_de": "from_fixture Hauptstrassennetz der Schweiz (MinVV)",
@@ -106,13 +109,9 @@
     "fields": {
       "distribution_ptr": 3,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.astra.hauptstrassennetz",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.astra.hauptstrassennetz",
       "opacity": "0.75"
     }
   },
@@ -124,6 +123,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-hauptstrassennetz-2222",
       "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:wms",
       "dataset": 3,
       "title_de": "from_fixture Hauptstrassennetz der Schweiz (MinVV)",
@@ -147,13 +147,10 @@
     "fields": {
       "distribution_ptr": 4,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.astra.hauptstrassennetz",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.astra.hauptstrassennetz",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -166,6 +163,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-hauptstrassennetz-3333",
       "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:api3features",
       "dataset": 3,
       "title_de": "from_fixture Geoadmin Features",
@@ -189,7 +187,7 @@
     "fields": {
       "distribution_ptr": 5,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.astra.hauptstrassennetz",
       "queryable": false,
@@ -204,6 +202,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-swissnames3d-1111",
       "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:api3features",
       "dataset": 4,
       "title_de": "from_fixture Geoadmin Features",
@@ -227,7 +226,7 @@
     "fields": {
       "distribution_ptr": 6,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.swissnames3d",
       "queryable": false,
@@ -242,6 +241,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-alpenkonvention-1111",
       "distribution_id": "from_fixture.ch.are.alpenkonvention:wmts",
       "dataset": 5,
       "title_de": "from_fixture Alpenkonvention",
@@ -265,13 +265,9 @@
     "fields": {
       "distribution_ptr": 7,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.are.alpenkonvention",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.are.alpenkonvention",
       "opacity": "0.75"
     }
   },
@@ -283,6 +279,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-alpenkonvention-2222",
       "distribution_id": "from_fixture.ch.are.alpenkonvention:wms",
       "dataset": 5,
       "title_de": "from_fixture Alpenkonvention",
@@ -306,13 +303,10 @@
     "fields": {
       "distribution_ptr": 8,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.are.alpenkonvention",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.are.alpenkonvention",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -325,6 +319,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-alpenkonvention-3333",
       "distribution_id": "from_fixture.ch.are.alpenkonvention:api3features",
       "dataset": 5,
       "title_de": "from_fixture Geoadmin Features",
@@ -348,7 +343,7 @@
     "fields": {
       "distribution_ptr": 9,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.are.alpenkonvention",
       "queryable": false,
@@ -363,6 +358,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-agglomerationsverkehr-1111",
       "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:wmts",
       "dataset": 6,
       "title_de": "from_fixture Beitragsberechtigte Städte und Agglomerationen",
@@ -386,13 +382,9 @@
     "fields": {
       "distribution_ptr": 10,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.are.agglomerationsverkehr",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.are.agglomerationsverkehr",
       "opacity": "0.50"
     }
   },
@@ -404,6 +396,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-agglomerationsverkehr-2222",
       "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:wms",
       "dataset": 6,
       "title_de": "from_fixture Beitragsberechtigte Städte und Agglomerationen",
@@ -427,13 +420,10 @@
     "fields": {
       "distribution_ptr": 11,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.are.agglomerationsverkehr",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.are.agglomerationsverkehr",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.50",
       "gutter": 0
     }
@@ -446,6 +436,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-agglomerationsverkehr-3333",
       "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:api3features",
       "dataset": 6,
       "title_de": "from_fixture Geoadmin Features",
@@ -469,7 +460,7 @@
     "fields": {
       "distribution_ptr": 12,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.are.agglomerationsverkehr",
       "queryable": false,
@@ -484,6 +475,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-geologie-1111",
       "distribution_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch:wmts",
       "dataset": 7,
       "title_de": "from_fixture Terrestrische Strahlung",
@@ -507,13 +499,9 @@
     "fields": {
       "distribution_ptr": 13,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "opacity": "0.75"
     }
   },
@@ -525,6 +513,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-geologie-2222",
       "distribution_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch:wms",
       "dataset": 7,
       "title_de": "from_fixture Terrestrische Strahlung",
@@ -548,13 +537,10 @@
     "fields": {
       "distribution_ptr": 14,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -567,6 +553,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-geologie-3333",
       "distribution_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch:api3features",
       "dataset": 7,
       "title_de": "from_fixture Geoadmin Features",
@@ -590,7 +577,7 @@
     "fields": {
       "distribution_ptr": 15,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "queryable": false,
@@ -605,6 +592,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-geologie-4444",
       "distribution_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen:wmts",
       "dataset": 8,
       "title_de": "from_fixture Hartstein: Mächtigkeit und Qualität der geologischen Vorkommen",
@@ -628,13 +616,9 @@
     "fields": {
       "distribution_ptr": 16,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.swisstopo.geologie-hartsteinvorkommen",
       "opacity": "0.75"
     }
   },
@@ -646,6 +630,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-geologie-5555",
       "distribution_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen:wms",
       "dataset": 8,
       "title_de": "from_fixture Hartstein: Mächtigkeit und Qualität der geologischen Vorkommen",
@@ -669,13 +654,10 @@
     "fields": {
       "distribution_ptr": 17,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.geologie-hartsteinvorkommen",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.geologie-hartsteinvorkommen",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -688,6 +670,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-geologie-6666",
       "distribution_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen:api3features",
       "dataset": 8,
       "title_de": "from_fixture Geoadmin Features",
@@ -711,7 +694,7 @@
     "fields": {
       "distribution_ptr": 18,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.geologie-hartsteinvorkommen",
       "queryable": false,
@@ -726,6 +709,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-bodeneignung-1111",
       "distribution_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit:wmts",
       "dataset": 9,
       "title_de": "from_fixture Digitale Bodeneignungskarte der Schweiz - Wasserdurchlässigkeit",
@@ -749,13 +733,9 @@
     "fields": {
       "distribution_ptr": 19,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "opacity": "0.75"
     }
   },
@@ -767,6 +747,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-bodeneignung-2222",
       "distribution_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit:wms",
       "dataset": 9,
       "title_de": "from_fixture Digitale Bodeneignungskarte der Schweiz - Wasserdurchlässigkeit",
@@ -790,13 +771,10 @@
     "fields": {
       "distribution_ptr": 20,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "0.75",
       "gutter": 0
     }
@@ -809,6 +787,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-bodeneignung-3333",
       "distribution_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit:api3features",
       "dataset": 9,
       "title_de": "from_fixture Geoadmin Features",
@@ -832,7 +811,7 @@
     "fields": {
       "distribution_ptr": 21,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "queryable": true,
@@ -847,6 +826,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-vec25-1111",
       "distribution_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte:wmts",
       "dataset": 10,
       "title_de": "from_fixture VECTOR25 Einzelobjekte",
@@ -870,13 +850,9 @@
     "fields": {
       "distribution_ptr": 22,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.swisstopo.vec25-einzelobjekte",
       "opacity": "1.00"
     }
   },
@@ -888,6 +864,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-vec25-2222",
       "distribution_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte:wms",
       "dataset": 10,
       "title_de": "from_fixture VECTOR25 Einzelobjekte",
@@ -911,13 +888,10 @@
     "fields": {
       "distribution_ptr": 23,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.vec25-einzelobjekte",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.vec25-einzelobjekte",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "1.00",
       "gutter": 0
     }
@@ -930,6 +904,7 @@
         "distribution",
         "externalgeoadminfeaturesdistribution"
       ],
+      "sgid": "dst_from-fixture-vec25-3333",
       "distribution_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte:api3features",
       "dataset": 10,
       "title_de": "from_fixture Geoadmin Features",
@@ -953,7 +928,7 @@
     "fields": {
       "distribution_ptr": 24,
       "dataservice": [
-        "api3features-geoadminch"
+        "srv_api3features-geoadminch"
       ],
       "layer_id": "ch.swisstopo.vec25-einzelobjekte",
       "queryable": false,
@@ -968,6 +943,7 @@
         "distribution",
         "externalwmtsdistribution"
       ],
+      "sgid": "dst_from-fixture-swissnames3d-2222",
       "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:wmts",
       "dataset": 4,
       "title_de": "from_fixture swissNAMES3D Geografische Namen der Landesvermessung",
@@ -991,13 +967,9 @@
     "fields": {
       "distribution_ptr": 25,
       "dataservice": [
-        "wmts-geoadminch"
+        "srv_wmts-geoadminch"
       ],
-      "wmts_layer_name_de": "ch.swisstopo.swissnames3d",
-      "wmts_layer_name_fr": null,
-      "wmts_layer_name_en": null,
-      "wmts_layer_name_it": null,
-      "wmts_layer_name_rm": null,
+      "wmts_layer_name": "ch.swisstopo.swissnames3d",
       "opacity": "1.00"
     }
   },
@@ -1009,6 +981,7 @@
         "distribution",
         "externalwmsdistribution"
       ],
+      "sgid": "dst_from-fixture-swissnames3d-3333",
       "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:wms",
       "dataset": 4,
       "title_de": "from_fixture swissNAMES3D Geografische Namen der Landesvermessung",
@@ -1032,13 +1005,10 @@
     "fields": {
       "distribution_ptr": 26,
       "dataservice": [
-        "wms-geoadminch"
+        "srv_wms-geoadminch"
       ],
-      "wms_layer_name_de": "ch.swisstopo.swissnames3d",
-      "wms_layer_name_fr": null,
-      "wms_layer_name_en": null,
-      "wms_layer_name_it": null,
-      "wms_layer_name_rm": null,
+      "wms_layer_name": "ch.swisstopo.swissnames3d",
+      "supported_languages": ["de", "fr", "en", "it", "rm"],
       "opacity": "1.00",
       "gutter": 0
     }
@@ -1051,6 +1021,7 @@
         "distribution",
         "externalstacdistribution"
       ],
+      "sgid": "dst_from-fixture-agglomerationsverkehr-4444",
       "distribution_id": "from_fixture.ch.are.agglomerationsverkehr:stac",
       "dataset": 6,
       "title_de": "from_fixture STAC Download Collection",
@@ -1074,7 +1045,7 @@
     "fields": {
       "distribution_ptr": 27,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.are.agglomerationsverkehr"
     }
@@ -1087,6 +1058,7 @@
         "distribution",
         "externalstacdistribution"
       ],
+      "sgid": "dst_from-fixture-alpenkonvention-4444",
       "distribution_id": "from_fixture.ch.are.alpenkonvention:stac",
       "dataset": 5,
       "title_de": "from_fixture STAC Download Collection",
@@ -1110,7 +1082,7 @@
     "fields": {
       "distribution_ptr": 28,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.are.alpenkonvention"
     }
@@ -1123,6 +1095,7 @@
         "distribution",
         "externalstacdistribution"
       ],
+      "sgid": "dst_from-fixture-hauptstrassennetz-4444",
       "distribution_id": "from_fixture.ch.astra.hauptstrassennetz:stac",
       "dataset": 3,
       "title_de": "from_fixture STAC Download Collection",
@@ -1146,7 +1119,7 @@
     "fields": {
       "distribution_ptr": 29,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.astra.hauptstrassennetz"
     }
@@ -1159,6 +1132,7 @@
         "distribution",
         "externalstacdistribution"
       ],
+      "sgid": "dst_from-fixture-swissnames3d-4444",
       "distribution_id": "from_fixture.ch.swisstopo.swissnames3d:stac",
       "dataset": 4,
       "title_de": "from_fixture STAC Download Collection",
@@ -1182,7 +1156,7 @@
     "fields": {
       "distribution_ptr": 30,
       "dataservice": [
-        "stac-api-landingpage"
+        "srv_stac-api-landingpage"
       ],
       "stac_collection_id": "ch.swisstopo.swissnames3d"
     }

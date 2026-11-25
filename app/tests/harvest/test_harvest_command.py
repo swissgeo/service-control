@@ -1634,10 +1634,15 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     ds_wmts.refresh_from_db()
     assert ds_wmts.distribution_set.count() == 3
-    assert ds_wmts.preferred_distribution.protocol == "ogc:wmts"
+    assert ds_wmts.preferred_distribution_de.protocol == "ogc:wmts"
+    assert ds_wmts.preferred_distribution_fr.protocol == "ogc:wmts"
+    assert ds_wmts.preferred_distribution_en.protocol == "ogc:wmts"
+    assert ds_wmts.preferred_distribution_it.protocol == "ogc:wmts"
+    assert ds_wmts.preferred_distribution_rm.protocol == "ogc:wmts"
 
     dist_1 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wmts").first()
     assert dist_1
+    assert dist_1.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert dist_1.dataservice.service_type == "ogc:wmts"
     assert dist_1.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_1.title_de == "T DE"
@@ -1656,6 +1661,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
     assert dist_2
+    assert dist_2.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert dist_2.dataservice.service_type == "ogc:wms"
     assert dist_2.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_2.title_de == "T DE"
@@ -1675,6 +1681,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     dist_3 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:api3features").first()
     assert dist_3
+    assert dist_3.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert dist_3.dataservice.service_type == "geoadmin:features"
     assert dist_3.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_3.title_de == "Geoadmin Features"
@@ -1689,12 +1696,17 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     ds_wms.refresh_from_db()
     assert ds_wms.distribution_set.count() == 2
-    assert ds_wms.preferred_distribution.protocol == "ogc:wms"
+    assert ds_wms.preferred_distribution_de.protocol == "ogc:wms"
+    assert ds_wms.preferred_distribution_fr.protocol == "ogc:wms"
+    assert ds_wms.preferred_distribution_en.protocol == "ogc:wms"
+    assert ds_wms.preferred_distribution_it.protocol == "ogc:wms"
+    assert ds_wms.preferred_distribution_rm.protocol == "ogc:wms"
 
     dist_4 = ds_wms.distribution_set.filter(
         distribution_id="ch.bazl.luftfahrthindernis:wms"
     ).first()
     assert dist_4
+    assert dist_4.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert dist_4.dataservice.service_type == "ogc:wms"
     assert dist_4.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_4.title_de == "T DE"
@@ -1716,6 +1728,7 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
         distribution_id="ch.bazl.luftfahrthindernis:api3features"
     ).first()
     assert dist_5
+    assert dist_5.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert dist_5.dataservice.service_type == "geoadmin:features"
     assert dist_5.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_5.title_de == "Geoadmin Features"
@@ -1730,12 +1743,17 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
 
     ds_geojson.refresh_from_db()
     assert ds_geojson.distribution_set.count() == 1
-    assert ds_geojson.preferred_distribution.protocol == "geojson"
+    assert ds_geojson.preferred_distribution_de.protocol == "geojson"
+    assert ds_geojson.preferred_distribution_fr.protocol == "geojson"
+    assert ds_geojson.preferred_distribution_en.protocol == "geojson"
+    assert ds_geojson.preferred_distribution_it.protocol == "geojson"
+    assert ds_geojson.preferred_distribution_rm.protocol == "geojson"
 
     dist_6 = ds_geojson.distribution_set.filter(
         distribution_id="ch.bfe.shared-mobility:geojson"
     ).first()
     assert dist_6
+    assert dist_6.supported_languages == ["de", "fr", "en", "it", "rm"]
     assert dist_6.data_source == Distribution.DataSource.BOD_LAYERS_JS
     assert dist_6.title_de == "T DE"
     assert dist_6.title_fr == "T FR"
@@ -1998,7 +2016,11 @@ def test_command_uses_distribution_mapping(dynamodb, db):
 
     dataset.refresh_from_db()
     assert dataset.distribution_set.count() == 1
-    assert dataset.preferred_distribution.protocol == "ogc:wms"
+    assert dataset.preferred_distribution_de.protocol == "ogc:wms"
+    assert dataset.preferred_distribution_fr.protocol == "ogc:wms"
+    assert dataset.preferred_distribution_en.protocol == "ogc:wms"
+    assert dataset.preferred_distribution_it.protocol == "ogc:wms"
+    assert dataset.preferred_distribution_rm.protocol == "ogc:wms"
 
 
 # --------------------------------------------------------------------------------------------------

@@ -3,6 +3,7 @@
     "model": "dataset.dataset",
     "pk": 1,
     "fields": {
+      "sgid": "dat_from-fixture-messwerte-pollen-erle-1h",
       "dataset_id": "from_fixture.ch.meteoschweiz.messwerte-pollen-erle-1h",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -19,7 +20,7 @@
       "description_it": "Valori attuali Ontano, media oraria della concentrazione pollinica [pollini per metro cubo d'aria]. Dati aggiornati ogni ora. Il set di dati contiene tutte le stazioni di misura automatiche della rete per il monitoraggio dei pollini.",
       "description_rm": "Valurs da mesiraziun ogn, concentraziun mesauna da pollen per ura [pollen per meter cubic aria]. Las datas vegnan actualisadas mintga ura. L'unitad da datas cuntegna tut las staziuns da mesiraziun da la rait naziunala da mesiraziuns da pollens automaticas.",
       "geocat_id": "012c160a-1404-42dd-8379-001a0bb2375b",
-      "preferred_distribution": 1,
+      "preferred_distribution_de": 1,
       "legacy_contacts": [
         {
           "role": "pointOfContact",
@@ -83,6 +84,7 @@
     "model": "dataset.dataset",
     "pk": 2,
     "fields": {
+      "sgid": "dat_from-fixture-messstationen-temperatur",
       "dataset_id": "from_fixture.ch.bafu.hydroweb-messstationen_temperatur",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -99,7 +101,7 @@
       "description_it": "La carta fornisce una panoramica sulle temperature attuali dell'acqua nei fiumi svizzeri.",
       "description_rm": "La charta dat ina survista da las temperaturas actualas da l'aua en ils flums svizzers.",
       "geocat_id": "eb9d3cc1-0c04-4cda-9f21-7742b8376be7",
-      "preferred_distribution": 2,
+      "preferred_distribution_de": 2,
       "legacy_contacts": [
         {
           "role": "owner",
@@ -163,6 +165,7 @@
     "model": "dataset.dataset",
     "pk": 3,
     "fields": {
+      "sgid": "dat_from-fixture-hauptstrassennetz",
       "dataset_id": "from_fixture.ch.astra.hauptstrassennetz",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -179,7 +182,7 @@
       "description_it": "Questo set di dati rimanda alla rete delle strade principali svizzere definita nell'ordinanza concernente l'utilizzazione dell'imposta sugli oli minerali a destinazione vincolata e di altri mezzi a destinazione vincolata per il traffico stradale (OUMin). La rete è sovvenzionata mediante contributi erogati dalla Confederazione ai Cantoni ed è composta da infrastrutture specificate in modo univoco. I suoi assi stradali possono servire a descrivere e georeferenziare elementi e situazioni localizzati lungo il tracciato.Nonostante l'omonimia formale, la rete in oggetto si distingue nel merito da quella descritta nell'ordinanza concernente le strade di grande transito, che identifica un sistema viario distinto, non cartografato su scala nazionale. La predetta normativa indica solo i collegamenti garantiti, senza precisarne il tracciato né le infrastrutture coinvolte.",
       "description_rm": "Rait da vias principalas",
       "geocat_id": "c1333de6-fb91-4b0b-be95-8eab89b05358",
-      "preferred_distribution": 3,
+      "preferred_distribution_de": 3,
       "legacy_contacts": [
         {
           "role": "owner",
@@ -243,6 +246,7 @@
     "model": "dataset.dataset",
     "pk": 4,
     "fields": {
+      "sgid": "dat_from-fixture-swissnames3d",
       "dataset_id": "from_fixture.ch.swisstopo.swissnames3d",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -259,7 +263,7 @@
       "description_it": "swissNAMES3D è la raccolta dei nomi geografici la più completa della Svizzera e del Principato del Liechtenstein. swissNAMES3D comprende oltre 437'000 dati georeferenziati e suddivisi in diverse categorie. La nuova serie di dati sostituisce dal 2015 il precedente prodotto SwissNames che era basato sui nomi della Carta Nazionale ed era stato aggiornato nel 2008. All'interno del geoportale federale, il layer \"nomi geografici\" corrisponde a una selezione di swissNAMES3D in funzione del livello di zoom scelto.",
       "description_rm": "swissNAMES3D è la collecziun la pli cumpletta da nums geografics da la Svizra e dal principadi da Liechtenstein. swissNAMES3D cumpiglia sur 437'000 inscripziuns georeferenziadas ch'èn repartidas en differentas categorias. L'unitad da datas remplazza a partir da l'onn 2015 il product SwissNames che sa basa sin ils nums da las ovras da la Charta naziunala e ch'è vegnì actualisà fin l'onn 2008. La preschentaziun dals nums geografics en il geoportal da la Confederaziun correspunda ad ina selecziun or da swissNAMES3D ch'èn accordads al stgalim da zoom tschernì.",
       "geocat_id": "ab24e5cc-7f53-451a-820a-f113fa545943",
-      "preferred_distribution": 25,
+      "preferred_distribution_de": 25,
       "legacy_contacts": [
         {
           "role": "owner",
@@ -376,6 +380,7 @@
     "model": "dataset.dataset",
     "pk": 5,
     "fields": {
+      "sgid": "dat_from-fixture-alpenkonvention",
       "dataset_id": "from_fixture.ch.are.alpenkonvention",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -392,7 +397,7 @@
       "description_it": "Il perimetro della Convenzione delle Alpi. La Convenzione delle Alpi è un trattato internazionale tra gli otto Paesi alpini Germania, Francia, Italia, Liechtenstein, Monaco, Austria, Svizzera, Slovenia e l'Unione europea. Lo scopo della Convenzione è la conservazione e la protezione delle Alpi mediante una politica intersettoriale, globale e durevole.",
       "description_rm": "Perimeter da la Convenziun da las Alps en Svizra. La Convenziun da las Alps è in contract internaziunal tranter ils otg pajais alpins (Austria, Frantscha, Germania, Italia, Liechtenstein, Monaco, Slovenia, Svizra) e l'Uniun europeica. La convenziun ha la finamira da proteger las Alps cun agid d'ina politica intersecturiala, cumplessiva e duraivla.",
       "geocat_id": "8698bf0b-fceb-4f0f-989b-111e7c4af0a4",
-      "preferred_distribution": 7,
+      "preferred_distribution_de": 7,
       "legacy_contacts": [
         {
           "role": "owner",
@@ -488,6 +493,7 @@
     "model": "dataset.dataset",
     "pk": 6,
     "fields": {
+      "sgid": "dat_from-fixture-agglomerationsverkehr",
       "dataset_id": "from_fixture.ch.are.agglomerationsverkehr",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -504,7 +510,7 @@
       "description_it": "L'elenco delle città e degli agglomerati che possono beneficiare dei contributi indica quali Comuni possono beneficiare dei contributi federali nell'ambito del Programma Traffico d'agglomerato (conformemente all'allegato dell'ordinanza dal DATEC concernente il programma Traffico d'agglomerato [OPTA, RS 725.116.214]). La base dell'elenco è la definizione di «area a carattere urbano» dell'Ufficio federale di statistica UST (2012). In questo contesto, l'ammissibilità ai contributi è stata mantenuta per tutti i Comuni che erano ammissibili ai contributi in base alla definizione di agglomerato del 2000. Il numero di Comuni della cintura è stato ridotto rispetto alla definizione dell'UST del 2012 applicando criteri statistici. Inoltre, i Comuni di Sarnen e Appenzello sono stati inseriti nell'elenco delle città e degli agglomerati aventi diritto ai contributi in quanto capoluoghi cantonali. Sono stati effettuati piccoli aggiustamenti arrotondando e colmando le lacune.L'aggiornamento del 1° agosto 2025 si basa sulla definizione di agglomerato del 2020 e include le proposte prese in considerazione dai Cantoni e dagli agglomerati di aggiungere o stralciare singole Comuni.",
       "description_rm": "La glista da las citads e da las aglomeraziuns subvenziunablas mussa tge vischnancas che han il dretg da survegnir contribuziuns da la Confederaziun en il rom dal program \"Traffic d'aglomeraziun\" (tenor l'agiunta 4 da l'Ordinaziun davart l'utilisaziun da la taglia liada sin l'ieli mineral e d'auters meds destinads al traffic sin via [(OUMin)]. La basa per la glista furma la definiziun dal «territori cun caracter urban» da l'Uffizi federal da statistica UFS (2012). En quest connex han tut las vischnancas che avevan il dretg da survegnir contribuziuns sin basa da la definiziun d'aglomeraziun da l'onn 2000, salvà quest dretg. Il dumber da vischnancas da la zona orasum in'aglomeraziun è vegnì reducì envers la definiziun dal UFS da l'onn 2012 pervia da l'applicaziun da criteris statistics. Ultra da quai èn las vischnancas da Sarnen e d'Appenzell sco chapitalas chantunalas vegnidas integradas en la glista da las citads ed aglomeraziuns subvenziunablas. Cun arrundaziuns e cun emplenir largias èn anc vegnidas realisadas pitschnas rectificaziuns.",
       "geocat_id": "f4b72bb8-aff0-4eab-b1e8-48e698c0e8fb",
-      "preferred_distribution": 10,
+      "preferred_distribution_de": 10,
       "legacy_contacts": [
         {
           "role": "owner",
@@ -568,6 +574,7 @@
     "model": "dataset.dataset",
     "pk": 7,
     "fields": {
+      "sgid": "dat_from-fixture-geologie-dosisleistung-terrestrisch",
       "dataset_id": "from_fixture.ch.swisstopo.geologie-dosisleistung-terrestrisch",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -584,7 +591,7 @@
       "description_it": "Gli elementi naturali instabili, come l’uranio, il torio e il potassio, nei primi 30 - 40 cm di suolo forniscono la maggior parte della radiazione misurata in superficie. L’intensità della radiazione terrestre si misura a un metro dal suolo ed e espressa in nano-Sievert l’ora (nSv/h). In Svizzera le concentrazioni più elevate di uranio, torio e potassio si trovano soprattutto nelle rocce delle Alpi. La mappa dell’intensità della radiazione terrestre sfrutta diversi metodi di misurazione: quello spettrometrico di tipo gamma in laboratorio su campioni di terreno, quello aeroradiometrico e spettrometrico di tipo gamma in situ. I dati dei punti di misura sono interpolati su una griglia di 2 × 2 km.",
       "description_rm": "En ils funs ed en la crappa èn avant maun isotops instabils natirals da differents elements – per exempel uran, torium u calium – che produceschan ina radiaziun radioactiva, cur ch'els scrodan. Dals 30 fin 40 cm ils pli sisum dal terren deriva la gronda part da la radiaziun mesirada a la surfatscha. L'intensitad da la radiaziun terrestra vegn mesirada 1 meter sur il terren ed inditgada cun nanosieverts per ura (nSv/h). En Svizra chattan ins en spezial en las Alps crappa cun concentraziuns pli grondas d'uran, da torium e da calium. La charta da l'intensitad da la radiaziun terrestra sa basa sin differentas metodas da mesirar: Per l'ina vegn eruida la radioactivitad cun mesiraziuns gammaspectrometricas da provas da terren en il labor. Las activitads vegnan però er fatgas cun agid da mesiraziuns eroradiometricas e gammaspectrometricas al lieu. Perquai ch'ils puncts da mesiraziun èn repartids en moda eterogena sur la Svizra, vegnan las datas avant maun interpoladas ad ina rait da 2 x 2 kilometers.",
       "geocat_id": "eccbc751-9928-4221-89e1-1184cbb3aff5",
-      "preferred_distribution": 13,
+      "preferred_distribution_de": 13,
       "legacy_contacts": [
         {
           "role": "pointOfContact",
@@ -680,6 +687,7 @@
     "model": "dataset.dataset",
     "pk": 8,
     "fields": {
+      "sgid": "dat_from-fixture-hartsteinvorkommen",
       "dataset_id": "from_fixture.ch.swisstopo.geologie-hartsteinvorkommen",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -696,7 +704,7 @@
       "description_it": "I granulati ottenuti dalla lavorazione della roccia dura svolgono un ruolo centrale nella costruzione e nella manutenzione della rete ferroviaria svizzera (massicciata ferroviaria) e di strade soggette a un forte carico di traffico. Per ulteriori informazioni: <a href=\"https://rawmaterials.swissgeol.ch/fr/rochesdures\" target=\"_blank\">rawmaterials.swissgeol.ch</a>. Questo set di dati (dimensioni delle celle raster: 50 x 50 m) fornisce una stima della distribuzione spaziale, della potenza (spessore) utilizzabile e della qualità delle unità geologiche contenenti roccia dura. Visualizzate sono solo le unità geologiche che si trovano a una quota inferiore a 1300 m s.l.m. e aventi una potenza superiore a 30 m. Il set di dati è stato sviluppato sulla base di profili geologici e descrizioni stratigrafiche e tramite un workflow automatizzato, applicato al set di dati swissGEOCOVER2D. Ulteriori informazioni sulle unità geologiche prese in considerazione sono consultabili nel <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_catalog_2024.pdf\" target=\"_blank\">Catalogo Rocce Dure</a>. Il workflow e la metodologia di valutazione applicata sono presentati nella <a href=\"https://api3.geo.admin.ch/featureattachments/ch.swisstopo.geologie-hartsteinvorkommen/pdf/Hard_rock_tech_doc_2024.pdf\" target=\"_blank\">Documentazione Tecnica</a> e in <a href=\"https://doi.org/10.1016/j.jsg.2023.104865\" target=\"_blank\">Nibourel et al. (2023)</a>. I siti di produzione e estrazione di rocce dure sono visualizzabili in un set di dati separato (<a href=\"https://map.geo.admin.ch/?layers=ch.swisstopo.geologie-hartsteinabbau&topic=georessourcen\" target=\"_blank\">Roccia dura: siti di produzione e estrazione</a>).L'utente riconosce che gli autori hanno applicato tutti gli sforzi ragionevoli per verificare le informazioni contenute nel set di dati presentato. Non c'è alcuna garanzia che i dati siano corretti in qualsiasi punto del sottosuolo. Nel caso si auspichi allo sviluppo di un sito di estrazione di materie prime, è essenziale condurre un'indagine geologica dettagliata in loco.",
       "description_rm": null,
       "geocat_id": "258c7ccf-5e7f-4759-9c09-519d41ba4d02",
-      "preferred_distribution": 16,
+      "preferred_distribution_de": 16,
       "legacy_contacts": [
         {
           "role": "owner",
@@ -813,6 +821,7 @@
     "model": "dataset.dataset",
     "pk": 9,
     "fields": {
+      "sgid": "dat_from-fixture-wasserdurchlaessigkeit",
       "dataset_id": "from_fixture.ch.blw.bodeneignung-wasserdurchlaessigkeit",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -829,7 +838,7 @@
       "description_it": "La permeabilità è misurata in laboratorio su campioni cilindrici saturi. Le osservazioni del terreno consentono di stabilire correlazioni tra le precipitazioni, la permeabilità e i tratti morfologici. È stato considerato l'orizzone meno permeabile dei 50 cm superiori. (Dettagli: carta delle attitudini dei suoli svizzeri, marzo 1980).",
       "description_rm": "La permeabilitad vegn mesirada en il labor vi d'emprovas cilindricas saturadas. Las observaziuns dal terren permettan da descriver relaziuns tranter las precipitaziuns, la permeabilitad e las caracteristicas morfologicas. Ins ha resguardà l'orizont il main permeabel dals 50 cm il pli sisum. (Detagls: charta da l'adattaziun dal terren da la Svizra, mars 1980)",
       "geocat_id": "d5bd22a3-0656-4582-97bc-37f77b5426ca",
-      "preferred_distribution": 19,
+      "preferred_distribution_de": 19,
       "legacy_contacts": [
         {
           "role": "pointOfContact",
@@ -946,6 +955,7 @@
     "model": "dataset.dataset",
     "pk": 10,
     "fields": {
+      "sgid": "dat_from-fixture-vec25-einzelobjekte",
       "dataset_id": "from_fixture.ch.swisstopo.vec25-einzelobjekte",
       "data_source": "bod-dataset",
       "external_ids": [
@@ -962,7 +972,7 @@
       "description_it": "Il livello Oggetti isolati (abbreviazione eob) comprende una selezione di oggetti topografici marcati, puntuali e lineari (strumenti di orientamento).",
       "description_rm": "Il plaun Objects singuls (abreviaziun eob) cumpiglia ina selecziun d'objects topografics marcants che figureschan en furma da puncts e da lingias (agids d'orientaziun).",
       "geocat_id": "5fb1376e-554a-4bcc-9c1d-e0b9b39d7aaa",
-      "preferred_distribution": 22,
+      "preferred_distribution_de": 22,
       "legacy_contacts": [
         {
           "role": "pointOfContact",
