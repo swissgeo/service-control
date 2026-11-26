@@ -811,13 +811,19 @@ class Command(CustomBaseCommand):
             wmts_layer_name=ljs.layer_id,
             defaults={
                 "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "data_source": Distribution.DataSource.BOD_LAYERS_JS,
                 "supported_languages": ["de", "fr", "en", "it", "rm"],
+                "external_ids": [
+                    {
+                        "source": Distribution.DataSource.BOD_LAYERS_JS,
+                        "id": ljs.layer_id,
+                    }
+                ],
             },
         )
 
         values = {
             "dataservice": wmts_dataservice,
-            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
             "title_de": dataset.title_de,
             "title_fr": dataset.title_fr,
             "title_it": dataset.title_it,
@@ -858,13 +864,19 @@ class Command(CustomBaseCommand):
             wms_layer_name=ljs.layer_id,
             defaults={
                 "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+                "external_ids": [
+                    {
+                        "source": Distribution.DataSource.BOD_LAYERS_JS,
+                        "id": ljs.layer_id,
+                    }
+                ],
                 "supported_languages": ["de", "fr", "en", "it", "rm"],
             },
         )
 
         values = {
             "dataservice": wms_dataservice,
-            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
             "title_de": dataset.title_de,
             "title_fr": dataset.title_fr,
             "title_it": dataset.title_it,
@@ -907,13 +919,19 @@ class Command(CustomBaseCommand):
             dataset=dataset,
             defaults={
                 "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+                "external_ids": [
+                    {
+                        "source": Distribution.DataSource.BOD_LAYERS_JS,
+                        "id": ljs.layer_id,
+                    }
+                ],
                 "geojson_url_de": ljs.geojson_url_de,
                 "supported_languages": ["de", "fr", "en", "it", "rm"],
             },
         )
 
         values = {
-            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
             "layer_id": ljs.layer_id,
             "title_de": dataset.title_de,
             "title_fr": dataset.title_fr,
@@ -987,13 +1005,19 @@ class Command(CustomBaseCommand):
             layer_id=ljs.layer_id,
             defaults={
                 "sgid": distribution_sgid_from_dataset_sgid(dataset.sgid),
+                "data_source": Distribution.DataSource.BOD_LAYERS_JS,
+                "external_ids": [
+                    {
+                        "source": Distribution.DataSource.BOD_LAYERS_JS,
+                        "id": ljs.layer_id,
+                    }
+                ],
                 "supported_languages": ["de", "fr", "en", "it", "rm"],
             },
         )
 
         values = {
             "dataservice": geoadminfeature_dataservice,
-            "data_source": Distribution.DataSource.BOD_LAYERS_JS,
             "title_de": "Geoadmin Features",
             "title_fr": "Geoadmin Features",
             "title_it": "Geoadmin Features",

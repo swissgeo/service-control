@@ -208,6 +208,10 @@ class Command(CustomBaseCommand):
                     dataservice=dataservice,
                     stac_collection_id=collection_id,
                     supported_languages=["de", "fr", "en", "it", "rm"],
+                    external_ids={
+                        "source": Distribution.DataSource.SERVICE_CAPABILITIES,
+                        "id": collection_id,
+                    },
                 )
                 added += 1
                 self.print(

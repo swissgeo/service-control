@@ -1658,6 +1658,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_1.meta_information is False
     assert dist_1.opacity == Decimal("0.5")
     assert dist_1.sgid.startswith("dst_moose-")
+    assert dist_1.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "ch.bafu.moose"}
+    ]
+    assert dist_1.wmts_layer_name == "ch.bafu.moose"
 
     dist_2 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:wms").first()
     assert dist_2
@@ -1678,6 +1682,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_2.opacity == Decimal("0.5")
     assert dist_2.gutter == 0
     assert dist_2.sgid.startswith("dst_moose-")
+    assert dist_2.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "ch.bafu.moose"}
+    ]
+    assert dist_2.wms_layer_name == "ch.bafu.moose"
 
     dist_3 = ds_wmts.distribution_set.filter(distribution_id="ch.bafu.moose:api3features").first()
     assert dist_3
@@ -1693,6 +1701,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_3.renderable is True
     assert dist_3.queryable is False
     assert dist_3.sgid.startswith("dst_moose-")
+    assert dist_3.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "ch.bafu.moose"}
+    ]
+    assert dist_3.layer_id == "ch.bafu.moose"
 
     ds_wms.refresh_from_db()
     assert ds_wms.distribution_set.count() == 2
@@ -1723,6 +1735,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_4.opacity == Decimal("0.6")
     assert dist_4.gutter == 1
     assert dist_4.sgid.startswith("dst_luftfahrthindernis-")
+    assert dist_4.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "ch.bazl.luftfahrthindernis"}
+    ]
+    assert dist_4.wms_layer_name == "ch.bazl.luftfahrthindernis"
 
     dist_5 = ds_wms.distribution_set.filter(
         distribution_id="ch.bazl.luftfahrthindernis:api3features"
@@ -1740,6 +1756,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_5.renderable is False
     assert dist_5.queryable is True
     assert dist_5.sgid.startswith("dst_luftfahrthindernis-")
+    assert dist_5.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "ch.bazl.luftfahrthindernis"}
+    ]
+    assert dist_5.layer_id == "ch.bazl.luftfahrthindernis"
 
     ds_geojson.refresh_from_db()
     assert ds_geojson.distribution_set.count() == 1
@@ -1773,6 +1793,10 @@ def test_command_creates_and_updates_distributions(dynamodb, db):  # noqa:PLR091
     assert dist_6.geojson_url_rm == "https://data.geo.admin.ch/ch.bafu.moose/ch.bafu.moose_rm.json"
     assert dist_6.style_url == "/api/oas/v0/styles/ch.bfe.shared-mobility.maplibre.json"
     assert dist_6.sgid.startswith("dst_shared-mobility-")
+    assert dist_6.external_ids == [
+        {"source": Distribution.DataSource.BOD_LAYERS_JS, "id": "ch.bfe.shared-mobility"}
+    ]
+    assert dist_6.layer_id == "ch.bfe.shared-mobility"
 
     # =========================
     # Update

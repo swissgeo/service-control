@@ -301,11 +301,12 @@ class Command(CustomBaseCommand):
         organization_id = self.organization_id(provider_id)
         return "{}.{}".format(organization_id, service["base_topic"].lower())
 
-    def cleanup_objects(
+    def cleanup_objects(  # noqa: C901
         self,
-        cls: type[Dataset | Dataservice | Distribution | Organization | Contact],
+        cls: type[Dataset | Dataservice | ExternalStacDistribution | Organization | Contact],
         processed: set[str],
         clean: bool,
+        related: str | None = None,
     ) -> tuple[int, int]:
         """Cleanup objects
 
@@ -313,8 +314,16 @@ class Command(CustomBaseCommand):
           geodienste.ch Services Information API; optionally clean them
         - Check for obsolete objects, i.e. objects created by this command but with no external ID
           reference; optionally delete them
-
+        - optionally accepts the name of a relation from which all objects are also removed
         """
+
+        def get_related(obj: Any, related: Any) -> list:
+            """Get all objects from the given relation name, filtered by data source."""
+            if related and (relationship := getattr(obj, f"{related}_set", None)):
+                return list(
+                    relationship.filter(data_source=relationship.model.DataSource.GEODIENSTE).all()
+                )
+            return []
 
         existing = cls.objects.existing_external_ids(cls.DataSource.GEODIENSTE)
         name = cls.__name__.lower()
@@ -337,11 +346,17 @@ class Command(CustomBaseCommand):
         if obsolete.count():
             if clean:
                 for obj in obsolete:
+                    for rel in get_related(obj, related):
+                        self.print_warning(f"Removing obsolete {related} {rel}")
+                        rel.delete()
                     self.print_warning(f"Removing obsolete {name} {obj}")
                     obj.delete()
             else:
                 ids = sorted(str(obj) for obj in obsolete)
                 self.print_warning(f"Obsolete {name}s found: {', '.join(ids)}")
+                ids = sorted(str(rel) for obj in obsolete for rel in get_related(obj, related))
+                if ids:
+                    self.print_warning(f"Obsolete {related}s found: {', '.join(ids)}")
 
         return len(removed), len(obsolete)
 
@@ -1317,10 +1332,19 @@ class Command(CustomBaseCommand):
         """Import the distributions and dataservices used by the aggregate/broker datasets.
 
         Ensures that per aggregate/broker dataset (base topic):
-        - one default and one availability WMS data service is created (or updated)
-        - one default and one availability external WMS distribution for the data is created
-          (or updated)
+        - one data WMS dataservice is created (or updated)
+        - one availability WMS dataservice is created (or updated)
+        - the (statically defined) STAC dataservice exists
+        - one data WMS distribution per language is created (or updated)
+        - one availability WMS distribution is created (or updated)
+        - one STAC distribution is created (or updated)
 
+        Cleanup:
+        - dataservice and STAC distributions are deleted based on the external IDs which correspond
+          to the base topic
+        - WMS distributions are deleted via WMS distributions because the external IDs do not
+          correspond to the base topic but to the layer names (which are not unique accross all
+          distributions). Deleting a WMS dataservice also deletes all related WMS distributions.
         """
 
         self.print_success("Importing distributions")
@@ -1384,12 +1408,12 @@ class Command(CustomBaseCommand):
         (
             metrics["dataservices.removed"],
             metrics["dataservices.obsoleted"],
-        ) = self.cleanup_objects(Dataservice, processed, clean)
+        ) = self.cleanup_objects(Dataservice, processed, clean, related="externalwmsdistribution")
 
         (
             metrics["distributions.removed"],
             metrics["distributions.obsoleted"],
-        ) = self.cleanup_objects(Distribution, processed, clean)
+        ) = self.cleanup_objects(ExternalStacDistribution, processed, clean)
 
         self.print_success(f"Distribution import completed. Metrics: {metrics}")
 
@@ -1432,7 +1456,7 @@ class Command(CustomBaseCommand):
         ds_updated += updated
 
         # Data distribution
-        layer_names = {
+        layer_names: dict[str, str | None] = {
             "de": config_de["layers"][0]["name"],
             "fr": config_fr["layers"][0]["name"],
             "it": config_it["layers"][0]["name"] if "it" in languages else None,
@@ -1442,7 +1466,11 @@ class Command(CustomBaseCommand):
             capabilities_url, layer_names, dataset
         )
         for language in languages:
-            if language != "de" and layer_names[language] == layer_names["de"]:
+            layer_name = layer_names[language]
+            if not layer_name:
+                continue
+
+            if language != "de" and layer_name == layer_names["de"]:
                 continue
 
             supported_languages = [language]
@@ -1458,10 +1486,10 @@ class Command(CustomBaseCommand):
             distribution, created, updated = self.import_wms_distribution(
                 distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
                 distribution_id=f"{distribution_id}{distribution_id_postfix}",
-                external_id=base_topic,
+                external_id=layer_name,
                 dataset=dataset,
                 dataservice=dataservice,
-                wms_layer_name=layer_names[language],
+                wms_layer_name=layer_name,
                 supported_languages=supported_languages,
                 opacity=Decimal(str(config_de["layers"][0]["opacity"])),
                 **titles_and_descriptions,
@@ -1493,7 +1521,7 @@ class Command(CustomBaseCommand):
         _, created, updated = self.import_wms_distribution(
             distribution_sgid=distribution_sgid_from_dataset_sgid(dataset.sgid),
             distribution_id=distribution_id.replace(":wms", "-availability:wms"),
-            external_id=base_topic,
+            external_id="availability",
             dataset=dataset,
             dataservice=dataservice_availability,
             title_de="Verfügbarkeit",
